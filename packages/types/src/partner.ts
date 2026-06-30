@@ -32,3 +32,29 @@ export type CreatePartnerInput = {
 export type UpdatePartnerInput = Partial<
   Pick<PartnerProfile, 'fullName' | 'phone' | 'avatar' | 'bio' | 'availability'>
 >;
+
+export interface PartnerSkill {
+  id: string;
+  partnerId: string;
+  categoryId: string;
+  categoryName?: string;
+  proficiency: string;
+  createdAt: string;
+}
+
+export type CreatePartnerSkillInput = {
+  categoryId: string;
+  proficiency?: string;
+};
+
+export interface PartnerDocument {
+  id: string;
+  partnerId: string;
+  type: string;
+  mediaId: string | null;
+  fileName: string;
+  status: string;
+  verifiedAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+}

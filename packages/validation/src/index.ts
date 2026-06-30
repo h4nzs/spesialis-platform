@@ -24,12 +24,16 @@ export {
   updatePartnerSchema,
   updateAvailabilitySchema,
   verifyPartnerSchema,
+  addSkillSchema,
+  partnerRegistrationSchema,
 } from './partner.ts';
 export type {
   RegisterPartnerInput,
   UpdatePartnerInput,
   UpdateAvailabilityInput,
   VerifyPartnerInput,
+  AddSkillInput,
+  PartnerRegistrationInput,
 } from './partner.ts';
 
 export { createCompanySchema, updateCompanySchema, verifyCompanySchema } from './company.ts';

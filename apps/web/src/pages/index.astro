@@ -1,17 +1,52 @@
 ---
-
+import BaseLayout from '../layouts/BaseLayout.astro'
 ---
 
-<html lang="en">
-	<head>
-		<meta charset="utf-8" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<link rel="icon" href="/favicon.ico" />
-		<meta name="viewport" content="width=device-width" />
-		<meta name="generator" content={Astro.generator} />
-		<title>Astro</title>
-	</head>
-	<body>
-		<h1>Astro</h1>
-	</body>
-</html>
+<BaseLayout>
+  <section class="py-20 text-center animate-fade-in">
+    <h1 class="mx-auto max-w-3xl text-4xl font-bold tracking-tight text-text sm:text-5xl">
+      Layanan Profesional
+      <span class="text-primary"> Tanpa Ribet</span>
+    </h1>
+    <p class="mx-auto mt-4 max-w-xl text-lg text-text-muted">
+      Temukan teknisi dan profesional terpercaya untuk kebutuhan rumah, kantor, dan bisnis Anda.
+    </p>
+    <div class="mt-8 flex items-center justify-center gap-4">
+      <a
+        href="/services"
+        class="inline-flex items-center gap-2 rounded-md bg-primary px-6 py-3 text-base font-medium text-white transition-colors hover:bg-primary-hover"
+      >
+        Lihat Layanan
+      </a>
+      <a
+        href="/tracking"
+        class="inline-flex items-center gap-2 rounded-md border border-border bg-surface px-6 py-3 text-base font-medium text-text transition-colors hover:bg-background"
+      >
+        Lacak Booking
+      </a>
+    </div>
+  </section>
+
+  <section class="py-16">
+    <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+      <h2 class="text-center text-2xl font-semibold text-text">Kenapa Spesialis?</h2>
+      <div class="mt-10 grid gap-6 sm:grid-cols-3">
+        <div class="rounded-lg border border-border bg-surface p-6 text-center">
+          <div class="text-3xl mb-3">🔧</div>
+          <h3 class="font-semibold text-text">Teknisi Berpengalaman</h3>
+          <p class="mt-2 text-sm text-text-muted">Semua mitra telah diverifikasi dan berpengalaman di bidangnya.</p>
+        </div>
+        <div class="rounded-lg border border-border bg-surface p-6 text-center">
+          <div class="text-3xl mb-3">⚡</div>
+          <h3 class="font-semibold text-text">Cepat & Mudah</h3>
+          <p class="mt-2 text-sm text-text-muted">Booking dalam hitungan menit, tanpa perlu antre atau telepon.</p>
+        </div>
+        <div class="rounded-lg border border-border bg-surface p-6 text-center">
+          <div class="text-3xl mb-3">🛡️</div>
+          <h3 class="font-semibold text-text">Garansi Layanan</h3>
+          <p class="mt-2 text-sm text-text-muted">Setiap layanan dilindungi garansi untuk ketenangan Anda.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+</BaseLayout>

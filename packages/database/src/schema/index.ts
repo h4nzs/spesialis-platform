@@ -21,6 +21,8 @@ export { companyUsers } from './company-users.ts';
 export { branches } from './branches.ts';
 export { refreshTokens } from './refresh-tokens.ts';
 export { passwordResets } from './password-resets.ts';
+export { partnerSkills } from './partner-skills.ts';
+export { partnerDocuments } from './partner-documents.ts';
 
 export {
   usersRelations,
@@ -39,4 +41,6 @@ export {
   complaintsRelations,
   notificationsRelations,
   auditLogsRelations,
+  partnerSkillsRelations,
+  partnerDocumentsRelations,
 } from './relations.ts';

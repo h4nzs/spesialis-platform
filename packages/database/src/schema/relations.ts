@@ -19,6 +19,8 @@ import { companies } from './companies.ts';
 import { branches } from './branches.ts';
 import { refreshTokens } from './refresh-tokens.ts';
 import { passwordResets } from './password-resets.ts';
+import { partnerSkills } from './partner-skills.ts';
+import { partnerDocuments } from './partner-documents.ts';
 
 export const usersRelations = relations(users, ({ one, many }) => ({
   customerProfile: one(customerProfiles),
@@ -42,10 +44,31 @@ export const partnerProfilesRelations = relations(partnerProfiles, ({ one, many 
   user: one(users, { fields: [partnerProfiles.userId], references: [users.id] }),
   assignments: many(assignments),
   reviews: many(reviews),
+  skills: many(partnerSkills),
+  documents: many(partnerDocuments),
+}));
+
+export const partnerSkillsRelations = relations(partnerSkills, ({ one }) => ({
+  partner: one(partnerProfiles, {
+    fields: [partnerSkills.partnerId],
+    references: [partnerProfiles.id],
+  }),
+  category: one(serviceCategories, {
+    fields: [partnerSkills.categoryId],
+    references: [serviceCategories.id],
+  }),
+}));
+
+export const partnerDocumentsRelations = relations(partnerDocuments, ({ one }) => ({
+  partner: one(partnerProfiles, {
+    fields: [partnerDocuments.partnerId],
+    references: [partnerProfiles.id],
+  }),
 }));
 
 export const serviceCategoriesRelations = relations(serviceCategories, ({ many }) => ({
   services: many(services),
+  partnerSkills: many(partnerSkills),
 }));
 
 export const servicesRelations = relations(services, ({ one, many }) => ({

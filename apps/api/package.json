@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "typecheck": "tsc --noEmit",
-    "dev": "tsx watch src/index.ts"
+    "dev": "tsx watch src/index.ts",
+    "db:seed": "tsx src/seeds/index.ts"
   },
   "dependencies": {
     "@specialist/database": "workspace:*",

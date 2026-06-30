@@ -17,6 +17,9 @@ export type {
   PartnerProfile,
   CreatePartnerInput,
   UpdatePartnerInput,
+  PartnerSkill,
+  CreatePartnerSkillInput,
+  PartnerDocument,
 } from './partner.ts';
 
 export type { CompanyStatus, Company, CreateCompanyInput, CompanyUser, Branch } from './company.ts';
