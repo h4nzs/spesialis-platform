@@ -83,7 +83,7 @@ Invoice
 | Frontend      | Astro 5, React 19, Tailwind CSS 4 |
 | API Layer     | Hono                              |
 | CMS Layer     | Directus                          |
-| Database      | PostgreSQL 17                     |
+| Database      | PostgreSQL 18                     |
 | Storage       | Cloudflare R2                     |
 | Infrastruktur | Docker Compose, Nginx             |
 | Monorepo      | pnpm, Turborepo                   |

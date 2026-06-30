@@ -4,10 +4,9 @@ WORKDIR /app
 
 COPY . .
 
-RUN corepack enable
-
-RUN pnpm install
+RUN corepack enable && \
+    pnpm install --no-optional
 
 EXPOSE 3000
 
-CMD ["pnpm","--filter","@specialist/api","dev"]
+CMD ["pnpm", "--filter", "@specialist/api", "dev"]

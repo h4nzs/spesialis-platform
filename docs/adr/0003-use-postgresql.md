@@ -8,7 +8,7 @@ Use PostgreSQL
 
 Database utama.
 
-PostgreSQL 17
+PostgreSQL 18
 
 ---
 

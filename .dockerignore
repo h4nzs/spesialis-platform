@@ -1,0 +1,14 @@
+node_modules
+.git
+.env
+.env.*
+!.env.example
+dist
+.next
+.astro
+coverage
+.cache
+*.log
+.DS_Store
+.gitignore
+.dockerignore

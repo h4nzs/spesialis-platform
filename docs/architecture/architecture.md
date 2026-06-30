@@ -63,7 +63,7 @@ Backend
 
 Database
 
-- PostgreSQL 17
+- PostgreSQL 18
 
 Storage
 

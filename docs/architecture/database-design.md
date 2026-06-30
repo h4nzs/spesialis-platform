@@ -8,7 +8,7 @@ Version: 1.0
 
 # 1. Overview
 
-Database menggunakan PostgreSQL 17.
+Database menggunakan PostgreSQL 18.
 
 Seluruh schema mengikuti prinsip:
 

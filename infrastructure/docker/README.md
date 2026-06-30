@@ -5,7 +5,7 @@
 | Service  | Image        | Description             |
 | -------- | ------------ | ----------------------- |
 | nginx    | nginx:alpine | Reverse Proxy           |
-| postgres | postgres:17  | Database                |
+| postgres | postgres:18  | Database                |
 | redis    | redis:alpine | Cache & Queue (Future)  |
 | mailpit  | mailpit      | Email Development (Dev) |
 | api      | -            | Hono API                |
