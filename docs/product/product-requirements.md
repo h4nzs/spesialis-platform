@@ -288,13 +288,14 @@ Apabila Reject, Admin memilih Partner lain.
 
 Frontend
 
-- Astro
-- React
+- Astro (Primary — Static First, SEO)
+- React (Islands — hanya untuk interaktivitas)
 - Tailwind CSS
 
 Backend
 
-- Directus
+- Hono (API Layer — Business Logic)
+- Directus (CMS Layer — Content & Admin)
 
 Database
 

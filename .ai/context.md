@@ -80,7 +80,7 @@ Invoice
 
 | Layer         | Teknologi                         |
 | ------------- | --------------------------------- |
-| Frontend      | Astro 5, React 19, Tailwind CSS 4 |
+| Frontend      | Astro 7, React 19, Tailwind CSS 4 |
 | API Layer     | Hono                              |
 | CMS Layer     | Directus                          |
 | Database      | PostgreSQL 18                     |

@@ -71,3 +71,7 @@ Confirm Payment.
 GET /tracking/:booking_number
 
 Public Tracking.
+
+Full path: `/api/v1/bookings/tracking/:booking_number`
+
+Endpoint publik — tidak memerlukan authentication.

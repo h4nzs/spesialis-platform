@@ -20,6 +20,30 @@ Interaksi menggunakan React Islands.
 
 ---
 
+# API Client
+
+## Astro Server (SSR)
+
+- Gunakan `fetch()` langsung di Astro component script (`---`).
+- Base URL: `import.meta.env.API_URL` (dari env).
+- Cookie (JWT) dikirim otomatis oleh browser.
+
+## React Islands (Client)
+
+- Gunakan `@specialist/shared` API Client.
+- Token JWT diterima via props dari Astro — jangan akses cookie langsung.
+- Setiap request menyertakan header: `Authorization: Bearer <token>`.
+
+## Pattern
+
+```
+Astro (server) → fetch(API_URL + path, { headers: { Cookie } })
+React Island   → apiClient.get(path, { token })
+Hono API       → validasi token → proses → response JSON
+```
+
+---
+
 # Public Pages
 
 /

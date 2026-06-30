@@ -16,7 +16,7 @@ Platform dirancang untuk scalable, SEO-first, dan production-ready.
 
 | Layer         | Teknologi                         |
 | ------------- | --------------------------------- |
-| Frontend      | Astro 5, React 19, Tailwind CSS 4 |
+| Frontend      | Astro 7, React 19, Tailwind CSS 4 |
 | API Layer     | Hono (Business Logic)             |
 | CMS Layer     | Directus (Content & Admin)        |
 | Database      | PostgreSQL 18                     |

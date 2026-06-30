@@ -247,17 +247,30 @@ Satu User dapat memiliki banyak Role.
 
 # 9. Session Management
 
-MVP.
+## MVP
 
-JWT Access Token.
+### Access Token (JWT)
 
-Refresh Token.
+- Disimpan di **httpOnly Cookie** (lebih aman dari XSS).
+- Bukan di `localStorage` (rentan XSS).
+- Expiry: 15 menit.
 
-Logout menghapus Refresh Token.
+### Refresh Token
 
-Future.
+- Disimpan di httpOnly Cookie dengan path `/auth/refresh`.
+- Expiry: 7 hari.
+- Logout menghapus Refresh Token dari database.
 
-Multi Device Login.
+## Client (Astro)
+
+- Astro SSR membaca cookie di server-side.
+- React Islands menerima token via props — tidak mengakses cookie langsung.
+- API Client (`packages/shared`) menyertakan token dari cookie ke header `Authorization`.
+
+## Future
+
+- Multi Device Login.
+- OAuth2 / Passkey.
 
 ---
 
