@@ -2,17 +2,17 @@
   "name": "@specialist/api",
   "private": true,
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "type": "module",
   "scripts": {
-    "test": "echo \"@specialist/api: no tests yet\"",
+    "typecheck": "tsc --noEmit",
     "dev": "tsx watch src/index.ts"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "type": "module",
   "dependencies": {
+    "@specialist/database": "workspace:*",
+    "@specialist/types": "workspace:*",
+    "@specialist/validation": "workspace:*",
+    "drizzle-orm": "^0.43.1",
+    "hash-wasm": "^4.12.0",
     "hono": "^4.12.27"
   },
   "devDependencies": {

@@ -1,0 +1,282 @@
+import { Hono } from 'hono';
+import { eq, and, or } from 'drizzle-orm';
+import {
+  hashPassword,
+  verifyPassword,
+  signAccessToken,
+  generateRefreshToken,
+  getRefreshTokenExpiry,
+} from '../lib/auth.ts';
+import { db, users, customerProfiles, refreshTokens, passwordResets } from '../lib/db.ts';
+import { authMiddleware } from '../middleware/auth.ts';
+import {
+  registerSchema,
+  loginSchema,
+  forgotPasswordSchema,
+  resetPasswordSchema,
+} from '@specialist/validation';
+import { success, created, error, unauthorized, conflict, serverError } from '../lib/response.ts';
+
+const router = new Hono();
+
+router.post('/register', async (c) => {
+  const body = await c.req.json();
+  const parsed = registerSchema.safeParse(body);
+  if (!parsed.success) {
+    return error(
+      c,
+      'VALIDATION_ERROR',
+      'Validation failed',
+      422,
+      parsed.error.issues.map((i) => ({
+        field: i.path.join('.'),
+        message: i.message,
+      })),
+    );
+  }
+
+  const { email, phone, password, fullName } = parsed.data;
+
+  const existing = await db
+    .select({ id: users.id })
+    .from(users)
+    .where(or(eq(users.email, email), eq(users.phone, phone)))
+    .limit(1);
+
+  if (existing[0]) {
+    return conflict(c, 'Email atau nomor HP sudah terdaftar');
+  }
+
+  const passwordHash = await hashPassword(password);
+
+  const createdUsers = await db
+    .insert(users)
+    .values({
+      email,
+      phone,
+      passwordHash,
+      role: 'customer',
+      status: 'active',
+    })
+    .returning({ id: users.id, email: users.email, role: users.role });
+
+  const user = createdUsers[0];
+  if (!user) return serverError(c, 'Gagal membuat user');
+
+  await db.insert(customerProfiles).values({
+    userId: user.id,
+    fullName,
+  });
+
+  const token = await signAccessToken(user.id, user.role);
+
+  return created(c, { user: { id: user.id, email: user.email, role: user.role }, token });
+});
+
+router.post('/login', async (c) => {
+  const body = await c.req.json();
+  const parsed = loginSchema.safeParse(body);
+  if (!parsed.success) {
+    return error(
+      c,
+      'VALIDATION_ERROR',
+      'Validation failed',
+      422,
+      parsed.error.issues.map((i) => ({
+        field: i.path.join('.'),
+        message: i.message,
+      })),
+    );
+  }
+
+  const { email, password } = parsed.data;
+
+  const [user] = await db
+    .select({
+      id: users.id,
+      email: users.email,
+      passwordHash: users.passwordHash,
+      role: users.role,
+      status: users.status,
+    })
+    .from(users)
+    .where(eq(users.email, email))
+    .limit(1);
+
+  if (!user) {
+    return unauthorized(c, 'Email atau password salah');
+  }
+
+  if (user.status !== 'active') {
+    return error(c, 'AUTH_ACCOUNT_BLOCKED', 'Akun tidak aktif', 403);
+  }
+
+  const valid = await verifyPassword(user.passwordHash, password);
+  if (!valid) {
+    return unauthorized(c, 'Email atau password salah');
+  }
+
+  const refreshToken = generateRefreshToken();
+  await db.insert(refreshTokens).values({
+    userId: user.id,
+    tokenHash: refreshToken,
+    expiresAt: getRefreshTokenExpiry(),
+  });
+
+  const token = await signAccessToken(user.id, user.role);
+
+  return success(c, {
+    user: { id: user.id, email: user.email, role: user.role },
+    token,
+    refreshToken,
+  });
+});
+
+router.post('/refresh', async (c) => {
+  const body = (await c.req.json()) as { refreshToken?: string };
+  if (!body.refreshToken) {
+    return unauthorized(c, 'Refresh token required');
+  }
+
+  const [stored] = await db
+    .select({
+      id: refreshTokens.id,
+      userId: refreshTokens.userId,
+      revoked: refreshTokens.revoked,
+      expiresAt: refreshTokens.expiresAt,
+    })
+    .from(refreshTokens)
+    .where(and(eq(refreshTokens.tokenHash, body.refreshToken), eq(refreshTokens.revoked, false)))
+    .limit(1);
+
+  if (!stored || stored.expiresAt < new Date()) {
+    return unauthorized(c, 'Invalid or expired refresh token');
+  }
+
+  const [user] = await db
+    .select({ id: users.id, role: users.role })
+    .from(users)
+    .where(eq(users.id, stored.userId))
+    .limit(1);
+
+  if (!user) {
+    return unauthorized(c, 'User not found');
+  }
+
+  await db.update(refreshTokens).set({ revoked: true }).where(eq(refreshTokens.id, stored.id));
+
+  const newRefreshToken = generateRefreshToken();
+  await db.insert(refreshTokens).values({
+    userId: user.id,
+    tokenHash: newRefreshToken,
+    expiresAt: getRefreshTokenExpiry(),
+  });
+
+  const token = await signAccessToken(user.id, user.role);
+
+  return success(c, { token, refreshToken: newRefreshToken });
+});
+
+router.post('/logout', authMiddleware, async (c) => {
+  const userId = c.get('userId');
+
+  await db
+    .update(refreshTokens)
+    .set({ revoked: true })
+    .where(and(eq(refreshTokens.userId, userId), eq(refreshTokens.revoked, false)));
+
+  return success(c, null, 'Logged out');
+});
+
+router.post('/forgot-password', async (c) => {
+  const body = await c.req.json();
+  const parsed = forgotPasswordSchema.safeParse(body);
+  if (!parsed.success) {
+    return success(c, null, 'Jika email terdaftar, link reset password akan dikirim');
+  }
+
+  const [user] = await db
+    .select({ id: users.id })
+    .from(users)
+    .where(eq(users.email, parsed.data.email))
+    .limit(1);
+
+  if (user) {
+    const resetToken = generateRefreshToken();
+    await db.insert(passwordResets).values({
+      userId: user.id,
+      tokenHash: resetToken,
+      expiresAt: getRefreshTokenExpiry(),
+    });
+    // TODO: Send email with reset link
+  }
+
+  return success(c, null, 'Jika email terdaftar, link reset password akan dikirim');
+});
+
+router.post('/reset-password', async (c) => {
+  const body = await c.req.json();
+  const parsed = resetPasswordSchema.safeParse(body);
+  if (!parsed.success) {
+    return error(
+      c,
+      'VALIDATION_ERROR',
+      'Validation failed',
+      422,
+      parsed.error.issues.map((i) => ({
+        field: i.path.join('.'),
+        message: i.message,
+      })),
+    );
+  }
+
+  const { token, password } = parsed.data;
+
+  const [stored] = await db
+    .select({
+      id: passwordResets.id,
+      userId: passwordResets.userId,
+      used: passwordResets.used,
+      expiresAt: passwordResets.expiresAt,
+    })
+    .from(passwordResets)
+    .where(and(eq(passwordResets.tokenHash, token), eq(passwordResets.used, false)))
+    .limit(1);
+
+  if (!stored || stored.expiresAt < new Date()) {
+    return error(c, 'INVALID_RESET_TOKEN', 'Token reset password tidak valid atau kadaluarsa', 400);
+  }
+
+  const passwordHash = await hashPassword(password);
+
+  await db.transaction(async (tx) => {
+    await tx.update(users).set({ passwordHash }).where(eq(users.id, stored.userId));
+    await tx.update(passwordResets).set({ used: true }).where(eq(passwordResets.id, stored.id));
+  });
+
+  return success(c, null, 'Password berhasil direset');
+});
+
+router.get('/me', authMiddleware, async (c) => {
+  const userId = c.get('userId');
+
+  const [user] = await db
+    .select({
+      id: users.id,
+      email: users.email,
+      phone: users.phone,
+      role: users.role,
+      status: users.status,
+    })
+    .from(users)
+    .where(eq(users.id, userId))
+    .limit(1);
+
+  if (!user) {
+    return error(c, 'USER_NOT_FOUND', 'User tidak ditemukan', 404);
+  }
+
+  return success(c, { user });
+});
+
+export { router as authRouter };

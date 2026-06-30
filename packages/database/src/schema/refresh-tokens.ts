@@ -1,0 +1,13 @@
+import { pgTable, uuid, varchar, timestamp, boolean } from 'drizzle-orm/pg-core';
+import { users } from './users.ts';
+
+export const refreshTokens = pgTable('refresh_tokens', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  userId: uuid('user_id')
+    .references(() => users.id)
+    .notNull(),
+  tokenHash: varchar('token_hash', { length: 255 }).notNull().unique(),
+  expiresAt: timestamp('expires_at').notNull(),
+  revoked: boolean('revoked').notNull().default(false),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+});

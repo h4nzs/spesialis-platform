@@ -1,5 +1,29 @@
 {
   "name": "@specialist/database",
+  "version": "1.0.0",
   "private": true,
-  "type": "module"
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./client": "./src/client.ts",
+    "./schema": "./src/schema/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "db:generate": "drizzle-kit generate",
+    "db:push": "drizzle-kit push",
+    "db:migrate": "drizzle-kit migrate",
+    "db:seed": "tsx src/seeds/index.ts"
+  },
+  "dependencies": {
+    "@specialist/types": "workspace:*",
+    "drizzle-orm": "^0.43.1",
+    "postgres": "^3.4.5"
+  },
+  "devDependencies": {
+    "@types/node": "^26.0.1",
+    "drizzle-kit": "^0.30.6",
+    "tsx": "^4.22.4",
+    "typescript": "^6.0.3"
+  }
 }

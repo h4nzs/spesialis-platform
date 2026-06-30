@@ -18,6 +18,7 @@ Success
 
 {
 "success": true,
+"message": "Success",
 "data": {}
 }
 
@@ -25,6 +26,7 @@ Error
 
 {
 "success": false,
+"code": "ERROR_CODE",
 "message": "",
 "errors": []
 }
@@ -117,9 +119,27 @@ CMS
 
 # Pagination
 
+Query:
+
 ?page=1
 
 &limit=20
+
+Response:
+
+{
+"success": true,
+"message": "Success",
+"data": [],
+"pagination": {
+"page": 1,
+"limit": 20,
+"total": 100,
+"totalPages": 5,
+"hasNext": true,
+"hasPrev": false
+}
+}
 
 ---
 

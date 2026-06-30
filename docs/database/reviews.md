@@ -14,35 +14,33 @@ Menyimpan penilaian Customer.
 
 # Columns
 
-id
+id UUID
 
-order_id
+order_id UUID
 
-customer_id
+customer_id UUID
 
-partner_id
+partner_id UUID
 
-rating
+rating NUMERIC(2,1)
 
-review
+review TEXT
 
-created_at
+created_at TIMESTAMP
 
-updated_at
+updated_at TIMESTAMP
 
 ---
 
 # Rating
 
-1
+Rentang: 1.0 — 5.0
 
-2
+Step: 0.5
 
-3
+Contoh: 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0
 
-4
-
-5
+Tipe: NUMERIC(2,1) — presisi 2 digit total, 1 desimal.
 
 ---
 

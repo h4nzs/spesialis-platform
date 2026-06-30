@@ -71,6 +71,33 @@ Negatif
 
 ---
 
+## Schema Separation Strategy
+
+Directus dan Hono berbagi satu PostgreSQL, namun dengan pemisahan schema yang ketat:
+
+### `directus` schema (milik Directus)
+
+- `directus_*` tables — Directus internal
+- `cms.*` tables — content collections (articles, faq, services metadata)
+- Dikelola oleh Directus via UI
+- Hono hanya akses **read-only** untuk SSG
+
+### `public` schema (milik Hono)
+
+- `public.*` tables — business entities (users, orders, payments, assignments, dll)
+- Dikelola oleh Hono via migration (Drizzle ORM)
+- Directus tidak boleh menulis ke tabel ini
+- Directus dapat melakukan read via permission mapping jika diperlukan
+
+### Aturan ketat:
+
+- Hono tidak migrasi tabel Directus (`directus_*` / `cms.*`)
+- Directus tidak migrasi tabel bisnis (`public.*`)
+- Tidak ada dual-write ke tabel yang sama
+- Foreign key dari Directus ke tabel bisnis harus via view, bukan direct table reference
+
+---
+
 ## Alternatives
 
 - Strapi

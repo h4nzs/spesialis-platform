@@ -50,6 +50,24 @@ Assign Partner.
 
 ---
 
+POST /:id/accept
+
+Partner menerima assignment.
+
+Otomatis mengubah status order menjadi Partner Accepted.
+
+---
+
+POST /:id/reject
+
+Partner menolak assignment.
+
+Body: { "reason": "string (wajib)" }
+
+Status order kembali ke Waiting Assignment.
+
+---
+
 POST /:id/start
 
 Start Job.

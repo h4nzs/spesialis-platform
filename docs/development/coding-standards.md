@@ -39,11 +39,13 @@ Frontend
 
 Backend
 
-- Directus
+- Hono (API Layer — Business Logic)
+- Directus (CMS Layer — Content & Admin)
 
 Database
 
 - PostgreSQL 18
+- Drizzle ORM (type-safe query builder & migration)
 
 Infrastructure
 

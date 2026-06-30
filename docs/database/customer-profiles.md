@@ -26,31 +26,33 @@ user_id
 
 ↓
 
-users.id
+users.id (nullable)
 
 ---
 
 # Columns
 
-id
+id UUID
 
-user_id
+user_id UUID (nullable — null untuk Guest booking)
 
-full_name
+full_name VARCHAR(255)
 
-avatar
+avatar TEXT
 
-birth_date
+birth_date DATE
 
-gender
+gender VARCHAR(20)
 
-default_address_id
+default_address_id UUID
 
-created_at
+guest_phone VARCHAR(30) (nullable — untuk Guest booking tanpa akun)
 
-updated_at
+created_at TIMESTAMP
 
-deleted_at
+updated_at TIMESTAMP
+
+deleted_at TIMESTAMP
 
 ---
 
@@ -100,7 +102,13 @@ complaints
 
 Satu User hanya memiliki satu Customer Profile.
 
-Guest Booking akan dibuatkan Customer Profile setelah registrasi.
+Guest Booking membuat Customer Profile langsung saat booking (user_id = null).
+
+Guest Phone digunakan untuk tracking Guest Booking.
+
+Saat Guest register, user_id diisi dan guest_phone dikosongkan.
+
+Customer Profile tanpa user_id dianggap Guest.
 
 ---
 

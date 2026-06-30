@@ -167,11 +167,22 @@ Directus Admin Panel → Directus langsung — untuk manajemen konten
 
 # 7. Database
 
-Single PostgreSQL Database.
+Single PostgreSQL Database dengan pemisahan schema:
 
-Seluruh Collection Directus berada pada Database yang sama.
+## 7.1 Schema Boundary
 
-Semua relasi menggunakan Foreign Key.
+| Schema     | Owner                  | Isi                                                          | Akses Directus           | Akses Hono |
+| ---------- | ---------------------- | ------------------------------------------------------------ | ------------------------ | ---------- |
+| `public`   | Hono (migration)       | Business entities: users, orders, payments, assignments, dll | Read-only via permission | Read/Write |
+| `directus` | Directus (auto)        | Directus internal tables                                     | Read/Write (managed)     | None       |
+| `cms`      | Directus (auto/manual) | Content: articles, faq, services metadata, media             | Read/Write (managed)     | Read-only  |
+
+## 7.2 Aturan Schema
+
+- **Hono** mengelola `public` schema via Drizzle ORM migration.
+- **Directus** mengelola `directus` dan `cms` schema via UI.
+- Tidak ada dual-write ke tabel yang sama.
+- Foreign key tidak boleh lintas schema jika menghubungkan tabel bisnis ke tabel Directus. Gunakan logical reference (UUID stored as VARCHAR) bila diperlukan.
 
 ---
 
