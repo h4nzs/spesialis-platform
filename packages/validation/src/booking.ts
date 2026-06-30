@@ -5,6 +5,8 @@ const orderItemSchema = z.object({
   quantity: z.coerce.number().int().min(1),
 });
 
+const mediaIdsSchema = z.array(z.string().uuid()).max(10).optional();
+
 export const createGuestBookingSchema = z.object({
   fullName: z.string().min(1).max(255),
   phone: z
@@ -29,6 +31,7 @@ export const createGuestBookingSchema = z.object({
   bookingTime: z.string().regex(/^\d{2}:\d{2}$/),
   notes: z.string().max(1000).optional(),
   items: z.array(orderItemSchema).min(1),
+  mediaIds: mediaIdsSchema,
 });
 
 export const createCustomerBookingSchema = z.object({
@@ -37,6 +40,7 @@ export const createCustomerBookingSchema = z.object({
   bookingTime: z.string().regex(/^\d{2}:\d{2}$/),
   notes: z.string().max(1000).optional(),
   items: z.array(orderItemSchema).min(1),
+  mediaIds: mediaIdsSchema,
 });
 
 export const confirmBookingSchema = z.object({

@@ -1,5 +1,23 @@
 {
   "name": "@specialist/shared",
+  "version": "1.0.0",
   "private": true,
-  "type": "module"
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./constants": "./src/constants.ts",
+    "./api-client": "./src/api-client.ts",
+    "./errors": "./src/errors.ts",
+    "./helpers": "./src/helpers/index.ts",
+    "./utils/permission": "./src/utils/permission.ts",
+    "./utils/booking": "./src/utils/booking.ts",
+    "./utils/logger": "./src/utils/logger.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@specialist/types": "workspace:*",
+    "typescript": "^6.0.3"
+  }
 }

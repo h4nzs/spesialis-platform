@@ -7,6 +7,8 @@ export {
   forgotPasswordSchema,
   resetPasswordSchema,
   updateProfileSchema,
+  changePasswordSchema,
+  deleteAccountSchema,
 } from './user.ts';
 export type {
   RegisterInput,
@@ -14,6 +16,8 @@ export type {
   ForgotPasswordInput,
   ResetPasswordInput,
   UpdateProfileInput,
+  ChangePasswordInput,
+  DeleteAccountInput,
 } from './user.ts';
 
 export { createCustomerSchema, updateCustomerSchema } from './customer.ts';

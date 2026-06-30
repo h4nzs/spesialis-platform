@@ -279,10 +279,16 @@ importers:
       hono:
         specifier: ^4.12.27
         version: 4.12.27
+      nodemailer:
+        specifier: ^7.0.2
+        version: 7.0.13
     devDependencies:
       '@types/node':
         specifier: ^26.0.1
         version: 26.0.1
+      '@types/nodemailer':
+        specifier: ^7.0.5
+        version: 7.0.12
       tsx:
         specifier: ^4.22.4
         version: 4.22.4
@@ -292,9 +298,24 @@ importers:
 
   apps/web:
     dependencies:
+      '@specialist/shared':
+        specifier: workspace:*
+        version: link:../../packages/shared
+      '@specialist/types':
+        specifier: workspace:*
+        version: link:../../packages/types
+      '@specialist/ui':
+        specifier: workspace:*
+        version: link:../../packages/ui
+      '@specialist/validation':
+        specifier: workspace:*
+        version: link:../../packages/validation
       astro:
         specifier: ^7.0.3
         version: 7.0.3(@emnapi/core@1.11.1)(@emnapi/runtime@1.11.1)(@types/node@26.0.1)(jiti@2.7.0)(tsx@4.22.4)(yaml@2.9.0)
+      zod:
+        specifier: ^4.4.3
+        version: 4.4.3
     devDependencies:
       '@astrojs/check':
         specifier: ^0.9.9
@@ -349,7 +370,14 @@ importers:
         specifier: ^6.0.3
         version: 6.0.3
 
-  packages/shared: {}
+  packages/shared:
+    devDependencies:
+      '@specialist/types':
+        specifier: workspace:*
+        version: link:../types
+      typescript:
+        specifier: ^6.0.3
+        version: 6.0.3
 
   packages/types:
     devDependencies:
@@ -1756,6 +1784,9 @@ packages:
 
   '@types/node@26.0.1':
     resolution: {integrity: sha512-fc3KiUoBt6kie0N9bIW3E47vZsuaMf0PM2AaUpLCLT0s/LvX1nxAim6Fc049cNxODPpGm6qRAuUOB86SkRuPQw==}
+
+  '@types/nodemailer@7.0.12':
+    resolution: {integrity: sha512-80vKwiIsVSyFA1rRovH59jNPLBOuc6dRZIHEu40gXTkBkZnQv8vog1xSGEb9j5q/tdMAs5ivvDR2pLTU0hGHXA==}
 
   '@types/react-dom@19.2.3':
     resolution: {integrity: sha512-jp2L/eY6fn+KgVVQAOqYItbF0VY/YApe5Mz2F0aykSO8gx31bYCZyvSeYxCHKvzHG5eZjc+zyaS5BrBWya2+kQ==}
@@ -3189,6 +3220,10 @@ packages:
   node-releases@2.0.50:
     resolution: {integrity: sha512-J6l92tKHX6w8Jy5nO1Vuc01NoIiRGi/d6qBKVxh+IQ8Cr3b6HbVNfKiF8ZpFKufTwpwxMmce2W3iQZ861ZRyTg==}
     engines: {node: '>=18'}
+
+  nodemailer@7.0.13:
+    resolution: {integrity: sha512-PNDFSJdP+KFgdsG3ZzMXCgquO7I6McjY2vlqILjtJd0hy8wEvtugS9xKRF2NWlPNGxvLCXlTNIae4serI7dinw==}
+    engines: {node: '>=6.0.0'}
 
   normalize-path@3.0.0:
     resolution: {integrity: sha512-6eZs5Ls3WtCisHWp9S2GUy8dqkpGi4BVSz3GaqiE6ezub0512ESztXUwUB6C6IKbQkY2Pnb/mD4WYojCRwcwLA==}
@@ -5194,6 +5229,10 @@ snapshots:
     dependencies:
       undici-types: 8.3.0
 
+  '@types/nodemailer@7.0.12':
+    dependencies:
+      '@types/node': 26.0.1
+
   '@types/react-dom@19.2.3(@types/react@19.2.17)':
     dependencies:
       '@types/react': 19.2.17
@@ -6824,6 +6863,8 @@ snapshots:
   node-mock-http@1.0.4: {}
 
   node-releases@2.0.50: {}
+
+  nodemailer@7.0.13: {}
 
   normalize-path@3.0.0: {}
 

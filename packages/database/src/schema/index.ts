@@ -14,6 +14,7 @@ export { complaints } from './complaints.ts';
 export { notifications } from './notifications.ts';
 export { auditLogs } from './audit-logs.ts';
 export { media } from './media.ts';
+export { orderMedia } from './order-media.ts';
 export { seoMetadata } from './seo-metadata.ts';
 export { systemSettings } from './system-settings.ts';
 export { orderStatusHistory } from './order-status-history.ts';
@@ -43,4 +44,6 @@ export {
   auditLogsRelations,
   partnerSkillsRelations,
   partnerDocumentsRelations,
+  mediaRelations,
+  orderMediaRelations,
 } from './relations.ts';

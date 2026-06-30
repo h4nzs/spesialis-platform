@@ -13,6 +13,7 @@ import { complaintsRouter } from './complaints.ts';
 import { companiesRouter } from './companies.ts';
 import { notificationsRouter } from './notifications.ts';
 import { dashboardRouter } from './admin/dashboard.ts';
+import { mediaRouter } from './media.ts';
 
 const router = new Hono();
 
@@ -30,5 +31,6 @@ router.route('/complaints', complaintsRouter);
 router.route('/companies', companiesRouter);
 router.route('/notifications', notificationsRouter);
 router.route('/admin/dashboard', dashboardRouter);
+router.route('/media', mediaRouter);
 
 export { router as apiRouter };

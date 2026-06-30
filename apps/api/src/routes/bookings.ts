@@ -1,5 +1,5 @@
 import { Hono } from 'hono';
-import { eq, and, or, desc, isNull, sql } from 'drizzle-orm';
+import { eq, and, or, desc, isNull, inArray, sql } from 'drizzle-orm';
 import type { OrderStatus } from '@specialist/types';
 import {
   db,
@@ -12,6 +12,8 @@ import {
   services,
   partnerProfiles,
   users,
+  media,
+  orderMedia,
 } from '../lib/db.ts';
 import { authMiddleware, requireRole } from '../middleware/auth.ts';
 import {
@@ -93,6 +95,27 @@ router.post('/', async (c) => {
   return await createGuestBooking(c);
 });
 
+async function attachMediaToOrder(orderId: string, mediaIds: string[], uploadedBy?: string) {
+  if (!mediaIds?.length) return;
+
+  const existing = await db
+    .select({ id: media.id })
+    .from(media)
+    .where(
+      uploadedBy
+        ? and(inArray(media.id, mediaIds), eq(media.uploadedBy, uploadedBy))
+        : inArray(media.id, mediaIds),
+    );
+
+  const found = new Set(existing.map((m) => m.id));
+  const invalid = mediaIds.filter((id) => !found.has(id));
+  if (invalid.length > 0) {
+    throw new Error(`Media tidak ditemukan: ${invalid.join(', ')}`);
+  }
+
+  await db.insert(orderMedia).values(mediaIds.map((mediaId) => ({ orderId, mediaId })));
+}
+
 async function createGuestBooking(c: import('hono').Context) {
   const body = await c.req.json();
   const parsed = createGuestBookingSchema.safeParse(body);
@@ -114,6 +137,7 @@ async function createGuestBooking(c: import('hono').Context) {
     bookingTime,
     notes,
     items: orderItemsData,
+    mediaIds,
   } = parsed.data;
 
   try {
@@ -195,6 +219,10 @@ async function createGuestBooking(c: import('hono').Context) {
       });
     }
 
+    if (mediaIds?.length) {
+      await attachMediaToOrder(order.id, mediaIds);
+    }
+
     await recordStatusHistory(order.id, null, 'Pending Confirmation', 'system');
 
     return created(
@@ -207,8 +235,9 @@ async function createGuestBooking(c: import('hono').Context) {
       'Booking berhasil dibuat',
     );
   } catch (err) {
+    const message = err instanceof Error ? err.message : 'Gagal membuat booking';
     console.error('Guest booking failed:', err);
-    return serverError(c, 'Gagal membuat booking');
+    return error(c, 'MEDIA_VALIDATION_ERROR', message, 422);
   }
 }
 
@@ -226,7 +255,14 @@ async function createCustomerBooking(c: import('hono').Context) {
     );
   }
 
-  const { addressId, bookingDate, bookingTime, notes, items: orderItemsData } = parsed.data;
+  const {
+    addressId,
+    bookingDate,
+    bookingTime,
+    notes,
+    items: orderItemsData,
+    mediaIds,
+  } = parsed.data;
 
   const [profile] = await db
     .select({ id: customerProfiles.id })
@@ -295,12 +331,22 @@ async function createCustomerBooking(c: import('hono').Context) {
       });
     }
 
+    if (mediaIds?.length) {
+      const [user] = await db
+        .select({ id: users.id })
+        .from(users)
+        .where(eq(users.id, userId))
+        .limit(1);
+      await attachMediaToOrder(order.id, mediaIds, user?.id);
+    }
+
     await recordStatusHistory(order.id, null, 'Pending Confirmation', userId);
 
     return created(c, { bookingNumber, id: order.id }, 'Booking berhasil dibuat');
   } catch (err) {
+    const message = err instanceof Error ? err.message : 'Gagal membuat booking';
     console.error('Customer booking failed:', err);
-    return serverError(c, 'Gagal membuat booking');
+    return error(c, 'MEDIA_VALIDATION_ERROR', message, 422);
   }
 }
 
@@ -423,7 +469,20 @@ router.get('/:id', authMiddleware, async (c) => {
     .where(eq(orderStatusHistory.orderId, orderId))
     .orderBy(orderStatusHistory.createdAt);
 
-  return success(c, { ...order, items, timeline });
+  const attachedMedia = await db
+    .select({
+      id: media.id,
+      filename: media.filename,
+      mimeType: media.mimeType,
+      extension: media.extension,
+      size: media.size,
+      url: sql`'/api/v1/media/' || ${media.id} || '/file'`,
+    })
+    .from(orderMedia)
+    .innerJoin(media, eq(media.id, orderMedia.mediaId))
+    .where(eq(orderMedia.orderId, orderId));
+
+  return success(c, { ...order, items, media: attachedMedia, timeline });
 });
 
 router.post('/:id/confirm', authMiddleware, requireRole('admin', 'super_admin'), async (c) => {

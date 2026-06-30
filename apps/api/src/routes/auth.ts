@@ -1,5 +1,5 @@
 import { Hono } from 'hono';
-import { eq, and, or } from 'drizzle-orm';
+import { eq, and, or, isNull } from 'drizzle-orm';
 import {
   hashPassword,
   verifyPassword,
@@ -9,13 +9,26 @@ import {
 } from '../lib/auth.ts';
 import { db, users, customerProfiles, refreshTokens, passwordResets } from '../lib/db.ts';
 import { authMiddleware } from '../middleware/auth.ts';
+import { sendPasswordResetEmail } from '../lib/email.ts';
 import {
   registerSchema,
   loginSchema,
   forgotPasswordSchema,
   resetPasswordSchema,
+  updateProfileSchema,
+  changePasswordSchema,
+  deleteAccountSchema,
 } from '@specialist/validation';
-import { success, created, error, unauthorized, conflict, serverError } from '../lib/response.ts';
+import {
+  success,
+  created,
+  error,
+  notFound,
+  unauthorized,
+  conflict,
+  serverError,
+  forbidden,
+} from '../lib/response.ts';
 
 const router = new Hono();
 
@@ -196,7 +209,7 @@ router.post('/forgot-password', async (c) => {
   }
 
   const [user] = await db
-    .select({ id: users.id })
+    .select({ id: users.id, email: users.email })
     .from(users)
     .where(eq(users.email, parsed.data.email))
     .limit(1);
@@ -208,7 +221,11 @@ router.post('/forgot-password', async (c) => {
       tokenHash: resetToken,
       expiresAt: getRefreshTokenExpiry(),
     });
-    // TODO: Send email with reset link
+
+    const displayName = user.email.split('@')[0] ?? 'Pengguna';
+    sendPasswordResetEmail(user.email, displayName, resetToken).catch((err) => {
+      console.error('Gagal mengirim email reset password:', err);
+    });
   }
 
   return success(c, null, 'Jika email terdaftar, link reset password akan dikirim');
@@ -277,6 +294,150 @@ router.get('/me', authMiddleware, async (c) => {
   }
 
   return success(c, { user });
+});
+
+router.patch('/profile', authMiddleware, async (c) => {
+  const userId = c.get('userId');
+  const body = await c.req.json();
+  const parsed = updateProfileSchema.safeParse(body);
+
+  if (!parsed.success) {
+    return error(
+      c,
+      'VALIDATION_ERROR',
+      'Validation failed',
+      422,
+      parsed.error.issues.map((i) => ({
+        field: i.path.join('.'),
+        message: i.message,
+      })),
+    );
+  }
+
+  const [user] = await db
+    .select({ id: users.id, email: users.email })
+    .from(users)
+    .where(eq(users.id, userId))
+    .limit(1);
+
+  if (!user) return notFound(c, 'User tidak ditemukan');
+
+  const updateData: Record<string, string> = {};
+
+  if (parsed.data.email !== undefined) {
+    if (parsed.data.email !== user.email) {
+      const [existing] = await db
+        .select({ id: users.id })
+        .from(users)
+        .where(and(eq(users.email, parsed.data.email), isNull(users.deletedAt)))
+        .limit(1);
+      if (existing) return conflict(c, 'Email sudah digunakan');
+    }
+    updateData.email = parsed.data.email;
+  }
+
+  if (parsed.data.phone !== undefined) {
+    updateData.phone = parsed.data.phone;
+  }
+
+  if (Object.keys(updateData).length === 0) {
+    return success(c, null, 'Tidak ada data yang diubah');
+  }
+
+  const [updated] = await db.update(users).set(updateData).where(eq(users.id, userId)).returning({
+    id: users.id,
+    email: users.email,
+    phone: users.phone,
+    role: users.role,
+    status: users.status,
+  });
+
+  return success(c, { user: updated }, 'Profil berhasil diperbarui');
+});
+
+router.patch('/change-password', authMiddleware, async (c) => {
+  const userId = c.get('userId');
+  const body = await c.req.json();
+  const parsed = changePasswordSchema.safeParse(body);
+
+  if (!parsed.success) {
+    return error(
+      c,
+      'VALIDATION_ERROR',
+      'Validation failed',
+      422,
+      parsed.error.issues.map((i) => ({
+        field: i.path.join('.'),
+        message: i.message,
+      })),
+    );
+  }
+
+  const [user] = await db
+    .select({ id: users.id, passwordHash: users.passwordHash })
+    .from(users)
+    .where(eq(users.id, userId))
+    .limit(1);
+
+  if (!user) return notFound(c, 'User tidak ditemukan');
+
+  const valid = await verifyPassword(user.passwordHash, parsed.data.currentPassword);
+  if (!valid) return forbidden(c, 'Password saat ini salah');
+
+  const passwordHash = await hashPassword(parsed.data.newPassword);
+
+  await db.transaction(async (tx) => {
+    await tx.update(users).set({ passwordHash }).where(eq(users.id, userId));
+    await tx
+      .update(refreshTokens)
+      .set({ revoked: true })
+      .where(and(eq(refreshTokens.userId, userId), eq(refreshTokens.revoked, false)));
+  });
+
+  return success(c, null, 'Password berhasil diubah');
+});
+
+router.delete('/account', authMiddleware, async (c) => {
+  const userId = c.get('userId');
+  const body = await c.req.json();
+  const parsed = deleteAccountSchema.safeParse(body);
+
+  if (!parsed.success) {
+    return error(
+      c,
+      'VALIDATION_ERROR',
+      'Validation failed',
+      422,
+      parsed.error.issues.map((i) => ({
+        field: i.path.join('.'),
+        message: i.message,
+      })),
+    );
+  }
+
+  const [user] = await db
+    .select({ id: users.id, passwordHash: users.passwordHash })
+    .from(users)
+    .where(eq(users.id, userId))
+    .limit(1);
+
+  if (!user) return notFound(c, 'User tidak ditemukan');
+
+  const valid = await verifyPassword(user.passwordHash, parsed.data.password);
+  if (!valid) return forbidden(c, 'Password salah');
+
+  await db.transaction(async (tx) => {
+    await tx
+      .update(users)
+      .set({ status: 'deleted', deletedAt: new Date() })
+      .where(eq(users.id, userId));
+    await tx
+      .update(refreshTokens)
+      .set({ revoked: true })
+      .where(and(eq(refreshTokens.userId, userId), eq(refreshTokens.revoked, false)));
+  });
+
+  return success(c, null, 'Akun berhasil dihapus');
 });
 
 export { router as authRouter };

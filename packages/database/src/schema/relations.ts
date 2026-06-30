@@ -21,6 +21,8 @@ import { refreshTokens } from './refresh-tokens.ts';
 import { passwordResets } from './password-resets.ts';
 import { partnerSkills } from './partner-skills.ts';
 import { partnerDocuments } from './partner-documents.ts';
+import { orderMedia } from './order-media.ts';
+import { media } from './media.ts';
 
 export const usersRelations = relations(users, ({ one, many }) => ({
   customerProfile: one(customerProfiles),
@@ -88,6 +90,7 @@ export const ordersRelations = relations(orders, ({ one, many }) => ({
   partner: one(partnerProfiles, { fields: [orders.partnerId], references: [partnerProfiles.id] }),
   address: one(addresses, { fields: [orders.addressId], references: [addresses.id] }),
   orderItems: many(orderItems),
+  media: many(orderMedia),
   assignments: many(assignments),
   payments: many(payments),
   review: one(reviews),
@@ -158,4 +161,13 @@ export const refreshTokensRelations = relations(refreshTokens, ({ one }) => ({
 
 export const passwordResetsRelations = relations(passwordResets, ({ one }) => ({
   user: one(users, { fields: [passwordResets.userId], references: [users.id] }),
+}));
+
+export const mediaRelations = relations(media, ({ one }) => ({
+  uploader: one(users, { fields: [media.uploadedBy], references: [users.id] }),
+}));
+
+export const orderMediaRelations = relations(orderMedia, ({ one }) => ({
+  order: one(orders, { fields: [orderMedia.orderId], references: [orders.id] }),
+  media: one(media, { fields: [orderMedia.mediaId], references: [media.id] }),
 }));
