@@ -1,0 +1,137 @@
+version: "3.9"
+
+services:
+
+  postgres:
+    image: postgres:18
+    container_name: specialist-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: specialist
+      POSTGRES_USER: specialist
+      POSTGRES_PASSWORD: specialist
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - specialist
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U specialist"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:8-alpine
+    container_name: specialist-redis
+    restart: unless-stopped
+    profiles:
+      - cache
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - specialist
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  api:
+    container_name: specialist-api
+    restart: unless-stopped
+    build:
+      context: .
+      dockerfile: infrastructure/docker/api/Dockerfile
+    volumes:
+      - .:/app
+    ports:
+      - "3000:3000"
+    environment:
+      APP_ENV: development
+      DATABASE_URL: postgres://specialist:specialist@postgres:5432/specialist
+      JWT_SECRET: change-me
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - specialist
+
+  web:
+    container_name: specialist-web
+    restart: unless-stopped
+    build:
+      context: .
+      dockerfile: infrastructure/docker/web/Dockerfile
+    volumes:
+      - .:/app
+    ports:
+      - "4321:4321"
+    environment:
+      APP_ENV: development
+      API_URL: http://api:3000
+      CMS_URL: http://cms:8055
+    depends_on:
+      api:
+        condition: service_started
+    networks:
+      - specialist
+
+  cms:
+    image: directus/directus:11.6.0
+    container_name: specialist-cms
+    restart: unless-stopped
+    ports:
+      - "8055:8055"
+    environment:
+      SECRET: change-me
+      ADMIN_EMAIL: admin@example.com
+      ADMIN_PASSWORD: admin123
+      DB_CLIENT: pg
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_DATABASE: specialist
+      DB_USER: specialist
+      DB_PASSWORD: specialist
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - specialist
+
+  nginx:
+    image: nginx:alpine
+    container_name: specialist-nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    volumes:
+      - ./infrastructure/docker/nginx/default.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - web
+      - api
+    networks:
+      - specialist
+
+  mailpit:
+    image: axllent/mailpit:latest
+    container_name: specialist-mailpit
+    restart: unless-stopped
+    profiles:
+      - mail
+    ports:
+      - "1025:1025"
+      - "8025:8025"
+    networks:
+      - specialist
+
+volumes:
+  postgres_data:
+  redis_data:
+
+networks:
+  specialist:
+    driver: bridge

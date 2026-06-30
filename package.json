@@ -1,0 +1,45 @@
+{
+  "name": "spesialis-platform",
+  "private": true,
+  "version": "0.1.0",
+  "description": "",
+  "main": "index.js",
+  "type": "module",
+  "packageManager": "pnpm@11.9.0",
+  "scripts": {
+    "test": "turbo run test",
+    "dev": "turbo run dev",
+    "build": "turbo run build",
+    "lint": "turbo run lint",
+    "typecheck": "turbo run typecheck",
+    "format": "prettier --write .",
+    "prepare": "husky"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@commitlint/cli": "^21.1.0",
+    "@commitlint/config-conventional": "^21.1.0",
+    "@eslint/js": "^10.0.1",
+    "@types/node": "^26.0.1",
+    "dotenv": "^17.4.2",
+    "dotenv-cli": "^11.0.0",
+    "eslint": "^10.6.0",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-import": "^2.32.0",
+    "husky": "^9.1.7",
+    "lint-staged": "^17.0.8",
+    "prettier": "^3.9.1",
+    "tsx": "^4.22.4",
+    "turbo": "^2.10.0",
+    "typescript": "^6.0.3",
+    "typescript-eslint": "^8.62.0",
+    "zod": "^4.4.3"
+  },
+  "lint-staged": {
+    "*.{js,ts,tsx,json,md}": [
+      "prettier --write"
+    ]
+  }
+}
