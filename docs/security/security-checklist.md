@@ -5,6 +5,7 @@
 - JWT
 - Refresh Token
 - Password Hash Argon2id
+- Password Policy: min 8 karakter, 1 huruf besar, 1 huruf kecil, 1 angka
 - HTTPS
 
 ---

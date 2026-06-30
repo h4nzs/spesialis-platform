@@ -248,7 +248,9 @@ Inquiry → Negosiasi → Verifikasi → Akun dibuat → Order.
 
 Pada MVP pembayaran dilakukan manual.
 
-Media komunikasi utama adalah WhatsApp.
+Media komunikasi utama adalah WhatsApp untuk operasional (negosiasi, konfirmasi booking, payment).
+
+> **Catatan:** Autentikasi (verifikasi email, reset password) tetap menggunakan Email. WhatsApp dan Email memiliki domain terpisah — bukan pengganti satu sama lain.
 
 ---
 

@@ -78,27 +78,27 @@ users.id
 
 # Columns
 
-| Column          | Type          | Nullable | Description      |
-| --------------- | ------------- | -------- | ---------------- |
-| id              | UUID          | No       | Primary Key      |
-| booking_number  | VARCHAR(30)   | No       | Booking Number   |
-| customer_id     | UUID          | No       | Customer         |
-| company_id      | UUID          | Yes      | Corporate        |
-| address_id      | UUID          | No       | Service Address  |
-| partner_id      | UUID          | Yes      | Assigned Partner |
-| status          | VARCHAR(40)   | No       | Current Status   |
-| booking_date    | DATE          | No       | Requested Date   |
-| booking_time    | VARCHAR(20)   | No       | Requested Time   |
-| base_price      | NUMERIC(12,2) | No       | Estimation       |
-| final_price     | NUMERIC(12,2) | Yes      | Final Price      |
-| discount_amount | NUMERIC(12,2) | No       | Discount         |
-| notes           | TEXT          | Yes      | Customer Note    |
-| internal_notes  | TEXT          | Yes      | Admin Only       |
-| completed_at    | TIMESTAMP     | Yes      | Finish Time      |
-| closed_at       | TIMESTAMP     | Yes      | Closed Time      |
-| created_at      | TIMESTAMP     | No       | Created          |
-| updated_at      | TIMESTAMP     | No       | Updated          |
-| deleted_at      | TIMESTAMP     | Yes      | Soft Delete      |
+| Column          | Type          | Nullable | Description                                                      |
+| --------------- | ------------- | -------- | ---------------------------------------------------------------- |
+| id              | UUID          | No       | Primary Key                                                      |
+| booking_number  | VARCHAR(30)   | No       | Booking Number — Format: SP-YYYY-NNNNNN (contoh: SP-2026-000001) |
+| customer_id     | UUID          | No       | Customer                                                         |
+| company_id      | UUID          | Yes      | Corporate                                                        |
+| address_id      | UUID          | No       | Service Address                                                  |
+| partner_id      | UUID          | Yes      | Assigned Partner                                                 |
+| status          | VARCHAR(40)   | No       | Current Status                                                   |
+| booking_date    | DATE          | No       | Requested Date                                                   |
+| booking_time    | VARCHAR(20)   | No       | Requested Time                                                   |
+| base_price      | NUMERIC(12,2) | No       | Estimation                                                       |
+| final_price     | NUMERIC(12,2) | Yes      | Final Price                                                      |
+| discount_amount | NUMERIC(12,2) | No       | Discount                                                         |
+| notes           | TEXT          | Yes      | Customer Note                                                    |
+| internal_notes  | TEXT          | Yes      | Admin Only                                                       |
+| completed_at    | TIMESTAMP     | Yes      | Finish Time                                                      |
+| closed_at       | TIMESTAMP     | Yes      | Closed Time                                                      |
+| created_at      | TIMESTAMP     | No       | Created                                                          |
+| updated_at      | TIMESTAMP     | No       | Updated                                                          |
+| deleted_at      | TIMESTAMP     | Yes      | Soft Delete                                                      |
 
 ---
 
@@ -307,6 +307,8 @@ booking_time NOT NULL
 # Business Rules
 
 Booking Number bersifat unik.
+
+Format: `SP-YYYY-NNNNNN` (Prefix-Tahun-6 digit urut).
 
 Order tidak boleh dihapus permanen.
 
