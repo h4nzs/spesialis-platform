@@ -22,9 +22,9 @@ Bahasa sumber: **Indonesia** — docs/, .ai/, dan konteks bisnis menggunakan Bah
 | ------------------ | ---------------------------------------------------------------------------------------- |
 | `pnpm dev`         | `turbo run dev` → astro dev + tsx watch api                                              |
 | `pnpm build`       | `turbo run build` → astro build                                                          |
-| `pnpm lint`        | `turbo run lint` — **saat ini no-op** (belum ada config eslint)                          |
-| `pnpm typecheck`   | `turbo run typecheck` — **saat ini no-op** (belum ada script di sub-package)             |
-| `pnpm test`        | `turbo run test` — **placeholder only** (belum ada test framework)                       |
+| `pnpm lint`        | `turbo run lint` — ESLint flat config (`packages/config/eslint/`)                        |
+| `pnpm typecheck`   | `turbo run typecheck` — `tsc --noEmit` di semua sub-package                              |
+| `pnpm test`        | `turbo run test` — Vitest di `packages/{shared,validation}` dan `apps/api`               |
 | `pnpm format`      | `prettier --write .`                                                                     |
 | Web dev background | `astro dev --background` (dari `apps/web/`), kelola via `astro dev stop / status / logs` |
 | API dev            | `tsx watch src/index.ts` di `apps/api/`                                                  |
@@ -83,4 +83,4 @@ Jika dokumentasi vs code bertentangan, **dokumentasi dianggap benar**.
 
 ## Status Proyek
 
-**Early development.** Sebagian besar `packages/*/src/` dan `apps/cms/` masih kosong. CI hanya lint + typecheck (keduanya no-op saat ini). Belum ada test framework terinstall.
+**Active development.** API (`apps/api/`) dan Web (`apps/web/`) sudah memiliki implementasi penuh — ~80 endpoint, ~30 halaman dashboard, full booking lifecycle state machine. `packages/*/src/` sudah terisi (types, database 26 tabel, validation 17 skema, shared utilities, ui 13 komponen). **Kesenjangan utama:** CMS (`apps/cms/`) belum dikonfigurasi — Directus container siap tetapi collections/roles/permissions perlu setup manual. SEO (structured data, sitemap, OpenGraph) belum terpasang. Testing masih minimal — Vitest terinstall di `api`, `shared`, `validation` tapi coverage rendah.

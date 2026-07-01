@@ -161,7 +161,12 @@ router.post('/refresh', rateLimit(20, 60_000), async (c) => {
       expiresAt: refreshTokens.expiresAt,
     })
     .from(refreshTokens)
-    .where(and(eq(refreshTokens.tokenHash, hashToken(body.refreshToken)), eq(refreshTokens.revoked, false)))
+    .where(
+      and(
+        eq(refreshTokens.tokenHash, hashToken(body.refreshToken)),
+        eq(refreshTokens.revoked, false),
+      ),
+    )
     .limit(1);
 
   if (!stored || stored.expiresAt < new Date()) {
@@ -220,7 +225,7 @@ router.post('/forgot-password', rateLimit(5, 60_000), async (c) => {
     const resetToken = generateRefreshToken();
     await db.insert(passwordResets).values({
       userId: user.id,
-      tokenHash: resetToken,
+      tokenHash: hashToken(resetToken),
       expiresAt: getRefreshTokenExpiry(),
     });
 
@@ -259,7 +264,7 @@ router.post('/reset-password', async (c) => {
       expiresAt: passwordResets.expiresAt,
     })
     .from(passwordResets)
-    .where(and(eq(passwordResets.tokenHash, token), eq(passwordResets.used, false)))
+    .where(and(eq(passwordResets.tokenHash, hashToken(token)), eq(passwordResets.used, false)))
     .limit(1);
 
   if (!stored || stored.expiresAt < new Date()) {

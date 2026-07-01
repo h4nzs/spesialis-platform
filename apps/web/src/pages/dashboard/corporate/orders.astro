@@ -1,0 +1,8 @@
+---
+import DashboardLayout from '../../../layouts/DashboardLayout.astro'
+import { CorporateOrders } from '../../../components/dashboard/corporate/CorporateOrders.tsx'
+---
+
+<DashboardLayout title="Pesanan Perusahaan" role="corporate">
+  <CorporateOrders client:load />
+</DashboardLayout>

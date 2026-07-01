@@ -4,10 +4,14 @@ import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { db, media } from '../lib/db.ts';
 import { authMiddleware } from '../middleware/auth.ts';
-import { saveFile, deleteFile, isAllowedMimeType, isWithinSizeLimit } from '../lib/storage.ts';
+import {
+  saveFile,
+  deleteFile,
+  isAllowedMimeType,
+  isWithinSizeLimit,
+  UPLOAD_DIR,
+} from '../lib/storage.ts';
 import { success, created, error, notFound, forbidden, serverError } from '../lib/response.ts';
-
-const UPLOAD_DIR = join(import.meta.dirname, '..', 'uploads');
 
 const router = new Hono();
 

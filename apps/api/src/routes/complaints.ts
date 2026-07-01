@@ -3,14 +3,9 @@ import { eq, desc } from 'drizzle-orm';
 import { db, complaints, orders, customerProfiles } from '../lib/db.ts';
 import { authMiddleware, requireRole } from '../middleware/auth.ts';
 import { createComplaintSchema, resolveComplaintSchema } from '@specialist/validation';
-import {
-  success,
-  created,
-  error,
-  notFound,
-  forbidden,
-  conflict,
-} from '../lib/response.ts';
+import { success, created, error, notFound, forbidden, conflict } from '../lib/response.ts';
+import { createAuditLog } from '../lib/audit.ts';
+import { createNotification } from '../lib/notification.ts';
 
 const router = new Hono();
 
@@ -121,7 +116,7 @@ router.patch('/:id/resolve', authMiddleware, requireRole('admin', 'super_admin')
   }
 
   const [complaint] = await db
-    .select({ id: complaints.id, status: complaints.status })
+    .select({ id: complaints.id, status: complaints.status, customerId: complaints.customerId })
     .from(complaints)
     .where(eq(complaints.id, complaintId))
     .limit(1);
@@ -141,6 +136,29 @@ router.patch('/:id/resolve', authMiddleware, requireRole('admin', 'super_admin')
     })
     .where(eq(complaints.id, complaintId))
     .returning();
+
+  await createAuditLog(c, {
+    userId,
+    action: `complaint.${parsed.data.status === 'Resolved' ? 'resolve' : 'close'}`,
+    entity: 'complaint',
+    entityId: complaintId,
+    newValue: { status: parsed.data.status, resolution: parsed.data.resolution },
+    oldValue: { status: complaint.status },
+  });
+
+  const [cp] = await db
+    .select({ userId: customerProfiles.userId })
+    .from(customerProfiles)
+    .where(eq(customerProfiles.id, complaint.customerId))
+    .limit(1);
+  if (cp?.userId) {
+    await createNotification({
+      userId: cp.userId,
+      type: 'complaint.resolved',
+      title: 'Komplain Selesai',
+      message: `Komplain Anda telah ${parsed.data.status === 'Resolved' ? 'diselesaikan' : 'ditutup'}: ${parsed.data.resolution ?? ''}`,
+    });
+  }
 
   return success(c, updated, 'Komplain berhasil diselesaikan');
 });

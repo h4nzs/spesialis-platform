@@ -4,7 +4,7 @@ import { formatCurrency } from '@specialist/shared'
 
 const { slug } = Astro.params
 
-let service: {
+interface ServiceData {
   id: string
   name: string
   slug: string
@@ -15,12 +15,13 @@ let service: {
   warrantyDays: number | null
   thumbnail: string | null
   isFeatured: boolean | null
-} | null = null
+}
 
+let service: ServiceData | null = null
 let error: string | null = null
 
 try {
-  const apiUrl = import.meta.env.API_URL ?? 'http://localhost:3000'
+  const apiUrl = import.meta.env.PUBLIC_API_URL ?? 'http://localhost:3000'
   const res = await fetch(`${apiUrl}/api/v1/services/${slug}`)
   if (!res.ok) throw new Error('Layanan tidak ditemukan')
   const json = await res.json()
@@ -30,30 +31,27 @@ try {
 }
 ---
 
-<BaseLayout>
-  {
-    error ? (
-      <div class="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
-        <div class="mx-auto max-w-lg text-center">
-          <h1 class="text-2xl font-bold text-text">Layanan Tidak Ditemukan</h1>
-          <p class="mt-2 text-text-muted">{error}</p>
-          <a
-            href="/services"
-            class="mt-6 inline-flex items-center gap-2 rounded-md bg-primary px-6 py-3 text-base font-medium text-white transition-colors hover:bg-primary-hover"
-          >
-            Lihat Semua Layanan
-          </a>
-        </div>
-      </div>
-    ) : !service ? (
-      <div class="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
-        <div class="mx-auto max-w-lg text-center">
-          <div class="h-8 w-48 mx-auto rounded bg-border animate-pulse" />
-          <div class="mt-4 h-4 w-full rounded bg-border animate-pulse" />
-          <div class="mt-8 h-10 w-40 mx-auto rounded bg-border animate-pulse" />
-        </div>
-      </div>
-    ) : (
+{
+  service ? (
+    <BaseLayout
+      title={`${service.name} - Spesialis`}
+      description={service.shortDescription ?? `Pesan layanan ${service.name} dari Spesialis. Harga transparan, teknisi berpengalaman.`}
+      canonicalUrl={`/services/${service.slug}`}
+      ogImage={service.thumbnail ?? undefined}
+      jsonLd={{
+        '@context': 'https://schema.org',
+        '@type': 'Service',
+        name: service.name,
+        description: service.shortDescription,
+        provider: { '@type': 'Organization', name: 'Spesialis' },
+        offers: {
+          '@type': 'Offer',
+          price: service.basePrice,
+          priceCurrency: 'IDR',
+          availability: 'https://schema.org/InStock',
+        },
+      }}
+    >
       <div class="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
         <nav class="mb-8 text-sm text-text-muted">
           <a href="/" class="hover:text-text transition-colors">Beranda</a>
@@ -126,6 +124,34 @@ try {
           </div>
         </div>
       </div>
-    )
-  }
-</BaseLayout>
+    </BaseLayout>
+  ) : (
+    <BaseLayout
+      title={error ? 'Layanan Tidak Ditemukan - Spesialis' : 'Memuat... - Spesialis'}
+      description={error ?? 'Memuat detail layanan'}
+    >
+      <div class="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
+        <div class="mx-auto max-w-lg text-center">
+          {error ? (
+            <>
+              <h1 class="text-2xl font-bold text-text">Layanan Tidak Ditemukan</h1>
+              <p class="mt-2 text-text-muted">{error}</p>
+              <a
+                href="/services"
+                class="mt-6 inline-flex items-center gap-2 rounded-md bg-primary px-6 py-3 text-base font-medium text-white transition-colors hover:bg-primary-hover"
+              >
+                Lihat Semua Layanan
+              </a>
+            </>
+          ) : (
+            <>
+              <div class="h-8 w-48 mx-auto rounded bg-border animate-pulse" />
+              <div class="mt-4 h-4 w-full rounded bg-border animate-pulse" />
+              <div class="mt-8 h-10 w-40 mx-auto rounded bg-border animate-pulse" />
+            </>
+          )}
+        </div>
+      </div>
+    </BaseLayout>
+  )
+}

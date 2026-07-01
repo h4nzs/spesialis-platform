@@ -1,5 +1,26 @@
 ---
 import '../styles/global.css'
+
+export interface Props {
+  title?: string
+  description?: string
+  ogImage?: string
+  ogType?: 'website' | 'article'
+  canonicalUrl?: string
+  jsonLd?: Record<string, unknown>
+}
+
+const {
+  title = 'Spesialis - Layanan Profesional',
+  description = 'Platform layanan jasa profesional on-demand. Booking teknisi dan profesional terpercaya untuk kebutuhan rumah, kantor, dan bisnis Anda.',
+  ogImage = '/og-default.png',
+  ogType = 'website',
+  canonicalUrl,
+  jsonLd,
+} = Astro.props
+
+const siteUrl = 'https://spesialis.id'
+const canonical = canonicalUrl ? `${siteUrl}${canonicalUrl}` : undefined
 ---
 
 <!DOCTYPE html>
@@ -7,10 +28,28 @@ import '../styles/global.css'
   <head>
     <meta charset="utf-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <meta name="viewport" content="width=device-width" />
     <meta name="generator" content={Astro.generator} />
-    <title>Spesialis - Layanan Profesional</title>
-    <meta name="description" content="Platform layanan jasa profesional on-demand" />
+
+    <title>{title}</title>
+    <meta name="description" content={description} />
+
+    {canonical && <link rel="canonical" href={canonical} />}
+
+    <meta property="og:type" content={ogType} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:image" content={`${siteUrl}${ogImage}`} />
+    <meta property="og:locale" content="id_ID" />
+    <meta property="og:site_name" content="Spesialis" />
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={`${siteUrl}${ogImage}`} />
+
+    {jsonLd && <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} is:inline />}
   </head>
   <body class="min-h-screen bg-background text-text font-sans antialiased">
     <header class="sticky top-0 z-50 border-b border-border bg-surface/80 backdrop-blur-md">
@@ -33,8 +72,17 @@ import '../styles/global.css'
     <main>
       <slot />
     </main>
-    <footer class="border-t border-border bg-surface py-8 text-center text-sm text-text-muted">
-      <p>&copy; {new Date().getFullYear()} Spesialis. All rights reserved.</p>
+    <footer class="border-t border-border bg-surface py-8">
+      <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div class="flex flex-col items-center justify-between gap-4 sm:flex-row">
+          <div class="flex gap-6 text-sm text-text-muted">
+            <a href="/tentang-kami" class="hover:text-text transition-colors">Tentang</a>
+            <a href="/faq" class="hover:text-text transition-colors">FAQ</a>
+            <a href="/kontak" class="hover:text-text transition-colors">Kontak</a>
+          </div>
+          <p class="text-sm text-text-muted">&copy; {new Date().getFullYear()} Spesialis</p>
+        </div>
+      </div>
     </footer>
   </body>
 </html>

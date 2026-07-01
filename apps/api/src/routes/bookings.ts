@@ -1,7 +1,7 @@
 import { Hono } from 'hono';
 import type { Context } from 'hono';
 import { eq, and, desc, inArray, sql } from 'drizzle-orm';
-import type { OrderStatus } from '@specialist/types';
+import type { OrderStatus, PaginationMeta } from '@specialist/types';
 import {
   db,
   orders,
@@ -13,6 +13,7 @@ import {
   services,
   partnerProfiles,
   users,
+  companyUsers,
   media,
   orderMedia,
 } from '../lib/db.ts';
@@ -26,6 +27,7 @@ import {
 } from '@specialist/validation';
 import {
   success,
+  successPaginated,
   created,
   error,
   notFound,
@@ -33,6 +35,8 @@ import {
   conflict,
   serverError,
 } from '../lib/response.ts';
+import { createAuditLog } from '../lib/audit.ts';
+import { createNotification } from '../lib/notification.ts';
 
 const router = new Hono();
 
@@ -393,6 +397,13 @@ router.get('/', authMiddleware, async (c) => {
       .where(eq(partnerProfiles.userId, userId))
       .limit(1);
     if (profile) conditions.push(eq(orders.partnerId, profile.id));
+  } else if (userRole === 'corporate') {
+    const [cu] = await db
+      .select({ companyId: companyUsers.companyId })
+      .from(companyUsers)
+      .where(eq(companyUsers.userId, userId))
+      .limit(1);
+    if (cu) conditions.push(eq(orders.companyId, cu.companyId));
   } else if (userRole === 'admin' || userRole === 'super_admin' || userRole === 'dispatcher') {
     // admins see all
   } else {
@@ -407,7 +418,25 @@ router.get('/', authMiddleware, async (c) => {
     .limit(limit)
     .offset((page - 1) * limit);
 
-  return success(c, items);
+  const countResult = items.length
+    ? await db
+        .select({ count: sql<number>`count(*)` })
+        .from(orders)
+        .where(conditions.length > 0 ? and(...conditions) : undefined)
+    : [{ count: 0 }];
+  const total = Number(countResult[0]?.count ?? 0);
+  const totalPages = Math.ceil(total / limit);
+
+  const pagination: PaginationMeta = {
+    page,
+    limit,
+    total,
+    totalPages,
+    hasNext: page < totalPages,
+    hasPrev: page > 1,
+  };
+
+  return successPaginated(c, items, pagination);
 });
 
 router.get('/tracking/:bookingNumber', async (c) => {
@@ -526,6 +555,15 @@ router.post('/:id/confirm', authMiddleware, requireRole('admin', 'super_admin'),
     await recordStatusHistory(orderId, order.status, 'Confirmed', userId, parsed.data.note);
   });
 
+  await createAuditLog(c, {
+    userId,
+    action: 'booking.confirm',
+    entity: 'order',
+    entityId: orderId,
+    newValue: { status: 'Confirmed', finalPrice: parsed.data.finalPrice },
+    oldValue: { status: order.status },
+  });
+
   return success(c, { id: orderId, status: 'Confirmed' }, 'Booking dikonfirmasi');
 });
 
@@ -587,6 +625,29 @@ router.post(
       );
     });
 
+    await createAuditLog(c, {
+      userId,
+      action: 'booking.assign',
+      entity: 'order',
+      entityId: orderId,
+      newValue: { status: 'Partner Assigned', partnerId: partner.id },
+      oldValue: { status: order.status },
+    });
+
+    const [partnerUser] = await db
+      .select({ id: users.id, email: users.email })
+      .from(users)
+      .where(eq(users.id, parsed.data.partnerId))
+      .limit(1);
+    if (partnerUser) {
+      await createNotification({
+        userId: partnerUser.id,
+        type: 'booking.assigned',
+        title: 'Pekerjaan Baru',
+        message: `Anda ditugaskan pada order #${orderId}`,
+      });
+    }
+
     return success(c, { id: orderId, status: 'Partner Assigned' }, 'Partner diassign');
   },
 );
@@ -621,6 +682,15 @@ router.post('/:id/accept', authMiddleware, async (c) => {
       .where(and(eq(assignments.orderId, orderId), eq(assignments.partnerId, profile.id)));
 
     await recordStatusHistory(orderId, order.status, 'Partner Accepted', userId);
+  });
+
+  await createAuditLog(c, {
+    userId,
+    action: 'booking.accept',
+    entity: 'order',
+    entityId: orderId,
+    newValue: { status: 'Partner Accepted' },
+    oldValue: { status: order.status },
   });
 
   return success(c, { id: orderId, status: 'Partner Accepted' }, 'Assignment diterima');
@@ -709,6 +779,15 @@ router.post('/:id/reject', authMiddleware, async (c) => {
     );
   });
 
+  await createAuditLog(c, {
+    userId,
+    action: 'booking.reject',
+    entity: 'order',
+    entityId: orderId,
+    newValue: { status: 'Waiting Assignment', rejectionReason: parsed.data.reason },
+    oldValue: { status: order.status },
+  });
+
   return success(c, { id: orderId, status: 'Waiting Assignment' }, 'Assignment ditolak');
 });
 
@@ -738,10 +817,19 @@ router.post('/:id/start', authMiddleware, async (c) => {
     await tx.update(orders).set({ status: 'Working' }).where(eq(orders.id, orderId));
     await tx
       .update(assignments)
-      .set({ status: 'Completed', startedAt: new Date() })
+      .set({ startedAt: new Date() })
       .where(and(eq(assignments.orderId, orderId), eq(assignments.partnerId, profile.id)));
 
     await recordStatusHistory(orderId, order.status, 'Working', userId);
+  });
+
+  await createAuditLog(c, {
+    userId,
+    action: 'booking.start',
+    entity: 'order',
+    entityId: orderId,
+    newValue: { status: 'Working' },
+    oldValue: { status: order.status },
   });
 
   return success(c, { id: orderId, status: 'Working' }, 'Pekerjaan dimulai');
@@ -759,7 +847,7 @@ router.post('/:id/complete', authMiddleware, async (c) => {
   if (!profile) return forbidden(c, 'Hanya partner yang bisa selesaikan pekerjaan');
 
   const [order] = await db
-    .select({ id: orders.id, status: orders.status })
+    .select({ id: orders.id, status: orders.status, customerId: orders.customerId })
     .from(orders)
     .where(and(eq(orders.id, orderId), eq(orders.partnerId, profile.id)))
     .limit(1);
@@ -781,6 +869,29 @@ router.post('/:id/complete', authMiddleware, async (c) => {
 
     await recordStatusHistory(orderId, order.status, 'Completed', userId);
   });
+
+  await createAuditLog(c, {
+    userId,
+    action: 'booking.complete',
+    entity: 'order',
+    entityId: orderId,
+    newValue: { status: 'Completed' },
+    oldValue: { status: order.status },
+  });
+
+  const [cp] = await db
+    .select({ userId: customerProfiles.userId })
+    .from(customerProfiles)
+    .where(eq(customerProfiles.id, order.customerId))
+    .limit(1);
+  if (cp?.userId) {
+    await createNotification({
+      userId: cp.userId,
+      type: 'booking.completed',
+      title: 'Pekerjaan Selesai',
+      message: `Pekerjaan untuk booking #${orderId} telah selesai. Silakan lakukan pembayaran.`,
+    });
+  }
 
   return success(c, { id: orderId, status: 'Completed' }, 'Pekerjaan selesai');
 });
@@ -819,6 +930,15 @@ router.post('/:id/cancel', authMiddleware, async (c) => {
   await db.transaction(async (tx) => {
     await tx.update(orders).set({ status: 'Cancelled' }).where(eq(orders.id, orderId));
     await recordStatusHistory(orderId, order.status, 'Cancelled', userId, reason);
+  });
+
+  await createAuditLog(c, {
+    userId,
+    action: 'booking.cancel',
+    entity: 'order',
+    entityId: orderId,
+    newValue: { status: 'Cancelled', reason },
+    oldValue: { status: order.status, role: userRole },
   });
 
   return success(c, { id: orderId, status: 'Cancelled' }, 'Booking dibatalkan');

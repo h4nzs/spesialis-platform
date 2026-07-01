@@ -11,7 +11,12 @@ const app = new Hono();
 
 app.use('*', prettyJSON());
 app.use('*', secureHeaders());
-app.use('*', cors({ origin: '*', credentials: true }));
+const CORS_ORIGIN = process.env.CORS_ORIGIN?.split(',').map((o) => o.trim()) ?? [
+  'http://localhost:4321',
+  'http://localhost:3000',
+  'http://localhost',
+];
+app.use('*', cors({ origin: CORS_ORIGIN, credentials: true }));
 app.use('*', logger());
 
 app.onError(errorHandler);

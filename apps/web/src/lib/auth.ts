@@ -1,5 +1,10 @@
 import { createBrowserClient, type ApiClient } from '@specialist/shared';
-import type { User } from '@specialist/types';
+
+interface StoredUser {
+  id: string;
+  email: string;
+  role: string;
+}
 
 const TOKEN_KEY = 'spesialis_access_token';
 const USER_KEY = 'spesialis_user';
@@ -13,12 +18,12 @@ export function getApiClient(): ApiClient {
   return clientInstance;
 }
 
-export function getStoredUser(): User | null {
+export function getStoredUser(): StoredUser | null {
   if (typeof localStorage === 'undefined') return null;
   const raw = localStorage.getItem(USER_KEY);
   if (!raw) return null;
   try {
-    return JSON.parse(raw) as User;
+    return JSON.parse(raw) as StoredUser;
   } catch {
     return null;
   }
@@ -33,7 +38,7 @@ export function isAuthenticated(): boolean {
   return !!getStoredToken();
 }
 
-export function saveAuth(user: User, token: string): void {
+export function saveAuth(user: StoredUser, token: string): void {
   if (typeof localStorage === 'undefined') return;
   localStorage.setItem(TOKEN_KEY, token);
   localStorage.setItem(USER_KEY, JSON.stringify(user));
@@ -46,8 +51,21 @@ export function clearAuth(): void {
   getApiClient().getTokenStore().clearTokens();
 }
 
+const ROLE_DASHBOARD: Record<string, string> = {
+  customer: '/dashboard/customer',
+  partner: '/dashboard/partner',
+  corporate: '/dashboard/corporate',
+  admin: '/dashboard/admin',
+  super_admin: '/dashboard/admin',
+  dispatcher: '/dashboard/admin',
+  finance: '/dashboard/admin',
+  content_manager: '/dashboard/admin',
+};
+
 export function redirectToDashboard(): void {
-  window.location.href = '/';
+  const user = getStoredUser();
+  const path = user?.role ? ROLE_DASHBOARD[user.role] : '/';
+  window.location.href = path ?? '/';
 }
 
 export function redirectToLogin(): void {

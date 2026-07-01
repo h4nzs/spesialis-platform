@@ -10,12 +10,9 @@ export default tseslint.config(
       '@typescript-eslint/no-explicit-any': 'error',
       '@typescript-eslint/no-unused-vars': [
         'error',
-        { argsIgnorePattern: '^_', destructuredArrayIgnorePattern: '^_' },
+        { argsIgnorePattern: '^_', destructuredArrayIgnorePattern: '^_', varsIgnorePattern: '^_' },
       ],
-      '@typescript-eslint/consistent-type-imports': [
-        'error',
-        { prefer: 'type-imports' },
-      ],
+      '@typescript-eslint/consistent-type-imports': ['error', { prefer: 'type-imports' }],
     },
   },
   {

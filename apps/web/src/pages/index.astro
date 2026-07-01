@@ -2,7 +2,21 @@
 import BaseLayout from '../layouts/BaseLayout.astro'
 ---
 
-<BaseLayout>
+<BaseLayout
+  title="Spesialis - Layanan Profesional Tanpa Ribet"
+  description="Platform layanan jasa profesional on-demand. Booking teknisi AC, plumbing, listrik, cleaning, dan jasa profesional lainnya dengan harga transparan dan garansi."
+  canonicalUrl="/"
+  jsonLd={{
+    '@context': 'https://schema.org',
+    '@type': 'Organization',
+    name: 'Spesialis',
+    url: 'https://spesialis.id',
+    logo: 'https://spesialis.id/favicon.svg',
+    description: 'Platform layanan jasa profesional on-demand di Indonesia.',
+    areaServed: { '@type': 'Country', name: 'Indonesia' },
+    offers: { '@type': 'AggregateOffer', priceCurrency: 'IDR' },
+  }}
+>
   <section class="py-20 text-center animate-fade-in">
     <h1 class="mx-auto max-w-3xl text-4xl font-bold tracking-tight text-text sm:text-5xl">
       Layanan Profesional

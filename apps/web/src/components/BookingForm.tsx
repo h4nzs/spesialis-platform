@@ -219,9 +219,7 @@ export function BookingForm({ serviceId }: BookingFormProps) {
           <span className="text-3xl text-success">&#10003;</span>
         </div>
         <h2 className="mt-4 text-xl font-bold text-text">Booking Berhasil!</h2>
-        <p className="mt-2 text-sm text-text-muted">
-          Booking Anda telah tercatat dengan nomor:
-        </p>
+        <p className="mt-2 text-sm text-text-muted">Booking Anda telah tercatat dengan nomor:</p>
         <p className="mt-3 text-2xl font-bold tracking-wider text-primary">
           {bookingResult.bookingNumber}
         </p>
@@ -323,7 +321,10 @@ export function BookingForm({ serviceId }: BookingFormProps) {
             </span>
             <div className="grid gap-4 sm:grid-cols-2">
               <div>
-                <label htmlFor="receiverName" className="mb-1.5 block text-sm font-medium text-text">
+                <label
+                  htmlFor="receiverName"
+                  className="mb-1.5 block text-sm font-medium text-text"
+                >
                   Nama Penerima
                 </label>
                 <input
@@ -335,11 +336,16 @@ export function BookingForm({ serviceId }: BookingFormProps) {
                   placeholder="Nama penerima"
                 />
                 {getFieldError(errors, 'address.receiverName') && (
-                  <p className="mt-1 text-xs text-danger">{getFieldError(errors, 'address.receiverName')}</p>
+                  <p className="mt-1 text-xs text-danger">
+                    {getFieldError(errors, 'address.receiverName')}
+                  </p>
                 )}
               </div>
               <div>
-                <label htmlFor="receiverPhone" className="mb-1.5 block text-sm font-medium text-text">
+                <label
+                  htmlFor="receiverPhone"
+                  className="mb-1.5 block text-sm font-medium text-text"
+                >
                   HP Penerima
                 </label>
                 <input
@@ -351,7 +357,9 @@ export function BookingForm({ serviceId }: BookingFormProps) {
                   placeholder="08xxxx"
                 />
                 {getFieldError(errors, 'address.receiverPhone') && (
-                  <p className="mt-1 text-xs text-danger">{getFieldError(errors, 'address.receiverPhone')}</p>
+                  <p className="mt-1 text-xs text-danger">
+                    {getFieldError(errors, 'address.receiverPhone')}
+                  </p>
                 )}
               </div>
             </div>
@@ -369,7 +377,9 @@ export function BookingForm({ serviceId }: BookingFormProps) {
                   placeholder="Jawa Barat"
                 />
                 {getFieldError(errors, 'address.province') && (
-                  <p className="mt-1 text-xs text-danger">{getFieldError(errors, 'address.province')}</p>
+                  <p className="mt-1 text-xs text-danger">
+                    {getFieldError(errors, 'address.province')}
+                  </p>
                 )}
               </div>
               <div>
@@ -385,7 +395,9 @@ export function BookingForm({ serviceId }: BookingFormProps) {
                   placeholder="Bandung"
                 />
                 {getFieldError(errors, 'address.city') && (
-                  <p className="mt-1 text-xs text-danger">{getFieldError(errors, 'address.city')}</p>
+                  <p className="mt-1 text-xs text-danger">
+                    {getFieldError(errors, 'address.city')}
+                  </p>
                 )}
               </div>
               <div>
@@ -401,7 +413,9 @@ export function BookingForm({ serviceId }: BookingFormProps) {
                   placeholder="Coblong"
                 />
                 {getFieldError(errors, 'address.district') && (
-                  <p className="mt-1 text-xs text-danger">{getFieldError(errors, 'address.district')}</p>
+                  <p className="mt-1 text-xs text-danger">
+                    {getFieldError(errors, 'address.district')}
+                  </p>
                 )}
               </div>
             </div>
@@ -419,7 +433,9 @@ export function BookingForm({ serviceId }: BookingFormProps) {
                   placeholder="40131"
                 />
                 {getFieldError(errors, 'address.postalCode') && (
-                  <p className="mt-1 text-xs text-danger">{getFieldError(errors, 'address.postalCode')}</p>
+                  <p className="mt-1 text-xs text-danger">
+                    {getFieldError(errors, 'address.postalCode')}
+                  </p>
                 )}
               </div>
             </div>
@@ -436,7 +452,9 @@ export function BookingForm({ serviceId }: BookingFormProps) {
                 placeholder="Jl. Contoh No. 123, RT/RW 001/002"
               />
               {getFieldError(errors, 'address.address') && (
-                <p className="mt-1 text-xs text-danger">{getFieldError(errors, 'address.address')}</p>
+                <p className="mt-1 text-xs text-danger">
+                  {getFieldError(errors, 'address.address')}
+                </p>
               )}
             </div>
           </div>
@@ -473,7 +491,10 @@ export function BookingForm({ serviceId }: BookingFormProps) {
           ) : (
             <div className="rounded-md bg-background px-4 py-3 text-sm text-text-muted">
               Belum ada alamat tersimpan.{' '}
-              <a href="/dashboard/addresses" className="font-medium text-primary hover:text-primary-hover transition-colors">
+              <a
+                href="/dashboard/customer/addresses"
+                className="font-medium text-primary hover:text-primary-hover transition-colors"
+              >
                 Tambah alamat
               </a>
             </div>
@@ -539,17 +560,29 @@ export function BookingForm({ serviceId }: BookingFormProps) {
         )}
       </div>
 
-      <Button type="submit" variant="primary" size="lg" className="w-full" disabled={loading || !serviceId}>
+      <Button
+        type="submit"
+        variant="primary"
+        size="lg"
+        className="w-full"
+        disabled={loading || !serviceId}
+      >
         {loading ? 'Memproses...' : 'Kirim Pesanan'}
       </Button>
 
       <p className="text-center text-xs text-text-muted">
         Dengan mengirim pesanan, Anda menyetujui{' '}
-        <a href="/syarat-ketentuan" className="font-medium text-primary hover:text-primary-hover transition-colors">
+        <a
+          href="/syarat-ketentuan"
+          className="font-medium text-primary hover:text-primary-hover transition-colors"
+        >
           Syarat & Ketentuan
         </a>{' '}
         dan{' '}
-        <a href="/kebijakan-privasi" className="font-medium text-primary hover:text-primary-hover transition-colors">
+        <a
+          href="/kebijakan-privasi"
+          className="font-medium text-primary hover:text-primary-hover transition-colors"
+        >
           Kebijakan Privasi
         </a>{' '}
         kami.

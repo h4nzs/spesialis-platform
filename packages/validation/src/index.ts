@@ -1,6 +1,9 @@
 export { uuidSchema, phoneSchema, slugSchema, paginationQuerySchema } from './common.ts';
 export type { PaginationQuery } from './common.ts';
 
+export { createBranchSchema, updateBranchSchema } from './branch.ts';
+export type { CreateBranchInput, UpdateBranchInput } from './branch.ts';
+
 export {
   registerSchema,
   loginSchema,

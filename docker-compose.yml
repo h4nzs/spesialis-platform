@@ -46,12 +46,14 @@ services:
       dockerfile: infrastructure/docker/api/Dockerfile
     volumes:
       - .:/app
+      - uploads_data:/app/uploads
     ports:
       - "3000:3000"
     environment:
       APP_ENV: development
       DATABASE_URL: postgres://specialist:specialist@postgres:5432/specialist
       JWT_SECRET: change-me
+      UPLOAD_DIR: /app/uploads
     depends_on:
       postgres:
         condition: service_healthy
@@ -129,6 +131,7 @@ services:
 volumes:
   postgres_data:
   redis_data:
+  uploads_data:
 
 networks:
   specialist:

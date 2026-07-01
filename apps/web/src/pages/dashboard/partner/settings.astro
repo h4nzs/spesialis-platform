@@ -1,0 +1,8 @@
+---
+import DashboardLayout from '../../../layouts/DashboardLayout.astro'
+import { ProfileSettings } from '../../../components/dashboard/ProfileSettings.tsx'
+---
+
+<DashboardLayout title="Pengaturan" role="partner">
+  <ProfileSettings client:load />
+</DashboardLayout>

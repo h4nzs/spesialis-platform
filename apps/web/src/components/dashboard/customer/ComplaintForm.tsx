@@ -1,26 +1,33 @@
 import { useState } from 'react';
 import { createBrowserClient } from '@specialist/shared';
+import { createComplaintSchema } from '@specialist/validation';
 import { Button, Input, Textarea, Card } from '@specialist/ui';
 
 export function ComplaintForm() {
   const api = createBrowserClient();
+  const [orderId, setOrderId] = useState('');
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
-  const [error, setError] = useState('');
+  const [errors, setErrors] = useState<string[]>([]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!title.trim() || !description.trim()) return;
-    setSubmitting(true);
-    setError('');
+    setErrors([]);
 
+    const parsed = createComplaintSchema.safeParse({ orderId, title, description });
+    if (!parsed.success) {
+      setErrors(parsed.error.issues.map((i) => i.message));
+      return;
+    }
+
+    setSubmitting(true);
     try {
-      await api.post('/api/v1/complaints', { body: { title, description } });
+      await api.post('/api/v1/complaints', { body: parsed.data });
       setSuccess(true);
     } catch {
-      setError('Gagal mengirim komplain. Silakan coba lagi.');
+      setErrors(['Gagal mengirim komplain. Silakan coba lagi.']);
     } finally {
       setSubmitting(false);
     }
@@ -42,6 +49,23 @@ export function ComplaintForm() {
 
   return (
     <form onSubmit={handleSubmit} className="max-w-lg space-y-4">
+      {errors.length > 0 && (
+        <div className="rounded-md bg-danger/10 p-3">
+          {errors.map((err, i) => (
+            <p key={i} className="text-sm text-danger">
+              {err}
+            </p>
+          ))}
+        </div>
+      )}
+
+      <Input
+        label="ID Pesanan"
+        value={orderId}
+        onChange={(e) => setOrderId(e.target.value)}
+        placeholder="Masukkan ID order"
+        required
+      />
       <Input
         label="Judul"
         value={title}
@@ -53,10 +77,9 @@ export function ComplaintForm() {
         label="Deskripsi"
         value={description}
         onChange={(e) => setDescription(e.target.value)}
-        placeholder="Jelaskan masalah Anda"
+        placeholder="Jelaskan masalah Anda (minimal 10 karakter)"
         required
       />
-      {error && <p className="text-sm text-danger">{error}</p>}
       <Button type="submit" disabled={submitting}>
         {submitting ? 'Mengirim...' : 'Kirim Komplain'}
       </Button>

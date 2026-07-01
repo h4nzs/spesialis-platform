@@ -1,0 +1,8 @@
+---
+import DashboardLayout from '../../../layouts/DashboardLayout.astro'
+import { CorporateInvoices } from '../../../components/dashboard/corporate/CorporateInvoices.tsx'
+---
+
+<DashboardLayout title="Invoice" role="corporate">
+  <CorporateInvoices client:load />
+</DashboardLayout>

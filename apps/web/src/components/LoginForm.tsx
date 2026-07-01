@@ -40,7 +40,7 @@ export function LoginForm() {
         refreshToken: string;
       }>('/api/v1/auth/login', { body: parsed.data });
 
-      saveAuth(result.user as never, result.token);
+      saveAuth(result.user, result.token);
       api.getTokenStore().setTokens(result.token, result.refreshToken);
       redirectToDashboard();
     } catch (err: unknown) {

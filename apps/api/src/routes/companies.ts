@@ -7,6 +7,8 @@ import {
   createCompanySchema,
   updateCompanySchema,
   verifyCompanySchema,
+  createBranchSchema,
+  updateBranchSchema,
 } from '@specialist/validation';
 import {
   success,
@@ -33,9 +35,8 @@ router.post('/', async (c) => {
     );
   }
 
-  const bodyRaw = body as Record<string, string>;
-  const password = bodyRaw.password;
-  if (!password || password.length < 8) {
+  const password = body.password;
+  if (!password || typeof password !== 'string' || password.length < 8) {
     return error(c, 'VALIDATION_ERROR', 'Password minimal 8 karakter', 422);
   }
 
@@ -113,6 +114,26 @@ router.get('/', authMiddleware, requireRole('admin', 'super_admin', 'corporate')
 
   const items = await db.select().from(companies).orderBy(desc(companies.createdAt));
   return success(c, items);
+});
+
+router.get('/me', authMiddleware, async (c) => {
+  const userId = c.get('userId');
+
+  const [cu] = await db
+    .select({ companyId: companyUsers.companyId })
+    .from(companyUsers)
+    .where(eq(companyUsers.userId, userId))
+    .limit(1);
+  if (!cu) return notFound(c, 'Perusahaan tidak ditemukan');
+
+  const [company] = await db
+    .select()
+    .from(companies)
+    .where(eq(companies.id, cu.companyId))
+    .limit(1);
+  if (!company) return notFound(c, 'Perusahaan tidak ditemukan');
+
+  return success(c, company);
 });
 
 router.get('/:id', authMiddleware, async (c) => {
@@ -289,9 +310,15 @@ branchRouter.post(
     const userId = c.get('userId');
     const userRole = c.get('userRole');
     const body = await c.req.json();
-
-    if (!body.name || !body.address || !body.city) {
-      return error(c, 'VALIDATION_ERROR', 'name, address, city wajib diisi', 422);
+    const parsed = createBranchSchema.safeParse(body);
+    if (!parsed.success) {
+      return error(
+        c,
+        'VALIDATION_ERROR',
+        'Validation failed',
+        422,
+        parsed.error.issues.map((i) => ({ field: i.path.join('.'), message: i.message })),
+      );
     }
 
     const [company] = await db
@@ -314,10 +341,10 @@ branchRouter.post(
       .insert(branches)
       .values({
         companyId,
-        name: body.name,
-        address: body.address,
-        city: body.city,
-        phone: body.phone ?? null,
+        name: parsed.data.name,
+        address: parsed.data.address,
+        city: parsed.data.city,
+        phone: parsed.data.phone ?? null,
       })
       .returning();
 
@@ -335,6 +362,16 @@ branchRouter.patch(
     const userId = c.get('userId');
     const userRole = c.get('userRole');
     const body = await c.req.json();
+    const parsed = updateBranchSchema.safeParse(body);
+    if (!parsed.success) {
+      return error(
+        c,
+        'VALIDATION_ERROR',
+        'Validation failed',
+        422,
+        parsed.error.issues.map((i) => ({ field: i.path.join('.'), message: i.message })),
+      );
+    }
 
     const [branch] = await db
       .select()
@@ -353,10 +390,10 @@ branchRouter.patch(
     }
 
     const updateData: Record<string, unknown> = {};
-    if (body.name !== undefined) updateData.name = body.name;
-    if (body.address !== undefined) updateData.address = body.address;
-    if (body.city !== undefined) updateData.city = body.city;
-    if (body.phone !== undefined) updateData.phone = body.phone;
+    if (parsed.data.name !== undefined) updateData.name = parsed.data.name;
+    if (parsed.data.address !== undefined) updateData.address = parsed.data.address;
+    if (parsed.data.city !== undefined) updateData.city = parsed.data.city;
+    if (parsed.data.phone !== undefined) updateData.phone = parsed.data.phone;
 
     const [updated] = await db
       .update(branches)

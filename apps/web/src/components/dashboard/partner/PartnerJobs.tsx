@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import { createBrowserClient, formatCurrency, getStatusLabel, formatDate } from '@specialist/shared';
-import { Badge, Card, Button, Pagination } from '@specialist/ui';
+import { createBrowserClient, formatDate, getStatusLabel } from '@specialist/shared';
+import { Badge, Card, Button, Modal, Input } from '@specialist/ui';
 import type { OrderStatus } from '@specialist/types';
 
 interface JobItem {
@@ -18,6 +18,8 @@ export function PartnerJobs() {
   const api = createBrowserClient();
   const [jobs, setJobs] = useState<JobItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [rejectTarget, setRejectTarget] = useState<string | null>(null);
+  const [rejectReason, setRejectReason] = useState('');
 
   async function loadJobs() {
     setLoading(true);
@@ -31,7 +33,9 @@ export function PartnerJobs() {
     }
   }
 
-  useEffect(() => { loadJobs(); }, []);
+  useEffect(() => {
+    loadJobs();
+  }, []);
 
   async function handleAccept(orderId: string) {
     try {
@@ -45,6 +49,8 @@ export function PartnerJobs() {
   async function handleReject(orderId: string, reason: string) {
     try {
       await api.post(`/api/v1/bookings/${orderId}/reject`, { body: { reason } });
+      setRejectTarget(null);
+      setRejectReason('');
       await loadJobs();
     } catch {
       // silent
@@ -54,6 +60,15 @@ export function PartnerJobs() {
   async function handleStart(orderId: string) {
     try {
       await api.post(`/api/v1/bookings/${orderId}/start`);
+      await loadJobs();
+    } catch {
+      // silent
+    }
+  }
+
+  async function handleOnTheWay(orderId: string) {
+    try {
+      await api.post(`/api/v1/bookings/${orderId}/on-the-way`);
       await loadJobs();
     } catch {
       // silent
@@ -94,15 +109,23 @@ export function PartnerJobs() {
             <div className="flex flex-wrap gap-2">
               {job.orderStatus === 'Partner Assigned' && (
                 <>
-                  <Button size="sm" onClick={() => handleAccept(job.orderId)}>Terima</Button>
-                  <Button size="sm" variant="danger" onClick={() => {
-                    const reason = prompt('Alasan penolakan:');
-                    if (reason) handleReject(job.orderId, reason);
-                  }}>Tolak</Button>
+                  <Button size="sm" onClick={() => handleAccept(job.orderId)}>
+                    Terima
+                  </Button>
+                  <Button size="sm" variant="danger" onClick={() => setRejectTarget(job.orderId)}>
+                    Tolak
+                  </Button>
                 </>
               )}
+              {job.orderStatus === 'Partner Accepted' && (
+                <Button size="sm" onClick={() => handleOnTheWay(job.orderId)}>
+                  Dalam Perjalanan
+                </Button>
+              )}
               {job.orderStatus === 'On The Way' && (
-                <Button size="sm" onClick={() => handleStart(job.orderId)}>Mulai</Button>
+                <Button size="sm" onClick={() => handleStart(job.orderId)}>
+                  Mulai
+                </Button>
               )}
               {job.orderStatus === 'Working' && (
                 <Button size="sm" variant="primary" onClick={() => handleComplete(job.orderId)}>
@@ -113,6 +136,43 @@ export function PartnerJobs() {
           </div>
         </Card>
       ))}
+
+      <Modal
+        open={rejectTarget !== null}
+        onClose={() => {
+          setRejectTarget(null);
+          setRejectReason('');
+        }}
+        title="Alasan Penolakan"
+      >
+        <div className="space-y-3">
+          <Input
+            label="Alasan"
+            value={rejectReason}
+            onChange={(e) => setRejectReason(e.target.value)}
+            placeholder="Jelaskan mengapa menolak"
+            required
+          />
+          <div className="flex justify-end gap-2">
+            <Button
+              variant="ghost"
+              onClick={() => {
+                setRejectTarget(null);
+                setRejectReason('');
+              }}
+            >
+              Batal
+            </Button>
+            <Button
+              variant="danger"
+              disabled={!rejectReason.trim()}
+              onClick={() => rejectTarget && handleReject(rejectTarget, rejectReason)}
+            >
+              Kirim
+            </Button>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 }

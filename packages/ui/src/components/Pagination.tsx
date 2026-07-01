@@ -1,5 +1,3 @@
-import { Button } from './Button.tsx';
-
 export interface PaginationProps {
   page: number;
   totalPages: number;

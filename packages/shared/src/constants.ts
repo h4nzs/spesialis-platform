@@ -58,7 +58,7 @@ export const ORDER_STATUS_TRANSITIONS: Record<OrderStatus, OrderStatus[]> = {
   Confirmed: ['Waiting Assignment', 'Cancelled'],
   'Waiting Assignment': ['Partner Assigned', 'Cancelled'],
   'Partner Assigned': ['Partner Accepted', 'Waiting Assignment', 'Cancelled'],
-  'Partner Accepted': ['Working', 'Cancelled'],
+  'Partner Accepted': ['On The Way', 'Cancelled'],
   'On The Way': ['Working', 'Cancelled'],
   Working: ['Completed'],
   Completed: ['Waiting Payment'],

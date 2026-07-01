@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { createBrowserClient } from '@specialist/shared';
-import { Table, Button, Card, Select } from '@specialist/ui';
+import { Table, Button } from '@specialist/ui';
 import type { Column } from '@specialist/ui';
 
 interface PartnerItem {
@@ -29,11 +29,15 @@ export function AdminPartners() {
     }
   }
 
-  useEffect(() => { loadPartners(); }, []);
+  useEffect(() => {
+    loadPartners();
+  }, []);
 
   async function handleVerify(partnerId: string, status: string) {
     try {
-      await api.post(`/api/v1/partners/${partnerId}/verify`, { body: { verificationStatus: status } });
+      await api.post(`/api/v1/partners/${partnerId}/verify`, {
+        body: { verificationStatus: status },
+      });
       await loadPartners();
     } catch {
       // silent
@@ -52,7 +56,7 @@ export function AdminPartners() {
     {
       key: 'ratingAverage',
       header: 'Rating',
-      render: (item) => item.ratingAverage ? Number(item.ratingAverage).toFixed(1) : '-',
+      render: (item) => (item.ratingAverage ? Number(item.ratingAverage).toFixed(1) : '-'),
     },
     {
       key: 'id',
@@ -61,8 +65,12 @@ export function AdminPartners() {
         <div className="flex gap-1">
           {item.verificationStatus === 'Waiting Verification' && (
             <>
-              <Button size="sm" onClick={() => handleVerify(item.id, 'Approved')}>Setujui</Button>
-              <Button size="sm" variant="danger" onClick={() => handleVerify(item.id, 'Rejected')}>Tolak</Button>
+              <Button size="sm" onClick={() => handleVerify(item.id, 'Approved')}>
+                Setujui
+              </Button>
+              <Button size="sm" variant="danger" onClick={() => handleVerify(item.id, 'Rejected')}>
+                Tolak
+              </Button>
             </>
           )}
         </div>
@@ -75,6 +83,11 @@ export function AdminPartners() {
   }
 
   return (
-    <Table columns={columns} data={partners} keyExtractor={(p) => p.id} emptyMessage="Belum ada partner" />
+    <Table
+      columns={columns}
+      data={partners}
+      keyExtractor={(p) => p.id}
+      emptyMessage="Belum ada partner"
+    />
   );
 }

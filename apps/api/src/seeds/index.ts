@@ -18,7 +18,6 @@ import {
   complaints,
   notifications,
   partnerSkills,
-  partnerDocuments,
   seoMetadata,
   systemSettings,
 } from '@specialist/database';
@@ -44,7 +43,7 @@ async function seed() {
     })
     .returning({ id: users.id });
 
-  const [admin] = await db
+  const [_admin] = await db
     .insert(users)
     .values({
       email: 'admin2@spesialis.id',
@@ -55,7 +54,7 @@ async function seed() {
     })
     .returning({ id: users.id });
 
-  const [dispatcher] = await db
+  const [_dispatcher] = await db
     .insert(users)
     .values({
       email: 'dispatcher@spesialis.id',
@@ -66,7 +65,7 @@ async function seed() {
     })
     .returning({ id: users.id });
 
-  const [finance] = await db
+  const [_finance] = await db
     .insert(users)
     .values({
       email: 'finance@spesialis.id',
@@ -77,7 +76,7 @@ async function seed() {
     })
     .returning({ id: users.id });
 
-  const [contentMgr] = await db
+  const [_contentMgr] = await db
     .insert(users)
     .values({
       email: 'content@spesialis.id',
@@ -143,7 +142,9 @@ async function seed() {
     })
     .returning({ id: users.id });
 
-  console.log('  ✓ 9 users created (super_admin, admin, dispatcher, finance, content_manager, 2 partners, 2 customers, corporate)');
+  console.log(
+    '  ✓ 9 users created (super_admin, admin, dispatcher, finance, content_manager, 2 partners, 2 customers, corporate)',
+  );
 
   // ─── Profiles ────────────────────────────────────────────────────
   const [customerProfile1] = await db
@@ -223,8 +224,20 @@ async function seed() {
   });
 
   await db.insert(branches).values([
-    { companyId: company!.id, name: 'Kantor Pusat', address: 'Jl. Sudirman No. 123', city: 'Jakarta Pusat', phone: '6282112345678' },
-    { companyId: company!.id, name: 'Cabang Bandung', address: 'Jl. Dago No. 45', city: 'Bandung', phone: '6282112345680' },
+    {
+      companyId: company!.id,
+      name: 'Kantor Pusat',
+      address: 'Jl. Sudirman No. 123',
+      city: 'Jakarta Pusat',
+      phone: '6282112345678',
+    },
+    {
+      companyId: company!.id,
+      name: 'Cabang Bandung',
+      address: 'Jl. Dago No. 45',
+      city: 'Bandung',
+      phone: '6282112345680',
+    },
   ]);
 
   console.log('  ✓ 1 company + 1 corporate user + 2 branches created');
@@ -291,126 +304,188 @@ async function seed() {
   const [svcCuciAC] = await db
     .insert(services)
     .values({
-      categoryId: acCat!.id, name: 'Cuci AC Standar', slug: 'cuci-ac-standar',
-      shortDescription: 'Pembersihan AC standar untuk rumah', basePrice: '150000',
-      estimatedDuration: 60, isFeatured: true, displayOrder: 1,
+      categoryId: acCat!.id,
+      name: 'Cuci AC Standar',
+      slug: 'cuci-ac-standar',
+      shortDescription: 'Pembersihan AC standar untuk rumah',
+      basePrice: '150000',
+      estimatedDuration: 60,
+      isFeatured: true,
+      displayOrder: 1,
     })
     .returning({ id: services.id });
 
   const [svcCuciACMedium] = await db
     .insert(services)
     .values({
-      categoryId: acCat!.id, name: 'Cuci AC Medium', slug: 'cuci-ac-medium',
-      shortDescription: 'Pembersihan AC untuk kantor kecil', basePrice: '200000',
-      estimatedDuration: 90, displayOrder: 2,
+      categoryId: acCat!.id,
+      name: 'Cuci AC Medium',
+      slug: 'cuci-ac-medium',
+      shortDescription: 'Pembersihan AC untuk kantor kecil',
+      basePrice: '200000',
+      estimatedDuration: 90,
+      displayOrder: 2,
     })
     .returning({ id: services.id });
 
   const [svcFreonAC] = await db
     .insert(services)
     .values({
-      categoryId: acCat!.id, name: 'Isi Freon AC', slug: 'isi-freon-ac',
-      shortDescription: 'Isi ulang freon AC', basePrice: '250000',
-      estimatedDuration: 45, displayOrder: 3,
+      categoryId: acCat!.id,
+      name: 'Isi Freon AC',
+      slug: 'isi-freon-ac',
+      shortDescription: 'Isi ulang freon AC',
+      basePrice: '250000',
+      estimatedDuration: 45,
+      displayOrder: 3,
     })
     .returning({ id: services.id });
 
   const [svcBongkarAC] = await db
     .insert(services)
     .values({
-      categoryId: acCat!.id, name: 'Bongkar Pasang AC', slug: 'bongkar-pasang-ac',
-      shortDescription: 'Jasa bongkar pasang AC', basePrice: '350000',
-      estimatedDuration: 120, isFeatured: true, displayOrder: 4,
+      categoryId: acCat!.id,
+      name: 'Bongkar Pasang AC',
+      slug: 'bongkar-pasang-ac',
+      shortDescription: 'Jasa bongkar pasang AC',
+      basePrice: '350000',
+      estimatedDuration: 120,
+      isFeatured: true,
+      displayOrder: 4,
     })
     .returning({ id: services.id });
 
   const [svcPipaBocor] = await db
     .insert(services)
     .values({
-      categoryId: plumbingCat!.id, name: 'Bocor Pipa Air', slug: 'bocor-pipa-air',
-      shortDescription: 'Perbaikan pipa air bocor', basePrice: '150000',
-      estimatedDuration: 60, isFeatured: true, displayOrder: 1,
+      categoryId: plumbingCat!.id,
+      name: 'Bocor Pipa Air',
+      slug: 'bocor-pipa-air',
+      shortDescription: 'Perbaikan pipa air bocor',
+      basePrice: '150000',
+      estimatedDuration: 60,
+      isFeatured: true,
+      displayOrder: 1,
     })
     .returning({ id: services.id });
 
   const [svcSaluranMampet] = await db
     .insert(services)
     .values({
-      categoryId: plumbingCat!.id, name: 'Saluran Mampet', slug: 'saluran-mampet',
-      shortDescription: 'Pengurasan saluran air mampet', basePrice: '200000',
-      estimatedDuration: 90, displayOrder: 2,
+      categoryId: plumbingCat!.id,
+      name: 'Saluran Mampet',
+      slug: 'saluran-mampet',
+      shortDescription: 'Pengurasan saluran air mampet',
+      basePrice: '200000',
+      estimatedDuration: 90,
+      displayOrder: 2,
     })
     .returning({ id: services.id });
 
-  const [svcWaterHeater] = await db
+  const [_svcWaterHeater] = await db
     .insert(services)
     .values({
-      categoryId: plumbingCat!.id, name: 'Pasang Water Heater', slug: 'pasang-water-heater',
-      shortDescription: 'Instalasi pemanas air', basePrice: '300000',
-      estimatedDuration: 120, displayOrder: 3,
+      categoryId: plumbingCat!.id,
+      name: 'Pasang Water Heater',
+      slug: 'pasang-water-heater',
+      shortDescription: 'Instalasi pemanas air',
+      basePrice: '300000',
+      estimatedDuration: 120,
+      displayOrder: 3,
     })
     .returning({ id: services.id });
 
   const [svcListrik] = await db
     .insert(services)
     .values({
-      categoryId: electricalCat!.id, name: 'Perbaikan Listrik', slug: 'perbaikan-listrik',
-      shortDescription: 'Perbaikan instalasi listrik rumah', basePrice: '100000',
-      estimatedDuration: 45, isFeatured: true, displayOrder: 1,
+      categoryId: electricalCat!.id,
+      name: 'Perbaikan Listrik',
+      slug: 'perbaikan-listrik',
+      shortDescription: 'Perbaikan instalasi listrik rumah',
+      basePrice: '100000',
+      estimatedDuration: 45,
+      isFeatured: true,
+      displayOrder: 1,
     })
     .returning({ id: services.id });
 
-  const [svcLampu] = await db
+  const [_svcLampu] = await db
     .insert(services)
     .values({
-      categoryId: electricalCat!.id, name: 'Pasang Lampu', slug: 'pasang-lampu',
-      shortDescription: 'Pemasangan lampu dan fitting', basePrice: '75000',
-      estimatedDuration: 30, displayOrder: 2,
+      categoryId: electricalCat!.id,
+      name: 'Pasang Lampu',
+      slug: 'pasang-lampu',
+      shortDescription: 'Pemasangan lampu dan fitting',
+      basePrice: '75000',
+      estimatedDuration: 30,
+      displayOrder: 2,
     })
     .returning({ id: services.id });
 
-  const [svcPanel] = await db
+  const [_svcPanel] = await db
     .insert(services)
     .values({
-      categoryId: electricalCat!.id, name: 'Panel Listrik', slug: 'panel-listrik',
-      shortDescription: 'Perbaikan dan upgrade panel listrik', basePrice: '250000',
-      estimatedDuration: 120, displayOrder: 3,
+      categoryId: electricalCat!.id,
+      name: 'Panel Listrik',
+      slug: 'panel-listrik',
+      shortDescription: 'Perbaikan dan upgrade panel listrik',
+      basePrice: '250000',
+      estimatedDuration: 120,
+      displayOrder: 3,
     })
     .returning({ id: services.id });
 
   const [svcCleaningStandar] = await db
     .insert(services)
     .values({
-      categoryId: cleaningCat!.id, name: 'Bersih Rumah Standar', slug: 'bersih-rumah-standar',
-      shortDescription: 'Pembersihan rumah tipe 36-45', basePrice: '200000',
-      estimatedDuration: 120, isFeatured: true, displayOrder: 1,
+      categoryId: cleaningCat!.id,
+      name: 'Bersih Rumah Standar',
+      slug: 'bersih-rumah-standar',
+      shortDescription: 'Pembersihan rumah tipe 36-45',
+      basePrice: '200000',
+      estimatedDuration: 120,
+      isFeatured: true,
+      displayOrder: 1,
     })
     .returning({ id: services.id });
 
   const [svcCleaningBesar] = await db
     .insert(services)
     .values({
-      categoryId: cleaningCat!.id, name: 'Bersih Rumah Besar', slug: 'bersih-rumah-besar',
-      shortDescription: 'Pembersihan rumah tipe 60+', basePrice: '350000',
-      estimatedDuration: 180, displayOrder: 2,
+      categoryId: cleaningCat!.id,
+      name: 'Bersih Rumah Besar',
+      slug: 'bersih-rumah-besar',
+      shortDescription: 'Pembersihan rumah tipe 60+',
+      basePrice: '350000',
+      estimatedDuration: 180,
+      displayOrder: 2,
     })
     .returning({ id: services.id });
 
   const [svcCatInterior] = await db
     .insert(services)
     .values({
-      categoryId: paintingCat!.id, name: 'Cat Interior', slug: 'cat-interior',
-      shortDescription: 'Pengecatan dinding interior rumah/kantor', basePrice: '500000',
-      estimatedDuration: 240, isFeatured: true, displayOrder: 1,
+      categoryId: paintingCat!.id,
+      name: 'Cat Interior',
+      slug: 'cat-interior',
+      shortDescription: 'Pengecatan dinding interior rumah/kantor',
+      basePrice: '500000',
+      estimatedDuration: 240,
+      isFeatured: true,
+      displayOrder: 1,
     })
     .returning({ id: services.id });
 
-  const [svcCatEksterior] = await db
+  const [_svcCatEksterior] = await db
     .insert(services)
     .values({
-      categoryId: paintingCat!.id, name: 'Cat Eksterior', slug: 'cat-eksterior',
-      shortDescription: 'Pengecatan dinding eksterior', basePrice: '750000',
-      estimatedDuration: 360, displayOrder: 2,
+      categoryId: paintingCat!.id,
+      name: 'Cat Eksterior',
+      slug: 'cat-eksterior',
+      shortDescription: 'Pengecatan dinding eksterior',
+      basePrice: '750000',
+      estimatedDuration: 360,
+      displayOrder: 2,
     })
     .returning({ id: services.id });
 
@@ -477,10 +552,6 @@ async function seed() {
   console.log('  ✓ 3 addresses created');
 
   // ─── Orders ──────────────────────────────────────────────────────
-  const orderStatusHistoryData: {
-    orderId: string; fromStatus: string | null; toStatus: string; changedBy: string; note?: string;
-  }[] = [];
-
   interface CreateSeedOrder {
     customerId: string;
     addressId: string;
@@ -551,7 +622,9 @@ async function seed() {
         partnerId: assignInfo.partnerId,
         status: statusHistory.some((s) => s.to === 'Partner Accepted') ? 'Accepted' : 'Assigned',
         assignedAt: new Date(Date.now() - 3600000),
-        acceptedAt: statusHistory.some((s) => s.to === 'Partner Accepted') ? new Date(Date.now() - 1800000) : null,
+        acceptedAt: statusHistory.some((s) => s.to === 'Partner Accepted')
+          ? new Date(Date.now() - 1800000)
+          : null,
       });
     }
 
@@ -561,10 +634,14 @@ async function seed() {
         method: paymentInfo.method,
         amount: String(paymentInfo.amount),
         status: paymentInfo.status,
-        paymentDate: paymentInfo.status === 'Paid' || paymentInfo.status === 'Pending Verification'
-          ? new Date() : null,
-        verifiedBy: paymentInfo.status === 'Paid' || paymentInfo.status === 'Pending Verification'
-          ? superAdmin!.id : null,
+        paymentDate:
+          paymentInfo.status === 'Paid' || paymentInfo.status === 'Pending Verification'
+            ? new Date()
+            : null,
+        verifiedBy:
+          paymentInfo.status === 'Paid' || paymentInfo.status === 'Pending Verification'
+            ? superAdmin!.id
+            : null,
         verifiedAt: paymentInfo.status === 'Paid' ? new Date() : null,
       });
     }
@@ -573,7 +650,7 @@ async function seed() {
   }
 
   // Order 1: Pending Confirmation (Budi - Cuci AC)
-  const o1 = await createOrder(
+  await createOrder(
     {
       customerId: customerProfile1!.id,
       addressId: addrBudi1!.id,
@@ -582,16 +659,12 @@ async function seed() {
       bookingTime: '10:00',
       notes: 'AC di ruang tamu, mohon dibawa tangga',
     },
-    [
-      { serviceId: svcCuciAC!.id, serviceName: 'Cuci AC Standar', quantity: 2, unitPrice: 150000 },
-    ],
-    [
-      { from: null, to: 'Pending Confirmation' },
-    ],
+    [{ serviceId: svcCuciAC!.id, serviceName: 'Cuci AC Standar', quantity: 2, unitPrice: 150000 }],
+    [{ from: null, to: 'Pending Confirmation' }],
   );
 
   // Order 2: Confirmed (Budi - Saluran Mampet)
-  const o2 = await createOrder(
+  await createOrder(
     {
       customerId: customerProfile1!.id,
       addressId: addrBudi2!.id,
@@ -601,7 +674,12 @@ async function seed() {
       finalPrice: '200000',
     },
     [
-      { serviceId: svcSaluranMampet!.id, serviceName: 'Saluran Mampet', quantity: 1, unitPrice: 200000 },
+      {
+        serviceId: svcSaluranMampet!.id,
+        serviceName: 'Saluran Mampet',
+        quantity: 1,
+        unitPrice: 200000,
+      },
     ],
     [
       { from: null, to: 'Pending Confirmation' },
@@ -610,7 +688,7 @@ async function seed() {
   );
 
   // Order 3: Waiting Assignment (Siti - Cleaning)
-  const o3 = await createOrder(
+  await createOrder(
     {
       customerId: customerProfile2!.id,
       addressId: addrSiti!.id,
@@ -620,7 +698,12 @@ async function seed() {
       finalPrice: '200000',
     },
     [
-      { serviceId: svcCleaningStandar!.id, serviceName: 'Bersih Rumah Standar', quantity: 1, unitPrice: 200000 },
+      {
+        serviceId: svcCleaningStandar!.id,
+        serviceName: 'Bersih Rumah Standar',
+        quantity: 1,
+        unitPrice: 200000,
+      },
     ],
     [
       { from: null, to: 'Pending Confirmation' },
@@ -630,7 +713,7 @@ async function seed() {
   );
 
   // Order 4: Partner Assigned (Siti - Isi Freon) → partner1 assigned
-  const o4 = await createOrder(
+  await createOrder(
     {
       customerId: customerProfile2!.id,
       addressId: addrSiti!.id,
@@ -639,9 +722,7 @@ async function seed() {
       bookingTime: '11:00',
       finalPrice: '250000',
     },
-    [
-      { serviceId: svcFreonAC!.id, serviceName: 'Isi Freon AC', quantity: 1, unitPrice: 250000 },
-    ],
+    [{ serviceId: svcFreonAC!.id, serviceName: 'Isi Freon AC', quantity: 1, unitPrice: 250000 }],
     [
       { from: null, to: 'Pending Confirmation' },
       { from: 'Pending Confirmation', to: 'Confirmed' },
@@ -652,7 +733,7 @@ async function seed() {
   );
 
   // Order 5: Partner Accepted (Budi - Perbaikan Listrik) → partner1 accepted
-  const o5 = await createOrder(
+  await createOrder(
     {
       customerId: customerProfile1!.id,
       addressId: addrBudi1!.id,
@@ -663,7 +744,12 @@ async function seed() {
       finalPrice: '100000',
     },
     [
-      { serviceId: svcListrik!.id, serviceName: 'Perbaikan Listrik', quantity: 1, unitPrice: 100000 },
+      {
+        serviceId: svcListrik!.id,
+        serviceName: 'Perbaikan Listrik',
+        quantity: 1,
+        unitPrice: 100000,
+      },
     ],
     [
       { from: null, to: 'Pending Confirmation' },
@@ -676,7 +762,7 @@ async function seed() {
   );
 
   // Order 6: Working (Budi - Bongkar Pasang AC) → partner1 working now
-  const o6 = await createOrder(
+  await createOrder(
     {
       customerId: customerProfile1!.id,
       addressId: addrBudi1!.id,
@@ -687,7 +773,12 @@ async function seed() {
       finalPrice: '350000',
     },
     [
-      { serviceId: svcBongkarAC!.id, serviceName: 'Bongkar Pasang AC', quantity: 1, unitPrice: 350000 },
+      {
+        serviceId: svcBongkarAC!.id,
+        serviceName: 'Bongkar Pasang AC',
+        quantity: 1,
+        unitPrice: 350000,
+      },
     ],
     [
       { from: null, to: 'Pending Confirmation' },
@@ -713,7 +804,12 @@ async function seed() {
       completedAt: new Date('2026-06-30T12:30:00'),
     },
     [
-      { serviceId: svcPipaBocor!.id, serviceName: 'Bocor Pipa Air', quantity: 1, unitPrice: 150000 },
+      {
+        serviceId: svcPipaBocor!.id,
+        serviceName: 'Bocor Pipa Air',
+        quantity: 1,
+        unitPrice: 150000,
+      },
     ],
     [
       { from: null, to: 'Pending Confirmation' },
@@ -740,7 +836,12 @@ async function seed() {
       completedAt: new Date('2026-06-29T12:00:00'),
     },
     [
-      { serviceId: svcCleaningBesar!.id, serviceName: 'Bersih Rumah Besar', quantity: 1, unitPrice: 350000 },
+      {
+        serviceId: svcCleaningBesar!.id,
+        serviceName: 'Bersih Rumah Besar',
+        quantity: 1,
+        unitPrice: 350000,
+      },
     ],
     [
       { from: null, to: 'Pending Confirmation' },
@@ -768,7 +869,12 @@ async function seed() {
       completedAt: new Date('2026-06-28T15:00:00'),
     },
     [
-      { serviceId: svcCatInterior!.id, serviceName: 'Cat Interior', quantity: 1, unitPrice: 500000 },
+      {
+        serviceId: svcCatInterior!.id,
+        serviceName: 'Cat Interior',
+        quantity: 1,
+        unitPrice: 500000,
+      },
     ],
     [
       { from: null, to: 'Pending Confirmation' },
@@ -799,7 +905,12 @@ async function seed() {
       closedAt: new Date('2026-06-26T09:00:00'),
     },
     [
-      { serviceId: svcCuciACMedium!.id, serviceName: 'Cuci AC Medium', quantity: 1, unitPrice: 200000 },
+      {
+        serviceId: svcCuciACMedium!.id,
+        serviceName: 'Cuci AC Medium',
+        quantity: 1,
+        unitPrice: 200000,
+      },
     ],
     [
       { from: null, to: 'Pending Confirmation' },
@@ -839,7 +950,7 @@ async function seed() {
   console.log('  ✓ 2 reviews created');
 
   // ─── Complaints ──────────────────────────────────────────────────
-  const [comp1] = await db
+  const [_comp1] = await db
     .insert(complaints)
     .values({
       orderId: o7,
@@ -853,7 +964,7 @@ async function seed() {
     })
     .returning({ id: complaints.id });
 
-  const [comp2] = await db
+  const [_comp2] = await db
     .insert(complaints)
     .values({
       orderId: o8,
@@ -869,24 +980,38 @@ async function seed() {
   // ─── Notifications ───────────────────────────────────────────────
   await db.insert(notifications).values([
     {
-      userId: customerUser1!.id, type: 'booking_confirmed', channel: 'In App',
-      title: 'Booking Dikonfirmasi', message: 'Booking #SP-2026-XXXXX telah dikonfirmasi. Teknisi akan segera diassign.',
+      userId: customerUser1!.id,
+      type: 'booking_confirmed',
+      channel: 'In App',
+      title: 'Booking Dikonfirmasi',
+      message: 'Booking #SP-2026-XXXXX telah dikonfirmasi. Teknisi akan segera diassign.',
       isRead: false,
     },
     {
-      userId: customerUser1!.id, type: 'booking_completed', channel: 'In App',
-      title: 'Pekerjaan Selesai', message: 'Pekerjaan Bongkar Pasang AC telah selesai. Silakan lakukan pembayaran.',
-      isRead: true, sentAt: new Date('2026-06-25T11:30:00'),
+      userId: customerUser1!.id,
+      type: 'booking_completed',
+      channel: 'In App',
+      title: 'Pekerjaan Selesai',
+      message: 'Pekerjaan Bongkar Pasang AC telah selesai. Silakan lakukan pembayaran.',
+      isRead: true,
+      sentAt: new Date('2026-06-25T11:30:00'),
     },
     {
-      userId: partnerUser1!.id, type: 'new_assignment', channel: 'In App',
-      title: 'Assignment Baru', message: 'Anda diassign ke order Cuci AC Standar di Jl. Senopati No. 8.',
+      userId: partnerUser1!.id,
+      type: 'new_assignment',
+      channel: 'In App',
+      title: 'Assignment Baru',
+      message: 'Anda diassign ke order Cuci AC Standar di Jl. Senopati No. 8.',
       isRead: false,
     },
     {
-      userId: partnerUser1!.id, type: 'review_received', channel: 'In App',
-      title: 'Review Baru', message: 'Budi Santoso memberi Anda rating 5.0!',
-      isRead: true, sentAt: new Date('2026-06-26T10:00:00'),
+      userId: partnerUser1!.id,
+      type: 'review_received',
+      channel: 'In App',
+      title: 'Review Baru',
+      message: 'Budi Santoso memberi Anda rating 5.0!',
+      isRead: true,
+      sentAt: new Date('2026-06-26T10:00:00'),
     },
   ]);
   console.log('  ✓ 4 notifications created');
@@ -894,16 +1019,24 @@ async function seed() {
   // ─── SEO Metadata ────────────────────────────────────────────────
   await db.insert(seoMetadata).values([
     {
-      entityType: 'Service', entityId: svcCuciAC!.id,
-      metaTitle: 'Cuci AC Standar - Spesialis', metaDescription: 'Pembersihan AC standar untuk rumah. Teknisi berpengalaman, garansi layanan.',
+      entityType: 'Service',
+      entityId: svcCuciAC!.id,
+      metaTitle: 'Cuci AC Standar - Spesialis',
+      metaDescription:
+        'Pembersihan AC standar untuk rumah. Teknisi berpengalaman, garansi layanan.',
     },
     {
-      entityType: 'Service', entityId: svcCatInterior!.id,
-      metaTitle: 'Cat Interior Profesional - Spesialis', metaDescription: 'Jasa pengecatan interior rumah dan kantor. Hasil rapi, cat berkualitas.',
+      entityType: 'Service',
+      entityId: svcCatInterior!.id,
+      metaTitle: 'Cat Interior Profesional - Spesialis',
+      metaDescription: 'Jasa pengecatan interior rumah dan kantor. Hasil rapi, cat berkualitas.',
     },
     {
-      entityType: 'ServiceCategory', entityId: acCat!.id,
-      metaTitle: 'Service AC Profesional - Spesialis', metaDescription: 'Layanan service AC: cuci, isi freon, bongkar pasang. Teknisi bersertifikat.',
+      entityType: 'ServiceCategory',
+      entityId: acCat!.id,
+      metaTitle: 'Service AC Profesional - Spesialis',
+      metaDescription:
+        'Layanan service AC: cuci, isi freon, bongkar pasang. Teknisi bersertifikat.',
     },
   ]);
   console.log('  ✓ 3 SEO metadata entries created');
@@ -911,16 +1044,66 @@ async function seed() {
   // ─── System Settings ─────────────────────────────────────────────
   await db.insert(systemSettings).values([
     { category: 'general', key: 'site_name', value: 'Spesialis', description: 'Nama platform' },
-    { category: 'general', key: 'site_description', value: 'Platform layanan jasa profesional on-demand', description: 'Deskripsi platform' },
-    { category: 'booking', key: 'cancellation_window_hours', value: '24', description: 'Batas waktu cancel (jam sebelum jadwal)' },
-    { category: 'booking', key: 'max_booking_per_customer', value: '5', description: 'Maks booking aktif per customer' },
-    { category: 'booking', key: 'auto_confirm_hours', value: '2', description: 'Auto confirm jika tidak direspon admin' },
-    { category: 'commission', key: 'platform_fee_percent', value: '10', description: 'Komisi platform (%)' },
-    { category: 'commission', key: 'partner_payout_days', value: '7', description: 'Jeda pencairan dana partner (hari)' },
-    { category: 'partner', key: 'min_rating_to_keep', value: '3.0', description: 'Rating minimal partner' },
-    { category: 'partner', key: 'max_rejections_before_suspend', value: '5', description: 'Maks penolakan assignment sebelum suspend' },
-    { category: 'security', key: 'max_login_attempts', value: '5', description: 'Maks percobaan login' },
-    { category: 'security', key: 'lockout_duration_minutes', value: '30', description: 'Durasi lockout (menit)' },
+    {
+      category: 'general',
+      key: 'site_description',
+      value: 'Platform layanan jasa profesional on-demand',
+      description: 'Deskripsi platform',
+    },
+    {
+      category: 'booking',
+      key: 'cancellation_window_hours',
+      value: '24',
+      description: 'Batas waktu cancel (jam sebelum jadwal)',
+    },
+    {
+      category: 'booking',
+      key: 'max_booking_per_customer',
+      value: '5',
+      description: 'Maks booking aktif per customer',
+    },
+    {
+      category: 'booking',
+      key: 'auto_confirm_hours',
+      value: '2',
+      description: 'Auto confirm jika tidak direspon admin',
+    },
+    {
+      category: 'commission',
+      key: 'platform_fee_percent',
+      value: '10',
+      description: 'Komisi platform (%)',
+    },
+    {
+      category: 'commission',
+      key: 'partner_payout_days',
+      value: '7',
+      description: 'Jeda pencairan dana partner (hari)',
+    },
+    {
+      category: 'partner',
+      key: 'min_rating_to_keep',
+      value: '3.0',
+      description: 'Rating minimal partner',
+    },
+    {
+      category: 'partner',
+      key: 'max_rejections_before_suspend',
+      value: '5',
+      description: 'Maks penolakan assignment sebelum suspend',
+    },
+    {
+      category: 'security',
+      key: 'max_login_attempts',
+      value: '5',
+      description: 'Maks percobaan login',
+    },
+    {
+      category: 'security',
+      key: 'lockout_duration_minutes',
+      value: '30',
+      description: 'Durasi lockout (menit)',
+    },
   ]);
   console.log('  ✓ 11 system settings created');
 

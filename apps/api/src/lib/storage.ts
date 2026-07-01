@@ -1,9 +1,10 @@
 import { writeFile, mkdir, unlink } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
-import { join, extname } from 'node:path';
+import { join, extname, resolve } from 'node:path';
 import { randomUUID } from 'node:crypto';
 
-const UPLOAD_DIR = join(import.meta.dirname, '..', 'uploads');
+export const UPLOAD_DIR = resolve(process.env.UPLOAD_DIR ?? join(process.cwd(), 'uploads'));
+
 const ALLOWED_MIME_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'application/pdf'] as const;
 const MAX_FILE_SIZE = 10 * 1024 * 1024;
 

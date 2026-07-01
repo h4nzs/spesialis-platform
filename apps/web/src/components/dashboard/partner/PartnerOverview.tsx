@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { createBrowserClient, formatCurrency } from '@specialist/shared';
+import { createBrowserClient } from '@specialist/shared';
 import { Card } from '@specialist/ui';
 
 export function PartnerOverview() {
@@ -16,7 +16,7 @@ export function PartnerOverview() {
   useEffect(() => {
     async function load() {
       try {
-        const [prof, jobs] = await Promise.all([
+        const [prof, _jobs] = await Promise.all([
           api.get('/api/v1/partners/me'),
           api.get<unknown[]>('/api/v1/partners/me/jobs'),
         ]);
@@ -39,7 +39,10 @@ export function PartnerOverview() {
   }
 
   const stats = [
-    { label: 'Rating', value: profile.ratingAverage ? `${Number(profile.ratingAverage).toFixed(1)} / 5.0` : '-' },
+    {
+      label: 'Rating',
+      value: profile.ratingAverage ? `${Number(profile.ratingAverage).toFixed(1)} / 5.0` : '-',
+    },
     { label: 'Pekerjaan Selesai', value: profile.completedJobs },
     { label: 'Status', value: profile.availability },
     { label: 'Verifikasi', value: profile.verificationStatus },

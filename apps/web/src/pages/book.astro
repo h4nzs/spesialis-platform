@@ -5,7 +5,11 @@ import { BookingForm } from '../components/BookingForm.tsx'
 const serviceId = Astro.url.searchParams.get('serviceId')
 ---
 
-<BaseLayout>
+<BaseLayout
+  title="Booking - Spesialis"
+  description="Pesan layanan jasa profesional online. Isi form booking untuk memesan teknisi terpercaya."
+  canonicalUrl={serviceId ? `/book?serviceId=${serviceId}` : '/book'}
+>
   <div class="mx-auto max-w-2xl px-4 py-12 sm:px-6 lg:px-8">
     <nav class="mb-8 text-sm text-text-muted">
       <a href="/" class="hover:text-text transition-colors">Beranda</a>

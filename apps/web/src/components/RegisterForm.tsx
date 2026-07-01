@@ -41,7 +41,7 @@ export function RegisterForm() {
         token: string;
       }>('/api/v1/auth/register', { body: parsed.data });
 
-      saveAuth(result.user as never, result.token);
+      saveAuth(result.user, result.token);
       api.getTokenStore().setTokens(result.token, '');
       redirectToDashboard();
     } catch (err: unknown) {

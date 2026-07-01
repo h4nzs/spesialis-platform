@@ -1,23 +1,12 @@
 import { Hono } from 'hono';
 import { eq } from 'drizzle-orm';
-import {
-  db,
-  orders,
-  payments,
-  orderStatusHistory,
-  customerProfiles,
-} from '../lib/db.ts';
+import { db, orders, payments, orderStatusHistory, customerProfiles } from '../lib/db.ts';
 import { authMiddleware, requireRole } from '../middleware/auth.ts';
 import { createPaymentSchema, verifyPaymentSchema } from '@specialist/validation';
-import {
-  success,
-  created,
-  error,
-  notFound,
-  forbidden,
-  conflict,
-} from '../lib/response.ts';
+import { success, created, error, notFound, forbidden, conflict } from '../lib/response.ts';
 import type { OrderStatus } from '@specialist/types';
+import { createAuditLog } from '../lib/audit.ts';
+import { createNotification } from '../lib/notification.ts';
 
 async function recordStatusHistory(
   orderId: string,
@@ -183,7 +172,7 @@ router.post(
     }
 
     const [order] = await db
-      .select({ id: orders.id, status: orders.status })
+      .select({ id: orders.id, status: orders.status, customerId: orders.customerId })
       .from(orders)
       .where(eq(orders.id, payment.orderId))
       .limit(1);
@@ -229,6 +218,31 @@ router.post(
         );
       }
     });
+
+    await createAuditLog(c, {
+      userId,
+      action: `payment.${parsed.data.status === 'Paid' ? 'verify' : 'reject'}`,
+      entity: 'payment',
+      entityId: paymentId,
+      newValue: { status: parsed.data.status, verifiedBy: userId },
+      oldValue: { status: payment.status },
+    });
+
+    if (parsed.data.status === 'Paid') {
+      const [cp] = await db
+        .select({ userId: customerProfiles.userId })
+        .from(customerProfiles)
+        .where(eq(customerProfiles.id, order.customerId))
+        .limit(1);
+      if (cp?.userId) {
+        await createNotification({
+          userId: cp.userId,
+          type: 'payment.received',
+          title: 'Pembayaran Diterima',
+          message: 'Pembayaran Anda telah dikonfirmasi. Terima kasih!',
+        });
+      }
+    }
 
     return success(c, { id: paymentId, status: parsed.data.status }, 'Pembayaran diverifikasi');
   },

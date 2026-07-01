@@ -1,0 +1,79 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro'
+
+interface FaqItem {
+  q: string
+  a: string
+}
+
+const faqs: FaqItem[] = [
+  {
+    q: 'Apa itu Spesialis?',
+    a: 'Spesialis adalah platform layanan jasa profesional on-demand yang menghubungkan Anda dengan teknisi dan profesional terpercaya untuk kebutuhan rumah, kantor, dan bisnis.',
+  },
+  {
+    q: 'Bagaimana cara memesan layanan?',
+    a: 'Pilih layanan yang Anda butuhkan, isi form booking dengan detail alamat dan jadwal, lalu admin kami akan mengonfirmasi dan menugaskan mitra teknisi.',
+  },
+  {
+    q: 'Apakah saya perlu membuat akun untuk booking?',
+    a: 'Tidak. Anda dapat melakukan booking tanpa membuat akun sebagai guest. Namun, dengan membuat akun Anda bisa melacak riwayat order, menyimpan alamat, dan mendapatkan kemudahan lainnya.',
+  },
+  {
+    q: 'Bagaimana cara menentukan harga final?',
+    a: 'Harga awal adalah estimasi berdasarkan base price. Harga final akan ditentukan setelah admin melakukan komunikasi melalui WhatsApp untuk menyesuaikan kondisi lapangan, lokasi, dan kebutuhan spesifik.',
+  },
+  {
+    q: 'Bagaimana cara pembayaran?',
+    a: 'Pembayaran dilakukan secara manual setelah pekerjaan selesai. Metode pembayaran yang tersedia: Transfer Bank, Tunai, QRIS, dan E-Wallet.',
+  },
+  {
+    q: 'Apada jaminan jika pekerjaan tidak sesuai?',
+    a: 'Setiap layanan dilengkapi garansi. Jika ada ketidaksesuaian, Anda dapat mengajukan komplain melalui dashboard dan tim kami akan segera menindaklanjuti.',
+  },
+  {
+    q: 'Bagaimana cara menjadi mitra teknisi?',
+    a: 'Daftar melalui halaman Daftar Mitra, lengkapi data diri dan dokumen yang diperlukan. Setelah diverifikasi oleh admin, Anda dapat mulai menerima pekerjaan.',
+  },
+  {
+    q: 'Apakah Spesialis melayani area Jabodetabek saja?',
+    a: 'Saat ini kami fokus melayani area Jabodetabek dan Bandung. Ke depannya kami akan memperluas jangkauan ke kota-kota lain di Indonesia.',
+  },
+]
+---
+
+<BaseLayout
+  title="FAQ - Spesialis"
+  description="Pertanyaan yang sering diajukan tentang layanan Spesialis. Temukan jawaban tentang booking, pembayaran, garansi, dan cara menjadi mitra."
+  canonicalUrl="/faq"
+  jsonLd={{
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: faqs.map((f) => ({
+      '@type': 'Question',
+      name: f.q,
+      acceptedAnswer: { '@type': 'Answer', text: f.a },
+    })),
+  }}
+>
+  <div class="mx-auto max-w-3xl px-4 py-12 sm:px-6 lg:px-8">
+    <h1 class="text-3xl font-bold text-text">Pertanyaan Umum (FAQ)</h1>
+    <p class="mt-2 text-text-muted">
+      Temukan jawaban untuk pertanyaan yang sering diajukan
+    </p>
+
+    <div class="mt-8 space-y-4">
+      {faqs.map((faq) => (
+        <details class="group rounded-lg border border-border bg-surface">
+          <summary class="flex cursor-pointer items-center justify-between p-4 font-medium text-text">
+            {faq.q}
+            <span class="text-text-muted transition-transform group-open:rotate-180">&darr;</span>
+          </summary>
+          <div class="border-t border-border px-4 py-3 text-sm text-text-muted">
+            {faq.a}
+          </div>
+        </details>
+      ))}
+    </div>
+  </div>
+</BaseLayout>

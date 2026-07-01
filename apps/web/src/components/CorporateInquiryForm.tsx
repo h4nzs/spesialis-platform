@@ -1,16 +1,22 @@
 import { useState } from 'react';
 import { createBrowserClient } from '@specialist/shared';
-import { Button, Input, Textarea, Card } from '@specialist/ui';
+import { createCompanySchema } from '@specialist/validation';
+import { Button, Input, Card } from '@specialist/ui';
 
 export function CorporateInquiryForm() {
   const api = createBrowserClient();
   const [form, setForm] = useState({
-    companyName: '', picName: '', email: '', phone: '', industry: '',
-    employeeCount: '', message: '',
+    companyName: '',
+    legalName: '',
+    email: '',
+    phone: '',
+    industry: '',
+    employeeCount: '',
+    password: '',
   });
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
-  const [error, setError] = useState('');
+  const [errors, setErrors] = useState<string[]>([]);
 
   function setField(field: string, value: string) {
     setForm((prev) => ({ ...prev, [field]: value }));
@@ -18,24 +24,28 @@ export function CorporateInquiryForm() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    setSubmitting(true);
-    setError('');
+    setErrors([]);
 
+    const parsed = createCompanySchema.safeParse({
+      ...form,
+      employeeCount: form.employeeCount ? Number(form.employeeCount) : undefined,
+    });
+    if (!parsed.success) {
+      setErrors(parsed.error.issues.map((i) => i.message));
+      return;
+    }
+
+    if (!form.password || form.password.length < 8) {
+      setErrors(['Password minimal 8 karakter']);
+      return;
+    }
+
+    setSubmitting(true);
     try {
-      await api.post('/api/v1/companies', {
-        body: {
-          companyName: form.companyName,
-          picName: form.picName,
-          email: form.email,
-          phone: form.phone,
-          industry: form.industry,
-          employeeCount: Number(form.employeeCount) || undefined,
-          message: form.message,
-        },
-      });
+      await api.post('/api/v1/companies', { body: { ...parsed.data, password: form.password } });
       setSuccess(true);
     } catch {
-      setError('Gagal mengirim inquiry. Silakan coba lagi.');
+      setErrors(['Gagal mengirim. Silakan coba lagi.']);
     } finally {
       setSubmitting(false);
     }
@@ -44,7 +54,7 @@ export function CorporateInquiryForm() {
   if (success) {
     return (
       <Card padding="lg" className="text-center">
-        <p className="text-lg font-semibold text-success">Inquiry Terkirim!</p>
+        <p className="text-lg font-semibold text-success">Pendaftaran Terkirim!</p>
         <p className="mt-2 text-sm text-text-muted">
           Tim kami akan menghubungi Anda dalam 1x24 jam.
         </p>
@@ -57,17 +67,64 @@ export function CorporateInquiryForm() {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      {error && <div className="rounded-md bg-danger/10 p-3 text-sm text-danger">{error}</div>}
+      {errors.length > 0 && (
+        <div className="rounded-md bg-danger/10 p-3">
+          {errors.map((err, i) => (
+            <p key={i} className="text-sm text-danger">
+              {err}
+            </p>
+          ))}
+        </div>
+      )}
 
-      <Input label="Nama Perusahaan" value={form.companyName} onChange={(e) => setField('companyName', e.target.value)} required />
-      <Input label="Nama PIC" value={form.picName} onChange={(e) => setField('picName', e.target.value)} required />
-      <Input label="Email" type="email" value={form.email} onChange={(e) => setField('email', e.target.value)} required />
-      <Input label="Nomor HP" type="tel" value={form.phone} onChange={(e) => setField('phone', e.target.value)} required />
-      <Input label="Industri" value={form.industry} onChange={(e) => setField('industry', e.target.value)} placeholder="Contoh: Hospitality, Pendidikan" />
-      <Input label="Jumlah Karyawan" type="number" value={form.employeeCount} onChange={(e) => setField('employeeCount', e.target.value)} />
-      <Textarea label="Pesan" value={form.message} onChange={(e) => setField('message', e.target.value)} placeholder="Jelaskan kebutuhan layanan Anda" rows={4} />
+      <Input
+        label="Nama Perusahaan"
+        value={form.companyName}
+        onChange={(e) => setField('companyName', e.target.value)}
+        required
+      />
+      <Input
+        label="Nama Legal (sesuai akta)"
+        value={form.legalName}
+        onChange={(e) => setField('legalName', e.target.value)}
+        required
+      />
+      <Input
+        label="Email"
+        type="email"
+        value={form.email}
+        onChange={(e) => setField('email', e.target.value)}
+        required
+      />
+      <Input
+        label="Nomor HP"
+        type="tel"
+        value={form.phone}
+        onChange={(e) => setField('phone', e.target.value)}
+        required
+      />
+      <Input
+        label="Industri"
+        value={form.industry}
+        onChange={(e) => setField('industry', e.target.value)}
+        placeholder="Contoh: Hospitality, Pendidikan"
+      />
+      <Input
+        label="Jumlah Karyawan"
+        type="number"
+        value={form.employeeCount}
+        onChange={(e) => setField('employeeCount', e.target.value)}
+      />
+      <Input
+        label="Buat Password"
+        type="password"
+        value={form.password}
+        onChange={(e) => setField('password', e.target.value)}
+        required
+        placeholder="Minimal 8 karakter"
+      />
       <Button type="submit" className="w-full" disabled={submitting}>
-        {submitting ? 'Mengirim...' : 'Kirim Inquiry'}
+        {submitting ? 'Mengirim...' : 'Daftar'}
       </Button>
     </form>
   );
