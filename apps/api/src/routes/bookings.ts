@@ -71,7 +71,7 @@ function validTransitions(current: OrderStatus): OrderStatus[] {
     Confirmed: ['Waiting Assignment', 'Cancelled'],
     'Waiting Assignment': ['Partner Assigned', 'Cancelled'],
     'Partner Assigned': ['Partner Accepted', 'Waiting Assignment', 'Cancelled'],
-    'Partner Accepted': ['Working', 'Cancelled'],
+    'Partner Accepted': ['On The Way', 'Cancelled'],
     'On The Way': ['Working', 'Cancelled'],
     Working: ['Completed'],
     Completed: ['Waiting Payment'],
@@ -169,15 +169,18 @@ async function createGuestBooking(c: Context) {
 
     if (!address) return serverError(c, 'Gagal membuat alamat');
 
-    const [serviceItem] = orderItemsData;
-    const price = serviceItem
+    const serviceIds = orderItemsData.map((i) => i.serviceId);
+    const prices = serviceIds.length
       ? await db
-          .select({ basePrice: services.basePrice })
+          .select({ id: services.id, price: services.basePrice })
           .from(services)
-          .where(eq(services.id, serviceItem.serviceId))
-          .limit(1)
-      : null;
-    const basePrice = price ? Number(price[0]?.basePrice ?? 0) : 0;
+          .where(inArray(services.id, serviceIds))
+      : [];
+    const priceMap = new Map(prices.map((s) => [s.id, Number(s.price ?? 0)]));
+    const basePrice = orderItemsData.reduce(
+      (sum, item) => sum + (priceMap.get(item.serviceId) ?? 0) * item.quantity,
+      0,
+    );
 
     const [order] = await db
       .insert(orders)
@@ -281,15 +284,18 @@ async function createCustomerBooking(c: Context) {
   try {
     const bookingNumber = await getNextBookingNumber();
 
-    const [serviceItem] = orderItemsData;
-    const price = serviceItem
+    const serviceIds = orderItemsData.map((i) => i.serviceId);
+    const prices = serviceIds.length
       ? await db
-          .select({ basePrice: services.basePrice })
+          .select({ id: services.id, price: services.basePrice })
           .from(services)
-          .where(eq(services.id, serviceItem.serviceId))
-          .limit(1)
-      : null;
-    const basePrice = price ? Number(price[0]?.basePrice ?? 0) : 0;
+          .where(inArray(services.id, serviceIds))
+      : [];
+    const priceMap = new Map(prices.map((s) => [s.id, Number(s.price ?? 0)]));
+    const basePrice = orderItemsData.reduce(
+      (sum, item) => sum + (priceMap.get(item.serviceId) ?? 0) * item.quantity,
+      0,
+    );
 
     const [order] = await db
       .insert(orders)
@@ -618,6 +624,37 @@ router.post('/:id/accept', authMiddleware, async (c) => {
   });
 
   return success(c, { id: orderId, status: 'Partner Accepted' }, 'Assignment diterima');
+});
+
+router.post('/:id/on-the-way', authMiddleware, async (c) => {
+  const orderId = c.req.param('id')!;
+  const userId = c.get('userId');
+
+  const [profile] = await db
+    .select({ id: partnerProfiles.id })
+    .from(partnerProfiles)
+    .where(eq(partnerProfiles.userId, userId))
+    .limit(1);
+  if (!profile) return forbidden(c, 'Hanya partner yang bisa update status');
+
+  const [order] = await db
+    .select({ id: orders.id, status: orders.status })
+    .from(orders)
+    .where(and(eq(orders.id, orderId), eq(orders.partnerId, profile.id)))
+    .limit(1);
+  if (!order) return notFound(c, 'Booking tidak ditemukan');
+
+  if (!validTransitions(order.status).includes('On The Way')) {
+    return conflict(c, `Tidak bisa update dari status ${order.status}`);
+  }
+
+  await db.transaction(async (tx) => {
+    await tx.update(orders).set({ status: 'On The Way' }).where(eq(orders.id, orderId));
+
+    await recordStatusHistory(orderId, order.status, 'On The Way', userId);
+  });
+
+  return success(c, { id: orderId, status: 'On The Way' }, 'Partner dalam perjalanan');
 });
 
 router.post('/:id/reject', authMiddleware, async (c) => {

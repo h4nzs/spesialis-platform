@@ -1,6 +1,6 @@
 import { sign, verify } from 'hono/jwt';
 import { argon2id } from 'hash-wasm';
-import { randomUUID } from 'node:crypto';
+import { randomUUID, createHash } from 'node:crypto';
 import type { UserRole } from '@specialist/types';
 
 const JWT_SECRET = process.env.JWT_SECRET ?? 'dev-secret-change-in-production';
@@ -64,6 +64,10 @@ export async function verifyAccessToken(token: string) {
 
 export function generateRefreshToken(): string {
   return randomUUID();
+}
+
+export function hashToken(token: string): string {
+  return createHash('sha256').update(token).digest('hex');
 }
 
 export function getRefreshTokenExpiry(): Date {

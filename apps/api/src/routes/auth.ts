@@ -6,9 +6,11 @@ import {
   signAccessToken,
   generateRefreshToken,
   getRefreshTokenExpiry,
+  hashToken,
 } from '../lib/auth.ts';
 import { db, users, customerProfiles, refreshTokens, passwordResets } from '../lib/db.ts';
 import { authMiddleware } from '../middleware/auth.ts';
+import { rateLimit } from '../middleware/rate-limiter.ts';
 import { sendPasswordResetEmail } from '../lib/email.ts';
 import {
   registerSchema,
@@ -32,7 +34,7 @@ import {
 
 const router = new Hono();
 
-router.post('/register', async (c) => {
+router.post('/register', rateLimit(10, 60_000), async (c) => {
   const body = await c.req.json();
   const parsed = registerSchema.safeParse(body);
   if (!parsed.success) {
@@ -86,7 +88,7 @@ router.post('/register', async (c) => {
   return created(c, { user: { id: user.id, email: user.email, role: user.role }, token });
 });
 
-router.post('/login', async (c) => {
+router.post('/login', rateLimit(10, 60_000), async (c) => {
   const body = await c.req.json();
   const parsed = loginSchema.safeParse(body);
   if (!parsed.success) {
@@ -132,7 +134,7 @@ router.post('/login', async (c) => {
   const refreshToken = generateRefreshToken();
   await db.insert(refreshTokens).values({
     userId: user.id,
-    tokenHash: refreshToken,
+    tokenHash: hashToken(refreshToken),
     expiresAt: getRefreshTokenExpiry(),
   });
 
@@ -145,7 +147,7 @@ router.post('/login', async (c) => {
   });
 });
 
-router.post('/refresh', async (c) => {
+router.post('/refresh', rateLimit(20, 60_000), async (c) => {
   const body = (await c.req.json()) as { refreshToken?: string };
   if (!body.refreshToken) {
     return unauthorized(c, 'Refresh token required');
@@ -159,7 +161,7 @@ router.post('/refresh', async (c) => {
       expiresAt: refreshTokens.expiresAt,
     })
     .from(refreshTokens)
-    .where(and(eq(refreshTokens.tokenHash, body.refreshToken), eq(refreshTokens.revoked, false)))
+    .where(and(eq(refreshTokens.tokenHash, hashToken(body.refreshToken)), eq(refreshTokens.revoked, false)))
     .limit(1);
 
   if (!stored || stored.expiresAt < new Date()) {
@@ -181,7 +183,7 @@ router.post('/refresh', async (c) => {
   const newRefreshToken = generateRefreshToken();
   await db.insert(refreshTokens).values({
     userId: user.id,
-    tokenHash: newRefreshToken,
+    tokenHash: hashToken(newRefreshToken),
     expiresAt: getRefreshTokenExpiry(),
   });
 
@@ -201,7 +203,7 @@ router.post('/logout', authMiddleware, async (c) => {
   return success(c, null, 'Logged out');
 });
 
-router.post('/forgot-password', async (c) => {
+router.post('/forgot-password', rateLimit(5, 60_000), async (c) => {
   const body = await c.req.json();
   const parsed = forgotPasswordSchema.safeParse(body);
   if (!parsed.success) {
