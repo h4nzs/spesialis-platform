@@ -1,0 +1,16 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro'
+import { CorporateInquiryForm } from '../components/CorporateInquiryForm.tsx'
+---
+
+<BaseLayout>
+  <div class="mx-auto max-w-lg px-4 py-12 sm:px-6 lg:px-8">
+    <h1 class="text-2xl font-bold text-text">Inquiry Perusahaan</h1>
+    <p class="mt-1 text-sm text-text-muted">
+      Isi form di bawah untuk menghubungi tim kami
+    </p>
+    <div class="mt-8">
+      <CorporateInquiryForm client:load />
+    </div>
+  </div>
+</BaseLayout>

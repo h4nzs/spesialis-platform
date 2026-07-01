@@ -14,7 +14,8 @@
     "./utils/logger": "./src/utils/logger.ts"
   },
   "scripts": {
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint ."
   },
   "devDependencies": {
     "@specialist/types": "workspace:*",

@@ -1,4 +1,4 @@
-import type { ReactNode, HTMLAttributes } from 'react';
+import type { HTMLAttributes } from 'react';
 
 type HeadingLevel = 'h1' | 'h2' | 'h3' | 'h4';
 

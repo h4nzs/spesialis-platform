@@ -1,0 +1,8 @@
+---
+import DashboardLayout from '../../../../layouts/DashboardLayout.astro'
+import { ComplaintForm } from '../../../../components/dashboard/customer/ComplaintForm.tsx'
+---
+
+<DashboardLayout title="Buat Komplain" role="customer">
+  <ComplaintForm client:load />
+</DashboardLayout>

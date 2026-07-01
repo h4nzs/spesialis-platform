@@ -1,0 +1,8 @@
+---
+import DashboardLayout from '../../../layouts/DashboardLayout.astro'
+import { AdminCustomers } from '../../../components/dashboard/admin/AdminCustomers.tsx'
+---
+
+<DashboardLayout title="Manajemen Customer" role="admin">
+  <AdminCustomers client:load />
+</DashboardLayout>

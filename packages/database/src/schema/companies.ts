@@ -1,4 +1,4 @@
-import { pgTable, uuid, varchar, timestamp, text, integer } from 'drizzle-orm/pg-core';
+import { pgTable, uuid, varchar, timestamp, integer } from 'drizzle-orm/pg-core';
 import { type CompanyStatus } from '@specialist/types';
 
 export const companies = pgTable('companies', {

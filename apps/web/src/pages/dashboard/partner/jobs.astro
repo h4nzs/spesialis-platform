@@ -1,0 +1,8 @@
+---
+import DashboardLayout from '../../../layouts/DashboardLayout.astro'
+import { PartnerJobs } from '../../../components/dashboard/partner/PartnerJobs.tsx'
+---
+
+<DashboardLayout title="Pekerjaan Saya" role="partner">
+  <PartnerJobs client:load />
+</DashboardLayout>

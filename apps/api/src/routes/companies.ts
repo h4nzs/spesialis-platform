@@ -1,6 +1,6 @@
 import { Hono } from 'hono';
 import { eq, and, desc } from 'drizzle-orm';
-import { db, users, companies, companyUsers, branches, orders } from '../lib/db.ts';
+import { db, users, companies, companyUsers, branches } from '../lib/db.ts';
 import { authMiddleware, requireRole } from '../middleware/auth.ts';
 import { hashPassword, signAccessToken } from '../lib/auth.ts';
 import {

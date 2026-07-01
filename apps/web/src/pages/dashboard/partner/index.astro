@@ -1,0 +1,8 @@
+---
+import DashboardLayout from '../../../layouts/DashboardLayout.astro'
+import { PartnerOverview } from '../../../components/dashboard/partner/PartnerOverview.tsx'
+---
+
+<DashboardLayout title="Dashboard Mitra" role="partner">
+  <PartnerOverview client:load />
+</DashboardLayout>

@@ -1,0 +1,30 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro'
+import { BookingForm } from '../components/BookingForm.tsx'
+
+const serviceId = Astro.url.searchParams.get('serviceId')
+---
+
+<BaseLayout>
+  <div class="mx-auto max-w-2xl px-4 py-12 sm:px-6 lg:px-8">
+    <nav class="mb-8 text-sm text-text-muted">
+      <a href="/" class="hover:text-text transition-colors">Beranda</a>
+      <span class="mx-2">/</span>
+      <a href="/services" class="hover:text-text transition-colors">Layanan</a>
+      <span class="mx-2">/</span>
+      <span class="text-text">Booking</span>
+    </nav>
+
+    <h1 class="text-2xl font-bold text-text">Pemesanan Layanan</h1>
+    <p class="mt-1 text-sm text-text-muted">
+      Isi form di bawah untuk memesan layanan jasa profesional
+    </p>
+
+    <div class="mt-8">
+      <BookingForm
+        client:load
+        serviceId={serviceId}
+      />
+    </div>
+  </div>
+</BaseLayout>

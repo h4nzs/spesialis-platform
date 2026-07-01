@@ -1,6 +1,6 @@
 import { Hono } from 'hono';
 import { eq } from 'drizzle-orm';
-import { db, users, customerProfiles } from '../lib/db.ts';
+import { db, customerProfiles } from '../lib/db.ts';
 import { authMiddleware } from '../middleware/auth.ts';
 import { updateCustomerSchema } from '@specialist/validation';
 import { success, error, serverError } from '../lib/response.ts';

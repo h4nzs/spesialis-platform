@@ -4,7 +4,7 @@ import { db, notifications } from '../lib/db.ts';
 import { authMiddleware } from '../middleware/auth.ts';
 import { markNotificationReadSchema } from '@specialist/validation';
 import type { PaginationMeta } from '@specialist/types';
-import { success, successPaginated, error, notFound } from '../lib/response.ts';
+import { success, successPaginated, error } from '../lib/response.ts';
 
 const router = new Hono();
 

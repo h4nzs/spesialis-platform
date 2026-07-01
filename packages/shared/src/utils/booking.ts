@@ -3,7 +3,6 @@ import {
   ORDER_STATUS_TRANSITIONS,
   CANCELLABLE_BY_CUSTOMER,
   canTransition,
-  isOrderActive,
   isOrderFinal,
   ACTIVE_ORDER_STATUSES,
   FINAL_ORDER_STATUSES,

@@ -1,18 +1,16 @@
 import { Hono } from 'hono';
-import { eq, and, desc, sql } from 'drizzle-orm';
-import { db, reviews, orders, customerProfiles, partnerProfiles } from '../lib/db.ts';
+import { eq, and, desc } from 'drizzle-orm';
+import { db, reviews, orders, customerProfiles } from '../lib/db.ts';
 import { authMiddleware } from '../middleware/auth.ts';
 import { createReviewSchema } from '@specialist/validation';
-import type { PaginationMeta, OrderStatus } from '@specialist/types';
+import type { OrderStatus } from '@specialist/types';
 import {
   success,
-  successPaginated,
   created,
   error,
   notFound,
   forbidden,
   conflict,
-  serverError,
 } from '../lib/response.ts';
 
 const router = new Hono();

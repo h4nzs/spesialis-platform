@@ -384,7 +384,6 @@ function getDefaultApiUrl(): string {
 
   // Node.js process.env — tersedia di server via globalThis.process
   try {
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     const nodeProcess = (globalThis as { process?: { env: Record<string, string | undefined> } })
       .process;
     const url = nodeProcess?.env?.PUBLIC_API_URL;

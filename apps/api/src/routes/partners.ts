@@ -5,7 +5,6 @@ import {
   users,
   partnerProfiles,
   partnerSkills,
-  partnerDocuments,
   serviceCategories,
   assignments,
   orders,
@@ -20,7 +19,7 @@ import {
   addSkillSchema,
   paginationQuerySchema,
 } from '@specialist/validation';
-import type { PaginationMeta } from '@specialist/types';
+import type { PaginationMeta, PartnerAvailability, PartnerVerificationStatus } from '@specialist/types';
 import {
   success,
   successPaginated,
@@ -29,7 +28,6 @@ import {
   notFound,
   conflict,
   serverError,
-  forbidden,
 } from '../lib/response.ts';
 
 const router = new Hono();
@@ -92,8 +90,8 @@ router.get('/', async (c) => {
   const categoryId = c.req.query('categoryId');
 
   const conditions: ReturnType<typeof eq>[] = [];
-  if (availability) conditions.push(eq(partnerProfiles.availability, availability as any));
-  if (verification) conditions.push(eq(partnerProfiles.verificationStatus, verification as any));
+  if (availability) conditions.push(eq(partnerProfiles.availability, availability as PartnerAvailability));
+  if (verification) conditions.push(eq(partnerProfiles.verificationStatus, verification as PartnerVerificationStatus));
   if (categoryId) {
     const partnerIds = await db
       .select({ id: partnerSkills.partnerId })
@@ -343,7 +341,6 @@ router.get('/:id', async (c) => {
 
 router.post('/:id/verify', authMiddleware, requireRole('admin', 'super_admin'), async (c) => {
   const partnerId = c.req.param('id')!;
-  const userId = c.get('userId');
   const body = await c.req.json();
   const parsed = verifyPartnerSchema.safeParse(body);
   if (!parsed.success) {
@@ -365,7 +362,7 @@ router.post('/:id/verify', authMiddleware, requireRole('admin', 'super_admin'), 
 
   await db
     .update(partnerProfiles)
-    .set({ verificationStatus: parsed.data.verificationStatus as any })
+    .set({ verificationStatus: parsed.data.verificationStatus as PartnerVerificationStatus })
     .where(eq(partnerProfiles.id, partnerId));
 
   return success(

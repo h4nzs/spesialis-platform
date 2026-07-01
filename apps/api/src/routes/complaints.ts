@@ -1,5 +1,5 @@
 import { Hono } from 'hono';
-import { eq, and, desc } from 'drizzle-orm';
+import { eq, desc } from 'drizzle-orm';
 import { db, complaints, orders, customerProfiles } from '../lib/db.ts';
 import { authMiddleware, requireRole } from '../middleware/auth.ts';
 import { createComplaintSchema, resolveComplaintSchema } from '@specialist/validation';
@@ -10,7 +10,6 @@ import {
   notFound,
   forbidden,
   conflict,
-  serverError,
 } from '../lib/response.ts';
 
 const router = new Hono();

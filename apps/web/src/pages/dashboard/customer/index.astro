@@ -1,0 +1,8 @@
+---
+import DashboardLayout from '../../../layouts/DashboardLayout.astro'
+import { CustomerOverview } from '../../../components/dashboard/customer/CustomerOverview.tsx'
+---
+
+<DashboardLayout title="Dashboard Customer" role="customer">
+  <CustomerOverview client:load />
+</DashboardLayout>

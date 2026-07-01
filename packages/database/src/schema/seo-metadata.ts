@@ -1,4 +1,4 @@
-import { pgTable, uuid, varchar, text, jsonb } from 'drizzle-orm/pg-core';
+import { pgTable, uuid, varchar, jsonb } from 'drizzle-orm/pg-core';
 
 export const seoMetadata = pgTable('seo_metadata', {
   id: uuid('id').defaultRandom().primaryKey(),

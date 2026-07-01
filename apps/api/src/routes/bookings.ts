@@ -1,5 +1,6 @@
 import { Hono } from 'hono';
-import { eq, and, or, desc, isNull, inArray, sql } from 'drizzle-orm';
+import type { Context } from 'hono';
+import { eq, and, desc, inArray, sql } from 'drizzle-orm';
 import type { OrderStatus } from '@specialist/types';
 import {
   db,
@@ -21,7 +22,6 @@ import {
   createCustomerBookingSchema,
   confirmBookingSchema,
   assignPartnerSchema,
-  acceptAssignmentSchema,
   rejectAssignmentSchema,
 } from '@specialist/validation';
 import {
@@ -116,7 +116,7 @@ async function attachMediaToOrder(orderId: string, mediaIds: string[], uploadedB
   await db.insert(orderMedia).values(mediaIds.map((mediaId) => ({ orderId, mediaId })));
 }
 
-async function createGuestBooking(c: import('hono').Context) {
+async function createGuestBooking(c: Context) {
   const body = await c.req.json();
   const parsed = createGuestBookingSchema.safeParse(body);
   if (!parsed.success) {
@@ -241,7 +241,7 @@ async function createGuestBooking(c: import('hono').Context) {
   }
 }
 
-async function createCustomerBooking(c: import('hono').Context) {
+async function createCustomerBooking(c: Context) {
   const userId = c.get('userId');
   const body = await c.req.json();
   const parsed = createCustomerBookingSchema.safeParse(body);
@@ -358,7 +358,7 @@ router.get('/', authMiddleware, async (c) => {
   const limit = Number(c.req.query('limit') ?? 20);
   const statusFilter = c.req.query('status');
 
-  let query = db
+  const query = db
     .select({
       id: orders.id,
       bookingNumber: orders.bookingNumber,

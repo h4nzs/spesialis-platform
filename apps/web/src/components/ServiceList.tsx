@@ -65,9 +65,10 @@ export function ServiceList() {
   return (
     <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
       {services.map((service) => (
-        <article
+        <a
           key={service.id}
-          className="rounded-lg border border-border bg-surface p-6 transition-shadow hover:shadow-md"
+          href={`/services/${service.slug}`}
+          className="block rounded-lg border border-border bg-surface p-6 transition-shadow hover:shadow-md"
         >
           <h2 className="text-lg font-semibold text-text">{service.name}</h2>
           <p className="mt-2 text-sm text-text-muted">
@@ -83,7 +84,7 @@ export function ServiceList() {
               </span>
             )}
           </div>
-        </article>
+        </a>
       ))}
     </div>
   );

@@ -6,7 +6,6 @@ import {
   payments,
   orderStatusHistory,
   customerProfiles,
-  partnerProfiles,
 } from '../lib/db.ts';
 import { authMiddleware, requireRole } from '../middleware/auth.ts';
 import { createPaymentSchema, verifyPaymentSchema } from '@specialist/validation';
@@ -17,7 +16,6 @@ import {
   notFound,
   forbidden,
   conflict,
-  serverError,
 } from '../lib/response.ts';
 import type { OrderStatus } from '@specialist/types';
 
@@ -94,10 +92,6 @@ router.post('/', authMiddleware, async (c) => {
     })
     .returning();
 
-  let targetStatus: OrderStatus = 'Waiting Payment';
-  if (order.status !== 'Waiting Payment' && order.status !== 'Completed') {
-    targetStatus = order.status;
-  }
   if (order.status === 'Completed' || order.status === 'Waiting Payment') {
     await db.update(orders).set({ status: 'Waiting Payment' }).where(eq(orders.id, order.id));
     await recordStatusHistory(

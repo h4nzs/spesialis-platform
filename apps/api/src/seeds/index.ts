@@ -3,29 +3,92 @@ import {
   users,
   customerProfiles,
   partnerProfiles,
+  companies,
+  companyUsers,
+  branches,
   serviceCategories,
   services,
+  addresses,
+  orders,
+  orderItems,
+  orderStatusHistory,
+  assignments,
+  payments,
+  reviews,
+  complaints,
+  notifications,
   partnerSkills,
+  partnerDocuments,
+  seoMetadata,
   systemSettings,
 } from '@specialist/database';
 import { hashPassword } from '../lib/auth.ts';
+import type { OrderStatus, PaymentMethod, PaymentStatus } from '@specialist/types';
 
 async function seed() {
-  console.log('🌱 Seeding database...');
+  console.log('🌱 Seeding database...\n');
 
   const adminPassword = await hashPassword('password123');
   const partnerPassword = await hashPassword('password123');
   const customerPassword = await hashPassword('password123');
 
-  await db.insert(users).values({
-    email: 'admin@spesialis.id',
-    phone: '6281234567890',
-    passwordHash: adminPassword,
-    role: 'super_admin',
-    status: 'active',
-  });
+  // ─── Users ───────────────────────────────────────────────────────
+  const [superAdmin] = await db
+    .insert(users)
+    .values({
+      email: 'admin@spesialis.id',
+      phone: '6281234567890',
+      passwordHash: adminPassword,
+      role: 'super_admin',
+      status: 'active',
+    })
+    .returning({ id: users.id });
 
-  const [partnerUser] = await db
+  const [admin] = await db
+    .insert(users)
+    .values({
+      email: 'admin2@spesialis.id',
+      phone: '6281234567893',
+      passwordHash: adminPassword,
+      role: 'admin',
+      status: 'active',
+    })
+    .returning({ id: users.id });
+
+  const [dispatcher] = await db
+    .insert(users)
+    .values({
+      email: 'dispatcher@spesialis.id',
+      phone: '6281234567894',
+      passwordHash: adminPassword,
+      role: 'dispatcher',
+      status: 'active',
+    })
+    .returning({ id: users.id });
+
+  const [finance] = await db
+    .insert(users)
+    .values({
+      email: 'finance@spesialis.id',
+      phone: '6281234567895',
+      passwordHash: adminPassword,
+      role: 'finance',
+      status: 'active',
+    })
+    .returning({ id: users.id });
+
+  const [contentMgr] = await db
+    .insert(users)
+    .values({
+      email: 'content@spesialis.id',
+      phone: '6281234567896',
+      passwordHash: adminPassword,
+      role: 'content_manager',
+      status: 'active',
+    })
+    .returning({ id: users.id });
+
+  const [partnerUser1] = await db
     .insert(users)
     .values({
       email: 'partner@spesialis.id',
@@ -36,7 +99,18 @@ async function seed() {
     })
     .returning({ id: users.id });
 
-  const [customerUser] = await db
+  const [partnerUser2] = await db
+    .insert(users)
+    .values({
+      email: 'partner2@spesialis.id',
+      phone: '6281234567897',
+      passwordHash: partnerPassword,
+      role: 'partner',
+      status: 'active',
+    })
+    .returning({ id: users.id });
+
+  const [customerUser1] = await db
     .insert(users)
     .values({
       email: 'customer@spesialis.id',
@@ -47,25 +121,115 @@ async function seed() {
     })
     .returning({ id: users.id });
 
-  await db.insert(customerProfiles).values({
-    userId: customerUser!.id,
-    fullName: 'Budi Customer',
-  });
+  const [customerUser2] = await db
+    .insert(users)
+    .values({
+      email: 'customer2@spesialis.id',
+      phone: '6281234567898',
+      passwordHash: customerPassword,
+      role: 'customer',
+      status: 'active',
+    })
+    .returning({ id: users.id });
 
-  const [partnerProfile] = await db
+  const [corporateUser] = await db
+    .insert(users)
+    .values({
+      email: 'corporate@spesialis.id',
+      phone: '6281234567899',
+      passwordHash: customerPassword,
+      role: 'corporate',
+      status: 'active',
+    })
+    .returning({ id: users.id });
+
+  console.log('  ✓ 9 users created (super_admin, admin, dispatcher, finance, content_manager, 2 partners, 2 customers, corporate)');
+
+  // ─── Profiles ────────────────────────────────────────────────────
+  const [customerProfile1] = await db
+    .insert(customerProfiles)
+    .values({
+      userId: customerUser1!.id,
+      fullName: 'Budi Santoso',
+      birthDate: '1990-05-15',
+      gender: 'male',
+    })
+    .returning({ id: customerProfiles.id });
+
+  const [customerProfile2] = await db
+    .insert(customerProfiles)
+    .values({
+      userId: customerUser2!.id,
+      fullName: 'Siti Rahmawati',
+      birthDate: '1995-11-20',
+      gender: 'female',
+    })
+    .returning({ id: customerProfiles.id });
+
+  const [partnerProfile1] = await db
     .insert(partnerProfiles)
     .values({
-      userId: partnerUser!.id,
+      userId: partnerUser1!.id,
       fullName: 'Ahmad Teknisi',
       phone: '6281234567891',
       ktpNumber: '1234567890123456',
       experienceYear: 5,
-      bio: 'Teknisi AC dan listrik berpengalaman.',
+      bio: 'Teknisi AC dan listrik berpengalaman. Sudah menangani 500+ pelanggan.',
       availability: 'Available',
       verificationStatus: 'Approved',
+      ratingAverage: '4.5',
+      completedJobs: 120,
     })
     .returning({ id: partnerProfiles.id });
 
+  const [partnerProfile2] = await db
+    .insert(partnerProfiles)
+    .values({
+      userId: partnerUser2!.id,
+      fullName: 'Dwi Plumbing',
+      phone: '6281234567897',
+      ktpNumber: '6543210987654321',
+      experienceYear: 3,
+      bio: 'Ahli perbaikan pipa, saluran air, dan water heater.',
+      availability: 'Available',
+      verificationStatus: 'Approved',
+      ratingAverage: '4.2',
+      completedJobs: 85,
+    })
+    .returning({ id: partnerProfiles.id });
+
+  console.log('  ✓ 4 profiles created (2 customers, 2 partners)');
+
+  // ─── Company ─────────────────────────────────────────────────────
+  const [company] = await db
+    .insert(companies)
+    .values({
+      companyName: 'PT Sejahtera Abadi',
+      legalName: 'PT Sejahtera Abadi Bersama',
+      taxNumber: '123456789012345',
+      email: 'info@sejahteraabadi.co.id',
+      phone: '6282112345678',
+      website: 'https://sejahteraabadi.co.id',
+      industry: 'Property & Real Estate',
+      employeeCount: 250,
+      status: 'Verified',
+    })
+    .returning({ id: companies.id });
+
+  await db.insert(companyUsers).values({
+    companyId: company!.id,
+    userId: corporateUser!.id,
+    role: 'admin',
+  });
+
+  await db.insert(branches).values([
+    { companyId: company!.id, name: 'Kantor Pusat', address: 'Jl. Sudirman No. 123', city: 'Jakarta Pusat', phone: '6282112345678' },
+    { companyId: company!.id, name: 'Cabang Bandung', address: 'Jl. Dago No. 45', city: 'Bandung', phone: '6282112345680' },
+  ]);
+
+  console.log('  ✓ 1 company + 1 corporate user + 2 branches created');
+
+  // ─── Service Categories ─────────────────────────────────────────
   const [acCat] = await db
     .insert(serviceCategories)
     .values({
@@ -110,146 +274,678 @@ async function seed() {
     })
     .returning({ id: serviceCategories.id });
 
-  await db.insert(services).values([
-    {
-      categoryId: acCat!.id,
-      name: 'Cuci AC Standar',
-      slug: 'cuci-ac-standar',
-      shortDescription: 'Pembersihan AC standar untuk rumah',
-      basePrice: '150000',
-      estimatedDuration: 60,
-      isFeatured: true,
-      displayOrder: 1,
-    },
-    {
-      categoryId: acCat!.id,
-      name: 'Cuci AC Medium',
-      slug: 'cuci-ac-medium',
-      shortDescription: 'Pembersihan AC untuk kantor kecil',
-      basePrice: '200000',
-      estimatedDuration: 90,
-      displayOrder: 2,
-    },
-    {
-      categoryId: acCat!.id,
-      name: 'Isi Freon AC',
-      slug: 'isi-freon-ac',
-      shortDescription: 'Isi ulang freon AC',
-      basePrice: '250000',
-      estimatedDuration: 45,
-      displayOrder: 3,
-    },
-    {
-      categoryId: acCat!.id,
-      name: 'Bongkar Pasang AC',
-      slug: 'bongkar-pasang-ac',
-      shortDescription: 'Jasa bongkar pasang AC',
-      basePrice: '350000',
-      estimatedDuration: 120,
-      isFeatured: true,
-      displayOrder: 4,
-    },
-    {
-      categoryId: plumbingCat!.id,
-      name: 'Bocor Pipa Air',
-      slug: 'bocor-pipa-air',
-      shortDescription: 'Perbaikan pipa air bocor',
-      basePrice: '150000',
-      estimatedDuration: 60,
-      isFeatured: true,
-      displayOrder: 1,
-    },
-    {
-      categoryId: plumbingCat!.id,
-      name: 'Saluran Mampet',
-      slug: 'saluran-mampet',
-      shortDescription: 'Pengurasan saluran air mampet',
-      basePrice: '200000',
-      estimatedDuration: 90,
-      displayOrder: 2,
-    },
-    {
-      categoryId: plumbingCat!.id,
-      name: 'Pasang Water Heater',
-      slug: 'pasang-water-heater',
-      shortDescription: 'Instalasi pemanas air',
-      basePrice: '300000',
-      estimatedDuration: 120,
-      displayOrder: 3,
-    },
-    {
-      categoryId: electricalCat!.id,
-      name: 'Perbaikan Listrik',
-      slug: 'perbaikan-listrik',
-      shortDescription: 'Perbaikan instalasi listrik rumah',
-      basePrice: '100000',
-      estimatedDuration: 45,
-      isFeatured: true,
-      displayOrder: 1,
-    },
-    {
-      categoryId: electricalCat!.id,
-      name: 'Pasang Lampu',
-      slug: 'pasang-lampu',
-      shortDescription: 'Pemasangan lampu dan fitting',
-      basePrice: '75000',
-      estimatedDuration: 30,
-      displayOrder: 2,
-    },
-    {
-      categoryId: electricalCat!.id,
-      name: 'Panel Listrik',
-      slug: 'panel-listrik',
-      shortDescription: 'Perbaikan dan upgrade panel listrik',
-      basePrice: '250000',
-      estimatedDuration: 120,
-      displayOrder: 3,
-    },
-    {
-      categoryId: cleaningCat!.id,
-      name: 'Bersih Rumah Standar',
-      slug: 'bersih-rumah-standar',
-      shortDescription: 'Pembersihan rumah tipe 36-45',
-      basePrice: '200000',
-      estimatedDuration: 120,
-      isFeatured: true,
-      displayOrder: 1,
-    },
-    {
-      categoryId: cleaningCat!.id,
-      name: 'Bersih Rumah Besar',
-      slug: 'bersih-rumah-besar',
-      shortDescription: 'Pembersihan rumah tipe 60+',
-      basePrice: '350000',
-      estimatedDuration: 180,
-      displayOrder: 2,
-    },
-  ]);
+  const [paintingCat] = await db
+    .insert(serviceCategories)
+    .values({
+      name: 'Pengecatan',
+      slug: 'painting',
+      description: 'Jasa pengecatan interior dan eksterior',
+      icon: 'palette',
+      displayOrder: 5,
+    })
+    .returning({ id: serviceCategories.id });
 
+  console.log('  ✓ 5 service categories created');
+
+  // ─── Services ────────────────────────────────────────────────────
+  const [svcCuciAC] = await db
+    .insert(services)
+    .values({
+      categoryId: acCat!.id, name: 'Cuci AC Standar', slug: 'cuci-ac-standar',
+      shortDescription: 'Pembersihan AC standar untuk rumah', basePrice: '150000',
+      estimatedDuration: 60, isFeatured: true, displayOrder: 1,
+    })
+    .returning({ id: services.id });
+
+  const [svcCuciACMedium] = await db
+    .insert(services)
+    .values({
+      categoryId: acCat!.id, name: 'Cuci AC Medium', slug: 'cuci-ac-medium',
+      shortDescription: 'Pembersihan AC untuk kantor kecil', basePrice: '200000',
+      estimatedDuration: 90, displayOrder: 2,
+    })
+    .returning({ id: services.id });
+
+  const [svcFreonAC] = await db
+    .insert(services)
+    .values({
+      categoryId: acCat!.id, name: 'Isi Freon AC', slug: 'isi-freon-ac',
+      shortDescription: 'Isi ulang freon AC', basePrice: '250000',
+      estimatedDuration: 45, displayOrder: 3,
+    })
+    .returning({ id: services.id });
+
+  const [svcBongkarAC] = await db
+    .insert(services)
+    .values({
+      categoryId: acCat!.id, name: 'Bongkar Pasang AC', slug: 'bongkar-pasang-ac',
+      shortDescription: 'Jasa bongkar pasang AC', basePrice: '350000',
+      estimatedDuration: 120, isFeatured: true, displayOrder: 4,
+    })
+    .returning({ id: services.id });
+
+  const [svcPipaBocor] = await db
+    .insert(services)
+    .values({
+      categoryId: plumbingCat!.id, name: 'Bocor Pipa Air', slug: 'bocor-pipa-air',
+      shortDescription: 'Perbaikan pipa air bocor', basePrice: '150000',
+      estimatedDuration: 60, isFeatured: true, displayOrder: 1,
+    })
+    .returning({ id: services.id });
+
+  const [svcSaluranMampet] = await db
+    .insert(services)
+    .values({
+      categoryId: plumbingCat!.id, name: 'Saluran Mampet', slug: 'saluran-mampet',
+      shortDescription: 'Pengurasan saluran air mampet', basePrice: '200000',
+      estimatedDuration: 90, displayOrder: 2,
+    })
+    .returning({ id: services.id });
+
+  const [svcWaterHeater] = await db
+    .insert(services)
+    .values({
+      categoryId: plumbingCat!.id, name: 'Pasang Water Heater', slug: 'pasang-water-heater',
+      shortDescription: 'Instalasi pemanas air', basePrice: '300000',
+      estimatedDuration: 120, displayOrder: 3,
+    })
+    .returning({ id: services.id });
+
+  const [svcListrik] = await db
+    .insert(services)
+    .values({
+      categoryId: electricalCat!.id, name: 'Perbaikan Listrik', slug: 'perbaikan-listrik',
+      shortDescription: 'Perbaikan instalasi listrik rumah', basePrice: '100000',
+      estimatedDuration: 45, isFeatured: true, displayOrder: 1,
+    })
+    .returning({ id: services.id });
+
+  const [svcLampu] = await db
+    .insert(services)
+    .values({
+      categoryId: electricalCat!.id, name: 'Pasang Lampu', slug: 'pasang-lampu',
+      shortDescription: 'Pemasangan lampu dan fitting', basePrice: '75000',
+      estimatedDuration: 30, displayOrder: 2,
+    })
+    .returning({ id: services.id });
+
+  const [svcPanel] = await db
+    .insert(services)
+    .values({
+      categoryId: electricalCat!.id, name: 'Panel Listrik', slug: 'panel-listrik',
+      shortDescription: 'Perbaikan dan upgrade panel listrik', basePrice: '250000',
+      estimatedDuration: 120, displayOrder: 3,
+    })
+    .returning({ id: services.id });
+
+  const [svcCleaningStandar] = await db
+    .insert(services)
+    .values({
+      categoryId: cleaningCat!.id, name: 'Bersih Rumah Standar', slug: 'bersih-rumah-standar',
+      shortDescription: 'Pembersihan rumah tipe 36-45', basePrice: '200000',
+      estimatedDuration: 120, isFeatured: true, displayOrder: 1,
+    })
+    .returning({ id: services.id });
+
+  const [svcCleaningBesar] = await db
+    .insert(services)
+    .values({
+      categoryId: cleaningCat!.id, name: 'Bersih Rumah Besar', slug: 'bersih-rumah-besar',
+      shortDescription: 'Pembersihan rumah tipe 60+', basePrice: '350000',
+      estimatedDuration: 180, displayOrder: 2,
+    })
+    .returning({ id: services.id });
+
+  const [svcCatInterior] = await db
+    .insert(services)
+    .values({
+      categoryId: paintingCat!.id, name: 'Cat Interior', slug: 'cat-interior',
+      shortDescription: 'Pengecatan dinding interior rumah/kantor', basePrice: '500000',
+      estimatedDuration: 240, isFeatured: true, displayOrder: 1,
+    })
+    .returning({ id: services.id });
+
+  const [svcCatEksterior] = await db
+    .insert(services)
+    .values({
+      categoryId: paintingCat!.id, name: 'Cat Eksterior', slug: 'cat-eksterior',
+      shortDescription: 'Pengecatan dinding eksterior', basePrice: '750000',
+      estimatedDuration: 360, displayOrder: 2,
+    })
+    .returning({ id: services.id });
+
+  console.log('  ✓ 14 services created');
+
+  // ─── Partner Skills ──────────────────────────────────────────────
   await db.insert(partnerSkills).values([
-    { partnerId: partnerProfile!.id, categoryId: acCat!.id, proficiency: 'Expert' },
-    { partnerId: partnerProfile!.id, categoryId: electricalCat!.id, proficiency: 'Advanced' },
+    { partnerId: partnerProfile1!.id, categoryId: acCat!.id, proficiency: 'Expert' },
+    { partnerId: partnerProfile1!.id, categoryId: electricalCat!.id, proficiency: 'Advanced' },
+    { partnerId: partnerProfile2!.id, categoryId: plumbingCat!.id, proficiency: 'Expert' },
+    { partnerId: partnerProfile2!.id, categoryId: cleaningCat!.id, proficiency: 'Intermediate' },
   ]);
+  console.log('  ✓ 4 partner skills created');
 
-  await db.insert(systemSettings).values([
-    { category: 'general', key: 'site_name', value: 'Spesialis' },
+  // ─── Addresses ───────────────────────────────────────────────────
+  const [addrBudi1] = await db
+    .insert(addresses)
+    .values({
+      customerId: customerProfile1!.id,
+      label: 'Rumah',
+      receiverName: 'Budi Santoso',
+      receiverPhone: '6281234567892',
+      province: 'DKI Jakarta',
+      city: 'Jakarta Selatan',
+      district: 'Kebayoran Baru',
+      postalCode: '12120',
+      address: 'Jl. Senopati No. 8, RT 05 RW 03',
+      isDefault: true,
+    })
+    .returning({ id: addresses.id });
+
+  const [addrBudi2] = await db
+    .insert(addresses)
+    .values({
+      customerId: customerProfile1!.id,
+      label: 'Kantor',
+      receiverName: 'Budi Santoso',
+      receiverPhone: '6281234567892',
+      province: 'DKI Jakarta',
+      city: 'Jakarta Selatan',
+      district: 'Setiabudi',
+      postalCode: '12950',
+      address: 'Wisma XYZ Lt. 5, Jl. HR Rasuna Said',
+      isDefault: false,
+    })
+    .returning({ id: addresses.id });
+
+  const [addrSiti] = await db
+    .insert(addresses)
+    .values({
+      customerId: customerProfile2!.id,
+      label: 'Rumah',
+      receiverName: 'Siti Rahmawati',
+      receiverPhone: '6281234567898',
+      province: 'Jawa Barat',
+      city: 'Bandung',
+      district: 'Coblong',
+      postalCode: '40132',
+      address: 'Jl. Dipatiukur No. 112',
+      isDefault: true,
+    })
+    .returning({ id: addresses.id });
+
+  console.log('  ✓ 3 addresses created');
+
+  // ─── Orders ──────────────────────────────────────────────────────
+  const orderStatusHistoryData: {
+    orderId: string; fromStatus: string | null; toStatus: string; changedBy: string; note?: string;
+  }[] = [];
+
+  interface CreateSeedOrder {
+    customerId: string;
+    addressId: string;
+    status: OrderStatus;
+    bookingDate: string;
+    bookingTime: string;
+    notes?: string | null;
+    finalPrice?: string;
+    discountAmount?: string;
+    partnerId?: string | null;
+    completedAt?: Date;
+    closedAt?: Date;
+  }
+
+  // Helper: create order with items and status history
+  async function createOrder(
+    overrides: CreateSeedOrder,
+    items: { serviceId: string; serviceName: string; quantity: number; unitPrice: number }[],
+    statusHistory: { from: OrderStatus | null; to: OrderStatus; note?: string }[],
+    assignInfo?: { partnerId: string },
+    paymentInfo?: { method: PaymentMethod; amount: number; status: PaymentStatus },
+  ) {
+    const orderId = crypto.randomUUID();
+    const bookingNumber = `SP-${new Date().getFullYear()}-${String(Math.floor(Math.random() * 999999)).padStart(6, '0')}`;
+    const basePrice = items.reduce((sum, i) => sum + i.unitPrice * i.quantity, 0);
+
+    await db.insert(orders).values({
+      id: orderId,
+      bookingNumber,
+      customerId: overrides.customerId,
+      addressId: overrides.addressId,
+      status: overrides.status,
+      bookingDate: overrides.bookingDate,
+      bookingTime: overrides.bookingTime,
+      notes: overrides.notes ?? null,
+      finalPrice: overrides.finalPrice ?? null,
+      discountAmount: overrides.discountAmount ?? '0',
+      partnerId: overrides.partnerId ?? null,
+      completedAt: overrides.completedAt ?? null,
+      closedAt: overrides.closedAt ?? null,
+      basePrice: String(basePrice),
+    });
+
+    for (const item of items) {
+      await db.insert(orderItems).values({
+        orderId,
+        serviceId: item.serviceId,
+        serviceNameSnapshot: item.serviceName,
+        quantity: item.quantity,
+        unitPrice: String(item.unitPrice),
+        subtotal: String(item.unitPrice * item.quantity),
+      });
+    }
+
+    for (const sh of statusHistory) {
+      await db.insert(orderStatusHistory).values({
+        orderId,
+        fromStatus: sh.from,
+        toStatus: sh.to,
+        changedBy: superAdmin!.id,
+        note: sh.note ?? null,
+      });
+    }
+
+    if (assignInfo) {
+      await db.insert(assignments).values({
+        orderId,
+        partnerId: assignInfo.partnerId,
+        status: statusHistory.some((s) => s.to === 'Partner Accepted') ? 'Accepted' : 'Assigned',
+        assignedAt: new Date(Date.now() - 3600000),
+        acceptedAt: statusHistory.some((s) => s.to === 'Partner Accepted') ? new Date(Date.now() - 1800000) : null,
+      });
+    }
+
+    if (paymentInfo) {
+      await db.insert(payments).values({
+        orderId,
+        method: paymentInfo.method,
+        amount: String(paymentInfo.amount),
+        status: paymentInfo.status,
+        paymentDate: paymentInfo.status === 'Paid' || paymentInfo.status === 'Pending Verification'
+          ? new Date() : null,
+        verifiedBy: paymentInfo.status === 'Paid' || paymentInfo.status === 'Pending Verification'
+          ? superAdmin!.id : null,
+        verifiedAt: paymentInfo.status === 'Paid' ? new Date() : null,
+      });
+    }
+
+    return orderId;
+  }
+
+  // Order 1: Pending Confirmation (Budi - Cuci AC)
+  const o1 = await createOrder(
     {
-      category: 'general',
-      key: 'site_description',
-      value: 'Platform layanan jasa profesional on-demand',
+      customerId: customerProfile1!.id,
+      addressId: addrBudi1!.id,
+      status: 'Pending Confirmation',
+      bookingDate: '2026-07-03',
+      bookingTime: '10:00',
+      notes: 'AC di ruang tamu, mohon dibawa tangga',
     },
-    { category: 'booking', key: 'cancellation_window_hours', value: '24' },
-    { category: 'commission', key: 'platform_fee_percent', value: '10' },
-  ]);
+    [
+      { serviceId: svcCuciAC!.id, serviceName: 'Cuci AC Standar', quantity: 2, unitPrice: 150000 },
+    ],
+    [
+      { from: null, to: 'Pending Confirmation' },
+    ],
+  );
 
-  console.log('✅ Seed complete!');
-  console.log('   admin@spesialis.id / password123 (super_admin)');
-  console.log('   partner@spesialis.id / password123 (partner)');
-  console.log('   customer@spesialis.id / password123 (customer)');
-  console.log('   4 categories, 12 services, partner with skills');
+  // Order 2: Confirmed (Budi - Saluran Mampet)
+  const o2 = await createOrder(
+    {
+      customerId: customerProfile1!.id,
+      addressId: addrBudi2!.id,
+      status: 'Confirmed',
+      bookingDate: '2026-07-04',
+      bookingTime: '14:00',
+      finalPrice: '200000',
+    },
+    [
+      { serviceId: svcSaluranMampet!.id, serviceName: 'Saluran Mampet', quantity: 1, unitPrice: 200000 },
+    ],
+    [
+      { from: null, to: 'Pending Confirmation' },
+      { from: 'Pending Confirmation', to: 'Confirmed', note: 'Harga disetujui' },
+    ],
+  );
+
+  // Order 3: Waiting Assignment (Siti - Cleaning)
+  const o3 = await createOrder(
+    {
+      customerId: customerProfile2!.id,
+      addressId: addrSiti!.id,
+      status: 'Waiting Assignment',
+      bookingDate: '2026-07-05',
+      bookingTime: '09:00',
+      finalPrice: '200000',
+    },
+    [
+      { serviceId: svcCleaningStandar!.id, serviceName: 'Bersih Rumah Standar', quantity: 1, unitPrice: 200000 },
+    ],
+    [
+      { from: null, to: 'Pending Confirmation' },
+      { from: 'Pending Confirmation', to: 'Confirmed' },
+      { from: 'Confirmed', to: 'Waiting Assignment' },
+    ],
+  );
+
+  // Order 4: Partner Assigned (Siti - Isi Freon) → partner1 assigned
+  const o4 = await createOrder(
+    {
+      customerId: customerProfile2!.id,
+      addressId: addrSiti!.id,
+      status: 'Partner Assigned',
+      bookingDate: '2026-07-06',
+      bookingTime: '11:00',
+      finalPrice: '250000',
+    },
+    [
+      { serviceId: svcFreonAC!.id, serviceName: 'Isi Freon AC', quantity: 1, unitPrice: 250000 },
+    ],
+    [
+      { from: null, to: 'Pending Confirmation' },
+      { from: 'Pending Confirmation', to: 'Confirmed' },
+      { from: 'Confirmed', to: 'Waiting Assignment' },
+      { from: 'Waiting Assignment', to: 'Partner Assigned' },
+    ],
+    { partnerId: partnerProfile1!.id },
+  );
+
+  // Order 5: Partner Accepted (Budi - Perbaikan Listrik) → partner1 accepted
+  const o5 = await createOrder(
+    {
+      customerId: customerProfile1!.id,
+      addressId: addrBudi1!.id,
+      partnerId: partnerProfile1!.id,
+      status: 'Partner Accepted',
+      bookingDate: '2026-07-02',
+      bookingTime: '13:00',
+      finalPrice: '100000',
+    },
+    [
+      { serviceId: svcListrik!.id, serviceName: 'Perbaikan Listrik', quantity: 1, unitPrice: 100000 },
+    ],
+    [
+      { from: null, to: 'Pending Confirmation' },
+      { from: 'Pending Confirmation', to: 'Confirmed' },
+      { from: 'Confirmed', to: 'Waiting Assignment' },
+      { from: 'Waiting Assignment', to: 'Partner Assigned' },
+      { from: 'Partner Assigned', to: 'Partner Accepted' },
+    ],
+    { partnerId: partnerProfile1!.id },
+  );
+
+  // Order 6: Working (Budi - Bongkar Pasang AC) → partner1 working now
+  const o6 = await createOrder(
+    {
+      customerId: customerProfile1!.id,
+      addressId: addrBudi1!.id,
+      partnerId: partnerProfile1!.id,
+      status: 'Working',
+      bookingDate: '2026-07-01',
+      bookingTime: '08:00',
+      finalPrice: '350000',
+    },
+    [
+      { serviceId: svcBongkarAC!.id, serviceName: 'Bongkar Pasang AC', quantity: 1, unitPrice: 350000 },
+    ],
+    [
+      { from: null, to: 'Pending Confirmation' },
+      { from: 'Pending Confirmation', to: 'Confirmed' },
+      { from: 'Confirmed', to: 'Waiting Assignment' },
+      { from: 'Waiting Assignment', to: 'Partner Assigned' },
+      { from: 'Partner Assigned', to: 'Partner Accepted' },
+      { from: 'Partner Accepted', to: 'Working' },
+    ],
+    { partnerId: partnerProfile1!.id },
+  );
+
+  // Order 7: Completed (Siti - Bocor Pipa) → partner2 completed
+  const o7 = await createOrder(
+    {
+      customerId: customerProfile2!.id,
+      addressId: addrSiti!.id,
+      partnerId: partnerProfile2!.id,
+      status: 'Completed',
+      bookingDate: '2026-06-30',
+      bookingTime: '10:00',
+      finalPrice: '150000',
+      completedAt: new Date('2026-06-30T12:30:00'),
+    },
+    [
+      { serviceId: svcPipaBocor!.id, serviceName: 'Bocor Pipa Air', quantity: 1, unitPrice: 150000 },
+    ],
+    [
+      { from: null, to: 'Pending Confirmation' },
+      { from: 'Pending Confirmation', to: 'Confirmed' },
+      { from: 'Confirmed', to: 'Waiting Assignment' },
+      { from: 'Waiting Assignment', to: 'Partner Assigned' },
+      { from: 'Partner Assigned', to: 'Partner Accepted' },
+      { from: 'Partner Accepted', to: 'Working' },
+      { from: 'Working', to: 'Completed' },
+    ],
+    { partnerId: partnerProfile2!.id },
+  );
+
+  // Order 8: Waiting Payment (Budi - Cleaning Besar) → completed, waiting payment
+  const o8 = await createOrder(
+    {
+      customerId: customerProfile1!.id,
+      addressId: addrBudi1!.id,
+      partnerId: partnerProfile2!.id,
+      status: 'Waiting Payment',
+      bookingDate: '2026-06-29',
+      bookingTime: '09:00',
+      finalPrice: '350000',
+      completedAt: new Date('2026-06-29T12:00:00'),
+    },
+    [
+      { serviceId: svcCleaningBesar!.id, serviceName: 'Bersih Rumah Besar', quantity: 1, unitPrice: 350000 },
+    ],
+    [
+      { from: null, to: 'Pending Confirmation' },
+      { from: 'Pending Confirmation', to: 'Confirmed' },
+      { from: 'Confirmed', to: 'Waiting Assignment' },
+      { from: 'Waiting Assignment', to: 'Partner Assigned' },
+      { from: 'Partner Assigned', to: 'Partner Accepted' },
+      { from: 'Partner Accepted', to: 'Working' },
+      { from: 'Working', to: 'Completed' },
+      { from: 'Completed', to: 'Waiting Payment' },
+    ],
+    { partnerId: partnerProfile2!.id },
+  );
+
+  // Order 9: Paid (Siti - Cat Interior) → completed, paid (Transfer)
+  const o9 = await createOrder(
+    {
+      customerId: customerProfile2!.id,
+      addressId: addrSiti!.id,
+      partnerId: partnerProfile1!.id,
+      status: 'Paid',
+      bookingDate: '2026-06-28',
+      bookingTime: '10:00',
+      finalPrice: '500000',
+      completedAt: new Date('2026-06-28T15:00:00'),
+    },
+    [
+      { serviceId: svcCatInterior!.id, serviceName: 'Cat Interior', quantity: 1, unitPrice: 500000 },
+    ],
+    [
+      { from: null, to: 'Pending Confirmation' },
+      { from: 'Pending Confirmation', to: 'Confirmed' },
+      { from: 'Confirmed', to: 'Waiting Assignment' },
+      { from: 'Waiting Assignment', to: 'Partner Assigned' },
+      { from: 'Partner Assigned', to: 'Partner Accepted' },
+      { from: 'Partner Accepted', to: 'Working' },
+      { from: 'Working', to: 'Completed' },
+      { from: 'Completed', to: 'Waiting Payment' },
+      { from: 'Waiting Payment', to: 'Paid' },
+    ],
+    { partnerId: partnerProfile1!.id },
+    { method: 'Transfer', amount: 500000, status: 'Paid' },
+  );
+
+  // Order 10: Closed (Budi - Cuci AC Medium) → full lifecycle complete
+  const o10 = await createOrder(
+    {
+      customerId: customerProfile1!.id,
+      addressId: addrBudi1!.id,
+      partnerId: partnerProfile1!.id,
+      status: 'Closed',
+      bookingDate: '2026-06-25',
+      bookingTime: '10:00',
+      finalPrice: '200000',
+      completedAt: new Date('2026-06-25T11:30:00'),
+      closedAt: new Date('2026-06-26T09:00:00'),
+    },
+    [
+      { serviceId: svcCuciACMedium!.id, serviceName: 'Cuci AC Medium', quantity: 1, unitPrice: 200000 },
+    ],
+    [
+      { from: null, to: 'Pending Confirmation' },
+      { from: 'Pending Confirmation', to: 'Confirmed' },
+      { from: 'Confirmed', to: 'Waiting Assignment' },
+      { from: 'Waiting Assignment', to: 'Partner Assigned' },
+      { from: 'Partner Assigned', to: 'Partner Accepted' },
+      { from: 'Partner Accepted', to: 'Working' },
+      { from: 'Working', to: 'Completed' },
+      { from: 'Completed', to: 'Waiting Payment' },
+      { from: 'Waiting Payment', to: 'Paid' },
+      { from: 'Paid', to: 'Closed' },
+    ],
+    { partnerId: partnerProfile1!.id },
+    { method: 'QRIS', amount: 200000, status: 'Paid' },
+  );
+
+  console.log('  ✓ 10 orders with items, status history, assignments, payments created');
+
+  // ─── Reviews ─────────────────────────────────────────────────────
+  await db.insert(reviews).values([
+    {
+      orderId: o9,
+      customerId: customerProfile2!.id,
+      partnerId: partnerProfile1!.id,
+      rating: '4.5',
+      review: 'Pelayanan sangat baik, AC jadi dingin kembali. Teknisi ramah dan tepat waktu.',
+    },
+    {
+      orderId: o10,
+      customerId: customerProfile1!.id,
+      partnerId: partnerProfile1!.id,
+      rating: '5.0',
+      review: 'Puas banget! AC bersih, harganya masuk akal. Next pasti pesan lagi.',
+    },
+  ]);
+  console.log('  ✓ 2 reviews created');
+
+  // ─── Complaints ──────────────────────────────────────────────────
+  const [comp1] = await db
+    .insert(complaints)
+    .values({
+      orderId: o7,
+      customerId: customerProfile2!.id,
+      status: 'Resolved',
+      title: 'Kebocoran masih ada setelah perbaikan',
+      description: 'Setelah diperbaiki, masih ada tetesan air di sambungan pipa.',
+      resolution: 'Teknisi kembali dan melakukan perbaikan ulang. Saat ini sudah tidak bocor.',
+      resolvedBy: superAdmin!.id,
+      resolvedAt: new Date('2026-07-01T10:00:00'),
+    })
+    .returning({ id: complaints.id });
+
+  const [comp2] = await db
+    .insert(complaints)
+    .values({
+      orderId: o8,
+      customerId: customerProfile1!.id,
+      status: 'Investigating',
+      title: 'Hasil cleaning kurang memuaskan',
+      description: 'Beberapa area masih berdebu setelah cleaning.',
+    })
+    .returning({ id: complaints.id });
+
+  console.log('  ✓ 2 complaints created');
+
+  // ─── Notifications ───────────────────────────────────────────────
+  await db.insert(notifications).values([
+    {
+      userId: customerUser1!.id, type: 'booking_confirmed', channel: 'In App',
+      title: 'Booking Dikonfirmasi', message: 'Booking #SP-2026-XXXXX telah dikonfirmasi. Teknisi akan segera diassign.',
+      isRead: false,
+    },
+    {
+      userId: customerUser1!.id, type: 'booking_completed', channel: 'In App',
+      title: 'Pekerjaan Selesai', message: 'Pekerjaan Bongkar Pasang AC telah selesai. Silakan lakukan pembayaran.',
+      isRead: true, sentAt: new Date('2026-06-25T11:30:00'),
+    },
+    {
+      userId: partnerUser1!.id, type: 'new_assignment', channel: 'In App',
+      title: 'Assignment Baru', message: 'Anda diassign ke order Cuci AC Standar di Jl. Senopati No. 8.',
+      isRead: false,
+    },
+    {
+      userId: partnerUser1!.id, type: 'review_received', channel: 'In App',
+      title: 'Review Baru', message: 'Budi Santoso memberi Anda rating 5.0!',
+      isRead: true, sentAt: new Date('2026-06-26T10:00:00'),
+    },
+  ]);
+  console.log('  ✓ 4 notifications created');
+
+  // ─── SEO Metadata ────────────────────────────────────────────────
+  await db.insert(seoMetadata).values([
+    {
+      entityType: 'Service', entityId: svcCuciAC!.id,
+      metaTitle: 'Cuci AC Standar - Spesialis', metaDescription: 'Pembersihan AC standar untuk rumah. Teknisi berpengalaman, garansi layanan.',
+    },
+    {
+      entityType: 'Service', entityId: svcCatInterior!.id,
+      metaTitle: 'Cat Interior Profesional - Spesialis', metaDescription: 'Jasa pengecatan interior rumah dan kantor. Hasil rapi, cat berkualitas.',
+    },
+    {
+      entityType: 'ServiceCategory', entityId: acCat!.id,
+      metaTitle: 'Service AC Profesional - Spesialis', metaDescription: 'Layanan service AC: cuci, isi freon, bongkar pasang. Teknisi bersertifikat.',
+    },
+  ]);
+  console.log('  ✓ 3 SEO metadata entries created');
+
+  // ─── System Settings ─────────────────────────────────────────────
+  await db.insert(systemSettings).values([
+    { category: 'general', key: 'site_name', value: 'Spesialis', description: 'Nama platform' },
+    { category: 'general', key: 'site_description', value: 'Platform layanan jasa profesional on-demand', description: 'Deskripsi platform' },
+    { category: 'booking', key: 'cancellation_window_hours', value: '24', description: 'Batas waktu cancel (jam sebelum jadwal)' },
+    { category: 'booking', key: 'max_booking_per_customer', value: '5', description: 'Maks booking aktif per customer' },
+    { category: 'booking', key: 'auto_confirm_hours', value: '2', description: 'Auto confirm jika tidak direspon admin' },
+    { category: 'commission', key: 'platform_fee_percent', value: '10', description: 'Komisi platform (%)' },
+    { category: 'commission', key: 'partner_payout_days', value: '7', description: 'Jeda pencairan dana partner (hari)' },
+    { category: 'partner', key: 'min_rating_to_keep', value: '3.0', description: 'Rating minimal partner' },
+    { category: 'partner', key: 'max_rejections_before_suspend', value: '5', description: 'Maks penolakan assignment sebelum suspend' },
+    { category: 'security', key: 'max_login_attempts', value: '5', description: 'Maks percobaan login' },
+    { category: 'security', key: 'lockout_duration_minutes', value: '30', description: 'Durasi lockout (menit)' },
+  ]);
+  console.log('  ✓ 11 system settings created');
+
+  console.log('\n═══════════════════════════════════════════');
+  console.log('  ✅ Seed complete!');
+  console.log('═══════════════════════════════════════════');
+  console.log('\n  Accounts:');
+  console.log('    admin@spesialis.id       / password123 (super_admin)');
+  console.log('    admin2@spesialis.id      / password123 (admin)');
+  console.log('    dispatcher@spesialis.id  / password123 (dispatcher)');
+  console.log('    finance@spesialis.id     / password123 (finance)');
+  console.log('    content@spesialis.id     / password123 (content_manager)');
+  console.log('    partner@spesialis.id     / password123 (partner - AC & Listrik)');
+  console.log('    partner2@spesialis.id    / password123 (partner - Plumbing & Cleaning)');
+  console.log('    customer@spesialis.id    / password123 (customer)');
+  console.log('    customer2@spesialis.id   / password123 (customer)');
+  console.log('    corporate@spesialis.id   / password123 (corporate)');
+  console.log('\n  Data:');
+  console.log('    5 categories, 14 services');
+  console.log('    10 orders across all lifecycle stages');
+  console.log('    2 reviews, 2 complaints, 4 notifications');
+  console.log('    3 SEO entries, 11 system settings');
 }
 
 seed().catch((e) => {
-  console.error('Seed failed:', e);
+  console.error('❌ Seed failed:', e);
   process.exit(1);
 });

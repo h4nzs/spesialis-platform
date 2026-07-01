@@ -1,0 +1,78 @@
+---
+import BaseLayout from './BaseLayout.astro'
+import { AuthGuard } from '../components/dashboard/AuthGuard.tsx'
+import type { UserRole } from '@specialist/types'
+
+export interface DashboardLayoutProps {
+  title: string;
+  role: UserRole;
+}
+
+const { title, role } = Astro.props as DashboardLayoutProps;
+
+interface NavItem {
+  href: string;
+  label: string;
+}
+
+const customerNav: NavItem[] = [
+  { href: `/dashboard/${role}`, label: 'Ringkasan' },
+  { href: `/dashboard/${role}/orders`, label: 'Pesanan' },
+  { href: `/dashboard/${role}/addresses`, label: 'Alamat' },
+  { href: `/dashboard/${role}/reviews`, label: 'Ulasan' },
+  { href: `/dashboard/${role}/complaints`, label: 'Komplain' },
+];
+
+const partnerNav: NavItem[] = [
+  { href: `/dashboard/${role}`, label: 'Ringkasan' },
+  { href: `/dashboard/${role}/jobs`, label: 'Pekerjaan' },
+  { href: `/dashboard/${role}/availability`, label: 'Ketersediaan' },
+  { href: `/dashboard/${role}/earnings`, label: 'Pendapatan' },
+  { href: `/dashboard/${role}/reviews`, label: 'Ulasan' },
+];
+
+const adminNav: NavItem[] = [
+  { href: `/dashboard/${role}`, label: 'Ringkasan' },
+  { href: `/dashboard/${role}/bookings`, label: 'Booking' },
+  { href: `/dashboard/${role}/partners`, label: 'Partner' },
+  { href: `/dashboard/${role}/customers`, label: 'Customer' },
+  { href: `/dashboard/${role}/services`, label: 'Layanan' },
+];
+
+const corporateNav: NavItem[] = [
+  { href: `/dashboard/${role}`, label: 'Ringkasan' },
+  { href: `/dashboard/${role}/orders`, label: 'Pesanan' },
+  { href: `/dashboard/${role}/branches`, label: 'Cabang' },
+  { href: `/dashboard/${role}/invoices`, label: 'Invoice' },
+];
+
+const navMap: Partial<Record<string, NavItem[]>> = {
+  customer: customerNav,
+  partner: partnerNav,
+  admin: adminNav,
+  corporate: corporateNav,
+};
+
+const navItems = navMap[role] ?? customerNav;
+---
+
+<BaseLayout>
+  <div class="mx-auto flex max-w-7xl gap-8 px-4 py-8 sm:px-6 lg:px-8">
+    <AuthGuard client:load requiredRole={role}>
+      <nav class="hidden w-56 shrink-0 flex-col gap-1 sm:flex">
+        {navItems.map((item) => (
+          <a
+            href={item.href}
+            class="rounded-md px-3 py-2 text-sm font-medium text-text-muted transition-colors hover:bg-background hover:text-text [&[aria-current='page']]:bg-primary/10 [&[aria-current='page']]:text-primary"
+          >
+            {item.label}
+          </a>
+        ))}
+      </nav>
+      <div class="min-w-0 flex-1">
+        <h1 class="mb-6 text-2xl font-bold text-text">{title}</h1>
+        <slot />
+      </div>
+    </AuthGuard>
+  </div>
+</BaseLayout>
