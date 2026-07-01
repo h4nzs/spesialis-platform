@@ -8,6 +8,7 @@ import {
   serviceCategories,
   assignments,
   orders,
+  reviews,
 } from '../lib/db.ts';
 import { authMiddleware, requireRole } from '../middleware/auth.ts';
 import { hashPassword } from '../lib/auth.ts';
@@ -19,7 +20,11 @@ import {
   addSkillSchema,
   paginationQuerySchema,
 } from '@specialist/validation';
-import type { PaginationMeta, PartnerAvailability, PartnerVerificationStatus } from '@specialist/types';
+import type {
+  PaginationMeta,
+  PartnerAvailability,
+  PartnerVerificationStatus,
+} from '@specialist/types';
 import {
   success,
   successPaginated,
@@ -31,6 +36,24 @@ import {
 } from '../lib/response.ts';
 
 const router = new Hono();
+
+async function listPartnerJobs(partnerId: string) {
+  return await db
+    .select({
+      id: assignments.id,
+      orderId: assignments.orderId,
+      status: assignments.status,
+      assignedAt: assignments.assignedAt,
+      acceptedAt: assignments.acceptedAt,
+      completedAt: assignments.completedAt,
+      orderStatus: orders.status,
+      bookingNumber: orders.bookingNumber,
+    })
+    .from(assignments)
+    .innerJoin(orders, eq(assignments.orderId, orders.id))
+    .where(eq(assignments.partnerId, partnerId))
+    .orderBy(desc(assignments.assignedAt));
+}
 
 router.post('/register', async (c) => {
   const body = await c.req.json();
@@ -90,8 +113,12 @@ router.get('/', async (c) => {
   const categoryId = c.req.query('categoryId');
 
   const conditions: ReturnType<typeof eq>[] = [];
-  if (availability) conditions.push(eq(partnerProfiles.availability, availability as PartnerAvailability));
-  if (verification) conditions.push(eq(partnerProfiles.verificationStatus, verification as PartnerVerificationStatus));
+  if (availability)
+    conditions.push(eq(partnerProfiles.availability, availability as PartnerAvailability));
+  if (verification)
+    conditions.push(
+      eq(partnerProfiles.verificationStatus, verification as PartnerVerificationStatus),
+    );
   if (categoryId) {
     const partnerIds = await db
       .select({ id: partnerSkills.partnerId })
@@ -302,6 +329,20 @@ router.delete('/me/skills/:skillId', authMiddleware, async (c) => {
   return success(c, null, 'Skill berhasil dihapus');
 });
 
+router.get('/me/jobs', authMiddleware, async (c) => {
+  const userId = c.get('userId');
+
+  const [profile] = await db
+    .select({ id: partnerProfiles.id })
+    .from(partnerProfiles)
+    .where(eq(partnerProfiles.userId, userId))
+    .limit(1);
+  if (!profile) return notFound(c, 'Profil partner tidak ditemukan');
+
+  const items = await listPartnerJobs(profile.id);
+  return success(c, items);
+});
+
 router.get('/:id', async (c) => {
   const partnerId = c.req.param('id')!;
 
@@ -337,6 +378,31 @@ router.get('/:id', async (c) => {
     .where(eq(partnerSkills.partnerId, partnerId));
 
   return success(c, { ...profile, skills });
+});
+
+router.get('/:id/reviews', async (c) => {
+  const partnerId = c.req.param('id')!;
+
+  const [profile] = await db
+    .select({ id: partnerProfiles.id })
+    .from(partnerProfiles)
+    .where(eq(partnerProfiles.id, partnerId))
+    .limit(1);
+  if (!profile) return notFound(c, 'Partner tidak ditemukan');
+
+  const items = await db
+    .select({
+      id: reviews.id,
+      rating: reviews.rating,
+      comment: reviews.review,
+      review: reviews.review,
+      createdAt: reviews.createdAt,
+    })
+    .from(reviews)
+    .where(eq(reviews.partnerId, partnerId))
+    .orderBy(desc(reviews.createdAt));
+
+  return success(c, items);
 });
 
 router.post('/:id/verify', authMiddleware, requireRole('admin', 'super_admin'), async (c) => {
@@ -382,21 +448,7 @@ router.get('/:id/jobs', async (c) => {
     .limit(1);
   if (!profile) return notFound(c, 'Partner tidak ditemukan');
 
-  const items = await db
-    .select({
-      id: assignments.id,
-      orderId: assignments.orderId,
-      status: assignments.status,
-      assignedAt: assignments.assignedAt,
-      acceptedAt: assignments.acceptedAt,
-      completedAt: assignments.completedAt,
-      orderStatus: orders.status,
-      bookingNumber: orders.bookingNumber,
-    })
-    .from(assignments)
-    .innerJoin(orders, eq(assignments.orderId, orders.id))
-    .where(eq(assignments.partnerId, partnerId))
-    .orderBy(desc(assignments.assignedAt));
+  const items = await listPartnerJobs(partnerId);
 
   return success(c, items);
 });

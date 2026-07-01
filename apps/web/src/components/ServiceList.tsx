@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { createBrowserClient, formatCurrency } from '@specialist/shared';
-import type { ApiResponse } from '@specialist/types';
 
 interface ServiceItem {
   id: string;
@@ -21,9 +20,9 @@ export function ServiceList() {
     const api = createBrowserClient();
 
     api
-      .get<ApiResponse<ServiceItem[]>>('/api/v1/services', { params: { limit: 50 } })
-      .then((res) => {
-        setServices(res.data);
+      .get<ServiceItem[]>('/api/v1/services', { params: { limit: 50 } })
+      .then((items) => {
+        setServices(items);
         setLoading(false);
       })
       .catch((err: unknown) => {

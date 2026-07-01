@@ -6,6 +6,7 @@ import { success, successPaginated, notFound, error } from '../lib/response.ts';
 import { paginationQuerySchema } from '@specialist/validation';
 
 const router = new Hono();
+const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 router.get('/', async (c) => {
   const parsed = paginationQuerySchema.safeParse(c.req.query());
@@ -58,8 +59,11 @@ router.get('/', async (c) => {
   return successPaginated(c, items, pagination);
 });
 
-router.get('/:slug', async (c) => {
-  const slug = c.req.param('slug')!;
+router.get('/:identifier', async (c) => {
+  const identifier = c.req.param('identifier')!;
+  const lookup = UUID_PATTERN.test(identifier)
+    ? eq(services.id, identifier)
+    : eq(services.slug, identifier);
 
   const [service] = await db
     .select({
@@ -76,7 +80,7 @@ router.get('/:slug', async (c) => {
       isFeatured: services.isFeatured,
     })
     .from(services)
-    .where(eq(services.slug, slug))
+    .where(lookup)
     .limit(1);
 
   if (!service) return notFound(c, 'Service tidak ditemukan');
