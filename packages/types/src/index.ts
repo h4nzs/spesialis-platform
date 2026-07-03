@@ -60,3 +60,11 @@ export type { RefreshToken } from './refresh-token.ts';
 export type { PasswordReset } from './password-reset.ts';
 
 export type { MediaDisk, Media, CreateMediaInput } from './media.ts';
+
+export type {
+  ArticleStatus,
+  ArticleCategory,
+  Article,
+  CreateArticleInput,
+  UpdateArticleInput,
+} from './article.ts';

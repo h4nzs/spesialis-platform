@@ -9,7 +9,13 @@ export default defineConfig({
   integrations: [
     react(),
     sitemap({
-      filter: (page) => !page.includes('/dashboard/') && !page.includes('/login') && !page.includes('/register'),
+      filter: (page) =>
+        !page.includes('/dashboard/') &&
+        !page.includes('/login') &&
+        !page.includes('/register') &&
+        !page.includes('/forgot-password') &&
+        !page.includes('/reset-password') &&
+        !page.includes('/verify-email'),
     }),
   ],
   vite: {

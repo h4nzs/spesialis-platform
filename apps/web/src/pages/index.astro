@@ -8,13 +8,24 @@ import BaseLayout from '../layouts/BaseLayout.astro'
   canonicalUrl="/"
   jsonLd={{
     '@context': 'https://schema.org',
-    '@type': 'Organization',
+    '@type': 'LocalBusiness',
+    '@id': 'https://spesialis.id',
     name: 'Spesialis',
     url: 'https://spesialis.id',
     logo: 'https://spesialis.id/favicon.svg',
+    image: 'https://spesialis.id/og-default.png',
     description: 'Platform layanan jasa profesional on-demand di Indonesia.',
     areaServed: { '@type': 'Country', name: 'Indonesia' },
     offers: { '@type': 'AggregateOffer', priceCurrency: 'IDR' },
+    priceRange: 'Rp50.000-Rp5.000.000',
+    telephone: '+62-',
+    contactPoint: {
+      '@type': 'ContactPoint',
+      contactType: 'customer service',
+      availableLanguage: ['Indonesian'],
+    },
+    sameAs: [],
+    address: { '@type': 'PostalAddress', addressCountry: 'ID' },
   }}
 >
   <section class="py-20 text-center animate-fade-in">

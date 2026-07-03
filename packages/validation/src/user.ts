@@ -52,6 +52,24 @@ export const deleteAccountSchema = z.object({
   password: z.string().min(1, 'Password wajib diisi untuk konfirmasi'),
 });
 
+export const updateUserStatusSchema = z.object({
+  status: z.enum(['active', 'blocked', 'suspended', 'deleted']),
+});
+
+export const convertGuestSchema = z.object({
+  phone: z
+    .string()
+    .min(10)
+    .max(30)
+    .regex(/^\+?[0-9]+$/),
+  email: z.string().email().max(255),
+  password: passwordSchema,
+  fullName: z.string().min(1).max(255),
+});
+
+export type UpdateUserStatusInput = z.infer<typeof updateUserStatusSchema>;
+export type ConvertGuestInput = z.infer<typeof convertGuestSchema>;
+
 export type RegisterInput = z.infer<typeof registerSchema>;
 export type LoginInput = z.infer<typeof loginSchema>;
 export type ForgotPasswordInput = z.infer<typeof forgotPasswordSchema>;

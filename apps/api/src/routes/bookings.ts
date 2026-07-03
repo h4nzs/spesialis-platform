@@ -37,6 +37,7 @@ import {
 } from '../lib/response.ts';
 import { createAuditLog } from '../lib/audit.ts';
 import { createNotification } from '../lib/notification.ts';
+import { APP_URL, sendBookingConfirmationEmail, sendPartnerAssignedEmail } from '../lib/email.ts';
 
 const router = new Hono();
 
@@ -564,6 +565,31 @@ router.post('/:id/confirm', authMiddleware, requireRole('admin', 'super_admin'),
     oldValue: { status: order.status },
   });
 
+  try {
+    const [customerInfo] = await db
+      .select({
+        email: users.email,
+        fullName: customerProfiles.fullName,
+        bookingNumber: orders.bookingNumber,
+      })
+      .from(orders)
+      .innerJoin(customerProfiles, eq(customerProfiles.id, orders.customerId))
+      .leftJoin(users, eq(users.id, customerProfiles.userId))
+      .where(eq(orders.id, orderId))
+      .limit(1);
+
+    if (customerInfo?.email && customerInfo?.bookingNumber) {
+      sendBookingConfirmationEmail(
+        customerInfo.email,
+        customerInfo.fullName ?? 'Pelanggan',
+        customerInfo.bookingNumber,
+        `${APP_URL}/tracking`,
+      );
+    }
+  } catch {
+    // Email is non-critical — proceed
+  }
+
   return success(c, { id: orderId, status: 'Confirmed' }, 'Booking dikonfirmasi');
 });
 
@@ -646,9 +672,25 @@ router.post(
         title: 'Pekerjaan Baru',
         message: `Anda ditugaskan pada order #${orderId}`,
       });
-    }
 
-    return success(c, { id: orderId, status: 'Partner Assigned' }, 'Partner diassign');
+      if (partnerUser.email) {
+        const [partnerDetail] = await db
+          .select({ fullName: partnerProfiles.fullName, bookingNumber: orders.bookingNumber })
+          .from(orders)
+          .innerJoin(partnerProfiles, eq(partnerProfiles.id, orders.partnerId!))
+          .where(eq(orders.id, orderId))
+          .limit(1);
+
+        if (partnerDetail?.bookingNumber) {
+          sendPartnerAssignedEmail(
+            partnerUser.email,
+            partnerDetail.fullName,
+            partnerDetail.bookingNumber,
+            `${APP_URL}/dashboard/partner/jobs`,
+          );
+        }
+      }
+    }
   },
 );
 

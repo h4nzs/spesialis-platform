@@ -1,0 +1,133 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro'
+
+interface ArticleItem {
+  id: string
+  title: string
+  slug: string
+  summary: string | null
+  coverImage: string | null
+  authorName: string | null
+  categoryName: string | null
+  categorySlug: string | null
+  publishedAt: string | null
+}
+
+interface CategoryItem {
+  id: string
+  name: string
+  slug: string
+}
+
+const apiUrl = import.meta.env.PUBLIC_API_URL ?? 'http://localhost:3000'
+
+const categorySlug = Astro.url.searchParams.get('kategori')
+
+let articles: ArticleItem[] = []
+let categories: CategoryItem[] = []
+let activeCategory: string | null = categorySlug
+
+try {
+  const catRes = await fetch(`${apiUrl}/api/v1/articles/categories`)
+  if (catRes.ok) {
+    const catJson = await catRes.json()
+    categories = catJson.data ?? []
+  }
+
+  const params = new URLSearchParams({ limit: '50' })
+  if (categorySlug) params.set('category', categorySlug)
+  const res = await fetch(`${apiUrl}/api/v1/articles?${params}`)
+  if (res.ok) {
+    const json = await res.json()
+    articles = json.data ?? []
+  }
+} catch {
+  // silent
+}
+---
+
+<BaseLayout
+  title="Blog - Spesialis"
+  description="Artikel dan tips seputar layanan profesional, perawatan rumah, dan solusi bisnis dari Spesialis."
+  canonicalUrl="/blog"
+>
+  <div class="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
+    <nav class="mb-8 text-sm text-text-muted">
+      <a href="/" class="hover:text-text transition-colors">Beranda</a>
+      <span class="mx-2">/</span>
+      <span class="text-text">Blog</span>
+    </nav>
+
+    <h1 class="text-3xl font-bold text-text">Blog</h1>
+    <p class="mt-2 text-text-muted">Artikel dan tips seputar layanan profesional</p>
+
+    {categories.length > 0 && (
+      <div class="mt-6 flex flex-wrap gap-2">
+        <a
+          href="/blog"
+          class={`rounded-full px-4 py-1.5 text-sm font-medium transition-colors ${
+            !activeCategory
+              ? 'bg-primary text-white'
+              : 'border border-border bg-surface text-text-muted hover:text-text'
+          }`}
+        >
+          Semua
+        </a>
+        {categories.map((cat) => (
+          <a
+            href={`/blog?kategori=${cat.slug}`}
+            class={`rounded-full px-4 py-1.5 text-sm font-medium transition-colors ${
+              activeCategory === cat.slug
+                ? 'bg-primary text-white'
+                : 'border border-border bg-surface text-text-muted hover:text-text'
+            }`}
+          >
+            {cat.name}
+          </a>
+        ))}
+      </div>
+    )}
+
+    <div class="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+      {articles.length > 0 ? (
+        articles.map((article) => (
+          <a
+            href={`/blog/${article.slug}`}
+            class="group rounded-xl border border-border bg-surface p-5 transition-shadow hover:shadow-md"
+          >
+            {article.coverImage && (
+              <div class="mb-4 overflow-hidden rounded-lg">
+                <img
+                  src={article.coverImage}
+                  alt={article.title}
+                  class="h-48 w-full object-cover transition-transform group-hover:scale-105"
+                />
+              </div>
+            )}
+            {article.categoryName && (
+              <span class="inline-block rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
+                {article.categoryName}
+              </span>
+            )}
+            <h2 class="mt-3 text-lg font-semibold text-text group-hover:text-primary transition-colors">
+              {article.title}
+            </h2>
+            {article.summary && (
+              <p class="mt-2 text-sm text-text-muted line-clamp-2">{article.summary}</p>
+            )}
+            <div class="mt-4 flex items-center gap-3 text-xs text-text-muted">
+              {article.authorName && <span>{article.authorName}</span>}
+              {article.publishedAt && (
+                <span>{new Date(article.publishedAt).toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' })}</span>
+              )}
+            </div>
+          </a>
+        ))
+      ) : (
+        <div class="col-span-full py-16 text-center">
+          <p class="text-text-muted">Belum ada artikel</p>
+        </div>
+      )}
+    </div>
+  </div>
+</BaseLayout>

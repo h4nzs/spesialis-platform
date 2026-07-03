@@ -24,6 +24,8 @@ export { refreshTokens } from './refresh-tokens.ts';
 export { passwordResets } from './password-resets.ts';
 export { partnerSkills } from './partner-skills.ts';
 export { partnerDocuments } from './partner-documents.ts';
+export { articleCategories } from './article-categories.ts';
+export { articles } from './articles.ts';
 
 export {
   usersRelations,
@@ -46,4 +48,6 @@ export {
   partnerDocumentsRelations,
   mediaRelations,
   orderMediaRelations,
+  articleCategoriesRelations,
+  articlesRelations,
 } from './relations.ts';

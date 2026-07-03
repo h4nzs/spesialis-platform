@@ -13,7 +13,7 @@ export interface DashboardLayoutProps {
 const { title, role } = Astro.props as DashboardLayoutProps;
 ---
 
-<BaseLayout>
+<BaseLayout noindex={true}>
   <AuthGuard client:load requiredRole={role}>
     <div class="mx-auto flex max-w-7xl gap-8 px-4 py-8 sm:px-6 lg:px-8">
       <Sidebar client:load role={role} />

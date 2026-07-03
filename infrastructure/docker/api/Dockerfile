@@ -5,7 +5,7 @@ WORKDIR /app
 COPY . .
 
 RUN corepack enable && \
-    pnpm install --no-optional
+    pnpm install --frozen-lockfile --no-optional
 
 EXPOSE 3000
 

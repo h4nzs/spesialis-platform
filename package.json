@@ -13,7 +13,14 @@
     "lint": "turbo run lint",
     "typecheck": "turbo run typecheck",
     "format": "prettier --write .",
-    "prepare": "husky"
+    "prepare": "husky",
+    "cms:setup": "tsx scripts/directus-setup.ts",
+    "start": "bash scripts/start.sh dev",
+    "start:prod": "bash scripts/start.sh prod",
+    "start:seed": "bash scripts/start.sh dev --seed",
+    "start:all": "bash scripts/start.sh dev --seed --mail --cms",
+    "reset": "bash scripts/start.sh reset",
+    "status": "bash scripts/start.sh status"
   },
   "keywords": [],
   "author": "",

@@ -1,0 +1,141 @@
+---
+export const prerender = false;
+
+import BaseLayout from '../../layouts/BaseLayout.astro'
+
+const { slug } = Astro.params
+
+interface ArticleData {
+  id: string
+  title: string
+  slug: string
+  summary: string | null
+  content: string | null
+  coverImage: string | null
+  authorName: string | null
+  categoryName: string | null
+  categorySlug: string | null
+  publishedAt: string | null
+  createdAt: string
+  updatedAt: string
+}
+
+let article: ArticleData | null = null
+let error: string | null = null
+
+try {
+  const apiUrl = import.meta.env.PUBLIC_API_URL ?? 'http://localhost:3000'
+  const res = await fetch(`${apiUrl}/api/v1/articles/${slug}`)
+  if (!res.ok) throw new Error('Artikel tidak ditemukan')
+  const json = await res.json()
+  article = json.data
+} catch (e) {
+  error = e instanceof Error ? e.message : 'Gagal memuat artikel'
+}
+---
+
+{
+  article ? (
+    <BaseLayout
+      title={`${article.title} - Blog Spesialis`}
+      description={article.summary ?? `Baca artikel ${article.title} di Blog Spesialis`}
+      canonicalUrl={`/blog/${article.slug}`}
+      ogImage={article.coverImage ?? undefined}
+      ogType="article"
+      jsonLd={{
+        '@context': 'https://schema.org',
+        '@type': 'Article',
+        headline: article.title,
+        description: article.summary,
+        image: article.coverImage,
+        author: article.authorName ? { '@type': 'Person', name: article.authorName } : { '@type': 'Organization', name: 'Spesialis' },
+        datePublished: article.publishedAt,
+        dateModified: article.updatedAt,
+        publisher: { '@type': 'Organization', name: 'Spesialis' },
+      }}
+    >
+      <div class="mx-auto max-w-3xl px-4 py-12 sm:px-6 lg:px-8">
+        <nav class="mb-8 text-sm text-text-muted">
+          <a href="/" class="hover:text-text transition-colors">Beranda</a>
+          <span class="mx-2">/</span>
+          <a href="/blog" class="hover:text-text transition-colors">Blog</a>
+          <span class="mx-2">/</span>
+          <span class="text-text">{article.title}</span>
+        </nav>
+
+        {article.coverImage && (
+          <img
+            src={article.coverImage}
+            alt={article.title}
+            class="mb-8 w-full rounded-xl object-cover"
+          />
+        )}
+
+        <div class="flex flex-wrap items-center gap-3 text-sm text-text-muted">
+          {article.categoryName && (
+            <span class="rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
+              {article.categoryName}
+            </span>
+          )}
+          {article.authorName && <span>Oleh {article.authorName}</span>}
+          {article.publishedAt && (
+            <time datetime={article.publishedAt}>
+              {new Date(article.publishedAt).toLocaleDateString('id-ID', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+              })}
+            </time>
+          )}
+        </div>
+
+        <h1 class="mt-4 text-3xl font-bold text-text">{article.title}</h1>
+
+        {article.content && (
+          <div class="prose prose-gray mt-8 max-w-none">
+            {article.content.split('\n').map((paragraph) => (
+              paragraph.trim() ? <p>{paragraph}</p> : null
+            ))}
+          </div>
+        )}
+
+        <div class="mt-12 border-t border-border pt-6">
+          <a
+            href="/blog"
+            class="inline-flex items-center gap-2 text-sm font-medium text-primary hover:text-primary-hover transition-colors"
+          >
+            &larr; Kembali ke Blog
+          </a>
+        </div>
+      </div>
+    </BaseLayout>
+  ) : (
+    <BaseLayout
+      title={error ? 'Artikel Tidak Ditemukan - Blog Spesialis' : 'Memuat... - Blog Spesialis'}
+      description={error ?? 'Memuat artikel'}
+    >
+      <div class="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
+        <div class="mx-auto max-w-lg text-center">
+          {error ? (
+            <>
+              <h1 class="text-2xl font-bold text-text">Artikel Tidak Ditemukan</h1>
+              <p class="mt-2 text-text-muted">{error}</p>
+              <a
+                href="/blog"
+                class="mt-6 inline-flex items-center gap-2 rounded-md bg-primary px-6 py-3 text-base font-medium text-white transition-colors hover:bg-primary-hover"
+              >
+                Lihat Semua Artikel
+              </a>
+            </>
+          ) : (
+            <>
+              <div class="h-8 w-48 mx-auto rounded bg-border animate-pulse" />
+              <div class="mt-4 h-4 w-full rounded bg-border animate-pulse" />
+              <div class="mt-8 h-10 w-40 mx-auto rounded bg-border animate-pulse" />
+            </>
+          )}
+        </div>
+      </div>
+    </BaseLayout>
+  )
+}

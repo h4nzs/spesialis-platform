@@ -1,0 +1,8 @@
+---
+import DashboardLayout from '../../../layouts/DashboardLayout.astro'
+import { AdminUsers } from '../../../components/dashboard/admin/AdminUsers.tsx'
+---
+
+<DashboardLayout title="Kelola User" role="admin">
+  <AdminUsers client:load />
+</DashboardLayout>

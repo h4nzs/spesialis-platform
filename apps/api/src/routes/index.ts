@@ -15,7 +15,11 @@ import { notificationsRouter } from './notifications.ts';
 import { dashboardRouter } from './admin/dashboard.ts';
 import { adminServicesRouter } from './admin/services.ts';
 import { adminServiceCategoriesRouter } from './admin/service-categories.ts';
+import { articlesRouter } from './articles.ts';
 import { mediaRouter } from './media.ts';
+import { adminArticlesRouter } from './admin/articles.ts';
+import { adminUsersRouter } from './admin/users.ts';
+import { adminSettingsRouter } from './admin/settings.ts';
 
 const router = new Hono();
 
@@ -35,6 +39,10 @@ router.route('/notifications', notificationsRouter);
 router.route('/admin/dashboard', dashboardRouter);
 router.route('/admin/services', adminServicesRouter);
 router.route('/admin/service-categories', adminServiceCategoriesRouter);
+router.route('/articles', articlesRouter);
+router.route('/admin/articles', adminArticlesRouter);
+router.route('/admin/users', adminUsersRouter);
+router.route('/admin/settings', adminSettingsRouter);
 router.route('/media', mediaRouter);
 
 export { router as apiRouter };

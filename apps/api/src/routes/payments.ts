@@ -1,12 +1,13 @@
 import { Hono } from 'hono';
 import { eq } from 'drizzle-orm';
-import { db, orders, payments, orderStatusHistory, customerProfiles } from '../lib/db.ts';
+import { db, orders, payments, orderStatusHistory, customerProfiles, users } from '../lib/db.ts';
 import { authMiddleware, requireRole } from '../middleware/auth.ts';
 import { createPaymentSchema, verifyPaymentSchema } from '@specialist/validation';
 import { success, created, error, notFound, forbidden, conflict } from '../lib/response.ts';
 import type { OrderStatus } from '@specialist/types';
 import { createAuditLog } from '../lib/audit.ts';
 import { createNotification } from '../lib/notification.ts';
+import { sendPaymentVerifiedEmail } from '../lib/email.ts';
 
 async function recordStatusHistory(
   orderId: string,
@@ -161,6 +162,8 @@ router.post(
         id: payments.id,
         status: payments.status,
         orderId: payments.orderId,
+        amount: payments.amount,
+        method: payments.method,
       })
       .from(payments)
       .where(eq(payments.id, paymentId))
@@ -228,19 +231,45 @@ router.post(
       oldValue: { status: payment.status },
     });
 
-    if (parsed.data.status === 'Paid') {
-      const [cp] = await db
-        .select({ userId: customerProfiles.userId })
-        .from(customerProfiles)
-        .where(eq(customerProfiles.id, order.customerId))
+    const [cp] = await db
+      .select({ userId: customerProfiles.userId, fullName: customerProfiles.fullName })
+      .from(customerProfiles)
+      .where(eq(customerProfiles.id, order.customerId))
+      .limit(1);
+
+    if (cp?.userId) {
+      await createNotification({
+        userId: cp.userId,
+        type: 'payment.received',
+        title: parsed.data.status === 'Paid' ? 'Pembayaran Diterima' : 'Pembayaran Ditolak',
+        message:
+          parsed.data.status === 'Paid'
+            ? 'Pembayaran Anda telah dikonfirmasi. Terima kasih!'
+            : `Pembayaran ditolak: ${parsed.data.notes ?? ''}`,
+      });
+
+      const [customerUser] = await db
+        .select({ email: users.email })
+        .from(users)
+        .where(eq(users.id, cp.userId))
         .limit(1);
-      if (cp?.userId) {
-        await createNotification({
-          userId: cp.userId,
-          type: 'payment.received',
-          title: 'Pembayaran Diterima',
-          message: 'Pembayaran Anda telah dikonfirmasi. Terima kasih!',
-        });
+
+      if (customerUser?.email) {
+        const [orderInfo] = await db
+          .select({ bookingNumber: orders.bookingNumber })
+          .from(orders)
+          .where(eq(orders.id, payment.orderId))
+          .limit(1);
+
+        sendPaymentVerifiedEmail(
+          customerUser.email,
+          cp.fullName ?? 'Pelanggan',
+          orderInfo?.bookingNumber ?? '',
+          `Rp${Number(payment.amount).toLocaleString('id-ID')}`,
+          payment.method,
+          parsed.data.status as 'Paid' | 'Failed',
+          parsed.data.notes ?? null,
+        );
       }
     }
 

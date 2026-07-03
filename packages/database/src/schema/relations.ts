@@ -23,6 +23,8 @@ import { partnerSkills } from './partner-skills.ts';
 import { partnerDocuments } from './partner-documents.ts';
 import { orderMedia } from './order-media.ts';
 import { media } from './media.ts';
+import { articleCategories } from './article-categories.ts';
+import { articles } from './articles.ts';
 
 export const usersRelations = relations(users, ({ one, many }) => ({
   customerProfile: one(customerProfiles),
@@ -170,4 +172,15 @@ export const mediaRelations = relations(media, ({ one }) => ({
 export const orderMediaRelations = relations(orderMedia, ({ one }) => ({
   order: one(orders, { fields: [orderMedia.orderId], references: [orders.id] }),
   media: one(media, { fields: [orderMedia.mediaId], references: [media.id] }),
+}));
+
+export const articleCategoriesRelations = relations(articleCategories, ({ many }) => ({
+  articles: many(articles),
+}));
+
+export const articlesRelations = relations(articles, ({ one }) => ({
+  category: one(articleCategories, {
+    fields: [articles.categoryId],
+    references: [articleCategories.id],
+  }),
 }));

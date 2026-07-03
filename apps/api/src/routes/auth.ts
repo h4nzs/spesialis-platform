@@ -1,3 +1,4 @@
+console.log('AUTH JWT =', process.env.JWT_SECRET);
 import { Hono } from 'hono';
 import { eq, and, or, isNull } from 'drizzle-orm';
 import {
@@ -11,7 +12,7 @@ import {
 import { db, users, customerProfiles, refreshTokens, passwordResets } from '../lib/db.ts';
 import { authMiddleware } from '../middleware/auth.ts';
 import { rateLimit } from '../middleware/rate-limiter.ts';
-import { sendPasswordResetEmail } from '../lib/email.ts';
+import { sendPasswordResetEmail, sendVerificationEmail } from '../lib/email.ts';
 import {
   registerSchema,
   loginSchema,
@@ -20,6 +21,7 @@ import {
   updateProfileSchema,
   changePasswordSchema,
   deleteAccountSchema,
+  convertGuestSchema,
 } from '@specialist/validation';
 import {
   success,
@@ -85,7 +87,88 @@ router.post('/register', rateLimit(10, 60_000), async (c) => {
 
   const token = await signAccessToken(user.id, user.role);
 
+  const verificationToken = generateRefreshToken();
+  await db.insert(passwordResets).values({
+    userId: user.id,
+    tokenHash: hashToken(verificationToken),
+    expiresAt: getRefreshTokenExpiry(),
+  });
+
+  sendVerificationEmail(email, fullName, verificationToken);
+
   return created(c, { user: { id: user.id, email: user.email, role: user.role }, token });
+});
+
+router.post('/convert-guest', rateLimit(10, 60_000), async (c) => {
+  const body = await c.req.json();
+  const parsed = convertGuestSchema.safeParse(body);
+  if (!parsed.success) {
+    return error(
+      c,
+      'VALIDATION_ERROR',
+      'Validation failed',
+      422,
+      parsed.error.issues.map((i) => ({
+        field: i.path.join('.'),
+        message: i.message,
+      })),
+    );
+  }
+
+  const { phone, email, password, fullName } = parsed.data;
+
+  const existingUser = await db
+    .select({ id: users.id })
+    .from(users)
+    .where(or(eq(users.email, email), eq(users.phone, phone)))
+    .limit(1);
+
+  if (existingUser[0]) {
+    return conflict(c, 'Email atau nomor HP sudah terdaftar');
+  }
+
+  const [guestProfile] = await db
+    .select({ id: customerProfiles.id })
+    .from(customerProfiles)
+    .where(
+      and(
+        eq(customerProfiles.guestPhone, phone),
+        eq(customerProfiles.userId, null as unknown as string),
+      ),
+    )
+    .limit(1);
+
+  if (!guestProfile) {
+    return error(c, 'GUEST_NOT_FOUND', 'Tidak ada booking guest dengan nomor HP ini', 404);
+  }
+
+  const passwordHash = await hashPassword(password);
+
+  const [user] = await db
+    .insert(users)
+    .values({
+      email,
+      phone,
+      passwordHash,
+      role: 'customer',
+      status: 'active',
+    })
+    .returning({ id: users.id, email: users.email, role: users.role });
+
+  if (!user) return serverError(c, 'Gagal membuat user');
+
+  await db
+    .update(customerProfiles)
+    .set({
+      userId: user.id,
+      fullName,
+      guestPhone: null,
+    })
+    .where(eq(customerProfiles.id, guestProfile.id));
+
+  const token = await signAccessToken(user.id, user.role);
+
+  return created(c, { user, token }, 'Akun berhasil dibuat');
 });
 
 router.post('/login', rateLimit(10, 60_000), async (c) => {
@@ -279,6 +362,72 @@ router.post('/reset-password', async (c) => {
   });
 
   return success(c, null, 'Password berhasil direset');
+});
+
+router.post('/verify-email', async (c) => {
+  const body = (await c.req.json()) as { token?: string };
+  if (!body.token) {
+    return error(c, 'VALIDATION_ERROR', 'Token verifikasi diperlukan', 422);
+  }
+
+  const [stored] = await db
+    .select({
+      id: passwordResets.id,
+      userId: passwordResets.userId,
+      used: passwordResets.used,
+      expiresAt: passwordResets.expiresAt,
+    })
+    .from(passwordResets)
+    .where(and(eq(passwordResets.tokenHash, hashToken(body.token)), eq(passwordResets.used, false)))
+    .limit(1);
+
+  if (!stored || stored.expiresAt < new Date()) {
+    return error(
+      c,
+      'INVALID_VERIFICATION_TOKEN',
+      'Token verifikasi tidak valid atau kadaluarsa',
+      400,
+    );
+  }
+
+  await db.transaction(async (tx) => {
+    await tx.update(users).set({ emailVerifiedAt: new Date() }).where(eq(users.id, stored.userId));
+    await tx.update(passwordResets).set({ used: true }).where(eq(passwordResets.id, stored.id));
+  });
+
+  return success(c, null, 'Email berhasil diverifikasi');
+});
+
+router.post('/resend-verification', authMiddleware, async (c) => {
+  const userId = c.get('userId');
+
+  const [user] = await db
+    .select({ id: users.id, email: users.email, emailVerifiedAt: users.emailVerifiedAt })
+    .from(users)
+    .where(eq(users.id, userId))
+    .limit(1);
+
+  if (!user) return notFound(c, 'User tidak ditemukan');
+  if (user.emailVerifiedAt) {
+    return success(c, null, 'Email sudah diverifikasi');
+  }
+
+  await db
+    .update(passwordResets)
+    .set({ used: true })
+    .where(and(eq(passwordResets.userId, userId), eq(passwordResets.used, false)));
+
+  const verificationToken = generateRefreshToken();
+  await db.insert(passwordResets).values({
+    userId,
+    tokenHash: hashToken(verificationToken),
+    expiresAt: getRefreshTokenExpiry(),
+  });
+
+  const displayName = user.email.split('@')[0] ?? 'Pengguna';
+  sendVerificationEmail(user.email, displayName, verificationToken);
+
+  return success(c, null, 'Email verifikasi telah dikirim');
 });
 
 router.get('/me', authMiddleware, async (c) => {

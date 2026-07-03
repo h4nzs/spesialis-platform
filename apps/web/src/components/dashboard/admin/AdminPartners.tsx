@@ -63,7 +63,7 @@ export function AdminPartners() {
       header: 'Aksi',
       render: (item) => (
         <div className="flex gap-1">
-          {item.verificationStatus === 'Waiting Verification' && (
+          {item.verificationStatus === 'Pending' && (
             <>
               <Button size="sm" onClick={() => handleVerify(item.id, 'Approved')}>
                 Setujui

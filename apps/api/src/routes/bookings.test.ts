@@ -30,6 +30,16 @@ vi.mock('../lib/auth.ts', () => ({
   hashToken: vi.fn().mockReturnValue('h'),
   getRefreshTokenExpiry: vi.fn().mockReturnValue(new Date(Date.now() + 86400000)),
 }));
+vi.mock('../lib/email.ts', () => ({
+  APP_URL: 'http://localhost:4321',
+  sendPasswordResetEmail: vi.fn().mockResolvedValue(undefined),
+  sendBookingConfirmationEmail: vi.fn().mockResolvedValue(undefined),
+  sendPartnerAssignedEmail: vi.fn().mockResolvedValue(undefined),
+  sendPartnerVerifiedEmail: vi.fn().mockResolvedValue(undefined),
+  sendPaymentVerifiedEmail: vi.fn().mockResolvedValue(undefined),
+  sendVerificationEmail: vi.fn().mockResolvedValue(undefined),
+}));
+
 vi.mock('../middleware/auth.ts', () => ({
   authMiddleware: async (c: any, next: any) => {
     if (!c.req.header('Authorization')) {
@@ -261,11 +271,18 @@ describe('POST /:id/assign', () => {
     mockDb.select.mockReturnValueOnce(makeChain([{ id: 'o1', status: 'Waiting Assignment' }]));
     mockDb.select.mockReturnValueOnce(makeChain([{ id: 'pp1', availability: 'Available' }]));
     mockDb.select.mockReturnValueOnce(makeChain([{ id: 'pu', email: 'p@t.com' }]));
+    mockDb.select.mockReturnValueOnce(
+      makeChain([{ fullName: 'Partner A', bookingNumber: 'SP-2026-000001' }]),
+    );
     const res = await mkApp('admin').request('/api/v1/bookings/o1/assign', {
       method: 'POST',
       headers: a(),
       body: JSON.stringify({ partnerId: PARTNER_USER_ID }),
     });
+    if (res.status !== 200) {
+      const body = await res.json();
+      console.error('Assign test body:', JSON.stringify(body));
+    }
     expect(res.status).toBe(200);
   });
   it('403 customer', async () => {

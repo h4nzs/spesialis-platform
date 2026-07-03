@@ -7,6 +7,12 @@ interface NavItem {
 }
 
 const NAV_MAP: Record<string, NavItem[]> = {
+  content_manager: [
+    { href: '/dashboard/admin', label: 'Ringkasan' },
+    { href: '/dashboard/admin/articles', label: 'Artikel' },
+    { href: '/dashboard/admin/services', label: 'Layanan' },
+    { href: '/dashboard/admin/settings', label: 'Pengaturan' },
+  ],
   customer: [
     { href: '/dashboard/customer', label: 'Ringkasan' },
     { href: '/dashboard/customer/orders', label: 'Pesanan' },
@@ -28,7 +34,9 @@ const NAV_MAP: Record<string, NavItem[]> = {
     { href: '/dashboard/admin/bookings', label: 'Booking' },
     { href: '/dashboard/admin/partners', label: 'Partner' },
     { href: '/dashboard/admin/customers', label: 'Customer' },
+    { href: '/dashboard/admin/users', label: 'User' },
     { href: '/dashboard/admin/services', label: 'Layanan' },
+    { href: '/dashboard/admin/articles', label: 'Artikel' },
     { href: '/dashboard/admin/settings', label: 'Pengaturan' },
   ],
   corporate: [

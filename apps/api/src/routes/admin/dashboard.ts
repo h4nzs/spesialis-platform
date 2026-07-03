@@ -1,5 +1,5 @@
 import { Hono } from 'hono';
-import { eq, and, sql } from 'drizzle-orm';
+import { eq, and, sql, desc } from 'drizzle-orm';
 import {
   db,
   users,
@@ -8,6 +8,7 @@ import {
   complaints,
   companies,
   customerProfiles,
+  auditLogs,
 } from '../../lib/db.ts';
 import { authMiddleware, requireRole } from '../../middleware/auth.ts';
 import { success } from '../../lib/response.ts';
@@ -113,5 +114,27 @@ router.get(
     return success(c, allowed);
   },
 );
+
+router.get('/activity', authMiddleware, requireRole('admin', 'super_admin'), async (c) => {
+  const limit = Number(c.req.query('limit') ?? 20);
+
+  const items = await db
+    .select({
+      id: auditLogs.id,
+      action: auditLogs.action,
+      entity: auditLogs.entity,
+      entityId: auditLogs.entityId,
+      ipAddress: auditLogs.ipAddress,
+      createdAt: auditLogs.createdAt,
+      userEmail: users.email,
+      userRole: users.role,
+    })
+    .from(auditLogs)
+    .leftJoin(users, eq(auditLogs.userId, users.id))
+    .orderBy(desc(auditLogs.createdAt))
+    .limit(limit);
+
+  return success(c, items);
+});
 
 export { router as dashboardRouter };

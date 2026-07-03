@@ -12,6 +12,8 @@ export {
   updateProfileSchema,
   changePasswordSchema,
   deleteAccountSchema,
+  updateUserStatusSchema,
+  convertGuestSchema,
 } from './user.ts';
 export type {
   RegisterInput,
@@ -21,6 +23,8 @@ export type {
   UpdateProfileInput,
   ChangePasswordInput,
   DeleteAccountInput,
+  UpdateUserStatusInput,
+  ConvertGuestInput,
 } from './user.ts';
 
 export { createCustomerSchema, updateCustomerSchema } from './customer.ts';
@@ -33,6 +37,7 @@ export {
   verifyPartnerSchema,
   addSkillSchema,
   partnerRegistrationSchema,
+  createPartnerDocumentSchema,
 } from './partner.ts';
 export type {
   RegisterPartnerInput,
@@ -41,6 +46,7 @@ export type {
   VerifyPartnerInput,
   AddSkillInput,
   PartnerRegistrationInput,
+  CreatePartnerDocumentInput,
 } from './partner.ts';
 
 export { createCompanySchema, updateCompanySchema, verifyCompanySchema } from './company.ts';
@@ -99,3 +105,16 @@ export type { MarkNotificationReadInput } from './notification.ts';
 
 export { uploadMediaSchema } from './media.ts';
 export type { UploadMediaInput } from './media.ts';
+
+export {
+  createArticleCategorySchema,
+  updateArticleCategorySchema,
+  createArticleSchema,
+  updateArticleSchema,
+} from './article.ts';
+export type {
+  CreateArticleCategoryInput,
+  UpdateArticleCategoryInput,
+  CreateArticleInput,
+  UpdateArticleInput,
+} from './article.ts';

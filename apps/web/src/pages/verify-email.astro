@@ -1,0 +1,29 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { VerifyEmailForm } from '../components/VerifyEmailForm';
+
+const token = Astro.url.searchParams.get('token');
+---
+
+<BaseLayout title="Verifikasi Email — Spesialis" description="Verifikasi alamat email Anda" noindex={true}>
+  <main class="flex min-h-[60vh] items-center justify-center px-4 py-16">
+    <div class="w-full max-w-md">
+      {token ? (
+        <VerifyEmailForm token={token} client:load />
+      ) : (
+        <div class="text-center">
+          <h1 class="text-2xl font-bold text-text">Token Tidak Ditemukan</h1>
+          <p class="mt-2 text-text-muted">
+            Link verifikasi tidak valid. Silakan cek email Anda atau minta tautan baru.
+          </p>
+          <a
+            href="/login"
+            class="mt-6 inline-block rounded-md bg-primary px-6 py-2 text-sm font-medium text-white"
+          >
+            Masuk
+          </a>
+        </div>
+      )}
+    </div>
+  </main>
+</BaseLayout>

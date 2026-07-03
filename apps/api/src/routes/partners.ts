@@ -5,6 +5,7 @@ import {
   users,
   partnerProfiles,
   partnerSkills,
+  partnerDocuments,
   serviceCategories,
   assignments,
   orders,
@@ -18,6 +19,7 @@ import {
   updateAvailabilitySchema,
   verifyPartnerSchema,
   addSkillSchema,
+  createPartnerDocumentSchema,
   paginationQuerySchema,
 } from '@specialist/validation';
 import type {
@@ -34,6 +36,7 @@ import {
   conflict,
   serverError,
 } from '../lib/response.ts';
+import { sendPartnerVerifiedEmail } from '../lib/email.ts';
 
 const router = new Hono();
 
@@ -343,6 +346,81 @@ router.get('/me/jobs', authMiddleware, async (c) => {
   return success(c, items);
 });
 
+router.get('/me/documents', authMiddleware, async (c) => {
+  const userId = c.get('userId');
+
+  const [profile] = await db
+    .select({ id: partnerProfiles.id })
+    .from(partnerProfiles)
+    .where(eq(partnerProfiles.userId, userId))
+    .limit(1);
+  if (!profile) return notFound(c, 'Profil partner tidak ditemukan');
+
+  const items = await db
+    .select()
+    .from(partnerDocuments)
+    .where(eq(partnerDocuments.partnerId, profile.id))
+    .orderBy(desc(partnerDocuments.createdAt));
+
+  return success(c, items);
+});
+
+router.post('/me/documents', authMiddleware, async (c) => {
+  const userId = c.get('userId');
+  const body = await c.req.json();
+  const parsed = createPartnerDocumentSchema.safeParse(body);
+  if (!parsed.success) {
+    return error(
+      c,
+      'VALIDATION_ERROR',
+      'Validation failed',
+      422,
+      parsed.error.issues.map((i) => ({ field: i.path.join('.'), message: i.message })),
+    );
+  }
+
+  const [profile] = await db
+    .select({ id: partnerProfiles.id })
+    .from(partnerProfiles)
+    .where(eq(partnerProfiles.userId, userId))
+    .limit(1);
+  if (!profile) return notFound(c, 'Profil partner tidak ditemukan');
+
+  const [doc] = await db
+    .insert(partnerDocuments)
+    .values({
+      partnerId: profile.id,
+      type: parsed.data.type,
+      mediaId: parsed.data.mediaId,
+      fileName: parsed.data.fileName,
+    })
+    .returning();
+
+  return created(c, doc, 'Dokumen berhasil diupload');
+});
+
+router.delete('/me/documents/:documentId', authMiddleware, async (c) => {
+  const userId = c.get('userId');
+  const documentId = c.req.param('documentId')!;
+
+  const [profile] = await db
+    .select({ id: partnerProfiles.id })
+    .from(partnerProfiles)
+    .where(eq(partnerProfiles.userId, userId))
+    .limit(1);
+  if (!profile) return notFound(c, 'Profil partner tidak ditemukan');
+
+  const [doc] = await db
+    .select({ id: partnerDocuments.id })
+    .from(partnerDocuments)
+    .where(and(eq(partnerDocuments.id, documentId), eq(partnerDocuments.partnerId, profile.id)))
+    .limit(1);
+  if (!doc) return notFound(c, 'Dokumen tidak ditemukan');
+
+  await db.delete(partnerDocuments).where(eq(partnerDocuments.id, documentId));
+  return success(c, null, 'Dokumen berhasil dihapus');
+});
+
 router.get('/:id', async (c) => {
   const partnerId = c.req.param('id')!;
 
@@ -430,6 +508,22 @@ router.post('/:id/verify', authMiddleware, requireRole('admin', 'super_admin'), 
     .update(partnerProfiles)
     .set({ verificationStatus: parsed.data.verificationStatus as PartnerVerificationStatus })
     .where(eq(partnerProfiles.id, partnerId));
+
+  const [partnerUser] = await db
+    .select({ email: users.email, fullName: partnerProfiles.fullName })
+    .from(partnerProfiles)
+    .innerJoin(users, eq(users.id, partnerProfiles.userId))
+    .where(eq(partnerProfiles.id, partnerId))
+    .limit(1);
+
+  if (partnerUser?.email) {
+    sendPartnerVerifiedEmail(
+      partnerUser.email,
+      partnerUser.fullName,
+      parsed.data.verificationStatus as 'Approved' | 'Rejected',
+      parsed.data.note ?? null,
+    );
+  }
 
   return success(
     c,

@@ -38,7 +38,10 @@ const { mockDb, mockAuth, mockEmail, mockAudit, em } = vi.hoisted(() => {
     hashToken: vi.fn().mockReturnValue('mock-hash-token'),
     getRefreshTokenExpiry: vi.fn().mockReturnValue(new Date(Date.now() + 7 * 86400000)),
   };
-  const mE = { sendPasswordResetEmail: vi.fn().mockResolvedValue(undefined) };
+  const mE = {
+    sendPasswordResetEmail: vi.fn().mockResolvedValue(undefined),
+    sendVerificationEmail: vi.fn().mockResolvedValue(undefined),
+  };
   const ax = { createAuditLog: vi.fn().mockResolvedValue(undefined) };
   const exps = (globalThis as any).__TABLE_EXPORTS;
   return { mockDb: db, mockAuth: mA, mockEmail: mE, mockAudit: ax, em: exps };
@@ -79,11 +82,9 @@ describe('POST /register', () => {
   it('201 valid', async () => {
     mockDb.select.mockReturnValue(makeChain([]));
     mockDb.insert.mockReturnValue({
-      values: vi
-        .fn()
-        .mockReturnValue({
-          returning: vi.fn().mockResolvedValue([{ id: 'uid', email: 'a@b.com', role: 'customer' }]),
-        }),
+      values: vi.fn().mockReturnValue({
+        returning: vi.fn().mockResolvedValue([{ id: 'uid', email: 'a@b.com', role: 'customer' }]),
+      }),
     });
     mockDb.insert.mockReturnValueOnce({
       values: vi.fn().mockReturnValue({ returning: vi.fn().mockResolvedValue([{ id: 'pid' }]) }),
@@ -268,11 +269,9 @@ describe('PATCH /profile', () => {
   it('200 updated', async () => {
     mockDb.select.mockReturnValueOnce(makeChain([{ id: 'uid', email: 'a@b.com' }]));
     mockDb.update.mockReturnValueOnce({
-      set: vi
-        .fn()
-        .mockReturnValue({
-          where: vi.fn().mockReturnValue({ returning: vi.fn().mockResolvedValue([profileResult]) }),
-        }),
+      set: vi.fn().mockReturnValue({
+        where: vi.fn().mockReturnValue({ returning: vi.fn().mockResolvedValue([profileResult]) }),
+      }),
     });
     const res = await mkApp().request('/api/v1/auth/profile', {
       method: 'PATCH',

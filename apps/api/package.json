@@ -6,14 +6,17 @@
   "scripts": {
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
-    "dev": "tsx watch src/index.ts",
-    "db:seed": "tsx src/seeds/index.ts",
+    "dev": "tsx watch --env-file=../../.env src/index.ts",
+    "start": "tsx --env-file=../../.env src/index.ts",
+    "db:seed": "tsx --env-file=../../.env src/seeds/index.ts",
     "test": "vitest run"
   },
   "dependencies": {
+    "@hono/node-server": "^2.0.6",
     "@specialist/database": "workspace:*",
     "@specialist/types": "workspace:*",
     "@specialist/validation": "workspace:*",
+    "dotenv": "^17.4.2",
     "drizzle-orm": "^0.43.1",
     "hash-wasm": "^4.12.0",
     "hono": "^4.12.27",

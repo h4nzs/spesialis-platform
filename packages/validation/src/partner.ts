@@ -54,9 +54,16 @@ export const partnerRegistrationSchema = z.object({
   ktpNumber: z.string().min(1).max(30),
 });
 
+export const createPartnerDocumentSchema = z.object({
+  type: z.enum(['KTP', 'Certificate', 'SIM', 'Photo', 'Other']),
+  mediaId: z.string().uuid(),
+  fileName: z.string().min(1).max(255),
+});
+
 export type RegisterPartnerInput = z.infer<typeof registerPartnerSchema>;
 export type UpdatePartnerInput = z.infer<typeof updatePartnerSchema>;
 export type UpdateAvailabilityInput = z.infer<typeof updateAvailabilitySchema>;
 export type VerifyPartnerInput = z.infer<typeof verifyPartnerSchema>;
 export type AddSkillInput = z.infer<typeof addSkillSchema>;
 export type PartnerRegistrationInput = z.infer<typeof partnerRegistrationSchema>;
+export type CreatePartnerDocumentInput = z.infer<typeof createPartnerDocumentSchema>;

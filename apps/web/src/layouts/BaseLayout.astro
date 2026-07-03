@@ -8,6 +8,7 @@ export interface Props {
   ogType?: 'website' | 'article'
   canonicalUrl?: string
   jsonLd?: Record<string, unknown>
+  noindex?: boolean
 }
 
 const {
@@ -17,6 +18,7 @@ const {
   ogType = 'website',
   canonicalUrl,
   jsonLd,
+  noindex = false,
 } = Astro.props
 
 const siteUrl = 'https://spesialis.id'
@@ -34,6 +36,7 @@ const canonical = canonicalUrl ? `${siteUrl}${canonicalUrl}` : undefined
 
     <title>{title}</title>
     <meta name="description" content={description} />
+    <meta name="robots" content={noindex ? 'noindex, nofollow' : 'index, follow'} />
 
     {canonical && <link rel="canonical" href={canonical} />}
 
@@ -58,6 +61,7 @@ const canonical = canonicalUrl ? `${siteUrl}${canonicalUrl}` : undefined
         <nav class="flex items-center gap-6 text-sm font-medium text-text-muted">
           <a href="/" class="hover:text-text transition-colors">Beranda</a>
           <a href="/services" class="hover:text-text transition-colors">Layanan</a>
+          <a href="/blog" class="hover:text-text transition-colors">Blog</a>
           <a href="/tracking" class="hover:text-text transition-colors">Lacak</a>
           <a href="/login" class="hover:text-text transition-colors">Masuk</a>
           <a
@@ -75,10 +79,13 @@ const canonical = canonicalUrl ? `${siteUrl}${canonicalUrl}` : undefined
     <footer class="border-t border-border bg-surface py-8">
       <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div class="flex flex-col items-center justify-between gap-4 sm:flex-row">
-          <div class="flex gap-6 text-sm text-text-muted">
+          <div class="flex flex-wrap gap-4 text-sm text-text-muted">
             <a href="/tentang-kami" class="hover:text-text transition-colors">Tentang</a>
+            <a href="/blog" class="hover:text-text transition-colors">Blog</a>
             <a href="/faq" class="hover:text-text transition-colors">FAQ</a>
             <a href="/kontak" class="hover:text-text transition-colors">Kontak</a>
+            <a href="/syarat-ketentuan" class="hover:text-text transition-colors">Syarat & Ketentuan</a>
+            <a href="/kebijakan-privasi" class="hover:text-text transition-colors">Kebijakan Privasi</a>
           </div>
           <p class="text-sm text-text-muted">&copy; {new Date().getFullYear()} Spesialis</p>
         </div>
