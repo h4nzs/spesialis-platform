@@ -9,6 +9,8 @@ export interface Props {
   canonicalUrl?: string
   jsonLd?: Record<string, unknown>
   noindex?: boolean
+  articlePublishedTime?: string
+  articleAuthor?: string
 }
 
 const {
@@ -19,6 +21,8 @@ const {
   canonicalUrl,
   jsonLd,
   noindex = false,
+  articlePublishedTime,
+  articleAuthor,
 } = Astro.props
 
 const siteUrl = 'https://spesialis.id'
@@ -39,18 +43,20 @@ const canonical = canonicalUrl ? `${siteUrl}${canonicalUrl}` : undefined
     <meta name="robots" content={noindex ? 'noindex, nofollow' : 'index, follow'} />
 
     {canonical && <link rel="canonical" href={canonical} />}
-
+    <meta property="og:locale" content="id_ID" />
+    <meta property="og:site_name" content="Spesialis" />
     <meta property="og:type" content={ogType} />
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
     <meta property="og:image" content={`${siteUrl}${ogImage}`} />
-    <meta property="og:locale" content="id_ID" />
-    <meta property="og:site_name" content="Spesialis" />
-
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content={title} />
     <meta name="twitter:description" content={description} />
     <meta name="twitter:image" content={`${siteUrl}${ogImage}`} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    {articlePublishedTime && <meta property="article:published_time" content={articlePublishedTime} />}
+    {articleAuthor && <meta property="article:author" content={articleAuthor} />}
 
     {jsonLd && <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} is:inline />}
   </head>

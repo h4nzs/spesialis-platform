@@ -28,6 +28,10 @@ const TABLE_NAMES = [
   'passwordResets',
   'partnerSkills',
   'partnerDocuments',
+  'articles',
+  'articleCategories',
+  'contracts',
+  'invoices',
   'usersRelations',
   'customerProfilesRelations',
   'partnerProfilesRelations',
@@ -48,6 +52,10 @@ const TABLE_NAMES = [
   'partnerDocumentsRelations',
   'mediaRelations',
   'orderMediaRelations',
+  'articlesRelations',
+  'articleCategoriesRelations',
+  'contractsRelations',
+  'invoicesRelations',
 ];
 const exps: Record<string, unknown> = {};
 for (const n of TABLE_NAMES) exps[n] = {};

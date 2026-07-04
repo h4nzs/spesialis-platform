@@ -11,6 +11,10 @@ export const errorHandler: ErrorHandler = (err: Error, c: Context) => {
     );
   }
 
-  console.error('Unhandled error:', err);
+  const userId = c.get('userId');
+  console.error(`[API] Unhandled ${c.req.method} ${c.req.path}`, {
+    error: { name: err.name, message: err.message, stack: err.stack },
+    userId,
+  });
   return serverError(c);
 };

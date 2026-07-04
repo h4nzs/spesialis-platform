@@ -38,6 +38,7 @@ import {
 import { createAuditLog } from '../lib/audit.ts';
 import { createNotification } from '../lib/notification.ts';
 import { APP_URL, sendBookingConfirmationEmail, sendPartnerAssignedEmail } from '../lib/email.ts';
+import { rateLimit } from '../middleware/rate-limiter.ts';
 
 const router = new Hono();
 
@@ -90,7 +91,7 @@ function validTransitions(current: OrderStatus): OrderStatus[] {
   return map[current] ?? [];
 }
 
-router.post('/', async (c) => {
+router.post('/', rateLimit(5, 60_000), async (c) => {
   const authHeader = c.req.header('Authorization');
   const isAuthenticated = authHeader?.startsWith('Bearer ');
 
@@ -691,6 +692,8 @@ router.post(
         }
       }
     }
+
+    return success(c, { id: orderId, status: 'Partner Assigned' }, 'Partner berhasil diassign');
   },
 );
 

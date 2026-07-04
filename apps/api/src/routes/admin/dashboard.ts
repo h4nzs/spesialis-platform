@@ -22,8 +22,7 @@ router.get(
   async (c) => {
     const userRole = c.get('userRole');
 
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    const today = new Date().toISOString().slice(0, 10);
 
     const [totalUsers] = await db.select({ count: sql<number>`count(*)` }).from(users);
     const [totalCustomers] = await db

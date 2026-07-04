@@ -1,8 +1,11 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { Hono } from 'hono';
+import type { Context } from 'hono';
+import type { UserRole } from '@specialist/types';
 import { partnersRouter } from './partners.ts';
 import { errorHandler } from '../middleware/error-handler.ts';
 import { setTestEnv, makeChain, insertChain, updateChain } from '../test-utils.ts';
+import type { ApiTestResponse } from '../test-utils.ts';
 
 const { mockDb, authState, mockAuth, em } = vi.hoisted(() => {
   const db = {
@@ -13,7 +16,7 @@ const { mockDb, authState, mockAuth, em } = vi.hoisted(() => {
     execute: vi.fn().mockResolvedValue([]),
     transaction: vi.fn((fn: (tx: unknown) => unknown) => fn(db)),
   };
-  const st = { userId: 'puid', userRole: 'partner' };
+  const st: { userId: string; userRole: UserRole } = { userId: 'puid', userRole: 'partner' };
   const mA = {
     hashPassword: vi.fn().mockResolvedValue('hashed-password'),
     verifyPassword: vi.fn().mockResolvedValue(true),
@@ -23,14 +26,14 @@ const { mockDb, authState, mockAuth, em } = vi.hoisted(() => {
     hashToken: vi.fn().mockReturnValue('mock-hash-token'),
     getRefreshTokenExpiry: vi.fn().mockReturnValue(new Date(Date.now() + 7 * 86400000)),
   };
-  const exps = (globalThis as any).__TABLE_EXPORTS as Record<string, unknown>;
+  const exps = (globalThis as Record<string, unknown>).__TABLE_EXPORTS as Record<string, unknown>;
   return { mockDb: db, authState: st, mockAuth: mA, em: exps };
 });
 
 vi.mock('../lib/db.ts', () => ({ db: mockDb, ...em }));
 vi.mock('../lib/auth.ts', () => ({ ...mockAuth }));
 vi.mock('../middleware/auth.ts', () => ({
-  authMiddleware: async (c: any, next: any) => {
+  authMiddleware: async (c: Context, next: () => Promise<void>) => {
     if (!c.req.header('Authorization')) {
       c.status(401);
       return c.json({ success: false, code: 'UNAUTHORIZED', message: 'No token' });
@@ -41,7 +44,7 @@ vi.mock('../middleware/auth.ts', () => ({
   },
   requireRole:
     (...roles: string[]) =>
-    async (c: any, next: any) => {
+    async (c: Context, next: () => Promise<void>) => {
       if (!roles.includes(authState.userRole)) {
         c.status(403);
         return c.json({ success: false, code: 'FORBIDDEN', message: 'Forbidden' });
@@ -50,7 +53,7 @@ vi.mock('../middleware/auth.ts', () => ({
     },
 }));
 
-function mkApp(role = 'partner') {
+function mkApp(role: UserRole = 'partner') {
   authState.userRole = role;
   authState.userId = 'puid';
   const app = new Hono();
@@ -118,7 +121,7 @@ describe('GET /', () => {
     mockDb.select.mockReturnValue(makeChain([]));
     const res = await mkApp().request('/api/v1/partners');
     expect(res.status).toBe(200);
-    expect(((await res.json()) as any).pagination).toBeDefined();
+    expect(((await res.json()) as ApiTestResponse).pagination).toBeDefined();
   });
   it('filter availability', async () => {
     mockDb.select.mockReturnValue(makeChain([]));

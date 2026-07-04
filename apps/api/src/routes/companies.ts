@@ -19,10 +19,11 @@ import {
   conflict,
   serverError,
 } from '../lib/response.ts';
+import { rateLimit } from '../middleware/rate-limiter.ts';
 
 const router = new Hono();
 
-router.post('/', async (c) => {
+router.post('/', rateLimit(5, 60_000), async (c) => {
   const body = await c.req.json();
   const parsed = createCompanySchema.safeParse(body);
   if (!parsed.success) {

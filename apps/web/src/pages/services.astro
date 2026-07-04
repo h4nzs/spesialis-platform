@@ -1,14 +1,61 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro'
 import { ServiceList } from '../components/ServiceList.tsx'
+
+const apiUrl = import.meta.env.PUBLIC_API_URL ?? 'http://localhost:3000'
+
+interface ServiceItem {
+  id: string
+  name: string
+  slug: string
+}
+
+let services: ServiceItem[] = []
+
+try {
+  const res = await fetch(`${apiUrl}/api/v1/services?limit=100`)
+  if (res.ok) {
+    const json = await res.json()
+    services = json.data ?? []
+  }
+} catch {
+  // silent
+}
 ---
 
 <BaseLayout
   title="Layanan - Spesialis"
   description="Pilih layanan jasa profesional yang Anda butuhkan — AC, plumbing, listrik, cleaning, CCTV, dan lainnya. Harga transparan, teknisi berpengalaman."
   canonicalUrl="/services"
+  jsonLd={{
+    '@context': 'https://schema.org',
+    '@graph': [
+      {
+        '@type': 'BreadcrumbList',
+        itemListElement: [
+          { '@type': 'ListItem', position: 1, name: 'Beranda', item: 'https://spesialis.id' },
+          { '@type': 'ListItem', position: 2, name: 'Layanan' },
+        ],
+      },
+      {
+        '@type': 'ItemList',
+        itemListElement: services.map((s, i) => ({
+          '@type': 'ListItem',
+          position: i + 1,
+          url: `https://spesialis.id/services/${s.slug}`,
+          name: s.name,
+        })),
+      },
+    ],
+  }}
 >
   <div class="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
+    <nav class="mb-8 text-sm text-text-muted">
+      <a href="/" class="hover:text-text transition-colors">Beranda</a>
+      <span class="mx-2">/</span>
+      <span class="text-text">Layanan</span>
+    </nav>
+
     <h1 class="text-3xl font-bold text-text">Layanan</h1>
     <p class="mt-2 text-text-muted">Pilih layanan yang Anda butuhkan</p>
 

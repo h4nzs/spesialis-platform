@@ -1,81 +1,147 @@
 # Directus CMS Setup
 
-## Automated Setup (Recommended)
+## Status: ✅ Configured
 
-Run the automated setup script after starting Directus:
+Directus CMS telah dikonfigurasi dengan:
+
+- 4 CMS collections (`cms_articles`, `cms_faq`, `cms_pages`, `cms_homepage_sections`)
+- 26 business entity collections di-hidden (tidak muncul di sidebar)
+- 2 roles: **Administrator** (full access) dan **Content Manager** (CMS only)
+- Policy **CMS Full Access** dengan 24 permissions (CRUD pada 6 collections)
+- Content Manager role sudah ter-link ke policy **CMS Full Access**
+
+## Prerequisites
+
+- Docker & Docker Compose
+- PostgreSQL running (`docker compose up postgres -d`)
+
+## Quick Start
 
 ```bash
+# Start CMS (if not running)
 docker compose up cms -d
+
+# Wait for CMS to be ready, then run setup
 pnpm cms:setup
 ```
 
-The script will:
+## Access
 
-- Authenticate to Directus admin API
-- Create collections: `cms_articles`, `cms_faq`, `cms_pages`, `cms_homepage_sections`
-- Create `Content Manager` role
-- Grant CRUD permissions on all CMS collections
+| URL                          | Keterangan                 |
+| ---------------------------- | -------------------------- |
+| http://localhost:8055/admin  | Admin Dashboard            |
+| http://localhost:8055/server | Server Info / Health Check |
 
-## Manual Setup
+### Login
 
-1. Run `docker compose up cms -d`
-2. Access http://localhost:8055
-3. Login with: `admin@example.com` / `admin123` (from docker-compose.yml)
-4. Create collections as defined below
+| Role            | Email              | Password       |
+| --------------- | ------------------ | -------------- |
+| Administrator   | admin@example.com  | admin123       |
+| Content Manager | (create via admin) | (set manually) |
+
+Static Token: `specialist-setup-token`
 
 ## Collections
 
-### `cms_articles`
+### Visible (CMS — dikelola Directus)
 
-- `title` (string, required)
-- `slug` (string, unique, required)
-- `summary` (text)
-- `content` (text/markdown)
-- `cover_image` (image)
-- `category` (string)
-- `tags` (json)
-- `author` (string)
-- `published_at` (datetime)
-- `status` (string: draft/published/archived)
+| Collection              | Icon            | Notes                          |
+| ----------------------- | --------------- | ------------------------------ |
+| `cms_articles`          | `article`       | Blog articles and content      |
+| `cms_faq`               | `quiz`          | Frequently Asked Questions     |
+| `cms_pages`             | `web`           | Landing pages & static content |
+| `cms_homepage_sections` | `view_carousel` | Homepage sections              |
 
-### `cms_faq`
+### Hidden (Business Entities — dikelola Hono API)
 
-- `question` (string, required)
-- `answer` (text, required)
-- `category` (string)
-- `sort` (integer)
+26 collections di-hidden dari sidebar Directus, termasuk: `users`, `orders`, `payments`, `services`, `customer_profiles`, `partner_profiles`, dll.
 
-### `cms_pages`
+**Peringatan:** Jangan memberikan akses CRUD ke hidden collections. Business entities hanya boleh dimodifikasi melalui Hono API.
 
-- `title` (string, required)
-- `slug` (string, unique, required)
-- `content` (text)
-- `meta` (json — SEO metadata)
+## Architecture
 
-### `cms_homepage_sections`
+```
+┌─────────────────────────────────────────────┐
+│  Directus CMS (port 8055)                    │
+│  • cms_* collections (CRUD via admin panel)  │
+│  • Media library (files, images)             │
+│  • Content Manager users                     │
+│  • Public API (read-only) untuk website      │
+├─────────────────────────────────────────────┤
+│  Hono API (port 3000)                        │
+│  • Business logic, validasi, workflow        │
+│  • CRUD business entities (orders, users...) │
+│  • JWT auth, RBAC, state machines            │
+├─────────────────────────────────────────────┤
+│  Single PostgreSQL (public + directus schema)│
+└─────────────────────────────────────────────┘
+```
 
-- `section_type` (string: hero/services/why-us/stats/testimonials/cta/faq)
-- `title` (string)
-- `content` (text)
-- `image` (image)
-- `sort_order` (integer)
-- `is_active` (boolean)
+- **Directus schema** → Directus internal tables + `cms_*` collections
+- **Public schema** → Business entities (dikelola Hono API, readonly di Directus)
+- Hono API membaca data CMS via Directus REST API (read-only)
+- Frontend tidak pernah langsung query Directus
 
-## Roles
+## Roles & Permissions
 
-- `content_manager` — CRUD articles, FAQ, pages
-- `admin` — Full access to CMS collections
+### Administrator
 
-## API Access
+- Full system access (admin_access = true)
+- Dapat mengelola semua collections, users, roles, settings
 
-Directus data is consumed by `apps/api` (Hono) via read-only access.
-Frontend never queries Directus directly for business data.
+### Content Manager
 
-## Admin Dashboard
+- App access: true
+- Policy: **CMS Full Access**
+- CRUD pada: `cms_articles`, `cms_faq`, `cms_pages`, `cms_homepage_sections`, `directus_files`, `directus_folders`
+- Tidak bisa mengakses business entities
 
-The admin dashboard supports `content_manager` role with a dedicated sidebar:
+## Setup Script
 
-- **Ringkasan** — CMS overview
-- **Artikel** — Article management (via Hono API bridge)
-- **Layanan** — Service management
-- **Pengaturan** — Settings
+`scripts/directus-setup.ts` — idempotent, bisa dijalankan berulang kali.
+
+Yang dilakukan script:
+
+1. Authenticate ke Directus API (admin@example.com / admin123)
+2. Buat CMS collections jika belum ada
+3. Update metadata collections (icon, note, visibility)
+4. Hide business entity collections
+5. Cleanup stale policies
+6. Ensure Content Manager role + CMS Full Access policy
+7. Grant CRUD permissions
+
+## Storage
+
+- **Development:** Local filesystem (uploaded files di volume Docker)
+- **Production:** Cloudflare R2 (konfigurasi via `.env`)
+- Folder structure: `articles/`, `partners/`, `services/`, `orders/`, `ktp/`, `avatar/`, `company/`, `seo/`
+
+## Troubleshooting
+
+### CMS tidak bisa diakses
+
+```bash
+docker compose logs cms
+docker compose restart cms
+```
+
+### Setup script gagal
+
+```bash
+# Pastikan CMS sudah siap
+curl http://localhost:8055/server/info
+
+# Jalankan ulang
+pnpm cms:setup
+```
+
+### Ingin reset CMS
+
+```bash
+# Hapus volume CMS (data collections akan hilang)
+docker compose down -v
+# Start ulang
+docker compose up cms -d
+# Setup ulang
+pnpm cms:setup
+```

@@ -25,6 +25,8 @@ import { orderMedia } from './order-media.ts';
 import { media } from './media.ts';
 import { articleCategories } from './article-categories.ts';
 import { articles } from './articles.ts';
+import { contracts } from './contracts.ts';
+import { invoices } from './invoices.ts';
 
 export const usersRelations = relations(users, ({ one, many }) => ({
   customerProfile: one(customerProfiles),
@@ -183,4 +185,13 @@ export const articlesRelations = relations(articles, ({ one }) => ({
     fields: [articles.categoryId],
     references: [articleCategories.id],
   }),
+}));
+
+export const contractsRelations = relations(contracts, ({ one }) => ({
+  company: one(companies, { fields: [contracts.companyId], references: [companies.id] }),
+}));
+
+export const invoicesRelations = relations(invoices, ({ one }) => ({
+  company: one(companies, { fields: [invoices.companyId], references: [companies.id] }),
+  order: one(orders, { fields: [invoices.orderId], references: [orders.id] }),
 }));

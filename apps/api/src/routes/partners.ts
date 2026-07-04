@@ -37,6 +37,7 @@ import {
   serverError,
 } from '../lib/response.ts';
 import { sendPartnerVerifiedEmail } from '../lib/email.ts';
+import { rateLimit } from '../middleware/rate-limiter.ts';
 
 const router = new Hono();
 
@@ -58,7 +59,7 @@ async function listPartnerJobs(partnerId: string) {
     .orderBy(desc(assignments.assignedAt));
 }
 
-router.post('/register', async (c) => {
+router.post('/register', rateLimit(5, 60_000), async (c) => {
   const body = await c.req.json();
   const parsed = partnerRegistrationSchema.safeParse(body);
   if (!parsed.success) {

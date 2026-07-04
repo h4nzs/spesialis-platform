@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { registerSchema } from '@specialist/validation';
 import { Button } from '@specialist/ui';
-import { getApiClient, saveAuth, redirectToDashboard } from '../lib/auth.ts';
+import { getApiClient, redirectToDashboard } from '../lib/auth.ts';
 
 interface FieldError {
   field: string;
@@ -41,9 +41,7 @@ export function RegisterForm() {
         token: string;
       }>('/api/v1/auth/register', { body: parsed.data });
 
-      saveAuth(result.user, result.token);
-      api.getTokenStore().setTokens(result.token, '');
-      redirectToDashboard();
+      redirectToDashboard(result.user.role);
     } catch (err: unknown) {
       if (err instanceof Error) {
         setGeneralError(err.message);

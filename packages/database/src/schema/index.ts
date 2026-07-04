@@ -26,6 +26,8 @@ export { partnerSkills } from './partner-skills.ts';
 export { partnerDocuments } from './partner-documents.ts';
 export { articleCategories } from './article-categories.ts';
 export { articles } from './articles.ts';
+export { contracts } from './contracts.ts';
+export { invoices } from './invoices.ts';
 
 export {
   usersRelations,
@@ -50,4 +52,6 @@ export {
   orderMediaRelations,
   articleCategoriesRelations,
   articlesRelations,
+  contractsRelations,
+  invoicesRelations,
 } from './relations.ts';

@@ -1,8 +1,11 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { Hono } from 'hono';
+import type { Context } from 'hono';
+import type { UserRole } from '@specialist/types';
 import { dashboardRouter } from './dashboard.ts';
 import { errorHandler } from '../../middleware/error-handler.ts';
 import { setTestEnv, makeChain } from '../../test-utils.ts';
+import type { ApiTestResponse } from '../../test-utils.ts';
 
 const { mockDb, authState, em } = vi.hoisted(() => {
   const db = {
@@ -13,14 +16,14 @@ const { mockDb, authState, em } = vi.hoisted(() => {
     execute: vi.fn().mockResolvedValue([]),
     transaction: vi.fn((fn: (tx: unknown) => unknown) => fn(db)),
   };
-  const st = { userId: 'aid', userRole: 'admin' };
-  const exps = (globalThis as any).__TABLE_EXPORTS as Record<string, unknown>;
+  const st: { userId: string; userRole: UserRole } = { userId: 'aid', userRole: 'admin' };
+  const exps = (globalThis as Record<string, unknown>).__TABLE_EXPORTS as Record<string, unknown>;
   return { mockDb: db, authState: st, em: exps };
 });
 
 vi.mock('../../lib/db.ts', () => ({ db: mockDb, ...em }));
 vi.mock('../../middleware/auth.ts', () => ({
-  authMiddleware: async (c: any, next: any) => {
+  authMiddleware: async (c: Context, next: () => Promise<void>) => {
     if (!c.req.header('Authorization')) {
       c.status(401);
       return c.json({ success: false, code: 'UNAUTHORIZED', message: 'No token' });
@@ -31,7 +34,7 @@ vi.mock('../../middleware/auth.ts', () => ({
   },
   requireRole:
     (...roles: string[]) =>
-    async (c: any, next: any) => {
+    async (c: Context, next: () => Promise<void>) => {
       if (!roles.includes(authState.userRole)) {
         c.status(403);
         return c.json({ success: false, code: 'FORBIDDEN', message: 'Forbidden' });
@@ -40,7 +43,7 @@ vi.mock('../../middleware/auth.ts', () => ({
     },
 }));
 
-function mkApp(role: string) {
+function mkApp(role: UserRole) {
   authState.userRole = role;
   authState.userId = 'aid';
   const app = new Hono();
@@ -64,7 +67,7 @@ describe('GET /api/v1/admin/dashboard', () => {
     mockDb.select.mockReturnValue(makeChain([{ count: 0 }]));
     const res = await mkApp('admin').request('/api/v1/admin/dashboard', withAuth());
     expect(res.status).toBe(200);
-    const d = ((await res.json()) as any).data;
+    const d = ((await res.json()) as ApiTestResponse<Record<string, unknown>>).data;
     expect(d.users).toBeDefined();
     expect(d.orders).toBeDefined();
     expect(d.revenue).toBeDefined();
@@ -75,13 +78,13 @@ describe('GET /api/v1/admin/dashboard', () => {
     mockDb.select.mockReturnValue(makeChain([{ count: 0 }]));
     const res = await mkApp('super_admin').request('/api/v1/admin/dashboard', withAuth());
     expect(res.status).toBe(200);
-    expect(((await res.json()) as any).data.users).toBeDefined();
+    expect(((await res.json()) as ApiTestResponse<Record<string, unknown>>).data).toBeDefined();
   });
   it('scoped for dispatcher', async () => {
     mockDb.select.mockReturnValue(makeChain([{ count: 0 }]));
     const res = await mkApp('dispatcher').request('/api/v1/admin/dashboard', withAuth());
     expect(res.status).toBe(200);
-    const d = ((await res.json()) as any).data;
+    const d = ((await res.json()) as ApiTestResponse<Record<string, unknown>>).data;
     expect(d.partners).toBeDefined();
     expect(d.orders).toBeDefined();
     expect(d.users).toBeUndefined();
@@ -91,7 +94,7 @@ describe('GET /api/v1/admin/dashboard', () => {
     mockDb.select.mockReturnValue(makeChain([{ count: 0 }]));
     const res = await mkApp('finance').request('/api/v1/admin/dashboard', withAuth());
     expect(res.status).toBe(200);
-    const d = ((await res.json()) as any).data;
+    const d = ((await res.json()) as ApiTestResponse<Record<string, unknown>>).data;
     expect(d.revenue).toBeDefined();
     expect(d.users).toBeUndefined();
     expect(d.orders).toBeUndefined();

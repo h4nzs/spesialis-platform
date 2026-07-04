@@ -1,8 +1,9 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { Hono } from 'hono';
+import type { Context } from 'hono';
 import { authRouter } from './auth.ts';
 import { errorHandler } from '../middleware/error-handler.ts';
-import { setTestEnv, makeChain, updateChain } from '../test-utils.ts';
+import { setTestEnv, makeChain } from '../test-utils.ts';
 
 const { mockDb, mockAuth, mockEmail, mockAudit, em } = vi.hoisted(() => {
   const baseThen = (r: unknown) => ({
@@ -43,7 +44,7 @@ const { mockDb, mockAuth, mockEmail, mockAudit, em } = vi.hoisted(() => {
     sendVerificationEmail: vi.fn().mockResolvedValue(undefined),
   };
   const ax = { createAuditLog: vi.fn().mockResolvedValue(undefined) };
-  const exps = (globalThis as any).__TABLE_EXPORTS;
+  const exps = (globalThis as Record<string, unknown>).__TABLE_EXPORTS as Record<string, unknown>;
   return { mockDb: db, mockAuth: mA, mockEmail: mE, mockAudit: ax, em: exps };
 });
 
@@ -52,7 +53,7 @@ vi.mock('../lib/auth.ts', () => ({ ...mockAuth }));
 vi.mock('../lib/email.ts', () => ({ ...mockEmail }));
 vi.mock('../lib/audit.ts', () => ({ ...mockAudit }));
 vi.mock('../middleware/rate-limiter.ts', () => ({
-  rateLimit: () => async (_c: unknown, next: () => unknown) => next(),
+  rateLimit: () => async (_c: Context, next: () => Promise<void>) => next(),
 }));
 
 function auth(h: string) {

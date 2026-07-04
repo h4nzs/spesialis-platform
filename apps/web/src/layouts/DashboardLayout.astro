@@ -11,10 +11,14 @@ export interface DashboardLayoutProps {
 }
 
 const { title, role } = Astro.props as DashboardLayoutProps;
+const auth = Astro.locals.auth;
+const initialUser = auth
+  ? { id: auth.userId, email: auth.userEmail, role: auth.userRole }
+  : undefined;
 ---
 
 <BaseLayout noindex={true}>
-  <AuthGuard client:load requiredRole={role}>
+  <AuthGuard client:load requiredRole={role} initialUser={initialUser}>
     <div class="mx-auto flex max-w-7xl gap-8 px-4 py-8 sm:px-6 lg:px-8">
       <Sidebar client:load role={role} />
       <div class="min-w-0 flex-1">

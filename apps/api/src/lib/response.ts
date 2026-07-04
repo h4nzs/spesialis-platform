@@ -1,6 +1,35 @@
 import type { Context } from 'hono';
 import type { ContentfulStatusCode } from 'hono/utils/http-status';
 import type { PaginationMeta, ValidationError } from '@specialist/types';
+import { setCookie, deleteCookie } from 'hono/cookie';
+
+const COOKIE_OPTIONS = {
+  httpOnly: true,
+  secure: process.env.APP_ENV === 'production',
+  sameSite: 'lax' as const,
+  path: '/',
+  maxAge: 15 * 60, // 15 menit — sesuai access token expiry
+};
+
+const REFRESH_COOKIE_OPTIONS = {
+  httpOnly: true,
+  secure: process.env.APP_ENV === 'production',
+  sameSite: 'lax' as const,
+  path: '/api/v1/auth',
+  maxAge: 7 * 24 * 60 * 60, // 7 hari — sesuai refresh token expiry
+};
+
+export function setAuthCookies(c: Context, token: string, refreshToken?: string): void {
+  setCookie(c, 'token', token, COOKIE_OPTIONS);
+  if (refreshToken) {
+    setCookie(c, 'refreshToken', refreshToken, REFRESH_COOKIE_OPTIONS);
+  }
+}
+
+export function clearAuthCookies(c: Context): void {
+  deleteCookie(c, 'token', { path: '/' });
+  deleteCookie(c, 'refreshToken', { path: '/api/v1/auth' });
+}
 
 export function success<T>(
   c: Context,

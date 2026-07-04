@@ -1,4 +1,13 @@
 import { vi } from 'vitest';
+import type { Context } from 'hono';
+import type { UserRole } from '@specialist/types';
+
+export type ApiTestResponse<T = unknown> = {
+  success: boolean;
+  message: string;
+  data: T;
+  pagination?: { page: number; limit: number; total: number; totalPages: number };
+};
 
 export function setTestEnv() {
   process.env.JWT_SECRET = process.env.JWT_SECRET ?? 'test-secret-for-testing';
@@ -67,6 +76,10 @@ export function buildEmptyTables() {
     'passwordResets',
     'partnerSkills',
     'partnerDocuments',
+    'articles',
+    'articleCategories',
+    'contracts',
+    'invoices',
     'usersRelations',
     'customerProfilesRelations',
     'partnerProfilesRelations',
@@ -87,6 +100,10 @@ export function buildEmptyTables() {
     'partnerDocumentsRelations',
     'mediaRelations',
     'orderMediaRelations',
+    'articlesRelations',
+    'articleCategoriesRelations',
+    'contractsRelations',
+    'invoicesRelations',
   ];
   const exps: Record<string, unknown> = {};
   for (const n of names) exps[n] = {};
@@ -125,9 +142,9 @@ export function buildMockRateLimit() {
 }
 
 /** Mock auth middleware factory — returns { authMiddleware, requireRole } */
-export function buildAuthMiddleware(authState: { userId: string; userRole: string }) {
+export function buildAuthMiddleware(authState: { userId: string; userRole: UserRole }) {
   return {
-    authMiddleware: async (c: any, next: any) => {
+    authMiddleware: async (c: Context, next: () => Promise<void>) => {
       if (!c.req.header('Authorization')) {
         c.status(401);
         return c.json({ success: false, code: 'UNAUTHORIZED', message: 'No token' });
@@ -138,7 +155,7 @@ export function buildAuthMiddleware(authState: { userId: string; userRole: strin
     },
     requireRole:
       (...roles: string[]) =>
-      async (c: any, next: any) => {
+      async (c: Context, next: () => Promise<void>) => {
         if (!roles.includes(authState.userRole)) {
           c.status(403);
           return c.json({ success: false, code: 'FORBIDDEN', message: 'Forbidden' });
@@ -176,6 +193,10 @@ export const TABLE_NAMES = [
   'passwordResets',
   'partnerSkills',
   'partnerDocuments',
+  'articles',
+  'articleCategories',
+  'contracts',
+  'invoices',
   'usersRelations',
   'customerProfilesRelations',
   'partnerProfilesRelations',
@@ -196,6 +217,10 @@ export const TABLE_NAMES = [
   'partnerDocumentsRelations',
   'mediaRelations',
   'orderMediaRelations',
+  'articlesRelations',
+  'articleCategoriesRelations',
+  'contractsRelations',
+  'invoicesRelations',
 ];
 
 export const EMPTY_TABLES: Record<string, unknown> = {};

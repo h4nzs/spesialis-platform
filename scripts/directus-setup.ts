@@ -6,12 +6,24 @@
  * Usage: pnpm tsx scripts/directus-setup.ts
  *
  * Prerequisites: docker compose up -d (postgres + cms must be running)
+ *
+ * Design decisions:
+ * - Business entity tables (orders, users, payments, etc.) are managed by Hono API.
+ * - Directus only manages CMS content collections (cms_*).
+ * - Business entity collections are hidden from the Directus UI and have no permissions
+ *   for non-admin roles.
+ * - The Administrator role retains full access (admin_access = true).
+ * - The Content Manager role gets CRUD access on CMS collections only.
  */
 
 const DIRECTUS_URL = process.env.DIRECTUS_URL ?? 'http://localhost:8055';
 const ADMIN_EMAIL = process.env.DIRECTUS_ADMIN_EMAIL ?? 'admin@example.com';
 const ADMIN_PASSWORD = process.env.DIRECTUS_ADMIN_PASSWORD ?? 'admin123';
 const SETUP_TOKEN = process.env.DIRECTUS_SETUP_TOKEN ?? 'specialist-setup-token';
+
+// ---------------------------------------------------------------------------
+// Types
+// ---------------------------------------------------------------------------
 
 interface DirectusCollection {
   collection: string;
@@ -21,36 +33,18 @@ interface DirectusCollection {
     icon?: string;
     note?: string;
   };
-  schema?: {
-    name: string;
-    is_primary?: boolean;
-    is_unique?: boolean;
-    is_nullable?: boolean;
-    is_required?: boolean;
-    type: string;
-    length?: number;
-    default_value?: string | null;
-  };
-  fields: Array<{
-    field: string;
-    type: string;
-    meta?: {
-      required?: boolean;
-      unique?: boolean;
-      note?: string;
-      width?: string;
-      interface?: string;
-      options?: Record<string, unknown>;
-      display?: string;
-    };
-    schema?: {
-      is_primary_key?: boolean;
-      is_nullable?: boolean;
-      default_value?: string | null;
-      max_length?: number;
-    };
-  }>;
 }
+
+interface DirectusField {
+  field: string;
+  type: string;
+  schema?: Record<string, unknown>;
+  meta?: Record<string, unknown>;
+}
+
+// ---------------------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------------------
 
 async function request(path: string, options: RequestInit = {}, token?: string) {
   const headers: Record<string, string> = {
@@ -115,30 +109,228 @@ async function collectionExists(token: string, name: string): Promise<boolean> {
   }
 }
 
-async function createCollection(
+async function getAllCollections(token: string): Promise<DirectusCollection[]> {
+  const res = await request('/collections', {}, token);
+  return (res?.data ?? []) as DirectusCollection[];
+}
+
+async function updateCollection(
   token: string,
   name: string,
-  meta: Record<string, unknown> = {},
-  fields: Array<{
-    field: string;
-    type: string;
-    schema?: Record<string, unknown>;
-    meta?: Record<string, unknown>;
-  }> = [],
-) {
-  console.log(`  → Creating collection: ${name}...`);
+  meta: Record<string, unknown>,
+): Promise<void> {
+  await request(
+    `/collections/${name}`,
+    {
+      method: 'PATCH',
+      body: JSON.stringify({ meta }),
+    },
+    token,
+  );
+}
+
+// ---------------------------------------------------------------------------
+// CMS Content Collections
+// ---------------------------------------------------------------------------
+
+interface CollectionDef {
+  name: string;
+  meta: Record<string, unknown>;
+  fields: DirectusField[];
+}
+
+const CMS_COLLECTIONS: CollectionDef[] = [
+  {
+    name: 'cms_articles',
+    meta: { icon: 'article', note: 'Blog articles and content' },
+    fields: [
+      {
+        field: 'title',
+        type: 'string',
+        schema: { is_required: true },
+        meta: { required: true, interface: 'input', width: 'half' },
+      },
+      {
+        field: 'slug',
+        type: 'string',
+        schema: { is_required: true, is_unique: true },
+        meta: { required: true, interface: 'input', width: 'half' },
+      },
+      { field: 'summary', type: 'text', meta: { interface: 'input-multiline', width: 'full' } },
+      { field: 'content', type: 'text', meta: { interface: 'input-rich-text-md', width: 'full' } },
+      { field: 'cover_image', type: 'uuid', meta: { interface: 'file-image', width: 'half' } },
+      { field: 'category', type: 'string', meta: { interface: 'input', width: 'half' } },
+      {
+        field: 'tags',
+        type: 'json',
+        meta: { interface: 'tags', special: ['json'], width: 'full' },
+      },
+      { field: 'author', type: 'string', meta: { interface: 'input', width: 'half' } },
+      { field: 'published_at', type: 'timestamp', meta: { interface: 'datetime', width: 'half' } },
+      {
+        field: 'status',
+        type: 'string',
+        schema: { default_value: 'draft' },
+        meta: {
+          interface: 'select-dropdown',
+          options: {
+            choices: [
+              { value: 'draft', text: 'Draft' },
+              { value: 'published', text: 'Published' },
+              { value: 'archived', text: 'Archived' },
+            ],
+          },
+          width: 'half',
+        },
+      },
+    ],
+  },
+  {
+    name: 'cms_faq',
+    meta: { icon: 'quiz', note: 'Frequently Asked Questions' },
+    fields: [
+      {
+        field: 'question',
+        type: 'string',
+        schema: { is_required: true },
+        meta: { required: true, interface: 'input', width: 'full' },
+      },
+      {
+        field: 'answer',
+        type: 'text',
+        schema: { is_required: true },
+        meta: { required: true, interface: 'input-rich-text-md', width: 'full' },
+      },
+      { field: 'category', type: 'string', meta: { interface: 'input', width: 'half' } },
+      {
+        field: 'sort',
+        type: 'integer',
+        schema: { default_value: '0' },
+        meta: { interface: 'input', width: 'half' },
+      },
+    ],
+  },
+  {
+    name: 'cms_pages',
+    meta: { icon: 'web', note: 'Landing pages and static content' },
+    fields: [
+      {
+        field: 'title',
+        type: 'string',
+        schema: { is_required: true },
+        meta: { required: true, interface: 'input', width: 'half' },
+      },
+      {
+        field: 'slug',
+        type: 'string',
+        schema: { is_required: true, is_unique: true },
+        meta: { required: true, interface: 'input', width: 'half' },
+      },
+      { field: 'content', type: 'text', meta: { interface: 'input-rich-text-md', width: 'full' } },
+      {
+        field: 'meta',
+        type: 'json',
+        meta: {
+          interface: 'input-code',
+          special: ['json'],
+          options: { language: 'json' },
+          width: 'full',
+        },
+      },
+    ],
+  },
+  {
+    name: 'cms_homepage_sections',
+    meta: { icon: 'view_carousel', note: 'Homepage sections (hero, services, why-us, etc.)' },
+    fields: [
+      {
+        field: 'section_type',
+        type: 'string',
+        schema: { is_required: true },
+        meta: {
+          required: true,
+          interface: 'select-dropdown',
+          options: {
+            choices: [
+              { value: 'hero', text: 'Hero' },
+              { value: 'services', text: 'Services' },
+              { value: 'why-us', text: 'Why Us' },
+              { value: 'stats', text: 'Statistics' },
+              { value: 'testimonials', text: 'Testimonials' },
+              { value: 'cta', text: 'CTA' },
+              { value: 'faq', text: 'FAQ' },
+            ],
+          },
+          width: 'half',
+        },
+      },
+      { field: 'title', type: 'string', meta: { interface: 'input', width: 'full' } },
+      { field: 'content', type: 'text', meta: { interface: 'input-rich-text-md', width: 'full' } },
+      { field: 'image', type: 'uuid', meta: { interface: 'file-image', width: 'half' } },
+      {
+        field: 'sort_order',
+        type: 'integer',
+        schema: { default_value: '0' },
+        meta: { interface: 'input', width: 'half' },
+      },
+      {
+        field: 'is_active',
+        type: 'boolean',
+        schema: { default_value: 'true' },
+        meta: { interface: 'boolean', width: 'half' },
+      },
+    ],
+  },
+];
+
+// ---------------------------------------------------------------------------
+// Business entity collections — to be hidden from Directus UI
+// These are managed entirely by Hono API
+// ---------------------------------------------------------------------------
+
+const BUSINESS_COLLECTIONS = [
+  'users',
+  'customer_profiles',
+  'partner_profiles',
+  'partner_skills',
+  'partner_documents',
+  'companies',
+  'company_users',
+  'branches',
+  'addresses',
+  'services',
+  'service_categories',
+  'orders',
+  'order_items',
+  'order_media',
+  'order_status_history',
+  'assignments',
+  'payments',
+  'reviews',
+  'complaints',
+  'notifications',
+  'media',
+  'seo_metadata',
+  'system_settings',
+  'audit_logs',
+  'refresh_tokens',
+  'password_resets',
+];
+
+// ---------------------------------------------------------------------------
+// Create collection with fields
+// ---------------------------------------------------------------------------
+
+async function createCollection(token: string, def: CollectionDef) {
+  console.log(`  → Creating collection: ${def.name}...`);
 
   await request(
     '/collections',
     {
       method: 'POST',
       body: JSON.stringify({
-        collection: name,
-        meta: {
-          icon: 'article',
-          note: '',
-          ...meta,
-        },
+        collection: def.name,
+        meta: { icon: 'article', note: '', ...def.meta },
         schema: {},
         fields: [
           {
@@ -159,41 +351,98 @@ async function createCollection(
             meta: { hidden: true, readonly: true },
             schema: { is_nullable: true },
           },
-          ...fields,
+          ...def.fields,
         ],
       }),
     },
     token,
   );
 
-  console.log(`  ✓ Collection ${name} created`);
+  console.log(`  ✓ Collection ${def.name} created`);
 }
 
-async function createField(
-  token: string,
-  collection: string,
-  field: string,
-  type: string,
-  meta: Record<string, unknown> = {},
-  schema: Record<string, unknown> = {},
-) {
-  await request(
-    `/fields/${collection}/${field}`,
-    {
-      method: 'POST',
-      body: JSON.stringify({
-        field,
-        type,
-        meta,
-        schema,
-      }),
-    },
-    token,
-  );
+// ---------------------------------------------------------------------------
+// Hide business entity collections
+// ---------------------------------------------------------------------------
+
+async function hideBusinessCollections(token: string): Promise<void> {
+  console.log('\n─── Hiding Business Collections ────────────────\n');
+
+  const all = await getAllCollections(token);
+
+  for (const name of BUSINESS_COLLECTIONS) {
+    const existing = all.find((c) => c.collection === name);
+    if (!existing) {
+      console.log(`  - ${name}: not found in Directus, skipping`);
+      continue;
+    }
+
+    const meta = existing.meta ?? {};
+    if (meta.hidden) {
+      console.log(`  - ${name}: already hidden, skipping`);
+      continue;
+    }
+
+    try {
+      await updateCollection(token, name, { hidden: true });
+      console.log(`  ✓ ${name}: hidden`);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      console.log(`  ⚠ ${name}: could not hide — ${message}`);
+    }
+  }
 }
 
-async function createRole(token: string, name: string, description = ''): Promise<string> {
-  console.log(`  → Creating role: ${name}...`);
+// ---------------------------------------------------------------------------
+// Ensure CMS collections have proper note/icon
+// ---------------------------------------------------------------------------
+
+async function updateCMSCollections(token: string): Promise<void> {
+  console.log('\n─── Updating CMS Collection Metadata ───────────\n');
+
+  const all = await getAllCollections(token);
+
+  for (const def of CMS_COLLECTIONS) {
+    const existing = all.find((c) => c.collection === def.name);
+    if (!existing) continue;
+
+    try {
+      await updateCollection(token, def.name, {
+        icon: def.meta.icon,
+        note: def.meta.note,
+        hidden: false,
+      });
+      console.log(`  ✓ ${def.name}: metadata updated`);
+    } catch {
+      console.log(`  - ${def.name}: metadata update skipped`);
+    }
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Role & Permission management
+// ---------------------------------------------------------------------------
+
+async function findRoleId(token: string, name: string): Promise<string | undefined> {
+  const res = await request('/roles', {}, token);
+  const roles = (res?.data ?? []) as Array<{ id: string; name: string }>;
+  return roles.find((r) => r.name === name)?.id;
+}
+
+async function findPolicyId(token: string, name: string): Promise<string | undefined> {
+  const res = await request('/policies', {}, token);
+  const policies = (res?.data ?? []) as Array<{ id: string; name: string }>;
+  return policies.find((p) => p.name === name)?.id;
+}
+
+async function ensureRole(token: string, name: string, description: string): Promise<string> {
+  console.log(`  → Ensuring role: ${name}...`);
+
+  const existingId = await findRoleId(token, name);
+  if (existingId) {
+    console.log(`  ✓ Role ${name} already exists (${existingId})`);
+    return existingId;
+  }
 
   const res = await request(
     '/roles',
@@ -215,6 +464,147 @@ async function createRole(token: string, name: string, description = ''): Promis
   return roleId;
 }
 
+async function ensurePolicy(token: string, name: string, description: string): Promise<string> {
+  console.log(`  → Ensuring policy: ${name}...`);
+
+  const existingId = await findPolicyId(token, name);
+  if (existingId) {
+    console.log(`  ✓ Policy ${name} already exists (${existingId})`);
+    return existingId;
+  }
+
+  const res = await request(
+    '/policies',
+    {
+      method: 'POST',
+      body: JSON.stringify({
+        name,
+        description,
+        icon: 'article',
+        enforce_tfa: false,
+        ip_access: null,
+      }),
+    },
+    token,
+  );
+
+  const policyId = res?.data?.id as string;
+  console.log(`  ✓ Policy ${name} created (${policyId})`);
+  return policyId;
+}
+
+async function ensureAccessLink(token: string, roleId: string, policyId: string): Promise<void> {
+  // Check if this link already exists
+  const res = await request('/access', {}, token);
+  const accessList = (res?.data ?? []) as Array<{ role: string | null; policy: string }>;
+  const existing = accessList.find((a) => a.role === roleId && a.policy === policyId);
+
+  if (existing) {
+    console.log(`  ✓ Access link already exists`);
+    return;
+  }
+
+  await request(
+    '/access',
+    {
+      method: 'POST',
+      body: JSON.stringify({
+        role: roleId,
+        policy: policyId,
+        sort: 1,
+      }),
+    },
+    token,
+  );
+
+  console.log(`  ✓ Access link created`);
+}
+
+async function ensureCRUDPermissions(
+  token: string,
+  policyId: string,
+  collections: string[],
+): Promise<void> {
+  console.log(`  → Granting CRUD permissions on ${collections.length} collections...`);
+
+  // Get existing permissions for this policy
+  const res = await request(`/permissions?filter={"policy":{"_eq":"${policyId}"}}`, {}, token);
+  const existingPerms = (res?.data ?? []) as Array<{ collection: string; action: string }>;
+  const existingSet = new Set(existingPerms.map((p) => `${p.collection}:${p.action}`));
+
+  const actions = ['create', 'read', 'update', 'delete'];
+  let count = 0;
+  let skipped = 0;
+
+  for (const collection of collections) {
+    for (const action of actions) {
+      const key = `${collection}:${action}`;
+      if (existingSet.has(key)) {
+        skipped++;
+        continue;
+      }
+
+      try {
+        await request(
+          '/permissions',
+          {
+            method: 'POST',
+            body: JSON.stringify({
+              policy: policyId,
+              collection,
+              action,
+              permissions: {},
+              fields: ['*'],
+            }),
+          },
+          token,
+        );
+        count++;
+      } catch (err) {
+        const message = err instanceof Error ? err.message : String(err);
+        console.log(`  ⚠ Could not grant ${action} on ${collection}: ${message}`);
+      }
+    }
+  }
+
+  console.log(`  ✓ ${count} new permissions granted, ${skipped} already existed`);
+}
+
+// ---------------------------------------------------------------------------
+// Clean stale "manager" policy if it exists with no permissions
+// ---------------------------------------------------------------------------
+
+async function cleanupStalePolicy(token: string): Promise<void> {
+  const stalePolicyId = await findPolicyId(token, 'manager');
+  if (!stalePolicyId) return;
+
+  // Check if it has any permissions
+  const res = await request(`/permissions?filter={"policy":{"_eq":"${stalePolicyId}"}}`, {}, token);
+  const perms = (res?.data ?? []) as Array<unknown>;
+
+  // Also check if any access links point to it
+  const accessRes = await request('/access', {}, token);
+  const accessList = (accessRes?.data ?? []) as Array<{ role: string | null; policy: string }>;
+  const linkedRoles = accessList.filter((a) => a.policy === stalePolicyId);
+
+  if (perms.length > 0 || linkedRoles.length > 0) {
+    // It's in use — skip cleanup
+    console.log('  - Stale "manager" policy exists but is in use, skipping cleanup');
+    return;
+  }
+
+  try {
+    await request(`/policies/${stalePolicyId}`, { method: 'DELETE' }, token);
+    console.log('  ✓ Removed stale "manager" policy (no permissions assigned)');
+  } catch {
+    console.log('  - Could not remove stale "manager" policy');
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Check Directus is running
+// ---------------------------------------------------------------------------
+
 async function checkDirectusRunning(): Promise<void> {
   try {
     const res = await fetch(`${DIRECTUS_URL}/server/info`, { signal: AbortSignal.timeout(5000) });
@@ -234,6 +624,10 @@ async function checkDirectusRunning(): Promise<void> {
   console.log(`  ✓ Directus is reachable at ${DIRECTUS_URL}\n`);
 }
 
+// ---------------------------------------------------------------------------
+// Main
+// ---------------------------------------------------------------------------
+
 async function main() {
   console.log('\n═══════════════════════════════════════════');
   console.log('  Directus CMS Setup');
@@ -243,321 +637,101 @@ async function main() {
   await checkDirectusRunning();
   const token = await login();
 
-  // 1. Create Collections
-  console.log('\n─── Collections ──────────────────────────\n');
+  // 1. Create CMS Collections (if not exist)
+  console.log('\n─── CMS Content Collections ─────────────────\n');
 
-  // cms_articles
-  if (!(await collectionExists(token, 'cms_articles'))) {
-    await createCollection(
-      token,
-      'cms_articles',
-      { icon: 'article', note: 'Blog articles and content' },
-      [
-        {
-          field: 'title',
-          type: 'string',
-          schema: { is_required: true },
-          meta: { required: true, interface: 'input', width: 'half' },
-        },
-        {
-          field: 'slug',
-          type: 'string',
-          schema: { is_required: true, is_unique: true },
-          meta: { required: true, interface: 'input', width: 'half' },
-        },
-        { field: 'summary', type: 'text', meta: { interface: 'input-multiline', width: 'full' } },
-        {
-          field: 'content',
-          type: 'text',
-          meta: { interface: 'input-rich-text-md', width: 'full' },
-        },
-        { field: 'cover_image', type: 'uuid', meta: { interface: 'file-image', width: 'half' } },
-        { field: 'category', type: 'string', meta: { interface: 'input', width: 'half' } },
-        {
-          field: 'tags',
-          type: 'json',
-          meta: { interface: 'tags', special: ['json'], width: 'full' },
-        },
-        { field: 'author', type: 'string', meta: { interface: 'input', width: 'half' } },
-        {
-          field: 'published_at',
-          type: 'timestamp',
-          meta: { interface: 'datetime', width: 'half' },
-        },
-        {
-          field: 'status',
-          type: 'string',
-          schema: { default_value: 'draft' },
-          meta: {
-            interface: 'select-dropdown',
-            options: {
-              choices: [
-                { value: 'draft', text: 'Draft' },
-                { value: 'published', text: 'Published' },
-                { value: 'archived', text: 'Archived' },
-              ],
-            },
-            width: 'half',
-          },
-        },
-      ],
-    );
-  } else {
-    console.log('  - cms_articles already exists, skipping');
-  }
-
-  // cms_faq
-  if (!(await collectionExists(token, 'cms_faq'))) {
-    await createCollection(token, 'cms_faq', { icon: 'quiz', note: 'Frequently Asked Questions' }, [
-      {
-        field: 'question',
-        type: 'string',
-        schema: { is_required: true },
-        meta: { required: true, interface: 'input', width: 'full' },
-      },
-      {
-        field: 'answer',
-        type: 'text',
-        schema: { is_required: true },
-        meta: { required: true, interface: 'input-rich-text-md', width: 'full' },
-      },
-      { field: 'category', type: 'string', meta: { interface: 'input', width: 'half' } },
-      {
-        field: 'sort',
-        type: 'integer',
-        schema: { default_value: '0' },
-        meta: { interface: 'input', width: 'half' },
-      },
-    ]);
-  } else {
-    console.log('  - cms_faq already exists, skipping');
-  }
-
-  // cms_pages
-  if (!(await collectionExists(token, 'cms_pages'))) {
-    await createCollection(
-      token,
-      'cms_pages',
-      { icon: 'web', note: 'Landing pages and static content' },
-      [
-        {
-          field: 'title',
-          type: 'string',
-          schema: { is_required: true },
-          meta: { required: true, interface: 'input', width: 'half' },
-        },
-        {
-          field: 'slug',
-          type: 'string',
-          schema: { is_required: true, is_unique: true },
-          meta: { required: true, interface: 'input', width: 'half' },
-        },
-        {
-          field: 'content',
-          type: 'text',
-          meta: { interface: 'input-rich-text-md', width: 'full' },
-        },
-        {
-          field: 'meta',
-          type: 'json',
-          meta: {
-            interface: 'input-code',
-            special: ['json'],
-            options: { language: 'json' },
-            width: 'full',
-          },
-        },
-      ],
-    );
-  } else {
-    console.log('  - cms_pages already exists, skipping');
-  }
-
-  // cms_homepage_sections
-  if (!(await collectionExists(token, 'cms_homepage_sections'))) {
-    await createCollection(
-      token,
-      'cms_homepage_sections',
-      { icon: 'view_carousel', note: 'Homepage sections (hero, services, why-us, etc.)' },
-      [
-        {
-          field: 'section_type',
-          type: 'string',
-          schema: { is_required: true },
-          meta: {
-            required: true,
-            interface: 'select-dropdown',
-            options: {
-              choices: [
-                { value: 'hero', text: 'Hero' },
-                { value: 'services', text: 'Services' },
-                { value: 'why-us', text: 'Why Us' },
-                { value: 'stats', text: 'Statistics' },
-                { value: 'testimonials', text: 'Testimonials' },
-                { value: 'cta', text: 'CTA' },
-                { value: 'faq', text: 'FAQ' },
-              ],
-            },
-            width: 'half',
-          },
-        },
-        { field: 'title', type: 'string', meta: { interface: 'input', width: 'full' } },
-        {
-          field: 'content',
-          type: 'text',
-          meta: { interface: 'input-rich-text-md', width: 'full' },
-        },
-        { field: 'image', type: 'uuid', meta: { interface: 'file-image', width: 'half' } },
-        {
-          field: 'sort_order',
-          type: 'integer',
-          schema: { default_value: '0' },
-          meta: { interface: 'input', width: 'half' },
-        },
-        {
-          field: 'is_active',
-          type: 'boolean',
-          schema: { default_value: 'true' },
-          meta: { interface: 'boolean', width: 'half' },
-        },
-      ],
-    );
-  } else {
-    console.log('  - cms_homepage_sections already exists, skipping');
-  }
-
-  // 2. Create Roles
-  console.log('\n─── Roles ─────────────────────────────────\n');
-
-  const rolesRes = await request('/roles', {}, token);
-  const existingRoles = (rolesRes?.data ?? []) as Array<{ id: string; name: string }>;
-  const hasContentManager = existingRoles.some(
-    (r: { name: string }) => r.name === 'Content Manager',
-  );
-
-  let contentManagerRoleId: string | undefined;
-
-  if (!hasContentManager) {
-    contentManagerRoleId = await createRole(
-      token,
-      'Content Manager',
-      'Manages CMS content (articles, FAQ, pages, media)',
-    );
-  } else {
-    const existing = existingRoles.find((r: { name: string }) => r.name === 'Content Manager');
-    contentManagerRoleId = existing?.id;
-    console.log(`  - Content Manager role already exists (${contentManagerRoleId}), skipping`);
-  }
-
-  // 3. Permissions — attempt auto-setup via Directus API
-  if (contentManagerRoleId) {
-    console.log('\n─── Permissions ───────────────────────────\n');
-
-    const cmsCollections = [
-      'cms_articles',
-      'cms_faq',
-      'cms_pages',
-      'cms_homepage_sections',
-      'directus_files',
-    ];
-
-    try {
-      // Directus 11 uses Access → Policy → Permission relationship.
-      // Create a policy first, then link it to the role.
-      const policyRes = await request(
-        '/policies',
-        {
-          method: 'POST',
-          body: JSON.stringify({
-            name: 'CMS Full Access',
-            description: 'Full CRUD access to CMS collections',
-            icon: 'article',
-            enforce_tfa: false,
-            ip_access: null,
-          }),
-        },
-        token,
-      );
-
-      const policyId = policyRes?.data?.id as string;
-
-      if (policyId) {
-        // Link policy to Content Manager role via Access
-        await request(
-          '/access',
-          {
-            method: 'POST',
-            body: JSON.stringify({
-              role: contentManagerRoleId,
-              policy: policyId,
-              sort: 1,
-            }),
-          },
-          token,
-        );
-
-        // Grant CRUD permissions for each collection
-        const actions = ['create', 'read', 'update', 'delete'];
-        for (const collection of cmsCollections) {
-          for (const action of actions) {
-            try {
-              await request(
-                '/permissions',
-                {
-                  method: 'POST',
-                  body: JSON.stringify({
-                    policy: policyId,
-                    collection,
-                    action,
-                    permissions: {},
-                    fields: collection === 'directus_files' ? ['*'] : ['*'],
-                  }),
-                },
-                token,
-              );
-            } catch {
-              // Some permissions may already exist — continue
-            }
-          }
-        }
-
-        console.log('  ✓ Permissions auto-configured for Content Manager role');
-      }
-    } catch {
-      console.log('  ⚠ Could not auto-configure permissions. Set manually:');
-      console.log(`    1. Open ${DIRECTUS_URL}/admin`);
-      console.log('    2. Login and go to Settings → Roles → Content Manager');
-      console.log('    3. Create Policy → "CMS Full Access"');
-      console.log(
-        '    4. Add CRUD for: cms_articles, cms_faq, cms_pages, cms_homepage_sections, directus_files',
-      );
+  for (const def of CMS_COLLECTIONS) {
+    if (!(await collectionExists(token, def.name))) {
+      await createCollection(token, def);
+    } else {
+      console.log(`  - ${def.name} already exists, skipping`);
     }
   }
 
+  // 2. Update CMS collection metadata (icon, note, ensure not hidden)
+  await updateCMSCollections(token);
+
+  // 3. Hide business entity collections from Directus UI
+  await hideBusinessCollections(token);
+
+  // 4. Clean up stale "manager" policy if unused
+  console.log('\n─── Cleanup ──────────────────────────────────\n');
+  await cleanupStalePolicy(token);
+
+  // 5. Ensure Content Manager role with proper policy
+  console.log('\n─── Roles & Permissions ──────────────────────\n');
+
+  const contentManagerRoleId = await ensureRole(
+    token,
+    'Content Manager',
+    'Manages CMS content (articles, FAQ, pages, media)',
+  );
+
+  // Check if Content Manager role already has a policy via access
+  const accessRes = await request('/access', {}, token);
+  const accessList = (accessRes?.data ?? []) as Array<{ role: string | null; policy: string }>;
+  const existingAccess = accessList.find((a) => a.role === contentManagerRoleId);
+
+  let cmsPolicyId: string | undefined;
+  if (existingAccess) {
+    // Find the policy name
+    const policiesRes = await request('/policies', {}, token);
+    const policies = (policiesRes?.data ?? []) as Array<{ id: string; name: string }>;
+    const linkedPolicy = policies.find((p) => p.id === existingAccess.policy);
+    if (linkedPolicy) {
+      cmsPolicyId = linkedPolicy.id;
+      console.log(`  ✓ Content Manager already linked to policy "${linkedPolicy.name}"`);
+    }
+  }
+
+  if (!cmsPolicyId) {
+    // Create CMS Full Access policy
+    cmsPolicyId = await ensurePolicy(
+      token,
+      'CMS Full Access',
+      'Full CRUD access to CMS content collections',
+    );
+
+    // Link policy to Content Manager role
+    await ensureAccessLink(token, contentManagerRoleId, cmsPolicyId);
+  }
+
+  // Grant CRUD permissions on CMS collections
+  const cmsCollectionNames = CMS_COLLECTIONS.map((c) => c.name);
+  await ensureCRUDPermissions(token, cmsPolicyId, [
+    ...cmsCollectionNames,
+    'directus_files',
+    'directus_folders',
+  ]);
+
+  // 6. Summary
   console.log('\n═══════════════════════════════════════════');
   console.log('  ✅ Directus CMS setup complete!');
-  console.log('═══════════════════════════════════════════');
-  console.log(`\n  CMS Admin:  ${DIRECTUS_URL}/admin`);
-  console.log('\n  Login:');
+  console.log('═══════════════════════════════════════════\n');
+  console.log(`  CMS Admin:  ${DIRECTUS_URL}/admin\n`);
+  console.log('  Login:');
   console.log(`    Email:    ${ADMIN_EMAIL}`);
-  console.log(`    Password: ${ADMIN_PASSWORD}`);
-  console.log(`\n  Static Token: ${SETUP_TOKEN}`);
-  console.log('\n  Collections created:');
-  console.log('    - cms_articles');
-  console.log('    - cms_faq');
-  console.log('    - cms_pages');
-  console.log('    - cms_homepage_sections');
-  console.log('\n  Role created:');
-  console.log('    - Content Manager');
+  console.log(`    Password: ${ADMIN_PASSWORD}\n`);
+  console.log(`  Static Token: ${SETUP_TOKEN}\n`);
+  console.log('  Collections:');
+  for (const def of CMS_COLLECTIONS) {
+    console.log(`    - ${def.name}`);
+  }
   console.log('');
-  console.log('  ─────────────────────────────────────────────');
+  console.log('  Hidden business collections:');
+  for (const name of BUSINESS_COLLECTIONS) {
+    console.log(`    - ${name}`);
+  }
+  console.log('\n  Roles:');
+  console.log('    - Administrator (full system access)');
+  console.log('    - Content Manager (CMS collections only)');
+  console.log('\n  ─────────────────────────────────────────────');
   console.log('  Next steps:');
   console.log('    1. Open the CMS Admin and log in');
-  console.log('    2. Go to Settings → Roles → Content Manager');
-  console.log('    3. Create a Policy with CRUD access to CMS collections');
-  console.log('    4. Create a Content Manager user (or assign existing)');
-  console.log('  ─────────────────────────────────────────────');
-  console.log('');
+  console.log('    2. Verify CMS collections in the sidebar');
+  console.log('    3. Verify business collections are hidden');
+  console.log('    4. Create a Content Manager user (Settings → Users)');
+  console.log('  ─────────────────────────────────────────────\n');
 }
 
 main().catch((err) => {

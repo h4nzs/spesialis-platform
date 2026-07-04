@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import type { UserRole } from '@specialist/types';
+import { forceLogout } from '../../lib/auth.ts';
 
 interface NavItem {
   href: string;
@@ -47,6 +48,10 @@ const NAV_MAP: Record<string, NavItem[]> = {
     { href: '/dashboard/corporate/settings', label: 'Pengaturan' },
   ],
 };
+
+async function handleLogout() {
+  await forceLogout();
+}
 
 export function Sidebar({ role }: { role: UserRole }) {
   const [open, setOpen] = useState(false);
@@ -103,6 +108,15 @@ export function Sidebar({ role }: { role: UserRole }) {
             {item.label}
           </a>
         ))}
+        <div className="mt-auto border-t border-border pt-2">
+          <button
+            type="button"
+            onClick={handleLogout}
+            className="w-full rounded-md px-3 py-2 text-left text-sm font-medium text-text-muted transition-colors hover:bg-background hover:text-danger"
+          >
+            Keluar
+          </button>
+        </div>
       </nav>
     </>
   );

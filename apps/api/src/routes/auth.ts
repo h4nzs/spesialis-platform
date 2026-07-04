@@ -1,4 +1,3 @@
-console.log('AUTH JWT =', process.env.JWT_SECRET);
 import { Hono } from 'hono';
 import { eq, and, or, isNull } from 'drizzle-orm';
 import {
@@ -32,6 +31,8 @@ import {
   conflict,
   serverError,
   forbidden,
+  setAuthCookies,
+  clearAuthCookies,
 } from '../lib/response.ts';
 
 const router = new Hono();
@@ -96,6 +97,7 @@ router.post('/register', rateLimit(10, 60_000), async (c) => {
 
   sendVerificationEmail(email, fullName, verificationToken);
 
+  setAuthCookies(c, token);
   return created(c, { user: { id: user.id, email: user.email, role: user.role }, token });
 });
 
@@ -168,6 +170,7 @@ router.post('/convert-guest', rateLimit(10, 60_000), async (c) => {
 
   const token = await signAccessToken(user.id, user.role);
 
+  setAuthCookies(c, token);
   return created(c, { user, token }, 'Akun berhasil dibuat');
 });
 
@@ -223,6 +226,7 @@ router.post('/login', rateLimit(10, 60_000), async (c) => {
 
   const token = await signAccessToken(user.id, user.role);
 
+  setAuthCookies(c, token, refreshToken);
   return success(c, {
     user: { id: user.id, email: user.email, role: user.role },
     token,
@@ -277,6 +281,7 @@ router.post('/refresh', rateLimit(20, 60_000), async (c) => {
 
   const token = await signAccessToken(user.id, user.role);
 
+  setAuthCookies(c, token, newRefreshToken);
   return success(c, { token, refreshToken: newRefreshToken });
 });
 
@@ -288,6 +293,7 @@ router.post('/logout', authMiddleware, async (c) => {
     .set({ revoked: true })
     .where(and(eq(refreshTokens.userId, userId), eq(refreshTokens.revoked, false)));
 
+  clearAuthCookies(c);
   return success(c, null, 'Logged out');
 });
 
@@ -593,6 +599,7 @@ router.delete('/account', authMiddleware, async (c) => {
       .where(and(eq(refreshTokens.userId, userId), eq(refreshTokens.revoked, false)));
   });
 
+  clearAuthCookies(c);
   return success(c, null, 'Akun berhasil dihapus');
 });
 

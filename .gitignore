@@ -15,7 +15,7 @@ coverage
 .cache
 
 .DS_Store
-
+.turbo/cache
 .idea
 
 .vscode/settings.json

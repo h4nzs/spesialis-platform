@@ -6,6 +6,23 @@ import BaseLayout from '../layouts/BaseLayout.astro'
   title="Kontak - Spesialis"
   description="Hubungi tim Spesialis untuk pertanyaan, kritik, saran, atau kerjasama. Kami siap membantu Anda."
   canonicalUrl="/kontak"
+  jsonLd={{
+    '@context': 'https://schema.org',
+    '@type': 'LocalBusiness',
+    name: 'Spesialis',
+    url: 'https://spesialis.id',
+    logo: 'https://spesialis.id/favicon.svg',
+    image: 'https://spesialis.id/og-default.png',
+    description: 'Platform layanan jasa profesional on-demand di Indonesia.',
+    email: 'hello@spesialis.id',
+    telephone: '+6281234567890',
+    areaServed: { '@type': 'Country', name: 'Indonesia' },
+    openingHoursSpecification: [
+      { '@type': 'OpeningHoursSpecification', dayOfWeek: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'], opens: '08:00', closes: '20:00' },
+      { '@type': 'OpeningHoursSpecification', dayOfWeek: 'Sunday', opens: '09:00', closes: '17:00' },
+    ],
+    address: { '@type': 'PostalAddress', addressLocality: 'Jakarta', addressCountry: 'ID' },
+  }}
 >
   <div class="mx-auto max-w-3xl px-4 py-12 sm:px-6 lg:px-8">
     <h1 class="text-3xl font-bold text-text">Hubungi Kami</h1>

@@ -3,6 +3,7 @@ import { Hono } from 'hono';
 import { servicesRouter } from './services.ts';
 import { errorHandler } from '../middleware/error-handler.ts';
 import { setTestEnv, makeChain } from '../test-utils.ts';
+import type { ApiTestResponse } from '../test-utils.ts';
 
 const { mockDb, em } = vi.hoisted(() => {
   const db = {
@@ -13,7 +14,7 @@ const { mockDb, em } = vi.hoisted(() => {
     execute: vi.fn().mockResolvedValue([]),
     transaction: vi.fn((fn: (tx: unknown) => unknown) => fn(db)),
   };
-  const exps = (globalThis as any).__TABLE_EXPORTS as Record<string, unknown>;
+  const exps = (globalThis as Record<string, unknown>).__TABLE_EXPORTS as Record<string, unknown>;
   return { mockDb: db, em: exps };
 });
 
@@ -36,7 +37,7 @@ describe('GET /api/v1/services', () => {
     mockDb.select.mockReturnValue(makeChain([]));
     const res = await mkApp().request('/api/v1/services');
     expect(res.status).toBe(200);
-    const j = (await res.json()) as any;
+    const j = (await res.json()) as ApiTestResponse;
     expect(j.success).toBe(true);
     expect(j.pagination).toBeDefined();
   });
@@ -76,7 +77,7 @@ describe('GET /api/v1/services', () => {
       ]),
     );
     const res = await mkApp().request('/api/v1/services');
-    const j = (await res.json()) as any;
+    const j = (await res.json()) as ApiTestResponse;
     expect(j.data).toHaveLength(1);
   });
 });

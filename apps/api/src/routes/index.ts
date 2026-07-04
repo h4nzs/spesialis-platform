@@ -1,4 +1,5 @@
 import { Hono } from 'hono';
+import { rateLimit } from '../middleware/rate-limiter.ts';
 import { healthRouter } from './health.ts';
 import { authRouter } from './auth.ts';
 import { bookingsRouter } from './bookings.ts';
@@ -20,8 +21,16 @@ import { mediaRouter } from './media.ts';
 import { adminArticlesRouter } from './admin/articles.ts';
 import { adminUsersRouter } from './admin/users.ts';
 import { adminSettingsRouter } from './admin/settings.ts';
+import { cmsRouter } from './cms.ts';
+import { seoRouter } from './seo.ts';
+import { contractsRouter } from './contracts.ts';
+import { invoicesRouter } from './invoices.ts';
 
 const router = new Hono();
+
+// Global default rate limit — 100 requests per 60 detik per IP
+// Override dengan rate limit lebih ketat di masing-masing route
+router.use('*', rateLimit(100, 60_000));
 
 router.route('/health', healthRouter);
 router.route('/auth', authRouter);
@@ -44,5 +53,9 @@ router.route('/admin/articles', adminArticlesRouter);
 router.route('/admin/users', adminUsersRouter);
 router.route('/admin/settings', adminSettingsRouter);
 router.route('/media', mediaRouter);
+router.route('/cms', cmsRouter);
+router.route('/seo', seoRouter);
+router.route('/contracts', contractsRouter);
+router.route('/invoices', invoicesRouter);
 
 export { router as apiRouter };

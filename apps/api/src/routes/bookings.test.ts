@@ -1,8 +1,14 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { Hono } from 'hono';
+import type { Context } from 'hono';
+import type { UserRole } from '@specialist/types';
 import { bookingsRouter } from './bookings.ts';
 import { errorHandler } from '../middleware/error-handler.ts';
 import { setTestEnv, makeChain, insertChain, updateChain } from '../test-utils.ts';
+
+const mockRateLimit = vi.hoisted(() => ({
+  rateLimit: () => async (_c: unknown, next: () => unknown) => next(),
+}));
 
 const { mockDb, authState, mockAudit, mockNotif, em } = vi.hoisted(() => {
   const db = {
@@ -13,10 +19,10 @@ const { mockDb, authState, mockAudit, mockNotif, em } = vi.hoisted(() => {
     execute: vi.fn().mockResolvedValue([]),
     transaction: vi.fn((fn: (tx: unknown) => unknown) => fn(db)),
   };
-  const st = { userId: 'uid', userRole: 'customer' };
+  const st: { userId: string; userRole: UserRole } = { userId: 'uid', userRole: 'customer' };
   const ax = { createAuditLog: vi.fn().mockResolvedValue(undefined) };
   const nx = { createNotification: vi.fn().mockResolvedValue(undefined) };
-  const exps = (globalThis as any).__TABLE_EXPORTS as Record<string, unknown>;
+  const exps = (globalThis as Record<string, unknown>).__TABLE_EXPORTS as Record<string, unknown>;
   return { mockDb: db, authState: st, mockAudit: ax, mockNotif: nx, em: exps };
 });
 
@@ -41,7 +47,7 @@ vi.mock('../lib/email.ts', () => ({
 }));
 
 vi.mock('../middleware/auth.ts', () => ({
-  authMiddleware: async (c: any, next: any) => {
+  authMiddleware: async (c: Context, next: () => Promise<void>) => {
     if (!c.req.header('Authorization')) {
       c.status(401);
       return c.json({ success: false, code: 'UNAUTHORIZED', message: 'No token' });
@@ -52,7 +58,7 @@ vi.mock('../middleware/auth.ts', () => ({
   },
   requireRole:
     (...roles: string[]) =>
-    async (c: any, next: any) => {
+    async (c: Context, next: () => Promise<void>) => {
       if (!roles.includes(authState.userRole)) {
         c.status(403);
         return c.json({ success: false, code: 'FORBIDDEN', message: 'Forbidden' });
@@ -62,8 +68,9 @@ vi.mock('../middleware/auth.ts', () => ({
 }));
 vi.mock('../lib/audit.ts', () => ({ ...mockAudit }));
 vi.mock('../lib/notification.ts', () => ({ ...mockNotif }));
+vi.mock('../middleware/rate-limiter.ts', () => mockRateLimit);
 
-function mkApp(role = 'customer') {
+function mkApp(role: UserRole = 'customer') {
   authState.userRole = role;
   authState.userId = 'uid';
   const app = new Hono();

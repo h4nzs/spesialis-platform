@@ -68,3 +68,6 @@ export type {
   CreateArticleInput,
   UpdateArticleInput,
 } from './article.ts';
+
+export type { ContractStatus, Contract, CreateContractInput } from './contract.ts';
+export type { InvoiceStatus, Invoice, CreateInvoiceInput } from './invoice.ts';

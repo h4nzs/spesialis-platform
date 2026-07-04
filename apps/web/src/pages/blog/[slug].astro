@@ -42,16 +42,30 @@ try {
       canonicalUrl={`/blog/${article.slug}`}
       ogImage={article.coverImage ?? undefined}
       ogType="article"
+      articlePublishedTime={article.publishedAt ?? undefined}
+      articleAuthor={article.authorName ?? undefined}
       jsonLd={{
         '@context': 'https://schema.org',
-        '@type': 'Article',
-        headline: article.title,
-        description: article.summary,
-        image: article.coverImage,
-        author: article.authorName ? { '@type': 'Person', name: article.authorName } : { '@type': 'Organization', name: 'Spesialis' },
-        datePublished: article.publishedAt,
-        dateModified: article.updatedAt,
-        publisher: { '@type': 'Organization', name: 'Spesialis' },
+        '@graph': [
+          {
+            '@type': 'BreadcrumbList',
+            itemListElement: [
+              { '@type': 'ListItem', position: 1, name: 'Beranda', item: 'https://spesialis.id' },
+              { '@type': 'ListItem', position: 2, name: 'Blog', item: 'https://spesialis.id/blog' },
+              { '@type': 'ListItem', position: 3, name: article.title },
+            ],
+          },
+          {
+            '@type': 'Article',
+            headline: article.title,
+            description: article.summary,
+            image: article.coverImage,
+            author: article.authorName ? { '@type': 'Person', name: article.authorName } : { '@type': 'Organization', name: 'Spesialis' },
+            datePublished: article.publishedAt,
+            dateModified: article.updatedAt,
+            publisher: { '@type': 'Organization', name: 'Spesialis' },
+          },
+        ],
       }}
     >
       <div class="mx-auto max-w-3xl px-4 py-12 sm:px-6 lg:px-8">

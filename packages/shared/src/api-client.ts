@@ -185,6 +185,7 @@ export class ApiClient {
       method: options.method ?? 'GET',
       headers: this.buildHeaders(options),
       signal: options.signal ?? null,
+      credentials: 'include',
     };
 
     if (options.formData) {
@@ -283,6 +284,7 @@ export class ApiClient {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ refreshToken }),
+      credentials: 'include',
     });
 
     if (!response.ok) {
@@ -344,13 +346,26 @@ export class ApiClient {
 
 /**
  * Buat instance ApiClient untuk browser.
- * Token diambil dari localStorage.
+ *
+ * Menyimpan token di localStorage sebagai persistent storage.
+ * httpOnly cookie tetap menjadi mekanisme utama di production (same-origin via nginx).
+ * localStorage digunakan sebagai fallback untuk development (cross-origin) dan
+ * agar token bertahan setelah page reload.
  */
 export function createBrowserClient(baseUrl?: string): ApiClient {
+  const tokenStore = canUseLocalStorage() ? new LocalStorageTokenStore() : new MemoryTokenStore();
   return new ApiClient({
     baseUrl: baseUrl ?? getDefaultApiUrl(),
-    tokenStore: new LocalStorageTokenStore(),
+    tokenStore,
   });
+}
+
+function canUseLocalStorage(): boolean {
+  try {
+    return typeof localStorage !== 'undefined';
+  } catch {
+    return false;
+  }
 }
 
 /**

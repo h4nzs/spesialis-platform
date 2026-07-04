@@ -3,7 +3,7 @@ import postgres from 'postgres';
 import * as schema from './schema/index.ts';
 
 const connectionString =
-  process.env.DATABASE_URL ?? 'postgres://postgres:postgres@localhost:5432/specialist';
+  process.env.DATABASE_URL ?? 'postgres://specialist:specialist@localhost:5432/specialist';
 
 const queryClient = postgres(connectionString, { prepare: false });
 export const db = drizzle(queryClient, { schema });

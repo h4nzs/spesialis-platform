@@ -70,7 +70,7 @@ Semua dokumentasi berada pada folder `docs/`.
 
 ### 1. Prerequisites
 
-- Node.js >= 22.12
+- Node.js >= 24
 - pnpm 11 (`npm i -g pnpm`)
 - Docker (for PostgreSQL)
 

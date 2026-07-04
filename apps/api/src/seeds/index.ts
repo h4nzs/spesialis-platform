@@ -1,3 +1,4 @@
+import { sql } from 'drizzle-orm';
 import { db } from '@specialist/database';
 import {
   users,
@@ -20,12 +21,26 @@ import {
   partnerSkills,
   seoMetadata,
   systemSettings,
+  articleCategories,
+  articles,
 } from '@specialist/database';
 import { hashPassword } from '../lib/auth.ts';
 import type { OrderStatus, PaymentMethod, PaymentStatus } from '@specialist/types';
 
 async function seed() {
   console.log('🌱 Seeding database...\n');
+
+  console.log('  🧹 Clearing existing data...');
+  await db.execute(sql`
+    TRUNCATE TABLE
+      notifications, reviews, complaints, payments, assignments,
+      order_status_history, order_items, orders, addresses,
+      partner_skills, seo_metadata, system_settings,
+      services, service_categories, partner_profiles,
+      customer_profiles, company_users, branches, companies, users
+    RESTART IDENTITY CASCADE
+  `);
+  console.log('  ✓ Done\n');
 
   const adminPassword = await hashPassword('password123');
   const partnerPassword = await hashPassword('password123');
@@ -1041,6 +1056,104 @@ async function seed() {
   ]);
   console.log('  ✓ 3 SEO metadata entries created');
 
+  // ─── Article Categories ──────────────────────────────────────────
+  const catAcId = crypto.randomUUID();
+  const catPlumbingId = crypto.randomUUID();
+  const catCleaningId = crypto.randomUUID();
+  const catElektronikId = crypto.randomUUID();
+  await db.insert(articleCategories).values([
+    {
+      id: catAcId,
+      name: 'AC & Pendingin',
+      slug: 'ac-pendingin',
+      description: 'Tips perawatan dan perbaikan AC dan pendingin ruangan',
+      displayOrder: 1,
+    },
+    {
+      id: catPlumbingId,
+      name: 'Plumbing',
+      slug: 'plumbing',
+      description: 'Informasi seputar pipa, saluran air, dan sanitasi',
+      displayOrder: 2,
+    },
+    {
+      id: catCleaningId,
+      name: 'Cleaning',
+      slug: 'cleaning',
+      description: 'Tips kebersihan rumah, kantor, dan area komersial',
+      displayOrder: 3,
+    },
+    {
+      id: catElektronikId,
+      name: 'Elektronik & Listrik',
+      slug: 'elektronik-listrik',
+      description: 'Panduan instalasi listrik dan perbaikan elektronik',
+      displayOrder: 4,
+    },
+  ]);
+  console.log('  ✓ 4 article categories created');
+
+  // ─── Articles ────────────────────────────────────────────────────
+  await db.insert(articles).values([
+    {
+      id: crypto.randomUUID(),
+      categoryId: catAcId,
+      title: 'Cara Merawat AC agar Awet dan Dingin Maksimal',
+      slug: 'cara-merawat-ac-awet',
+      summary:
+        'Pelajari cara merawat AC dengan benar agar tetap dingin, hemat listrik, dan awet digunakan bertahun-tahun.',
+      content:
+        'AC adalah investasi penting untuk kenyamanan rumah. Dengan perawatan rutin, AC dapat bertahan lebih lama dan tetap efisien.\n\n## 1. Bersihkan Filter Secara Rutin\nFilter AC yang kotor membuat kinerja AC berat dan tagihan listrik membengkak. Bersihkan filter setiap 2 minggu sekali.\n\n## 2. Periksa Freon\nFreon yang berkurang akan membuat AC tidak dingin. Segera hubungi teknisi jika AC mulai terasa kurang dingin.\n\n## 3. Servis Berkala\nLakukan servis besar setiap 3-6 bulan sekali oleh teknisi profesional. Ini termasuk pembersihan evaporator, kondensor, dan pengecekan komponen lainnya.\n\n## 4. Atur Suhu Ideal\nSuhu AC yang ideal adalah 24-26°C. Setiap derajat lebih rendah meningkatkan konsumsi listrik hingga 6%.',
+      authorName: 'Tim Spesialis',
+      status: 'Published',
+      isFeatured: true,
+      publishedAt: new Date(),
+    },
+    {
+      id: crypto.randomUUID(),
+      categoryId: catPlumbingId,
+      title: 'Mengatasi Saluran Air Mampet Tanpa Bantuan Tukang',
+      slug: 'mengatasi-saluran-air-mampet',
+      summary:
+        'Saluran air mampet? Coba 5 cara mudah ini sebelum memanggil teknisi plumbing profesional.',
+      content:
+        'Saluran air mampet adalah masalah rumah tangga yang paling umum. Sebelum panik, coba langkah-langkah berikut:\n\n## 1. Gunakan Air Panas\nTuangkan air panas secara perlahan ke saluran yang tersumbat. Air panas dapat melarutkan lemak dan sabun yang menumpuk.\n\n## 2. Baking Soda dan Cuka\nCampurkan 1/2 cangkir baking soda dengan 1/2 cangkir cuka. Tuang ke saluran dan tunggu 15 menit, lalu siram dengan air panas.\n\n## 3. Gunakan Plunger\nAlat sederhana ini sangat efektif untuk mengatasi sumbatan ringan di wastafel atau kloset.\n\nJika semua cara di atas tidak berhasil, segera hubungi teknisi plumbing profesional Spesialis.',
+      authorName: 'Tim Spesialis',
+      status: 'Published',
+      isFeatured: true,
+      publishedAt: new Date(),
+    },
+    {
+      id: crypto.randomUUID(),
+      categoryId: catCleaningId,
+      title: 'Tips Membersihkan Rumah Setelah Renovasi',
+      slug: 'tips-membersihkan-rumah-setelah-renovasi',
+      summary:
+        'Renovasi selesai? Berikut panduan lengkap membersihkan debu dan kotoran pasca renovasi.',
+      content:
+        'Setelah renovasi, rumah biasanya dipenuhi debu halus dan sisa material. Berikut cara membersihkannya:\n\n## 1. Bersihkan dari Atas ke Bawah\nMulai dari langit-langit, dinding, lantai. Ini mencegah debu jatuh ke area yang sudah dibersihkan.\n\n## 2. Gunakan Vacuum Cleaner HEPA\nDebu konstruksi sangat halus. Vacuum dengan filter HEPA mampu menangkap partikel mikroskopis.\n\n## 3. Lap Semua Permukaan\nGunakan kain microfiber basah untuk mengelap semua permukaan — dinding, jendela, furnitur.\n\n## 4. Cuci Semua Tekstil\nCuci gorden, karpet, dan sarung bantal yang mungkin terpapar debu renovasi.\n\nButuh bantuan? Pesan layanan cleaning profesional dari Spesialis!',
+      authorName: 'Tim Spesialis',
+      status: 'Published',
+      isFeatured: false,
+      publishedAt: new Date(),
+    },
+    {
+      id: crypto.randomUUID(),
+      categoryId: catElektronikId,
+      title: 'Panduan Instalasi Listrik Rumah yang Aman',
+      slug: 'panduan-instalasi-listrik-rumah-aman',
+      summary:
+        'Instalasi listrik yang salah bisa berbahaya. Simak panduan keamanan instalasi listrik rumah tinggal.',
+      content:
+        'Instalasi listrik yang baik adalah investasi keamanan jangka panjang. Berikut hal-hal penting yang perlu diperhatikan:\n\n## 1. Gunakan Kabel Berkualitas\nJangan tergiur kabel murah. Kabel berkualitas SNI menjamin keamanan dan ketahanan.\n\n## 2. Pasang MCB yang Sesuai\nMCB (Miniature Circuit Breaker) harus disesuaikan dengan total daya yang terpakai.\n\n## 3. Grounding yang Baik\nPastikan instalasi grounding terpasang dengan benar untuk mengalirkan kebocoran arus.\n\n## 4. Hindari Sambungan Tersembunyi\nSambungan kabel sebaiknya berada di dalam kotak sambungan yang mudah diakses.\n\n\u26a0\ufe0f Selalu gunakan jasa teknisi listrik bersertifikat untuk instalasi listrik rumah Anda.',
+      authorName: 'Tim Spesialis',
+      status: 'Published',
+      isFeatured: false,
+      publishedAt: new Date(),
+    },
+  ]);
+  console.log('  ✓ 4 articles created');
+
   // ─── System Settings ─────────────────────────────────────────────
   await db.insert(systemSettings).values([
     { category: 'general', key: 'site_name', value: 'Spesialis', description: 'Nama platform' },
@@ -1125,6 +1238,7 @@ async function seed() {
   console.log('    5 categories, 14 services');
   console.log('    10 orders across all lifecycle stages');
   console.log('    2 reviews, 2 complaints, 4 notifications');
+  console.log('    4 categories, 4 articles');
   console.log('    3 SEO entries, 11 system settings');
 }
 
