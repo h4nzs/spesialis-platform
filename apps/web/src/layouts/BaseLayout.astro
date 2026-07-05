@@ -1,5 +1,6 @@
 ---
 import '../styles/global.css'
+import { AuthNav } from '../components/AuthNav.tsx'
 
 export interface Props {
   title?: string
@@ -69,13 +70,7 @@ const canonical = canonicalUrl ? `${siteUrl}${canonicalUrl}` : undefined
           <a href="/services" class="hover:text-text transition-colors">Layanan</a>
           <a href="/blog" class="hover:text-text transition-colors">Blog</a>
           <a href="/tracking" class="hover:text-text transition-colors">Lacak</a>
-          <a href="/login" class="hover:text-text transition-colors">Masuk</a>
-          <a
-            href="/register"
-            class="inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-primary-hover"
-          >
-            Daftar
-          </a>
+          <AuthNav client:load />
         </nav>
       </div>
     </header>

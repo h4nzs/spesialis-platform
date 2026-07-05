@@ -2,6 +2,8 @@
 import BaseLayout from '../layouts/BaseLayout.astro'
 import { BookingForm } from '../components/BookingForm.tsx'
 
+export const prerender = false;
+
 const serviceId = Astro.url.searchParams.get('serviceId')
 ---
 

@@ -30,6 +30,16 @@ export const cancelOrderSchema = z.object({
   reason: z.string().min(1).max(500),
 });
 
+export const discountOrderSchema = z
+  .object({
+    discountPercent: z.coerce.number().min(0).max(100).optional(),
+    discountAmount: z.coerce.number().min(0).optional(),
+    note: z.string().max(500).optional(),
+  })
+  .refine((data) => data.discountPercent !== undefined || data.discountAmount !== undefined, {
+    message: 'Setidaknya satu diskon (percent atau amount) harus diisi',
+  });
+
 export type CreateOrderInput = z.infer<typeof createOrderSchema>;
 export type UpdateOrderStatusInput = z.infer<typeof updateOrderStatusSchema>;
 export type UpdatePriceInput = z.infer<typeof updatePriceSchema>;

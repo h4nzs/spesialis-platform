@@ -71,48 +71,46 @@ Status booking mengikuti lifecycle berikut:
 
 ```text
 Draft
-↓
-
-Pending Confirmation
-↓
-
-Confirmed
-
-↓
-
-Waiting Assignment
-
-↓
-
-Partner Assigned
-
-↓
-
-Partner Accepted
-
-↓
-
-On The Way
-
-↓
-
-Working
-
-↓
-
-Completed
-
-↓
-
-Waiting Payment
-
-↓
-
-Paid
-
-↓
-
-Closed
+│
+▼
+Pending Confirmation ────┐
+│                        │
+▼                        │
+Confirmed ───────────────┤
+│                        │
+▼                        │
+Waiting Assignment ──────┤
+│                        │
+▼                        │
+Partner Assigned ────────┤
+│         │              │
+│         ▼              │
+│    (reject) ───────────┤
+│                        │
+▼                        │
+Partner Accepted ────────┤
+│                        │
+▼                        │
+On The Way ──────────────┤
+│                        │
+▼                        │
+Working                  │
+│                        │
+▼                        │
+Completed                │
+│                        │
+▼                        │
+Waiting Payment          │
+│                        │
+▼                        │
+Paid                     │
+│                        │
+▼                        │
+Closed                   │
+                         │
+Terminal: Cancelled ◄────┘
+          Rejected
+          Expired
 ```
 
 ---
@@ -237,8 +235,17 @@ Dokumen yang dapat diminta:
 Corporate tidak langsung melakukan booking.
 
 Flow:
+Inquiry → Contacted → Negotiation → Converted (akun dibuat) → Order.
 
-Inquiry → Negosiasi → Verifikasi → Akun dibuat → Order.
+Inquiry dilakukan melalui form publik tanpa login.
+
+Admin meng-handle inquiry dengan workflow:
+
+1. **Pending** — Menunggu diproses
+2. **Contacted** — Admin menghubungi perusahaan
+3. **Negotiation** — Negosiasi harga & kontrak
+4. **Converted** — Perusahaan didaftarkan sebagai akun Corporate
+5. **Closed** — Inquiry ditutup (tidak jadi)
 
 ---
 
@@ -294,24 +301,30 @@ Complaint memiliki status:
 
 Customer menerima notifikasi saat:
 
-- Booking berhasil
-- Booking dikonfirmasi
-- Partner ditugaskan
-- Partner menuju lokasi
-- Pekerjaan selesai
-- Pembayaran diterima
+- Booking berhasil dibuat (`booking.created`)
+- Booking dikonfirmasi (`booking.confirmed`)
+- Partner menuju lokasi (`booking.on-the-way`)
+- Pekerjaan dimulai (`booking.in-progress`)
+- Pekerjaan selesai (`booking.completed`)
+- Booking dibatalkan (`booking.cancelled`)
+- Pembayaran diterima/ditolak (`payment.received`)
+- Complaint direspon admin (`complaint.resolved`)
 
 Partner menerima notifikasi saat:
 
-- Job baru
-- Assignment dibatalkan
-- Jadwal berubah
+- Assignment baru (`booking.assigned`)
+- Verifikasi akun (`partner.verified`)
 
 Admin menerima notifikasi saat:
 
-- Booking baru
-- Partner Reject
-- Complaint baru
+- Booking baru (`booking.new`)
+- Partner menolak assignment (`booking.rejected`)
+- Pekerjaan dimulai (`booking.in-progress`)
+- Pekerjaan selesai (`booking.completed`)
+- Booking dibatalkan (`booking.cancelled`)
+- Complaint baru (`complaint.new`)
+- Pembayaran baru diajukan (`payment.submitted`)
+- Partner baru mendaftar (`partner.registered`)
 
 ---
 

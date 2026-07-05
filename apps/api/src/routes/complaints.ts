@@ -5,7 +5,7 @@ import { authMiddleware, requireRole } from '../middleware/auth.ts';
 import { createComplaintSchema, resolveComplaintSchema } from '@specialist/validation';
 import { success, created, error, notFound, forbidden, conflict } from '../lib/response.ts';
 import { createAuditLog } from '../lib/audit.ts';
-import { createNotification } from '../lib/notification.ts';
+import { createNotification, notifyAdmins } from '../lib/notification.ts';
 
 const router = new Hono();
 
@@ -47,6 +47,8 @@ router.post('/', authMiddleware, async (c) => {
       description: parsed.data.description,
     })
     .returning();
+
+  notifyAdmins('complaint.new', 'Komplain Baru', `Komplain baru: ${parsed.data.title}`);
 
   return created(c, complaint, 'Komplain berhasil diajukan');
 });

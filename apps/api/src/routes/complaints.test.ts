@@ -17,7 +17,10 @@ const { mockDb, authState, mockAudit, mockNotif, em } = vi.hoisted(() => {
   };
   const st: { userId: string; userRole: UserRole } = { userId: 'uid', userRole: 'customer' };
   const ax = { createAuditLog: vi.fn().mockResolvedValue(undefined) };
-  const nx = { createNotification: vi.fn().mockResolvedValue(undefined) };
+  const nx = {
+    createNotification: vi.fn().mockResolvedValue(undefined),
+    notifyAdmins: vi.fn().mockResolvedValue(undefined),
+  };
   const exps = (globalThis as Record<string, unknown>).__TABLE_EXPORTS as Record<string, unknown>;
   return { mockDb: db, authState: st, mockAudit: ax, mockNotif: nx, em: exps };
 });

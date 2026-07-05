@@ -1,111 +1,139 @@
-# docs/api/admin-api.md
-
 # Admin API
 
-Base URL
+Base URL: `/api/v1/admin`
 
-/api/v1/admin
+Semua endpoint memerlukan role `admin`, `super_admin`, atau `finance`/`content_manager` sesuai konteks.
 
 ---
 
-GET /dashboard
+## Dashboard
 
-GET /statistics
+`GET /dashboard` — Ringkasan dashboard (total users, bookings, revenue, dll).
 
-GET /reports
-
-GET /activity
-
-GET /users
-
-PATCH /users/:id/status
-
-GET /settings
-
-PATCH /settings
-
-POST /revalidate
-
-POST /cache/clear
+`GET /dashboard/activity` — Aktivitas terbaru (dari audit log).
 
 ---
 
 ## Users
 
-GET /users
+`GET /users` — List user dengan filter role dan status.
 
-List user dengan filter role dan status.
+Query: `?page=1&limit=50&search=email&role=customer&status=active`
 
-Query: ?page=1&limit=50&search=email&role=customer&status=active
-
----
-
-PATCH /users/:id/status
-
-Ubah status user.
+`PATCH /users/:id/status` — Ubah status user (active / suspended / banned).
 
 ---
 
-## Activity
+## Settings
 
-GET /dashboard/activity
+`GET /settings` — Ambil system settings.
 
-Aktivitas terbaru (dari audit log).
+`PATCH /settings` — Update system settings.
 
 ---
 
 ## Articles
 
-GET /articles
+`GET /articles` — List artikel (admin — semua status, termasuk draft).
 
-List artikel (admin — semua status).
+`POST /articles` — Buat artikel baru.
 
----
+`GET /articles/:id` — Detail artikel.
 
-POST /articles
+`PATCH /articles/:id` — Update artikel.
 
-Buat artikel baru.
+`DELETE /articles/:id` — Soft delete artikel.
 
----
+### Article Categories
 
-GET /articles/:id
+`GET /articles/categories` — List kategori artikel.
 
-Detail artikel.
+`POST /articles/categories` — Buat kategori baru.
 
----
+`PATCH /articles/categories/:id` — Update kategori.
 
-PATCH /articles/:id
-
-Update artikel.
+`DELETE /articles/categories/:id` — Hapus kategori.
 
 ---
 
-DELETE /articles/:id
+## FAQ
 
-Soft delete artikel.
+Role: `admin`, `super_admin`, `content_manager`
+
+`GET /faq` — List FAQ (paginated, filter by category).
+
+Query: `?page=1&limit=50&category=booking`
+
+`GET /faq/:id` — Detail FAQ.
+
+`POST /faq` — Buat FAQ baru.
+
+Body:
+
+```json
+{
+  "question": "string",
+  "answer": "string",
+  "category": "booking | akun | pembayaran | mitra | layanan | umum | null",
+  "displayOrder": 0,
+  "isActive": "true | false"
+}
+```
+
+`PATCH /faq/:id` — Update FAQ (partial).
+
+`DELETE /faq/:id` — Soft delete FAQ. Role: `admin`, `super_admin`
 
 ---
 
-## Article Categories
+## Services
 
-GET /articles/categories
+Role: `admin`, `super_admin`
 
-List kategori artikel.
+`GET /services` — List layanan (paginated).
 
----
+Query: `?page=1&limit=50&categoryId=uuid`
 
-POST /articles/categories
+`GET /services/:id` — Detail layanan.
 
-Buat kategori baru.
+`POST /services` — Buat layanan baru.
 
----
+`PATCH /services/:id` — Update layanan.
 
-PATCH /articles/categories/:id
-
-Update kategori.
+`DELETE /services/:id` — Soft delete layanan.
 
 ---
 
-DELETE /articles/categories/:id
+## Service Categories
 
-Hapus kategori.
+Role: `admin`, `super_admin`
+
+`GET /service-categories` — List kategori layanan.
+
+`POST /service-categories` — Buat kategori baru.
+
+`PATCH /service-categories/:id` — Update kategori.
+
+`DELETE /service-categories/:id` — Hapus kategori.
+
+---
+
+## Orders
+
+Role: `admin`, `super_admin`
+
+### Discount
+
+`PATCH /orders/:id/discount` — Terapkan diskon ke order.
+
+Body (setidaknya satu wajib diisi):
+
+```json
+{
+  "discountPercent": 10,
+  "discountAmount": 50000,
+  "note": "Diskon pelanggan tetap"
+}
+```
+
+Semua perubahan harga tercatat di Audit Log.

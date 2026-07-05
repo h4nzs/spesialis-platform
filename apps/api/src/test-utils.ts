@@ -80,6 +80,7 @@ export function buildEmptyTables() {
     'articleCategories',
     'contracts',
     'invoices',
+    'faq',
     'usersRelations',
     'customerProfilesRelations',
     'partnerProfilesRelations',
@@ -134,7 +135,10 @@ export function buildMockAudit() {
 }
 
 export function buildMockNotif() {
-  return { createNotification: vi.fn().mockResolvedValue(undefined) };
+  return {
+    createNotification: vi.fn().mockResolvedValue(undefined),
+    notifyAdmins: vi.fn().mockResolvedValue(undefined),
+  };
 }
 
 export function buildMockRateLimit() {
@@ -197,6 +201,7 @@ export const TABLE_NAMES = [
   'articleCategories',
   'contracts',
   'invoices',
+  'faq',
   'usersRelations',
   'customerProfilesRelations',
   'partnerProfilesRelations',

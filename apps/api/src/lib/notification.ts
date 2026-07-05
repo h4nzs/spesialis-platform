@@ -1,4 +1,5 @@
-import { db, notifications } from './db.ts';
+import { inArray } from 'drizzle-orm';
+import { db, notifications, users } from './db.ts';
 
 export async function createNotification(params: {
   userId: string;
@@ -15,4 +16,14 @@ export async function createNotification(params: {
     message: params.message,
     sentAt: new Date(),
   });
+}
+
+export async function notifyAdmins(type: string, title: string, message: string) {
+  const adminList = await db
+    .select({ id: users.id })
+    .from(users)
+    .where(inArray(users.role, ['admin', 'super_admin', 'dispatcher']));
+  for (const admin of adminList) {
+    await createNotification({ userId: admin.id, type, title, message });
+  }
 }

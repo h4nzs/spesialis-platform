@@ -54,7 +54,15 @@ if [[ "$MODE" == "dev" ]]; then
   if [[ "$*" == *"--cms"* ]]; then
     echo "📰 Setting up CMS (Directus)..."
     docker compose up cms -d
-    sleep 3
+    echo -n "⏳ Waiting for Directus"
+    for i in $(seq 1 30); do
+      if curl -sfo /dev/null http://localhost:8055/server/health 2>/dev/null; then
+        echo " ✅"
+        break
+      fi
+      echo -n "."
+      sleep 2
+    done
     pnpm cms:setup
   fi
 

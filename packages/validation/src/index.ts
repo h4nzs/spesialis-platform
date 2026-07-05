@@ -63,6 +63,7 @@ export {
   updateOrderStatusSchema,
   updatePriceSchema,
   cancelOrderSchema,
+  discountOrderSchema,
 } from './order.ts';
 export type {
   CreateOrderInput,
@@ -135,3 +136,12 @@ export type {
 
 export { createInvoiceSchema, updateInvoiceStatusSchema } from './invoice.ts';
 export type { CreateInvoiceInput, UpdateInvoiceStatusInput } from './invoice.ts';
+
+export { createFaqSchema, updateFaqSchema } from './faq.ts';
+export type { CreateFaqInput, UpdateFaqInput } from './faq.ts';
+
+export { createCorporateInquirySchema, updateCorporateInquirySchema } from './corporate-inquiry.ts';
+export type {
+  CreateCorporateInquiryInput,
+  UpdateCorporateInquiryInput,
+} from './corporate-inquiry.ts';

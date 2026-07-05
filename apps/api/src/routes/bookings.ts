@@ -36,7 +36,7 @@ import {
   serverError,
 } from '../lib/response.ts';
 import { createAuditLog } from '../lib/audit.ts';
-import { createNotification } from '../lib/notification.ts';
+import { createNotification, notifyAdmins } from '../lib/notification.ts';
 import { APP_URL, sendBookingConfirmationEmail, sendPartnerAssignedEmail } from '../lib/email.ts';
 import { rateLimit } from '../middleware/rate-limiter.ts';
 
@@ -46,7 +46,7 @@ async function getNextBookingNumber(): Promise<string> {
   const year = new Date().getFullYear();
   const prefix = `SP-${year}-`;
   const result = await db.execute(sql`
-    SELECT COALESCE(MAX(CAST(SUBSTRING(booking_number, 8) AS INTEGER)), 0) + 1 AS next
+    SELECT COALESCE(MAX(CAST(SUBSTRING(booking_number, 9) AS INTEGER)), 0) + 1 AS next
     FROM orders WHERE booking_number LIKE ${prefix + '%'}
   `);
   const row = result[0] as { next: number } | undefined;
@@ -58,7 +58,7 @@ async function recordStatusHistory(
   orderId: string,
   from: OrderStatus | null,
   to: OrderStatus,
-  changedBy: string,
+  changedBy: string | null,
   note?: string,
 ) {
   await db.insert(orderStatusHistory).values({
@@ -232,7 +232,9 @@ async function createGuestBooking(c: Context) {
       await attachMediaToOrder(order.id, mediaIds);
     }
 
-    await recordStatusHistory(order.id, null, 'Pending Confirmation', 'system');
+    await recordStatusHistory(order.id, null, 'Pending Confirmation', null);
+
+    notifyAdmins('booking.new', 'Booking Baru', `Booking baru #${bookingNumber} dari ${fullName}`);
 
     return created(
       c,
@@ -353,6 +355,15 @@ async function createCustomerBooking(c: Context) {
     }
 
     await recordStatusHistory(order.id, null, 'Pending Confirmation', userId);
+
+    notifyAdmins('booking.new', 'Booking Baru', `Booking baru #${bookingNumber} dari customer`);
+
+    createNotification({
+      userId,
+      type: 'booking.created',
+      title: 'Booking Berhasil',
+      message: `Booking #${bookingNumber} berhasil dibuat. Menunggu konfirmasi admin.`,
+    });
 
     return created(c, { bookingNumber, id: order.id }, 'Booking berhasil dibuat');
   } catch (err) {
@@ -571,6 +582,7 @@ router.post('/:id/confirm', authMiddleware, requireRole('admin', 'super_admin'),
       .select({
         email: users.email,
         fullName: customerProfiles.fullName,
+        userId: users.id,
         bookingNumber: orders.bookingNumber,
       })
       .from(orders)
@@ -586,6 +598,15 @@ router.post('/:id/confirm', authMiddleware, requireRole('admin', 'super_admin'),
         customerInfo.bookingNumber,
         `${APP_URL}/tracking`,
       );
+    }
+
+    if (customerInfo?.userId) {
+      createNotification({
+        userId: customerInfo.userId,
+        type: 'booking.confirmed',
+        title: 'Booking Dikonfirmasi',
+        message: `Booking #${customerInfo.bookingNumber} telah dikonfirmasi.`,
+      });
     }
   } catch {
     // Email is non-critical — proceed
@@ -769,6 +790,23 @@ router.post('/:id/on-the-way', authMiddleware, async (c) => {
     await recordStatusHistory(orderId, order.status, 'On The Way', userId);
   });
 
+  const [customerInfo] = await db
+    .select({ userId: users.id })
+    .from(orders)
+    .innerJoin(customerProfiles, eq(customerProfiles.id, orders.customerId))
+    .leftJoin(users, eq(users.id, customerProfiles.userId))
+    .where(eq(orders.id, orderId))
+    .limit(1);
+
+  if (customerInfo?.userId) {
+    createNotification({
+      userId: customerInfo.userId,
+      type: 'booking.on-the-way',
+      title: 'Partner Menuju Lokasi',
+      message: 'Partner sedang dalam perjalanan menuju lokasi Anda.',
+    });
+  }
+
   return success(c, { id: orderId, status: 'On The Way' }, 'Partner dalam perjalanan');
 });
 
@@ -833,6 +871,12 @@ router.post('/:id/reject', authMiddleware, async (c) => {
     oldValue: { status: order.status },
   });
 
+  notifyAdmins(
+    'booking.rejected',
+    'Partner Menolak Assignment',
+    `Partner menolak assignment untuk order #${orderId}. Alasan: ${parsed.data.reason}`,
+  );
+
   return success(c, { id: orderId, status: 'Waiting Assignment' }, 'Assignment ditolak');
 });
 
@@ -876,6 +920,29 @@ router.post('/:id/start', authMiddleware, async (c) => {
     newValue: { status: 'Working' },
     oldValue: { status: order.status },
   });
+
+  const [customerInfo] = await db
+    .select({ userId: users.id, bookingNumber: orders.bookingNumber })
+    .from(orders)
+    .innerJoin(customerProfiles, eq(customerProfiles.id, orders.customerId))
+    .leftJoin(users, eq(users.id, customerProfiles.userId))
+    .where(eq(orders.id, orderId))
+    .limit(1);
+
+  if (customerInfo?.userId) {
+    await createNotification({
+      userId: customerInfo.userId,
+      type: 'booking.in-progress',
+      title: 'Pekerjaan Dimulai',
+      message: `Pekerjaan untuk booking #${customerInfo.bookingNumber} telah dimulai.`,
+    });
+  }
+
+  notifyAdmins(
+    'booking.in-progress',
+    'Pekerjaan Dimulai',
+    `Partner memulai pekerjaan untuk booking #${orderId}`,
+  );
 
   return success(c, { id: orderId, status: 'Working' }, 'Pekerjaan dimulai');
 });
@@ -938,6 +1005,12 @@ router.post('/:id/complete', authMiddleware, async (c) => {
     });
   }
 
+  notifyAdmins(
+    'booking.completed',
+    'Pekerjaan Selesai',
+    `Partner menyelesaikan pekerjaan untuk booking #${orderId}`,
+  );
+
   return success(c, { id: orderId, status: 'Completed' }, 'Pekerjaan selesai');
 });
 
@@ -985,6 +1058,31 @@ router.post('/:id/cancel', authMiddleware, async (c) => {
     newValue: { status: 'Cancelled', reason },
     oldValue: { status: order.status, role: userRole },
   });
+
+  const [customerUser] = await db
+    .select({ id: users.id })
+    .from(orders)
+    .innerJoin(customerProfiles, eq(customerProfiles.id, orders.customerId))
+    .innerJoin(users, eq(users.id, customerProfiles.userId))
+    .where(eq(orders.id, orderId))
+    .limit(1);
+
+  if (customerUser?.id) {
+    createNotification({
+      userId: customerUser.id,
+      type: 'booking.cancelled',
+      title: 'Booking Dibatalkan',
+      message: `Booking #${orderId} telah dibatalkan.`,
+    });
+  }
+
+  if (userRole !== 'admin' && userRole !== 'super_admin') {
+    notifyAdmins(
+      'booking.cancelled',
+      'Booking Dibatalkan',
+      `Booking #${orderId} dibatalkan oleh ${userRole === 'partner' ? 'mitra' : 'pelanggan'}. Alasan: ${reason || 'tidak ada'}`,
+    );
+  }
 
   return success(c, { id: orderId, status: 'Cancelled' }, 'Booking dibatalkan');
 });

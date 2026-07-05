@@ -1,29 +1,66 @@
-# docs/api/corporate-api.md
-
 # Corporate API
 
-Base URL
+## Companies
 
-/api/v1/companies
+Base URL: `/api/v1/companies`
+
+`GET /` — List companies (admin).
+
+`POST /` — Register company (public — creates company + admin user).
+
+`PATCH /:id` — Update company.
+
+`POST /:id/verify` — Verify company (admin).
+
+`GET /:id/branches` — List branches.
+
+`POST /:id/branches` — Add branch.
+
+`PATCH /:id/branches/:branch_id` — Update branch.
+
+`DELETE /:id/branches/:branch_id` — Delete branch.
 
 ---
 
-GET /
+## Corporate Inquiries
 
-POST /
+Base URL: `/api/v1/corporate-inquiries`
 
-PATCH /:id
+### Public
 
-GET /:id/orders
+`POST /` — Submit inquiry (no auth required).
 
-GET /:id/invoices
+Body:
 
-GET /:id/contracts
+```json
+{
+  "companyName": "PT Maju Jaya",
+  "legalName": "PT Maju Jaya Tbk",
+  "email": "info@majujaya.com",
+  "phone": "08123456789",
+  "industry": "Hospitality",
+  "employeeCount": 500,
+  "notes": "Tertarik dengan layanan kebersihan"
+}
+```
 
-GET /:id/branches
+### Admin (role: `admin`, `super_admin`)
 
-POST /:id/branches
+`GET /` — List inquiries (filter by status).
 
-PATCH /:id/branches/:branch_id
+Query: `?page=1&limit=50&status=Pending`
 
-DELETE /:id/branches/:branch_id
+`GET /:id` — Detail inquiry.
+
+`PATCH /:id` — Update inquiry status.
+
+Body:
+
+```json
+{
+  "status": "Contacted | Negotiation | Converted | Closed",
+  "notes": "Catatan admin"
+}
+```
+
+Status flow: Pending → Contacted → Negotiation → Converted / Closed.

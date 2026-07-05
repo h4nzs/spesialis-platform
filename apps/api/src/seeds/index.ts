@@ -23,6 +23,7 @@ import {
   systemSettings,
   articleCategories,
   articles,
+  faq,
 } from '@specialist/database';
 import { hashPassword } from '../lib/auth.ts';
 import type { OrderStatus, PaymentMethod, PaymentStatus } from '@specialist/types';
@@ -37,7 +38,8 @@ async function seed() {
       order_status_history, order_items, orders, addresses,
       partner_skills, seo_metadata, system_settings,
       services, service_categories, partner_profiles,
-      customer_profiles, company_users, branches, companies, users
+      customer_profiles, company_users, branches, companies, users,
+      article_categories, articles, faq
     RESTART IDENTITY CASCADE
   `);
   console.log('  ✓ Done\n');
@@ -1154,6 +1156,60 @@ async function seed() {
   ]);
   console.log('  ✓ 4 articles created');
 
+  // ─── FAQ ─────────────────────────────────────────────────────────
+  await db.insert(faq).values([
+    {
+      question: 'Bagaimana cara melakukan booking?',
+      answer:
+        'Anda dapat melakukan booking langsung melalui website tanpa perlu login. Pilih layanan yang diinginkan, isi form data diri dan alamat, lalu submit. Tim kami akan menghubungi Anda melalui WhatsApp untuk konfirmasi.',
+      category: 'Booking',
+      displayOrder: 1,
+    },
+    {
+      question: 'Apakah saya perlu membuat akun untuk booking?',
+      answer:
+        'Tidak perlu. Anda bisa booking sebagai Guest. Namun, jika mendaftar akun, Anda bisa melacak histori order, menyimpan alamat, dan memberikan review.',
+      category: 'Akun',
+      displayOrder: 1,
+    },
+    {
+      question: 'Bagaimana cara menentukan harga akhir?',
+      answer:
+        'Harga akhir ditentukan setelah admin melakukan pengecekan melalui komunikasi WhatsApp. Harga dapat berbeda dari base price tergantung lokasi, tingkat kesulitan, material, dan kondisi lapangan.',
+      category: 'Pembayaran',
+      displayOrder: 1,
+    },
+    {
+      question: 'Metode pembayaran apa saja yang tersedia?',
+      answer:
+        'Saat ini pembayaran dilakukan secara manual melalui transfer bank. Admin akan memberikan informasi rekening setelah pekerjaan selesai. Bukti transfer dapat diupload melalui dashboard.',
+      category: 'Pembayaran',
+      displayOrder: 2,
+    },
+    {
+      question: 'Bagaimana cara menjadi mitra?',
+      answer:
+        'Kunjungi halaman Daftar Mitra, isi data diri lengkap dengan KTP dan foto profil. Tim kami akan melakukan verifikasi, dan setelah disetujui Anda dapat mulai menerima pekerjaan.',
+      category: 'Mitra',
+      displayOrder: 1,
+    },
+    {
+      question: 'Apada saja area layanan Spesialis?',
+      answer:
+        'Saat ini kami melayani area Jabodetabek dan Bandung. Kami terus memperluas jangkauan ke kota-kota lainnya.',
+      category: 'Layanan',
+      displayOrder: 1,
+    },
+    {
+      question: 'Berapa lama proses booking hingga pekerjaan selesai?',
+      answer:
+        'Proses tergantung pada jenis layanan dan ketersediaan mitra. Umumnya, booking dikonfirmasi dalam 1-2 jam, dan pekerjaan dapat dijadwalkan di hari yang sama atau sesuai kesepakatan.',
+      category: 'Layanan',
+      displayOrder: 2,
+    },
+  ]);
+  console.log('  ✓ 7 FAQ entries created');
+
   // ─── System Settings ─────────────────────────────────────────────
   await db.insert(systemSettings).values([
     { category: 'general', key: 'site_name', value: 'Spesialis', description: 'Nama platform' },
@@ -1238,11 +1294,13 @@ async function seed() {
   console.log('    5 categories, 14 services');
   console.log('    10 orders across all lifecycle stages');
   console.log('    2 reviews, 2 complaints, 4 notifications');
-  console.log('    4 categories, 4 articles');
+  console.log('    4 categories, 4 articles, 7 FAQ entries');
   console.log('    3 SEO entries, 11 system settings');
 }
 
-seed().catch((e) => {
-  console.error('❌ Seed failed:', e);
-  process.exit(1);
-});
+seed()
+  .then(() => process.exit(0))
+  .catch((e) => {
+    console.error('❌ Seed failed:', e);
+    process.exit(1);
+  });

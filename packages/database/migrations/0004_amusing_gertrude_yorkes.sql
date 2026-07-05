@@ -1,0 +1,1 @@
+ALTER TABLE "orders" ADD COLUMN "discount_percent" numeric(5, 2);

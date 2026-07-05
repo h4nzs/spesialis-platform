@@ -32,6 +32,8 @@ const TABLE_NAMES = [
   'articleCategories',
   'contracts',
   'invoices',
+  'faq',
+  'corporateInquiries',
   'usersRelations',
   'customerProfilesRelations',
   'partnerProfilesRelations',

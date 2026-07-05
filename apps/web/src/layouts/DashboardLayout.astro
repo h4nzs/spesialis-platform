@@ -15,12 +15,13 @@ const auth = Astro.locals.auth;
 const initialUser = auth
   ? { id: auth.userId, email: auth.userEmail, role: auth.userRole }
   : undefined;
+const currentPath = Astro.url.pathname;
 ---
 
 <BaseLayout noindex={true}>
   <AuthGuard client:load requiredRole={role} initialUser={initialUser}>
     <div class="mx-auto flex max-w-7xl gap-8 px-4 py-8 sm:px-6 lg:px-8">
-      <Sidebar client:load role={role} />
+      <Sidebar client:load role={role} currentPath={currentPath} />
       <div class="min-w-0 flex-1">
         <div class="mb-6 flex items-center justify-between">
           <h1 class="text-2xl font-bold text-text">{title}</h1>

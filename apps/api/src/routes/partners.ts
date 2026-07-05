@@ -37,6 +37,7 @@ import {
   serverError,
 } from '../lib/response.ts';
 import { sendPartnerVerifiedEmail } from '../lib/email.ts';
+import { createNotification, notifyAdmins } from '../lib/notification.ts';
 import { rateLimit } from '../middleware/rate-limiter.ts';
 
 const router = new Hono();
@@ -103,6 +104,12 @@ router.post('/register', rateLimit(5, 60_000), async (c) => {
     phone,
     ktpNumber,
   });
+
+  notifyAdmins(
+    'partner.registered',
+    'Partner Baru',
+    `Mitra baru mendaftar: ${fullName} (${email})`,
+  );
 
   return created(c, { user }, 'Registrasi partner berhasil');
 });
@@ -511,11 +518,26 @@ router.post('/:id/verify', authMiddleware, requireRole('admin', 'super_admin'), 
     .where(eq(partnerProfiles.id, partnerId));
 
   const [partnerUser] = await db
-    .select({ email: users.email, fullName: partnerProfiles.fullName })
+    .select({ email: users.email, fullName: partnerProfiles.fullName, userId: users.id })
     .from(partnerProfiles)
     .innerJoin(users, eq(users.id, partnerProfiles.userId))
     .where(eq(partnerProfiles.id, partnerId))
     .limit(1);
+
+  if (partnerUser?.userId) {
+    await createNotification({
+      userId: partnerUser.userId,
+      type: 'partner.verified',
+      title:
+        parsed.data.verificationStatus === 'Approved'
+          ? 'Verifikasi Disetujui'
+          : 'Verifikasi Ditolak',
+      message:
+        parsed.data.verificationStatus === 'Approved'
+          ? 'Selamat! Akun mitra Anda telah diverifikasi.'
+          : `Verifikasi akun mitra Anda ditolak. Alasan: ${parsed.data.note ?? 'tidak ada'}`,
+    });
+  }
 
   if (partnerUser?.email) {
     sendPartnerVerifiedEmail(

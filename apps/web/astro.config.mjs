@@ -18,6 +18,11 @@ export default defineConfig({
         !page.includes('/verify-email'),
     }),
   ],
+  server: {
+    proxy: {
+      '/api': { target: 'http://localhost:3000', changeOrigin: true },
+    },
+  },
   vite: {
     plugins: [tailwindcss()],
   },

@@ -23,5 +23,6 @@ export const articles = pgTable(
     slugIdx: index('idx_articles_slug').on(table.slug),
     statusIdx: index('idx_articles_status').on(table.status),
     publishedIdx: index('idx_articles_published_at').on(table.publishedAt),
+    categoryIdIdx: index('idx_articles_category_id').on(table.categoryId),
   }),
 );

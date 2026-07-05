@@ -6,7 +6,7 @@ import { createPaymentSchema, verifyPaymentSchema } from '@specialist/validation
 import { success, created, error, notFound, forbidden, conflict } from '../lib/response.ts';
 import type { OrderStatus } from '@specialist/types';
 import { createAuditLog } from '../lib/audit.ts';
-import { createNotification } from '../lib/notification.ts';
+import { createNotification, notifyAdmins } from '../lib/notification.ts';
 import { sendPaymentVerifiedEmail } from '../lib/email.ts';
 
 async function recordStatusHistory(
@@ -92,6 +92,12 @@ router.post('/', authMiddleware, async (c) => {
       'Pembayaran diajukan',
     );
   }
+
+  notifyAdmins(
+    'payment.submitted',
+    'Pembayaran Baru',
+    `Pembayaran baru untuk order #${order.id} — ${parsed.data.method} ${parsed.data.amount}`,
+  );
 
   return created(c, payment, 'Pembayaran berhasil diajukan');
 });

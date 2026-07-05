@@ -17,13 +17,14 @@ declare global {
 
 export const onRequest = defineMiddleware(async ({ locals, request }, next) => {
   const cookieHeader = request.headers.get('cookie') ?? '';
+  const url = new URL(request.url);
 
   const token = extractCookie(cookieHeader, 'token');
 
   if (!token) {
     locals.auth = null;
-    if (request.url.includes('/dashboard/')) {
-      return Response.redirect(new URL('/login', request.url), 302);
+    if (url.pathname.startsWith('/dashboard/')) {
+      return Response.redirect(new URL('/login', url), 302);
     }
     return next();
   }
@@ -36,20 +37,69 @@ export const onRequest = defineMiddleware(async ({ locals, request }, next) => {
 
     if (!response.ok) {
       locals.auth = null;
-      return next();
+      return Response.redirect(new URL('/login', url), 302);
     }
 
     const json = (await response.json()) as {
-      data: { id: string; email: string; role: string };
+      data: { user: { id: string; email: string; role: string } };
     };
 
+    const u = json.data.user;
     locals.auth = {
-      userId: json.data.id,
-      userEmail: json.data.email,
-      userRole: json.data.role,
+      userId: u.id,
+      userEmail: u.email,
+      userRole: u.role,
     };
   } catch {
     locals.auth = null;
+    return Response.redirect(new URL('/login', url), 302);
+  }
+
+  const role = locals.auth?.userRole;
+  const path = url.pathname;
+
+  const dashboardRootMap: Record<string, string> = {
+    customer: '/dashboard/customer',
+    partner: '/dashboard/partner',
+    corporate: '/dashboard/corporate',
+    admin: '/dashboard/admin',
+    super_admin: '/dashboard/admin',
+    dispatcher: '/dashboard/admin',
+    finance: '/dashboard/admin',
+    content_manager: '/dashboard/admin',
+  };
+
+  // Redirect authenticated users away from /login
+  if (path === '/login' && role) {
+    const target = dashboardRootMap[role] ?? '/';
+    return Response.redirect(new URL(target, url), 302);
+  }
+
+  // Redirect /dashboard to role-appropriate dashboard
+  if (path === '/dashboard') {
+    const target = role ? dashboardRootMap[role] : '/login';
+    return Response.redirect(new URL(target ?? '/login', url), 302);
+  }
+
+  // Role-based access control — protect dashboard routes by role
+  if (path.startsWith('/dashboard/')) {
+    const dashboardPrefix = path.split('/')[2]; // customer|partner|corporate|admin
+
+    if (!role) {
+      return Response.redirect(new URL('/login', url), 302);
+    }
+
+    const roleMap: Record<string, string[]> = {
+      customer: ['customer'],
+      partner: ['partner'],
+      corporate: ['corporate'],
+      admin: ['admin', 'super_admin', 'dispatcher', 'finance', 'content_manager'],
+    };
+
+    const allowedRoles = roleMap[dashboardPrefix];
+    if (allowedRoles && !allowedRoles.includes(role)) {
+      return Response.redirect(new URL('/403', url), 302);
+    }
   }
 
   return next();

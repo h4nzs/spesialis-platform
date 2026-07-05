@@ -22,6 +22,34 @@
       "when": 1783145089825,
       "tag": "0002_amused_captain_midlands",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1783240029091,
+      "tag": "0003_condemned_ronan",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1783240499287,
+      "tag": "0004_amusing_gertrude_yorkes",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1783240662579,
+      "tag": "0005_dashing_caretaker",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1783241141107,
+      "tag": "0006_known_nextwave",
+      "breakpoints": true
     }
   ]
 }
