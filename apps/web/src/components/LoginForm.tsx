@@ -40,6 +40,7 @@ export function LoginForm() {
         refreshToken: string;
       }>('/api/v1/auth/login', { body: parsed.data });
 
+      api.getTokenStore().setTokens(result.token, result.refreshToken);
       redirectToDashboard(result.user.role);
     } catch (err: unknown) {
       if (err instanceof Error) {

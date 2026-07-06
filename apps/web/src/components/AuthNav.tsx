@@ -1,11 +1,8 @@
 import { useState, useEffect } from 'react';
 
-function getTokenPayload(): { role: string } | null {
+function getToken(): string | null {
   try {
-    const token = localStorage.getItem('spesialis_token');
-    if (!token) return null;
-    const payload = JSON.parse(atob(token.split('.')[1]));
-    return payload.role ? { role: payload.role } : null;
+    return localStorage.getItem('spesialis_access_token');
   } catch {
     return null;
   }
@@ -15,10 +12,23 @@ export function AuthNav() {
   const [user, setUser] = useState<{ role: string } | null | false>(false);
 
   useEffect(() => {
-    setUser(getTokenPayload());
+    const token = getToken();
+    if (!token) {
+      setUser(null);
+      return;
+    }
+    const apiUrl =
+      (typeof import.meta !== 'undefined' && import.meta.env?.PUBLIC_API_URL) ||
+      'http://localhost:3000';
+    fetch(`${apiUrl}/api/v1/auth/me`, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((json) => setUser(json?.data?.user ?? null))
+      .catch(() => setUser(null));
   }, []);
 
-  if (user === false) {
+  if (!user) {
     return (
       <>
         <a href="/login" className="hover:text-text transition-colors">
