@@ -239,7 +239,44 @@
 
 ---
 
-## 13. Dashboard & Statistics
+## 13. Audit Log — Admin
+
+- [ ] **Audit log page** — `/dashboard/admin/audit-logs` menampilkan semua aktivitas
+- [ ] **Filter by action** — Filter kolom aksi
+- [ ] **Filter by entity** — Filter kolom entitas
+- [ ] **Filter by date range** — Filter tanggal dari/sampai
+- [ ] **Pagination** — Halaman berfungsi
+- [ ] **Expand detail** — Klik "Detail" → tampilkan nilai lama/baru, IP, User Agent
+
+---
+
+## 14. Reports — Admin
+
+- [ ] **Reports page** — `/dashboard/admin/reports` menampilkan laporan
+- [ ] **Revenue tab** — Grafik pendapatan per bulan (12 bulan), bar chart
+- [ ] **Orders tab** — Breakdown status pesanan + daily trend chart
+- [ ] **Services tab** — Top 10 layanan terpopuler
+- [ ] **Summary cards** — Total pesanan, partner, rating, pekerjaan selesai
+
+---
+
+## 15. SEO Management
+
+- [ ] **SEO CRUD** — Kelola meta title, description, OG, canonical per halaman
+- [ ] **JSON-LD** — BreadcrumbList, WebPage structured data di halaman publik
+- [ ] **CMS Revalidation** — Update konten CMS → revalidate halaman Astro
+
+---
+
+## 16. WhatsApp Notification
+
+- [ ] **WhatsApp channel** — Notifikasi dengan channel 'WhatsApp' diproses
+- [ ] **Email fallback** — Notifikasi dengan channel 'Email' mengirim email
+- [ ] **No API key** — Sistem berjalan normal jika `WHATSAPP_API_KEY` kosong
+
+---
+
+## 17. Dashboard & Statistics
 
 - [ ] **Admin dashboard** — Total users, bookings, revenue, aktivitas terbaru
 - [ ] **Activity log** — Riwayat aktivitas dari audit log
@@ -247,7 +284,7 @@
 
 ---
 
-## 14. Error Pages
+## 18. Error Pages
 
 - [ ] **401 page** — Halaman "Tidak Terautentikasi" — `/401`
 - [ ] **403 page** — Halaman "Akses Ditolak" — `/403`
@@ -256,7 +293,7 @@
 
 ---
 
-## 15. E2E Skenario Lengkap
+## 19. E2E Skenario Lengkap
 
 - [ ] **Flow #1 (Guest → Complete):** Guest booking → Admin confirm → Admin assign partner → Partner accept → Admin set on-the-way → Partner start → Partner complete → Customer upload payment → Admin verify → Closed
 - [ ] **Flow #2 (Customer → Complaint):** Customer booking → Admin confirm → Admin assign partner → Partner reject → Admin reassign → Partner accept → Complete → Customer review → Customer complaint → Admin resolve complaint
@@ -282,10 +319,14 @@
 | 10. Service Management | 6         | ⬜     |
 | 11. User Management    | 5         | ⬜     |
 | 12. System Settings    | 3         | ⬜     |
-| 13. Dashboard          | 3         | ⬜     |
-| 14. Error Pages        | 4         | ⬜     |
-| 15. E2E Skenario       | 5         | ⬜     |
-| **Total**              | **~112**  | ⬜     |
+| 13. Audit Log          | 5         | ⬜     |
+| 14. Reports            | 5         | ⬜     |
+| 15. SEO Management     | 3         | ⬜     |
+| 16. WhatsApp           | 3         | ⬜     |
+| 17. Dashboard          | 3         | ⬜     |
+| 18. Error Pages        | 4         | ⬜     |
+| 19. E2E Skenario       | 5         | ⬜     |
+| **Total**              | **~128**  | ⬜     |
 
 ---
 

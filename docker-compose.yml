@@ -56,6 +56,7 @@ services:
       UPLOAD_DIR: /app/uploads
       CMS_URL: http://cms:8055
       CMS_TOKEN: specialist-setup-token
+      REVALIDATION_TOKEN: specialist-revalidation-token
     depends_on:
       postgres:
         condition: service_healthy
@@ -98,6 +99,10 @@ services:
       DB_DATABASE: specialist
       DB_USER: specialist
       DB_PASSWORD: specialist
+      API_URL: http://api:3000
+      REVALIDATION_TOKEN: specialist-revalidation-token
+    volumes:
+      - ./apps/cms/src/extensions:/directus/extensions
     depends_on:
       postgres:
         condition: service_healthy

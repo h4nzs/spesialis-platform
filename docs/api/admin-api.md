@@ -2,7 +2,7 @@
 
 Base URL: `/api/v1/admin`
 
-Semua endpoint memerlukan role `admin`, `super_admin`, atau `finance`/`content_manager` sesuai konteks.
+Semua endpoint memerlukan role `admin`, `super_admin`, atau `finance`/`content_manager`/`dispatcher` sesuai konteks.
 
 ---
 
@@ -11,6 +11,71 @@ Semua endpoint memerlukan role `admin`, `super_admin`, atau `finance`/`content_m
 `GET /dashboard` — Ringkasan dashboard (total users, bookings, revenue, dll).
 
 `GET /dashboard/activity` — Aktivitas terbaru (dari audit log).
+
+---
+
+## Reports
+
+Role: `admin`, `super_admin`
+
+`GET /reports` — Laporan analitik.
+
+Response:
+
+```json
+{
+  "summary": {
+    "totalOrders": 150,
+    "totalPartners": 25,
+    "avgRating": 4.5,
+    "totalCompletedJobs": 320
+  },
+  "revenueByMonth": [{ "month": "2026-01", "order_count": 12, "revenue": 2400000 }],
+  "ordersByStatus": [{ "status": "Completed", "count": 80 }],
+  "ordersByDay": [{ "day": "2026-07-01", "count": 5 }],
+  "topServices": [{ "name": "Cuci AC", "slug": "cuci-ac", "category": "AC", "order_count": 45 }]
+}
+```
+
+---
+
+## Audit Logs
+
+Role: `admin`, `super_admin`
+
+`GET /audit-logs` — Log aktivitas paginated dengan filter.
+
+Query: `?page=1&limit=20&action=LOGIN&entity=user&dateFrom=2026-01-01&dateTo=2026-12-31`
+
+Response:
+
+```json
+{
+  "data": [
+    {
+      "id": "uuid",
+      "action": "LOGIN",
+      "entity": "user",
+      "entityId": "uuid",
+      "oldValue": null,
+      "newValue": null,
+      "ipAddress": "127.0.0.1",
+      "userAgent": "Mozilla/...",
+      "createdAt": "2026-07-01T10:00:00Z",
+      "userEmail": "admin@test.com",
+      "userRole": "admin"
+    }
+  ],
+  "pagination": {
+    "page": 1,
+    "limit": 20,
+    "total": 1,
+    "totalPages": 1,
+    "hasNext": false,
+    "hasPrev": false
+  }
+}
+```
 
 ---
 

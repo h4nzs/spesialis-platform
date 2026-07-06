@@ -49,6 +49,7 @@ const canonical = canonicalUrl ? `${siteUrl}${canonicalUrl}` : undefined
     <meta property="og:type" content={ogType} />
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical ?? siteUrl} />
     <meta property="og:image" content={`${siteUrl}${ogImage}`} />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content={title} />

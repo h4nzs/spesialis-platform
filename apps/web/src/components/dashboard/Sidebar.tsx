@@ -38,6 +38,8 @@ const NAV_MAP: Record<string, NavItem[]> = {
     { href: '/dashboard/admin/users', label: 'User' },
     { href: '/dashboard/admin/services', label: 'Layanan' },
     { href: '/dashboard/admin/articles', label: 'Artikel' },
+    { href: '/dashboard/admin/audit-logs', label: 'Audit Log' },
+    { href: '/dashboard/admin/reports', label: 'Laporan' },
     { href: '/dashboard/admin/settings', label: 'Pengaturan' },
   ],
   corporate: [

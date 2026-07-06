@@ -2,52 +2,32 @@
 
 # Custom Extensions
 
----
+## SEO Revalidation Hook
 
-Extension
+**File:** `apps/cms/src/extensions/seo-revalidation/`
 
-Booking Number Generator
+Mengirim POST ke `API_URL /api/v1/cms/revalidate` setiap kali koleksi `cms_*` dibuat/diubah/dihapus.
 
-Reason
+**Flow:** Directus Hook → fetch API → Astro revalidate page.
 
-Directus tidak memiliki nomor booking otomatis.
+**Konfigurasi:** `REVALIDATION_TOKEN` harus sama antara `docker-compose.yml` dan `.env`.
 
----
-
-Extension
-
-WhatsApp Gateway
-
-Reason
-
-Mengirim pesan otomatis.
+Build: `pnpm cms:build-extensions`
 
 ---
 
-Extension
+## Dashboard Stats Endpoint
 
-Assignment Helper
+**File:** `apps/cms/src/extensions/dashboard-stats/`
 
-Reason
+Menyediakan endpoint internal Directus untuk menampilkan jumlah entitas per koleksi.
 
-Membantu Dispatcher.
-
----
-
-Extension
-
-SEO Revalidation
-
-Reason
-
-Trigger Astro Revalidate.
+Digunakan oleh widget dashboard Directus.
 
 ---
 
-Extension
+## Planned Extensions
 
-Dashboard Statistics
-
-Reason
-
-Widget Dashboard.
+- **WhatsApp Gateway** — Mengirim pesan otomatis via Hono API (channel WhatsApp di `createNotification` sudah siap, tinggal mengisi `WHATSAPP_API_KEY`)
+- **Booking Number Generator** — Otomatis nomor booking
+- **Assignment Helper** — Membantu Dispatcher

@@ -1,0 +1,9 @@
+---
+export const prerender = false;
+import DashboardLayout from '../../../layouts/DashboardLayout.astro';
+import { AdminReports } from '../../../components/dashboard/admin/AdminReports.tsx';
+---
+
+<DashboardLayout title="Laporan" role="admin">
+  <AdminReports client:load />
+</DashboardLayout>

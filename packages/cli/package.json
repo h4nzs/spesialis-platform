@@ -1,0 +1,10 @@
+{
+  "name": "@specialist/cli",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "bin": {
+    "spesialis": "./bin/spesialis.mjs"
+  },
+  "devDependencies": {}
+}

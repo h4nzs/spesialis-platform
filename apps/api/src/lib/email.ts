@@ -1,4 +1,13 @@
 import nodemailer from 'nodemailer';
+import {
+  passwordResetHtml,
+  bookingConfirmationHtml,
+  partnerAssignedHtml,
+  partnerVerifiedHtml,
+  verificationHtml,
+  paymentVerifiedHtml,
+  notificationEmailHtml,
+} from './email-templates.ts';
 
 export const APP_URL = process.env.APP_URL ?? 'http://localhost:4321';
 const SMTP_HOST = process.env.SMTP_HOST ?? 'mailpit';
@@ -47,6 +56,7 @@ Jika Anda tidak meminta reset password, abaikan email ini.
       to: email,
       subject: 'Reset Password — Spesialis',
       text,
+      html: passwordResetHtml(fullName, resetUrl),
     });
     console.info('[Email] Password reset email sent:', email);
   } catch (err) {
@@ -77,6 +87,7 @@ ${trackingUrl}
       to: email,
       subject: `Booking Dikonfirmasi — #${bookingNumber}`,
       text,
+      html: bookingConfirmationHtml(fullName, bookingNumber, trackingUrl),
     });
     console.info('[Email] Booking confirmation sent:', email, bookingNumber);
   } catch (err) {
@@ -107,6 +118,7 @@ ${dashboardUrl}
       to: email,
       subject: `Pekerjaan Baru — #${bookingNumber}`,
       text,
+      html: partnerAssignedHtml(fullName, bookingNumber, dashboardUrl),
     });
     console.info('[Email] Partner assigned email sent:', email, bookingNumber);
   } catch (err) {
@@ -145,6 +157,7 @@ ${APP_URL}/login
       to: email,
       subject,
       text,
+      html: partnerVerifiedHtml(fullName, status, note),
     });
     console.info('[Email] Partner verification email sent:', email, status);
   } catch (err) {
@@ -176,6 +189,7 @@ Link ini berlaku selama 7 hari.
       to: email,
       subject: 'Verifikasi Email — Spesialis',
       text,
+      html: verificationHtml(fullName, verifyUrl),
     });
     console.info('[Email] Verification email sent:', email);
   } catch (err) {
@@ -220,9 +234,32 @@ ${isPaid ? '\nTerima kasih telah menggunakan layanan Spesialis.' : '\nSilakan hu
       to: email,
       subject,
       text,
+      html: paymentVerifiedHtml(fullName, bookingNumber, amount, paymentMethod, status, note),
     });
     console.info('[Email] Payment verification email sent:', email, bookingNumber, status);
   } catch (err) {
     console.error('[Email] Failed to send payment verification email:', email, err);
+  }
+}
+
+export async function sendNotificationEmail(
+  email: string,
+  fullName: string,
+  title: string,
+  message: string,
+): Promise<void> {
+  const text = `Halo ${fullName},\n\n${message}\n\n— Tim Spesialis`;
+
+  try {
+    await getTransporter().sendMail({
+      from: FROM_ADDRESS,
+      to: email,
+      subject: `${title} — Spesialis`,
+      text,
+      html: notificationEmailHtml(fullName, title, message),
+    });
+    console.info('[Email] Notification email sent:', email, title);
+  } catch (err) {
+    console.error('[Email] Failed to send notification email:', email, err);
   }
 }

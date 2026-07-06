@@ -24,10 +24,13 @@ import { adminSettingsRouter } from './admin/settings.ts';
 import { adminFaqRouter } from './admin/faq.ts';
 import { adminOrdersRouter } from './admin/orders.ts';
 import { cmsRouter } from './cms.ts';
+import { cmsRevalidationRouter } from './cms-revalidation.ts';
 import { seoRouter } from './seo.ts';
 import { contractsRouter } from './contracts.ts';
 import { invoicesRouter } from './invoices.ts';
 import { corporateInquiriesRouter } from './corporate-inquiries.ts';
+import { adminAuditLogsRouter } from './admin/audit-logs.ts';
+import { adminReportsRouter } from './admin/reports.ts';
 
 const router = new Hono();
 
@@ -59,9 +62,12 @@ router.route('/admin/faq', adminFaqRouter);
 router.route('/admin/orders', adminOrdersRouter);
 router.route('/media', mediaRouter);
 router.route('/cms', cmsRouter);
+router.route('/cms', cmsRevalidationRouter);
 router.route('/seo', seoRouter);
 router.route('/contracts', contractsRouter);
 router.route('/invoices', invoicesRouter);
 router.route('/corporate-inquiries', corporateInquiriesRouter);
+router.route('/admin/audit-logs', adminAuditLogsRouter);
+router.route('/admin/reports', adminReportsRouter);
 
 export { router as apiRouter };

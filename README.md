@@ -35,6 +35,7 @@ spesialis/
 │   ├── api/          # Hono API — Business Logic Layer
 │   └── cms/          # Directus — CMS & Admin Panel
 ├── packages/
+│   ├── cli/          # CLI tools (db, cms, generator)
 │   ├── config/       # Shared config (ESLint, Prettier, TS, Tailwind)
 │   ├── database/     # Schema, Migration, Seed
 │   ├── shared/       # Shared utilities (pure TS)
@@ -177,9 +178,22 @@ Then open `http://localhost:8055/admin` and configure permissions manually (see 
 | `pnpm typecheck`  | TypeScript type check                    |
 | `pnpm test`       | Run Vitest tests                         |
 | `pnpm format`     | Prettier format                          |
+| `pnpm cli`        | Unified CLI (`pnpm cli help`)            |
 | `pnpm cms:setup`  | Setup Directus collections and roles     |
-| `db:migrate`      | Apply database migrations                |
-| `db:seed`         | Seed demo data (API package)             |
+
+### Unified CLI (`pnpm cli`)
+
+```bash
+pnpm cli db:generate              # Generate migration from schema
+pnpm cli db:migrate               # Apply pending migrations
+pnpm cli db:push                  # Push schema langsung ke DB
+pnpm cli db:seed                  # Seed demo data
+pnpm cli cms:setup                # Setup Directus collections & roles
+pnpm cli cms:build-extensions     # Build Directus extensions
+pnpm cli generate resource <name> # Scaffold route + test baru
+pnpm cli start                    # Start full dev environment
+pnpm cli help                     # Show all commands
+```
 
 ---
 

@@ -1,6 +1,6 @@
 import { Hono } from 'hono';
 import { eq, desc } from 'drizzle-orm';
-import { db, complaints, orders, customerProfiles } from '../lib/db.ts';
+import { db, complaints, orders, customerProfiles, users } from '../lib/db.ts';
 import { authMiddleware, requireRole } from '../middleware/auth.ts';
 import { createComplaintSchema, resolveComplaintSchema } from '@specialist/validation';
 import { success, created, error, notFound, forbidden, conflict } from '../lib/response.ts';
@@ -149,16 +149,25 @@ router.patch('/:id/resolve', authMiddleware, requireRole('admin', 'super_admin')
   });
 
   const [cp] = await db
-    .select({ userId: customerProfiles.userId })
+    .select({ userId: customerProfiles.userId, fullName: customerProfiles.fullName })
     .from(customerProfiles)
     .where(eq(customerProfiles.id, complaint.customerId))
     .limit(1);
   if (cp?.userId) {
+    const [user] = await db
+      .select({ email: users.email })
+      .from(users)
+      .where(eq(users.id, cp.userId))
+      .limit(1);
+
     await createNotification({
       userId: cp.userId,
       type: 'complaint.resolved',
       title: 'Komplain Selesai',
       message: `Komplain Anda telah ${parsed.data.status === 'Resolved' ? 'diselesaikan' : 'ditutup'}: ${parsed.data.resolution ?? ''}`,
+      channel: 'Email',
+      email: user?.email ?? undefined,
+      fullName: cp.fullName ?? undefined,
     });
   }
 

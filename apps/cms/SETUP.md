@@ -110,6 +110,23 @@ Yang dilakukan script:
 6. Ensure Content Manager role + CMS Full Access policy
 7. Grant CRUD permissions
 
+## Extensions
+
+Ekstensi kustom diletakkan di `apps/cms/src/extensions/`.
+
+| Extension          | Type     | Fungsi                                                        |
+| ------------------ | -------- | ------------------------------------------------------------- |
+| `seo-revalidation` | Hook     | Trigger revalidasi Astro saat CMS content berubah             |
+| `dashboard-stats`  | Endpoint | Menyediakan statistik koleksi untuk widget dashboard Directus |
+
+### Build Extensions
+
+```bash
+pnpm cms:build-extensions
+```
+
+Ekstensi akan di-build ke `apps/cms/src/extensions/*/dist/` dan otomatis dimuat oleh Directus via volume mount.
+
 ## Storage
 
 - **Development:** Local filesystem (uploaded files di volume Docker)
