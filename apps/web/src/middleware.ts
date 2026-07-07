@@ -23,7 +23,7 @@ export const onRequest = defineMiddleware(async ({ locals, request }, next) => {
 
   if (!token) {
     locals.auth = null;
-    if (url.pathname.startsWith('/dashboard/')) {
+    if (url.pathname === '/dashboard' || url.pathname.startsWith('/dashboard/')) {
       return Response.redirect(new URL('/login', url), 302);
     }
     return next();

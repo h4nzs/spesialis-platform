@@ -70,6 +70,11 @@ async function memoryRateLimit(c: Context, maxRequests: number, windowMs: number
 
 export function rateLimit(maxRequests = MAX_REQUESTS, windowMs = WINDOW_MS) {
   return async (c: Context, next: Next) => {
+    if (process.env['RATE_LIMIT_DISABLED'] === 'true') {
+      await next();
+      return;
+    }
+
     const limited =
       (await redisRateLimit(c, maxRequests, windowMs)) ||
       (await memoryRateLimit(c, maxRequests, windowMs));

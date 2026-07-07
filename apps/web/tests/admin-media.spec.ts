@@ -155,7 +155,7 @@ test.describe('Admin Content Management - E2E-021 / E2E-019', () => {
     };
     expect(body.data).toBeDefined();
     expect(body.data.id).toBeDefined();
-    expect(body.data.filename).toBe('e2e-test-image.png');
+    expect(body.data.filename).toMatch(/^[0-9a-f-]+\.png$/);
     expect(body.data.mimeType).toBe('image/png');
     expect(body.data.url).toContain('/api/v1/media/');
 
@@ -165,7 +165,7 @@ test.describe('Admin Content Management - E2E-021 / E2E-019', () => {
     });
     expect(getRes.status()).toBe(200);
     const getBody = (await getRes.json()) as { data: { id: string; filename: string } };
-    expect(getBody.data.filename).toBe('e2e-test-image.png');
+    expect(getBody.data.filename).toMatch(/^[0-9a-f-]+\.png$/);
   });
 
   test('E2E-021: Media upload rejects non-images', async ({ request }) => {

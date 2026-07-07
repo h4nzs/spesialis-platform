@@ -25,6 +25,7 @@ export default defineConfig({
       cwd: '../..',
       reuseExistingServer: true,
       timeout: 60000,
+      env: { RATE_LIMIT_DISABLED: 'true' },
     },
     {
       command: 'npx astro dev --port 4321',

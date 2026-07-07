@@ -14,8 +14,9 @@ test.describe('Guest Booking - E2E-001', () => {
     const servicesData = (await servicesRes.json()) as {
       data?: Array<{ id: string; name: string; basePrice: string }>;
     };
+    const serviceId = servicesData.data?.[0]?.id ?? '';
 
-    await page.goto('/book');
+    await page.goto(`/book?serviceId=${serviceId}`);
     await expect(page.locator('form')).toBeVisible({ timeout: 10000 });
 
     // Try filling form fields specifically
@@ -74,16 +75,15 @@ test.describe('Guest Tracking - E2E-002', () => {
 
   test('E2E-002: Tracking form accepts booking number', async ({ page }) => {
     await page.goto('/tracking');
+    await page.waitForLoadState('networkidle');
 
-    const input = page
-      .locator('input[type="text"], input[placeholder*="Booking"], input[placeholder*="Nomor"]')
-      .first();
+    const input = page.locator('input[type="text"]').first();
 
     if (await input.isVisible()) {
       await input.fill('SP-2026-999999');
 
       const submitBtn = page.locator('button[type="submit"], button:has-text("Cari")').first();
-      if (await submitBtn.isVisible()) {
+      if (await submitBtn.isEnabled()) {
         await submitBtn.click();
         await page.waitForTimeout(2000);
       }
