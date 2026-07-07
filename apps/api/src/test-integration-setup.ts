@@ -1,10 +1,11 @@
 import { PostgreSqlContainer } from '@testcontainers/postgresql';
+import type { StartedPostgreSqlContainer } from '@testcontainers/postgresql';
 import { afterAll, beforeAll } from 'vitest';
 import { drizzle } from 'drizzle-orm/postgres-js';
 import { migrate } from 'drizzle-orm/postgres-js/migrator';
 import postgres from 'postgres';
 
-let container: PostgreSqlContainer | null = null;
+let container: StartedPostgreSqlContainer | null = null;
 
 beforeAll(async () => {
   container = await new PostgreSqlContainer('postgres:18')

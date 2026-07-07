@@ -14,7 +14,6 @@ test.describe('Guest Booking - E2E-001', () => {
     const servicesData = (await servicesRes.json()) as {
       data?: Array<{ id: string; name: string; basePrice: string }>;
     };
-    const hasService = servicesData.data && servicesData.data.length > 0;
 
     await page.goto('/book');
     await expect(page.locator('form')).toBeVisible({ timeout: 10000 });

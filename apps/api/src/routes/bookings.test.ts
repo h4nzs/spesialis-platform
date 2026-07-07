@@ -431,12 +431,13 @@ describe('GET /:id', () => {
     mockDb.select.mockReturnValueOnce(makeChain([]));
     const res = await mkApp('customer').request('/api/v1/bookings/o1', { headers: a() });
     const body = (await res.json()) as ApiTestResponse;
+    const data = body.data as { id: string; items: unknown[]; timeline: unknown[] };
     expect(res.status).toBe(200);
     expect(body.success).toBe(true);
     expect(body.data).toBeDefined();
-    expect(body.data.id).toBe('o1');
-    expect(Array.isArray(body.data.items)).toBe(true);
-    expect(Array.isArray(body.data.timeline)).toBe(true);
+    expect(data.id).toBe('o1');
+    expect(Array.isArray(data.items)).toBe(true);
+    expect(Array.isArray(data.timeline)).toBe(true);
   });
 
   it('200 admin', async () => {

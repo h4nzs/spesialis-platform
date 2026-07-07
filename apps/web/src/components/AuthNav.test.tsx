@@ -30,7 +30,7 @@ describe('AuthNav', () => {
 
   it('shows login/register when token exists but API fails', async () => {
     localStorage.setItem('spesialis_access_token', 'token-123');
-    fetch = vi.fn().mockRejectedValue(new Error('API error')) as any;
+    globalThis.fetch = vi.fn().mockRejectedValue(new Error('API error')) as unknown as typeof fetch;
     render(<AuthNav />);
     expect(await screen.findByText('Masuk')).toBeInTheDocument();
   });

@@ -1,5 +1,4 @@
 import { test, expect } from '@playwright/test';
-import { devices } from '@playwright/test';
 
 const VIEWPORTS = [
   { width: 320, height: 568, name: 'Mobile S' },
@@ -45,8 +44,6 @@ test.describe('Keyboard Navigation - E2E-029', () => {
     await expect(page.locator('body')).toBeVisible({ timeout: 10000 });
 
     // Tab through interactive elements and verify focus moves
-    const initialFocus = await page.evaluate(() => document.activeElement?.tagName ?? 'body');
-
     await page.keyboard.press('Tab');
     await page.waitForTimeout(300);
 

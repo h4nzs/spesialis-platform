@@ -33,7 +33,7 @@ describe('Table', () => {
   });
 
   it('renders empty state when no data', () => {
-    render(<Table columns={columns} data={[]} keyExtractor={(i) => i.id} />);
+    render(<Table columns={columns} data={[] as Item[]} keyExtractor={(i) => i.id} />);
     expect(screen.getByText('Tidak ada data')).toBeInTheDocument();
   });
 
@@ -41,7 +41,7 @@ describe('Table', () => {
     render(
       <Table
         columns={columns}
-        data={[]}
+        data={[] as Item[]}
         keyExtractor={(i) => i.id}
         emptyMessage="Belum ada data"
       />,

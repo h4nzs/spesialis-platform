@@ -25,7 +25,7 @@ describe('sendPasswordResetEmail', () => {
         text: expect.stringContaining('reset-token-123'),
       }),
     );
-    const callArgs = mockSendMail.mock.calls[0][0];
+    const callArgs = mockSendMail.mock.calls[0]![0];
     expect(callArgs.text).toContain('http://localhost:4321/reset-password?token=reset-token-123');
   });
 

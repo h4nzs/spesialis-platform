@@ -19,7 +19,7 @@ describe('cms.faq', () => {
     const result = await mod.cms.faq.list();
 
     expect(result).toEqual(mockData);
-    expect(fetch.mock.calls[0][0]).toContain('/items/cms_faq');
+    expect((fetch as any).mock.calls[0][0]).toContain('/items/cms_faq');
   });
 });
 
@@ -38,7 +38,7 @@ describe('cms.articles', () => {
     const result = await mod.cms.articles.list();
 
     expect(result).toHaveLength(1);
-    expect(fetch.mock.calls[0][0]).toContain('filter[status][_eq]=published');
+    expect((fetch as any).mock.calls[0][0]).toContain('filter[status][_eq]=published');
   });
 
   it('bySlug fetches single article by slug', async () => {
@@ -52,7 +52,7 @@ describe('cms.articles', () => {
     const result = await mod.cms.articles.bySlug('test-article');
 
     expect(result).toEqual([{ id: '2', slug: 'test-article' }]);
-    expect(fetch.mock.calls[0][0]).toContain('filter[slug][_eq]=test-article');
+    expect((fetch as any).mock.calls[0][0]).toContain('filter[slug][_eq]=test-article');
   });
 });
 
@@ -71,7 +71,7 @@ describe('cms.homepageSections', () => {
     const result = await mod.cms.homepageSections.list();
 
     expect(result).toHaveLength(1);
-    const url = fetch.mock.calls[0][0] as string;
+    const url = (fetch as any).mock.calls[0][0] as string;
     expect(url).toContain('/items/cms_homepage_sections');
     expect(url).toContain('filter[is_active][_eq]=true');
     expect(url).toContain('sort=sort_order');
@@ -91,7 +91,7 @@ describe('cms.pages', () => {
     const result = await mod.cms.pages.bySlug('tentang-kami');
 
     expect(result).toEqual([{ id: '1', title: 'Tentang Kami', slug: 'tentang-kami' }]);
-    expect(fetch.mock.calls[0][0]).toContain('filter[slug][_eq]=tentang-kami');
+    expect((fetch as any).mock.calls[0][0]).toContain('filter[slug][_eq]=tentang-kami');
   });
 });
 

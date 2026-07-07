@@ -136,7 +136,7 @@ describe('schema exports', () => {
 
 describe('table column structure', () => {
   describe.each(TABLE_NAMES)('%s', (tableName) => {
-    const table = schema[tableName as keyof typeof schema] as Record<string, unknown>;
+    const table = schema[tableName as keyof typeof schema] as unknown as Record<string, unknown>;
 
     it('has an id column that is a UUID primary key', () => {
       const idCol = table['id'] as Record<string, unknown> | undefined;
@@ -176,7 +176,7 @@ describe('table column structure', () => {
 
 describe('typed columns ($type)', () => {
   it.each(Object.entries(TYPED_TABLES))('%s has correct $type on columns', (tableName, columns) => {
-    const table = schema[tableName as keyof typeof schema] as Record<string, unknown>;
+    const table = schema[tableName as keyof typeof schema] as unknown as Record<string, unknown>;
     for (const [colName] of Object.entries(columns)) {
       const col = table[colName] as Record<string, unknown> | undefined;
       expect(col).toBeDefined();

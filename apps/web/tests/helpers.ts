@@ -2,6 +2,12 @@ import type { Page, APIRequestContext } from '@playwright/test';
 
 const API_URL = 'http://localhost:3000';
 
+export interface BookingResult {
+  bookingNumber: string;
+  id: string;
+  status: string;
+}
+
 export interface AuthData {
   token: string;
   user: {

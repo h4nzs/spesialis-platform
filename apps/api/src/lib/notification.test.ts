@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 const mockDb = { insert: vi.fn(), select: vi.fn() };
-const mockUsers = {};
+const mockUsers = { id: 'users.id' as string };
 vi.mock('./db.ts', () => ({ db: mockDb, notifications: {}, users: mockUsers }));
 vi.mock('./email.ts', () => ({ sendNotificationEmail: vi.fn() }));
 vi.mock('./whatsapp.ts', () => ({ sendWhatsApp: vi.fn() }));

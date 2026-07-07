@@ -3,7 +3,7 @@ import { Hono } from 'hono';
 import type { Context } from 'hono';
 import type { UserRole } from '@specialist/types';
 import { adminReportsRouter } from './reports.ts';
-import { setTestEnv, makeChain } from '../../test-utils.ts';
+import { setTestEnv } from '../../test-utils.ts';
 
 const { mockDb, authState, em } = vi.hoisted(() => {
   const db = {
