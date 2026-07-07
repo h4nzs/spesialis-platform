@@ -1,6 +1,5 @@
 import { describe, it, expect } from 'vitest';
 import * as schema from './schema/index.ts';
-import * as schemaRelations from './schema/relations.ts';
 import { db } from './client.ts';
 
 /**
@@ -108,19 +107,6 @@ const TYPED_TABLES: Record<string, Record<string, string>> = {
   complaints: { status: 'ComplaintStatus' },
   notifications: { channel: 'NotificationChannel' },
 };
-
-// Tables with defined indexes
-const INDEXED_TABLES = new Set([
-  'addresses',
-  'partnerProfiles',
-  'orders',
-  'services',
-  'payments',
-  'reviews',
-  'complaints',
-  'notifications',
-  'articles',
-]);
 
 // ── Tests ────────────────────────────────────────────────────────────────────
 
