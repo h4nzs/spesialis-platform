@@ -15,7 +15,7 @@ vi.mock('@specialist/ui', () => ({
     data,
     emptyMessage,
   }: {
-    columns: unknown[];
+    columns: Array<{ key: string; header: string; render?: (item: unknown) => React.ReactNode }>;
     data: unknown[];
     emptyMessage: string;
   }) => (

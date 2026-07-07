@@ -65,7 +65,7 @@ vi.mock('@specialist/ui', () => ({
   }: {
     children: React.ReactNode;
     onClick?: () => void;
-    type?: string;
+    type?: 'button' | 'submit' | 'reset';
     disabled?: boolean;
   }) => (
     <button type={type ?? 'button'} onClick={onClick} disabled={disabled}>
