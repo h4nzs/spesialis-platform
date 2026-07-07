@@ -654,19 +654,16 @@ describe('Reject Assignment Flow', () => {
       })
       .returning({ id: users.id });
 
-    const [partner2Profile] = await db
-      .insert(partnerProfiles)
-      .values({
-        userId: partner2User!.id,
-        fullName: 'Integration Partner 2',
-        phone: '6283333333333',
-        ktpNumber: '1234567890123457',
-        experienceYear: 3,
-        bio: 'Second partner for integration',
-        availability: 'Available',
-        verificationStatus: 'Approved',
-      })
-      .returning({ id: partnerProfiles.id });
+    await db.insert(partnerProfiles).values({
+      userId: partner2User!.id,
+      fullName: 'Integration Partner 2',
+      phone: '6283333333333',
+      ktpNumber: '1234567890123457',
+      experienceYear: 3,
+      bio: 'Second partner for integration',
+      availability: 'Available',
+      verificationStatus: 'Approved',
+    });
 
     const partner2Token = await signAccessToken(
       partner2User!.id,
