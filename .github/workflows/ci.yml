@@ -11,7 +11,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  NODE_VERSION: '24.15.0'
+  NODE_VERSION: '24'
   PNPM_VERSION: '11.10.0'
   DATABASE_URL: postgres://specialist:specialist@localhost:5432/specialist
   JWT_SECRET: test-secret
@@ -75,6 +75,8 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+      - name: Create env file
+        run: echo "DATABASE_URL=$DATABASE_URL\nJWT_SECRET=$JWT_SECRET" > .env
       - name: Run migrations
         run: pnpm --filter @specialist/database db:migrate
       - name: Seed data

@@ -45,7 +45,7 @@ describe('createGuestBookingSchema', () => {
   });
 
   it('rejects missing items', () => {
-    const { items, ...noItems } = validBase;
+    const { items: _items, ...noItems } = validBase;
     const result = createGuestBookingSchema.safeParse(noItems);
     expect(result.success).toBe(false);
   });
