@@ -41,34 +41,58 @@ test.describe('Partner Reject Assignment - E2E-008', () => {
     expect(svcBody.data!.length).toBeGreaterThan(0);
     serviceId = svcBody.data![0]!.id;
 
-    // Create a booking as admin
-    const bookRes = await request.post(`${API_URL}/api/v1/bookings`, {
-      headers: { Authorization: `Bearer ${adminAuth.token}` },
+    // Get customer1 profile to use for the booking
+    const customerAuth = await loginViaApi(
+      request,
+      TEST_CREDENTIALS.customer1.email,
+      TEST_CREDENTIALS.customer1.password,
+    );
+
+    // Create an address for the customer
+    const addrRes = await request.post(`${API_URL}/api/v1/addresses`, {
+      headers: { Authorization: `Bearer ${customerAuth.token}` },
       data: {
-        serviceId,
-        customerName: 'Reject Test Customer',
-        customerPhone: '081234567888',
-        address: 'Jl. Reject Test No. 1',
+        receiverName: 'Reject Test Customer',
+        receiverPhone: '081234567888',
+        province: 'DKI Jakarta',
         city: 'Jakarta',
+        district: 'Cilandak',
+        postalCode: '12430',
+        address: 'Jl. Reject Test No. 1',
+      },
+    });
+    expect(addrRes.status()).toBe(201);
+    const addrBody = (await addrRes.json()) as { data: { id: string } };
+    const addressId = addrBody.data.id;
+
+    // Create a booking as the customer (uses createCustomerBooking, avoids guest DB null issue)
+    const bookRes = await request.post(`${API_URL}/api/v1/bookings`, {
+      headers: { Authorization: `Bearer ${customerAuth.token}` },
+      data: {
+        addressId,
+        items: [{ serviceId, quantity: 1 }],
         bookingDate: '2026-07-21',
         bookingTime: '10:00',
+        notes: 'E2E partner reject test',
       },
     });
     expect(bookRes.status()).toBe(201);
-    const bookBody = (await bookRes.json()) as { data: { id: string } };
+    const bookBody = (await bookRes.json()) as { data: { id: string; status: string } };
     bookingId = bookBody.data.id;
 
     // Confirm the booking
-    await request.post(`${API_URL}/api/v1/bookings/${bookingId}/confirm`, {
+    const confirmRes = await request.post(`${API_URL}/api/v1/bookings/${bookingId}/confirm`, {
       headers: { Authorization: `Bearer ${adminAuth.token}` },
       data: { finalPrice: '100000' },
     });
+    expect([200, 201]).toContain(confirmRes.status());
 
-    // Assign partner using UUID instead of email
-    await request.post(`${API_URL}/api/v1/bookings/${bookingId}/assign`, {
+    // Assign partner using UUID
+    const assignRes = await request.post(`${API_URL}/api/v1/bookings/${bookingId}/assign`, {
       headers: { Authorization: `Bearer ${adminAuth.token}` },
       data: { partnerId: partnerUserId },
     });
+    expect([200, 201]).toContain(assignRes.status());
   });
 
   test('E2E-008: Partner can see assignment on jobs page', async ({ page }) => {

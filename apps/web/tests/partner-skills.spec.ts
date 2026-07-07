@@ -17,13 +17,26 @@ test.describe('Partner Skills Management - E2E-024', () => {
       TEST_CREDENTIALS.partner1.password,
     );
 
-    // Get a valid service category ID for the skill
+    // Get all service categories
     const catRes = await request.get(`${API_URL}/api/v1/service-categories`);
     expect(catRes.status()).toBe(200);
     const catBody = (await catRes.json()) as { data?: Array<{ id: string; name: string }> };
     expect(catBody.data).toBeDefined();
     expect(catBody.data!.length).toBeGreaterThan(0);
-    categoryId = catBody.data![0]!.id;
+
+    // Get partner's existing skills to avoid 409 conflict on add
+    const skillsRes = await request.get(`${API_URL}/api/v1/partners/me/skills`, {
+      headers: { Authorization: `Bearer ${auth.token}` },
+    });
+    const existingSkillsBody = (await skillsRes.json()) as {
+      data?: Array<{ categoryId: string }>;
+    };
+    const existingCategoryIds = new Set(existingSkillsBody.data?.map((s) => s.categoryId) ?? []);
+
+    // Find the first category the partner does not already have a skill for
+    const available = catBody.data!.find((c) => !existingCategoryIds.has(c.id));
+    expect(available).toBeDefined();
+    categoryId = available!.id;
   });
 
   test('E2E-024: Partner settings page loads', async ({ page }) => {

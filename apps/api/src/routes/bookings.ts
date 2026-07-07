@@ -379,7 +379,11 @@ async function createCustomerBooking(c: Context) {
       message: `Booking #${bookingNumber} berhasil dibuat. Menunggu konfirmasi admin.`,
     });
 
-    return created(c, { bookingNumber, id: order.id }, 'Booking berhasil dibuat');
+    return created(
+      c,
+      { bookingNumber, id: order.id, status: 'Pending Confirmation' },
+      'Booking berhasil dibuat',
+    );
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Gagal membuat booking';
     console.error('Customer booking failed:', err);
