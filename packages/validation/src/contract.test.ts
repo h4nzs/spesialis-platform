@@ -165,9 +165,9 @@ describe('updateContractSchema', () => {
 
   it('rejects companyId (should be omitted)', () => {
     // partial().omit({ companyId: true }) means companyId is not accepted
-    // Zod strips unknown keys by default
-    const data = updateContractSchema.parse({ companyId: UUID });
-    expect(data.companyId).toBeUndefined();
+    // Zod strips unknown keys by default — cast because TS knows companyId is omitted
+    const data = updateContractSchema.parse({ companyId: UUID } as Record<string, unknown>);
+    expect('companyId' in data).toBe(false);
   });
 
   it('accepts nullable discountPercent', () => {
