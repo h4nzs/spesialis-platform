@@ -4,7 +4,7 @@ const API_URL = 'http://localhost:3000';
 
 test.describe.configure({ mode: 'serial' });
 
-const UNIQUE_ID = Date.now().toString(36);
+const UNIQUE_ID = Date.now().toString();
 const TEST_PARTNER = {
   email: `partner-e2e-${UNIQUE_ID}@test.com`,
   phone: `6281${UNIQUE_ID.slice(0, 8).padEnd(8, '0')}`,
