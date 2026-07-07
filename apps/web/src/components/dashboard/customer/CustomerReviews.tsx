@@ -73,7 +73,7 @@ export function CustomerReviews() {
     }
   }
 
-  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+  async function handleSubmit(e: React.SyntheticEvent<HTMLFormElement>) {
     e.preventDefault();
     if (!orderId || !rating) {
       setError('Pilih pesanan dan rating wajib diisi');

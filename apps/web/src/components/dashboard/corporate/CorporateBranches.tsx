@@ -56,7 +56,7 @@ export function CorporateBranches() {
     });
   }, [loadCompany, loadBranches]);
 
-  async function handleAdd(e: React.FormEvent<HTMLFormElement>) {
+  async function handleAdd(e: React.SyntheticEvent<HTMLFormElement>) {
     e.preventDefault();
     if (!profile) return;
     if (!form.name || !form.address || !form.city) {

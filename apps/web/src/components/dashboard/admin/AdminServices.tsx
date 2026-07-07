@@ -108,7 +108,7 @@ export function AdminServices() {
     }
   }
 
-  async function handleSave(e: React.FormEvent<HTMLFormElement>) {
+  async function handleSave(e: React.SyntheticEvent<HTMLFormElement>) {
     e.preventDefault();
     if (!form.categoryId || !form.name || !form.slug || !form.basePrice) {
       setError('Nama, slug, kategori, dan harga wajib diisi');

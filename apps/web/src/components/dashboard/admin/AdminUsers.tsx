@@ -82,7 +82,7 @@ export function AdminUsers() {
     loadData();
   }, [loadData]);
 
-  function handleSearch(e: React.FormEvent<HTMLFormElement>) {
+  function handleSearch(e: React.SyntheticEvent<HTMLFormElement>) {
     e.preventDefault();
     loadData(search);
   }

@@ -40,7 +40,7 @@ export function ProfileSettings() {
       .finally(() => setLoading(false));
   }, [api]);
 
-  async function handleProfileUpdate(e: React.FormEvent<HTMLFormElement>) {
+  async function handleProfileUpdate(e: React.SyntheticEvent<HTMLFormElement>) {
     e.preventDefault();
     setProfileSuccess(false);
     setProfileErrors([]);
@@ -63,7 +63,7 @@ export function ProfileSettings() {
     }
   }
 
-  async function handlePasswordChange(e: React.FormEvent<HTMLFormElement>) {
+  async function handlePasswordChange(e: React.SyntheticEvent<HTMLFormElement>) {
     e.preventDefault();
     setPwSuccess(false);
     setPwErrors([]);

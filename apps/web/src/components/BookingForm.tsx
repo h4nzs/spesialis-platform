@@ -121,7 +121,7 @@ export function BookingForm({ serviceId }: BookingFormProps) {
     }
   }
 
-  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+  async function handleSubmit(e: React.SyntheticEvent<HTMLFormElement>) {
     e.preventDefault();
     setErrors([]);
     setGeneralError('');

@@ -72,7 +72,7 @@ export function AdminAuditLogs() {
     loadLogs();
   }, [loadLogs]);
 
-  function handleFilter(e: React.FormEvent<HTMLFormElement>) {
+  function handleFilter(e: React.SyntheticEvent<HTMLFormElement>) {
     e.preventDefault();
     setPage(1);
     setExpandedId(null);

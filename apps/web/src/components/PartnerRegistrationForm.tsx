@@ -21,7 +21,7 @@ export function PartnerRegistrationForm() {
     setErrors((prev) => prev.filter((e) => e.field !== field));
   }
 
-  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+  async function handleSubmit(e: React.SyntheticEvent<HTMLFormElement>) {
     e.preventDefault();
     setErrors([]);
     setSubmitting(true);

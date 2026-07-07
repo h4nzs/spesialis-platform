@@ -114,7 +114,7 @@ export function AdminArticles() {
     }
   }
 
-  async function handleSave(e: React.FormEvent<HTMLFormElement>) {
+  async function handleSave(e: React.SyntheticEvent<HTMLFormElement>) {
     e.preventDefault();
     if (!form.title || !form.slug) {
       setError('Judul dan slug wajib diisi');
