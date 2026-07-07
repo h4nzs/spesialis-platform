@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { createBrowserClient } from '@specialist/shared';
 import { Card } from '@specialist/ui';
 
@@ -10,7 +10,7 @@ interface DashboardStats {
 }
 
 export function CustomerOverview() {
-  const api = createBrowserClient();
+  const api = useMemo(() => createBrowserClient(), []);
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -19,14 +19,19 @@ export function CustomerOverview() {
       try {
         const orders = await api.get<{ status: string }[]>('/api/v1/bookings');
         const activeOrders = orders.filter((o) =>
-          ['Pending Confirmation', 'Confirmed', 'Waiting Assignment', 'Partner Assigned', 'Partner Accepted', 'Working'].includes(o.status),
+          [
+            'Pending Confirmation',
+            'Confirmed',
+            'Waiting Assignment',
+            'Partner Assigned',
+            'Partner Accepted',
+            'Working',
+          ].includes(o.status),
         ).length;
         const completedOrders = orders.filter((o) =>
           ['Completed', 'Paid', 'Closed'].includes(o.status),
         ).length;
-        const pendingPayment = orders.filter((o) =>
-          ['Waiting Payment'].includes(o.status),
-        ).length;
+        const pendingPayment = orders.filter((o) => ['Waiting Payment'].includes(o.status)).length;
 
         const addresses = await api.get<unknown[]>('/api/v1/addresses');
 
@@ -43,7 +48,7 @@ export function CustomerOverview() {
       }
     }
     fetchStats();
-  }, []);
+  }, [api]);
 
   if (loading) {
     return <div className="text-sm text-text-muted">Memuat...</div>;

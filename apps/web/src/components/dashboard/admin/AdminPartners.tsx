@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { createBrowserClient } from '@specialist/shared';
 import { Table, Button } from '@specialist/ui';
 import type { Column } from '@specialist/ui';
@@ -13,11 +13,11 @@ interface PartnerItem {
 }
 
 export function AdminPartners() {
-  const api = createBrowserClient();
+  const api = useMemo(() => createBrowserClient(), []);
   const [partners, setPartners] = useState<PartnerItem[]>([]);
   const [loading, setLoading] = useState(true);
 
-  async function loadPartners() {
+  const loadPartners = useCallback(async () => {
     setLoading(true);
     try {
       const data = await api.get<PartnerItem[]>('/api/v1/partners');
@@ -27,11 +27,11 @@ export function AdminPartners() {
     } finally {
       setLoading(false);
     }
-  }
+  }, [api]);
 
   useEffect(() => {
     loadPartners();
-  }, []);
+  }, [loadPartners]);
 
   async function handleVerify(partnerId: string, status: string) {
     try {

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import {
   createBrowserClient,
   formatCurrency,
@@ -20,7 +20,7 @@ interface InvoiceItem {
 }
 
 export function CorporateInvoices() {
-  const api = createBrowserClient();
+  const api = useMemo(() => createBrowserClient(), []);
   const [invoices, setInvoices] = useState<InvoiceItem[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -33,7 +33,7 @@ export function CorporateInvoices() {
       })
       .catch(() => setInvoices([]))
       .finally(() => setLoading(false));
-  }, []);
+  }, [api]);
 
   const paidInvoices = invoices.filter((inv) => inv.status === 'Paid' || inv.status === 'Closed');
 

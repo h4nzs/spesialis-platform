@@ -2,9 +2,12 @@ import { Hono } from 'hono';
 import { eq, and, desc, sql } from 'drizzle-orm';
 import { db, invoices, companies, companyUsers, orders } from '../lib/db.ts';
 import { authMiddleware, requireRole } from '../middleware/auth.ts';
+import { validateBody } from '../middleware/validation.ts';
 import { createInvoiceSchema, updateInvoiceStatusSchema } from '@specialist/validation';
-import type { PaginationMeta } from '@specialist/types';
+import type { CreateInvoiceInput, UpdateInvoiceStatusInput } from '@specialist/validation';
 import { success, successPaginated, created, error, notFound, forbidden } from '../lib/response.ts';
+import { buildPaginationMeta } from '../lib/pagination.ts';
+import { omitUndefined } from '../lib/update.ts';
 import { createAuditLog } from '../lib/audit.ts';
 
 const router = new Hono();
@@ -60,16 +63,7 @@ router.get('/', requireRole('admin', 'super_admin', 'corporate'), async (c) => {
     .from(invoices)
     .where(conditions.length > 0 ? and(...conditions) : undefined);
   const total = Number(countResult[0]?.count ?? 0);
-  const totalPages = Math.ceil(total / limit);
-
-  const pagination: PaginationMeta = {
-    page,
-    limit,
-    total,
-    totalPages,
-    hasNext: page < totalPages,
-    hasPrev: page > 1,
-  };
+  const pagination = buildPaginationMeta(page, limit, total);
 
   return successPaginated(c, items, pagination);
 });
@@ -94,104 +88,95 @@ router.get('/:id', async (c) => {
   return success(c, invoice);
 });
 
-router.post('/', requireRole('admin', 'super_admin'), async (c) => {
-  const body = await c.req.json();
-  const parsed = createInvoiceSchema.safeParse(body);
-  if (!parsed.success) {
-    return error(
-      c,
-      'VALIDATION_ERROR',
-      'Validation failed',
-      422,
-      parsed.error.issues.map((i) => ({ field: i.path.join('.'), message: i.message })),
-    );
-  }
+router.post(
+  '/',
+  requireRole('admin', 'super_admin'),
+  validateBody(createInvoiceSchema),
+  async (c) => {
+    const data = c.get('validated') as CreateInvoiceInput;
 
-  const [company] = await db
-    .select({ id: companies.id })
-    .from(companies)
-    .where(eq(companies.id, parsed.data.companyId))
-    .limit(1);
-  if (!company) return error(c, 'COMPANY_NOT_FOUND', 'Perusahaan tidak ditemukan', 404);
-
-  if (parsed.data.orderId) {
-    const [order] = await db
-      .select({ id: orders.id })
-      .from(orders)
-      .where(eq(orders.id, parsed.data.orderId))
+    const [company] = await db
+      .select({ id: companies.id })
+      .from(companies)
+      .where(eq(companies.id, data.companyId))
       .limit(1);
-    if (!order) return error(c, 'ORDER_NOT_FOUND', 'Pesanan tidak ditemukan', 404);
-  }
+    if (!company) return error(c, 'COMPANY_NOT_FOUND', 'Perusahaan tidak ditemukan', 404);
 
-  const invoiceNumber = await getInvoiceNumber();
-  const userId = c.get('userId');
+    if (data.orderId) {
+      const [order] = await db
+        .select({ id: orders.id })
+        .from(orders)
+        .where(eq(orders.id, data.orderId))
+        .limit(1);
+      if (!order) return error(c, 'ORDER_NOT_FOUND', 'Pesanan tidak ditemukan', 404);
+    }
 
-  const [invoice] = await db
-    .insert(invoices)
-    .values({
-      ...parsed.data,
-      invoiceNumber,
-      orderId: parsed.data.orderId ?? null,
-      amount: String(parsed.data.amount),
-      createdBy: userId,
-    })
-    .returning();
+    const invoiceNumber = await getInvoiceNumber();
+    const userId = c.get('userId');
 
-  await createAuditLog(c, {
-    userId,
-    action: 'invoice.create',
-    entity: 'invoice',
-    entityId: invoice!.id,
-    newValue: { invoiceNumber, amount: parsed.data.amount },
-    oldValue: null,
-  });
+    const [invoice] = await db
+      .insert(invoices)
+      .values({
+        ...data,
+        invoiceNumber,
+        orderId: data.orderId ?? null,
+        amount: String(data.amount),
+        createdBy: userId,
+      })
+      .returning();
 
-  return created(c, invoice, 'Invoice berhasil dibuat');
-});
+    await createAuditLog(c, {
+      userId,
+      action: 'invoice.create',
+      entity: 'invoice',
+      entityId: invoice!.id,
+      newValue: { invoiceNumber, amount: data.amount },
+      oldValue: null,
+    });
 
-router.patch('/:id/status', requireRole('admin', 'super_admin'), async (c) => {
-  const invoiceId = c.req.param('id')!;
-  const userId = c.get('userId');
-  const body = await c.req.json();
-  const parsed = updateInvoiceStatusSchema.safeParse(body);
-  if (!parsed.success) {
-    return error(
-      c,
-      'VALIDATION_ERROR',
-      'Validation failed',
-      422,
-      parsed.error.issues.map((i) => ({ field: i.path.join('.'), message: i.message })),
-    );
-  }
+    return created(c, invoice, 'Invoice berhasil dibuat');
+  },
+);
 
-  const [existing] = await db
-    .select({ id: invoices.id, status: invoices.status })
-    .from(invoices)
-    .where(eq(invoices.id, invoiceId))
-    .limit(1);
-  if (!existing) return notFound(c, 'Invoice tidak ditemukan');
+router.patch(
+  '/:id/status',
+  requireRole('admin', 'super_admin'),
+  validateBody(updateInvoiceStatusSchema),
+  async (c) => {
+    const invoiceId = c.req.param('id')!;
+    const userId = c.get('userId');
+    const data = c.get('validated') as UpdateInvoiceStatusInput;
 
-  const updateData: Record<string, unknown> = { status: parsed.data.status, updatedBy: userId };
-  if (parsed.data.status === 'Issued') updateData.issuedAt = new Date();
-  if (parsed.data.status === 'Paid') updateData.paidAt = new Date();
-  if (parsed.data.notes) updateData.notes = parsed.data.notes;
+    const [existing] = await db
+      .select({ id: invoices.id, status: invoices.status })
+      .from(invoices)
+      .where(eq(invoices.id, invoiceId))
+      .limit(1);
+    if (!existing) return notFound(c, 'Invoice tidak ditemukan');
 
-  const [updated] = await db
-    .update(invoices)
-    .set(updateData)
-    .where(eq(invoices.id, invoiceId))
-    .returning();
+    const [updated] = await db
+      .update(invoices)
+      .set({
+        status: data.status,
+        updatedBy: userId,
+        ...(data.status === 'Issued' ? { issuedAt: new Date() } : {}),
+        ...(data.status === 'Paid' ? { paidAt: new Date() } : {}),
+        ...omitUndefined({ notes: data.notes }),
+      })
+      .where(eq(invoices.id, invoiceId))
+      .returning();
 
-  await createAuditLog(c, {
-    userId,
-    action: 'invoice.status',
-    entity: 'invoice',
-    entityId: invoiceId,
-    newValue: { status: parsed.data.status },
-    oldValue: { status: existing.status },
-  });
+    await createAuditLog(c, {
+      userId,
+      action: 'invoice.status',
+      entity: 'invoice',
+      entityId: invoiceId,
+      newValue: { status: data.status },
+      oldValue: { status: existing.status },
+    });
 
-  return success(c, updated, `Status invoice diubah ke ${parsed.data.status}`);
-});
+    return success(c, updated, `Status invoice diubah ke ${data.status}`);
+  },
+);
 
 export { router as invoicesRouter };

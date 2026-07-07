@@ -45,10 +45,11 @@ export async function verifyPassword(hash: string, password: string): Promise<bo
   }
 }
 
-export function signAccessToken(userId: string, role: UserRole): Promise<string> {
+export function signAccessToken(userId: string, email: string, role: UserRole): Promise<string> {
   return sign(
     {
       sub: userId,
+      email,
       role,
       iat: Math.floor(Date.now() / 1000),
       exp: Math.floor(Date.now() / 1000) + 15 * 60,

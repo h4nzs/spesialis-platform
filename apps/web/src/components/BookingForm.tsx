@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Button } from '@specialist/ui';
 import { createBrowserClient, formatCurrency } from '@specialist/shared';
 import { createGuestBookingSchema, createCustomerBookingSchema } from '@specialist/validation';
@@ -48,7 +48,7 @@ function todayStr(): string {
 }
 
 export function BookingForm({ serviceId }: BookingFormProps) {
-  const api = createBrowserClient();
+  const api = useMemo(() => createBrowserClient(), []);
 
   const [token] = useState(getToken);
   const [isCustomer, setIsCustomer] = useState(false);
@@ -98,7 +98,7 @@ export function BookingForm({ serviceId }: BookingFormProps) {
       .catch(() => {
         setLoadingService(false);
       });
-  }, [serviceId, token]);
+  }, [serviceId, token, api]);
 
   useEffect(() => {
     if (isCustomer) {
@@ -110,7 +110,7 @@ export function BookingForm({ serviceId }: BookingFormProps) {
         })
         .catch(() => {});
     }
-  }, [isCustomer]);
+  }, [isCustomer, api]);
 
   function handleAddressSelect(e: React.ChangeEvent<HTMLSelectElement>) {
     setSelectedAddressId(e.target.value);
@@ -121,7 +121,7 @@ export function BookingForm({ serviceId }: BookingFormProps) {
     }
   }
 
-  async function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setErrors([]);
     setGeneralError('');

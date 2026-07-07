@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { createBrowserClient, formatDate, getStatusLabel } from '@specialist/shared';
 import { Card, Table, Badge } from '@specialist/ui';
 import type { OrderStatus } from '@specialist/types';
@@ -14,7 +14,7 @@ interface JobItem {
 }
 
 export function PartnerEarnings() {
-  const api = createBrowserClient();
+  const api = useMemo(() => createBrowserClient(), []);
   const [profile, setProfile] = useState<{
     completedJobs: number;
     ratingAverage: string | null;
@@ -33,7 +33,7 @@ export function PartnerEarnings() {
       })
       .catch(() => {})
       .finally(() => setLoading(false));
-  }, []);
+  }, [api]);
 
   const completedJobs = jobs.filter((j) => ['Completed', 'Paid', 'Closed'].includes(j.orderStatus));
 

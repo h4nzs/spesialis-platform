@@ -2,6 +2,7 @@ import { Hono } from 'hono';
 import { eq, and, desc } from 'drizzle-orm';
 import { db, users, companies, companyUsers, branches } from '../lib/db.ts';
 import { authMiddleware, requireRole } from '../middleware/auth.ts';
+import { validateBody } from '../middleware/validation.ts';
 import { hashPassword, signAccessToken } from '../lib/auth.ts';
 import {
   createCompanySchema,
@@ -10,41 +11,26 @@ import {
   createBranchSchema,
   updateBranchSchema,
 } from '@specialist/validation';
-import {
-  success,
-  created,
-  error,
-  notFound,
-  forbidden,
-  conflict,
-  serverError,
-} from '../lib/response.ts';
+import type {
+  CreateCompanyInput,
+  UpdateCompanyInput,
+  VerifyCompanyInput,
+  CreateBranchInput,
+  UpdateBranchInput,
+} from '@specialist/validation';
+import { success, created, notFound, forbidden, conflict, serverError } from '../lib/response.ts';
+import { omitUndefined } from '../lib/update.ts';
 import { rateLimit } from '../middleware/rate-limiter.ts';
 
 const router = new Hono();
 
-router.post('/', rateLimit(5, 60_000), async (c) => {
-  const body = await c.req.json();
-  const parsed = createCompanySchema.safeParse(body);
-  if (!parsed.success) {
-    return error(
-      c,
-      'VALIDATION_ERROR',
-      'Validation failed',
-      422,
-      parsed.error.issues.map((i) => ({ field: i.path.join('.'), message: i.message })),
-    );
-  }
-
-  const password = body.password;
-  if (!password || typeof password !== 'string' || password.length < 8) {
-    return error(c, 'VALIDATION_ERROR', 'Password minimal 8 karakter', 422);
-  }
+router.post('/', rateLimit(5, 60_000), validateBody(createCompanySchema), async (c) => {
+  const { password, ...data } = c.get('validated') as CreateCompanyInput;
 
   const existing = await db
     .select({ id: users.id })
     .from(users)
-    .where(eq(users.email, parsed.data.email))
+    .where(eq(users.email, data.email))
     .limit(1);
   if (existing[0]) return conflict(c, 'Email sudah terdaftar');
 
@@ -53,8 +39,8 @@ router.post('/', rateLimit(5, 60_000), async (c) => {
   const [user] = await db
     .insert(users)
     .values({
-      email: parsed.data.email,
-      phone: parsed.data.phone,
+      email: data.email,
+      phone: data.phone,
       passwordHash,
       role: 'corporate',
       status: 'pending',
@@ -66,13 +52,13 @@ router.post('/', rateLimit(5, 60_000), async (c) => {
   const [company] = await db
     .insert(companies)
     .values({
-      companyName: parsed.data.companyName,
-      legalName: parsed.data.legalName,
-      email: parsed.data.email,
-      phone: parsed.data.phone,
-      website: parsed.data.website ?? null,
-      industry: parsed.data.industry ?? null,
-      employeeCount: parsed.data.employeeCount ?? null,
+      companyName: data.companyName,
+      legalName: data.legalName,
+      email: data.email,
+      phone: data.phone,
+      website: data.website ?? null,
+      industry: data.industry ?? null,
+      employeeCount: data.employeeCount ?? null,
     })
     .returning();
 
@@ -84,7 +70,7 @@ router.post('/', rateLimit(5, 60_000), async (c) => {
     role: 'Owner',
   });
 
-  const token = await signAccessToken(user.id, user.role);
+  const token = await signAccessToken(user.id, user.email, user.role);
 
   return created(
     c,
@@ -178,21 +164,12 @@ router.patch(
   '/:id',
   authMiddleware,
   requireRole('admin', 'super_admin', 'corporate'),
+  validateBody(updateCompanySchema),
   async (c) => {
     const companyId = c.req.param('id')!;
     const userId = c.get('userId');
     const userRole = c.get('userRole');
-    const body = await c.req.json();
-    const parsed = updateCompanySchema.safeParse(body);
-    if (!parsed.success) {
-      return error(
-        c,
-        'VALIDATION_ERROR',
-        'Validation failed',
-        422,
-        parsed.error.issues.map((i) => ({ field: i.path.join('.'), message: i.message })),
-      );
-    }
+    const data = c.get('validated') as UpdateCompanyInput;
 
     const [company] = await db
       .select({ id: companies.id })
@@ -210,19 +187,9 @@ router.patch(
       if (!cu) return forbidden(c);
     }
 
-    const updateData: Record<string, unknown> = {};
-    if (parsed.data.companyName !== undefined) updateData.companyName = parsed.data.companyName;
-    if (parsed.data.legalName !== undefined) updateData.legalName = parsed.data.legalName;
-    if (parsed.data.email !== undefined) updateData.email = parsed.data.email;
-    if (parsed.data.phone !== undefined) updateData.phone = parsed.data.phone;
-    if (parsed.data.website !== undefined) updateData.website = parsed.data.website;
-    if (parsed.data.industry !== undefined) updateData.industry = parsed.data.industry;
-    if (parsed.data.employeeCount !== undefined)
-      updateData.employeeCount = parsed.data.employeeCount;
-
     const [updated] = await db
       .update(companies)
-      .set(updateData)
+      .set(omitUndefined(data))
       .where(eq(companies.id, companyId))
       .returning();
 
@@ -230,46 +197,40 @@ router.patch(
   },
 );
 
-router.post('/:id/verify', authMiddleware, requireRole('admin', 'super_admin'), async (c) => {
-  const companyId = c.req.param('id')!;
-  const body = await c.req.json();
-  const parsed = verifyCompanySchema.safeParse(body);
-  if (!parsed.success) {
-    return error(
-      c,
-      'VALIDATION_ERROR',
-      'Validation failed',
-      422,
-      parsed.error.issues.map((i) => ({ field: i.path.join('.'), message: i.message })),
-    );
-  }
+router.post(
+  '/:id/verify',
+  authMiddleware,
+  requireRole('admin', 'super_admin'),
+  validateBody(verifyCompanySchema),
+  async (c) => {
+    const companyId = c.req.param('id')!;
+    const { status: newStatus } = c.get('validated') as VerifyCompanyInput;
 
-  const [company] = await db
-    .select({ id: companies.id, status: companies.status })
-    .from(companies)
-    .where(eq(companies.id, companyId))
-    .limit(1);
-  if (!company) return notFound(c, 'Perusahaan tidak ditemukan');
+    const [company] = await db
+      .select({ id: companies.id, status: companies.status })
+      .from(companies)
+      .where(eq(companies.id, companyId))
+      .limit(1);
+    if (!company) return notFound(c, 'Perusahaan tidak ditemukan');
+    await db.update(companies).set({ status: newStatus }).where(eq(companies.id, companyId));
 
-  const newStatus = parsed.data.status as 'Verified' | 'Rejected';
-  await db.update(companies).set({ status: newStatus }).where(eq(companies.id, companyId));
-
-  if (newStatus === 'Verified') {
-    const companyUsersList = await db
-      .select({ userId: companyUsers.userId })
-      .from(companyUsers)
-      .where(eq(companyUsers.companyId, companyId));
-    for (const cu of companyUsersList) {
-      await db.update(users).set({ status: 'active' }).where(eq(users.id, cu.userId));
+    if (newStatus === 'Verified') {
+      const companyUsersList = await db
+        .select({ userId: companyUsers.userId })
+        .from(companyUsers)
+        .where(eq(companyUsers.companyId, companyId));
+      for (const cu of companyUsersList) {
+        await db.update(users).set({ status: 'active' }).where(eq(users.id, cu.userId));
+      }
     }
-  }
 
-  return success(
-    c,
-    { id: companyId, status: newStatus },
-    `Perusahaan ${newStatus === 'Verified' ? 'diverifikasi' : 'ditolak'}`,
-  );
-});
+    return success(
+      c,
+      { id: companyId, status: newStatus },
+      `Perusahaan ${newStatus === 'Verified' ? 'diverifikasi' : 'ditolak'}`,
+    );
+  },
+);
 
 const branchRouter = new Hono();
 
@@ -306,21 +267,12 @@ branchRouter.post(
   '/',
   authMiddleware,
   requireRole('admin', 'super_admin', 'corporate'),
+  validateBody(createBranchSchema),
   async (c) => {
     const companyId = c.req.param('companyId')!;
     const userId = c.get('userId');
     const userRole = c.get('userRole');
-    const body = await c.req.json();
-    const parsed = createBranchSchema.safeParse(body);
-    if (!parsed.success) {
-      return error(
-        c,
-        'VALIDATION_ERROR',
-        'Validation failed',
-        422,
-        parsed.error.issues.map((i) => ({ field: i.path.join('.'), message: i.message })),
-      );
-    }
+    const data = c.get('validated') as CreateBranchInput;
 
     const [company] = await db
       .select({ id: companies.id })
@@ -342,10 +294,10 @@ branchRouter.post(
       .insert(branches)
       .values({
         companyId,
-        name: parsed.data.name,
-        address: parsed.data.address,
-        city: parsed.data.city,
-        phone: parsed.data.phone ?? null,
+        name: data.name,
+        address: data.address,
+        city: data.city,
+        phone: data.phone ?? null,
       })
       .returning();
 
@@ -357,22 +309,13 @@ branchRouter.patch(
   '/:branchId',
   authMiddleware,
   requireRole('admin', 'super_admin', 'corporate'),
+  validateBody(updateBranchSchema),
   async (c) => {
     const companyId = c.req.param('companyId')!;
     const branchId = c.req.param('branchId')!;
     const userId = c.get('userId');
     const userRole = c.get('userRole');
-    const body = await c.req.json();
-    const parsed = updateBranchSchema.safeParse(body);
-    if (!parsed.success) {
-      return error(
-        c,
-        'VALIDATION_ERROR',
-        'Validation failed',
-        422,
-        parsed.error.issues.map((i) => ({ field: i.path.join('.'), message: i.message })),
-      );
-    }
+    const data = c.get('validated') as UpdateBranchInput;
 
     const [branch] = await db
       .select()
@@ -390,15 +333,9 @@ branchRouter.patch(
       if (!cu) return forbidden(c);
     }
 
-    const updateData: Record<string, unknown> = {};
-    if (parsed.data.name !== undefined) updateData.name = parsed.data.name;
-    if (parsed.data.address !== undefined) updateData.address = parsed.data.address;
-    if (parsed.data.city !== undefined) updateData.city = parsed.data.city;
-    if (parsed.data.phone !== undefined) updateData.phone = parsed.data.phone;
-
     const [updated] = await db
       .update(branches)
-      .set(updateData)
+      .set(omitUndefined(data))
       .where(eq(branches.id, branchId))
       .returning();
 

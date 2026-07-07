@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { createBrowserClient, formatDate } from '@specialist/shared';
 import { Badge, Card } from '@specialist/ui';
 
@@ -12,16 +12,17 @@ interface Complaint {
 }
 
 export function CustomerComplaints() {
-  const api = createBrowserClient();
+  const api = useMemo(() => createBrowserClient(), []);
   const [complaints, setComplaints] = useState<Complaint[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    api.get<Complaint[]>('/api/v1/complaints')
+    api
+      .get<Complaint[]>('/api/v1/complaints')
       .then((data) => setComplaints(Array.isArray(data) ? data : []))
       .catch(() => setComplaints([]))
       .finally(() => setLoading(false));
-  }, []);
+  }, [api]);
 
   const statusColors: Record<string, 'default' | 'warning' | 'success' | 'danger' | 'info'> = {
     Open: 'danger',
@@ -45,9 +46,7 @@ export function CustomerComplaints() {
         </a>
       </div>
 
-      {complaints.length === 0 && (
-        <p className="text-sm text-text-muted">Belum ada komplain</p>
-      )}
+      {complaints.length === 0 && <p className="text-sm text-text-muted">Belum ada komplain</p>}
 
       {complaints.map((c) => (
         <Card key={c.id}>

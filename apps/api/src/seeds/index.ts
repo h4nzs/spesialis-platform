@@ -1194,7 +1194,7 @@ async function seed() {
       displayOrder: 1,
     },
     {
-      question: 'Apada saja area layanan Spesialis?',
+      question: 'Apa saja area layanan Spesialis?',
       answer:
         'Saat ini kami melayani area Jabodetabek dan Bandung. Kami terus memperluas jangkauan ke kota-kota lainnya.',
       category: 'Layanan',

@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { createBrowserClient } from '@specialist/shared';
 import { Button, Input, Select, Table, Badge, Modal } from '@specialist/ui';
 import type { Column } from '@specialist/ui';
@@ -47,7 +47,7 @@ const ROLE_LABELS: Record<string, string> = {
 };
 
 export function AdminUsers() {
-  const api = createBrowserClient();
+  const api = useMemo(() => createBrowserClient(), []);
   const [users, setUsers] = useState<UserItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -58,30 +58,33 @@ export function AdminUsers() {
   const [newStatus, setNewStatus] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
-  const loadData = useCallback(async () => {
-    setLoading(true);
-    try {
-      const params: Record<string, string | number> = { limit: 100 };
-      if (search) params.search = search;
-      if (roleFilter) params.role = roleFilter;
-      if (statusFilter) params.status = statusFilter;
+  const loadData = useCallback(
+    async (searchTerm?: string) => {
+      setLoading(true);
+      try {
+        const params: Record<string, string | number> = { limit: 100 };
+        if (searchTerm) params.search = searchTerm;
+        if (roleFilter) params.role = roleFilter;
+        if (statusFilter) params.status = statusFilter;
 
-      const result = await api.get<{ data: UserItem[] }>('/api/v1/admin/users', { params });
-      setUsers(result?.data ?? []);
-    } catch {
-      setUsers([]);
-    } finally {
-      setLoading(false);
-    }
-  }, [search, roleFilter, statusFilter]);
+        const result = await api.get<{ data: UserItem[] }>('/api/v1/admin/users', { params });
+        setUsers(result?.data ?? []);
+      } catch {
+        setUsers([]);
+      } finally {
+        setLoading(false);
+      }
+    },
+    [roleFilter, statusFilter, api],
+  );
 
   useEffect(() => {
     loadData();
-  }, [roleFilter, statusFilter]);
+  }, [loadData]);
 
-  function handleSearch(e: React.FormEvent) {
+  function handleSearch(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    loadData();
+    loadData(search);
   }
 
   function openStatusModal(user: UserItem) {

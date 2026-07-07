@@ -9,6 +9,7 @@ export const createCompanySchema = z.object({
     .min(10)
     .max(30)
     .regex(/^\+?[0-9]+$/),
+  password: z.string().min(8).max(128),
   website: z.string().url().max(255).optional(),
   industry: z.string().max(255).optional(),
   employeeCount: z.coerce.number().int().min(1).optional(),

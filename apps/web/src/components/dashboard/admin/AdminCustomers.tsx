@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { createBrowserClient } from '@specialist/shared';
 import { Table, Badge, Button } from '@specialist/ui';
 import type { Column } from '@specialist/ui';
@@ -13,22 +13,22 @@ interface CustomerItem {
 }
 
 export function AdminCustomers() {
-  const api = createBrowserClient();
+  const api = useMemo(() => createBrowserClient(), []);
   const [customers, setCustomers] = useState<CustomerItem[]>([]);
   const [loading, setLoading] = useState(true);
 
-  function fetchCustomers() {
+  const fetchCustomers = useCallback(async () => {
     setLoading(true);
     api
       .get<CustomerItem[]>('/api/v1/customers')
       .then((data) => setCustomers(Array.isArray(data) ? data : []))
       .catch(() => setCustomers([]))
       .finally(() => setLoading(false));
-  }
+  }, [api]);
 
   useEffect(() => {
     fetchCustomers();
-  }, []);
+  }, [fetchCustomers]);
 
   async function handleStatusChange(id: string, status: string) {
     try {

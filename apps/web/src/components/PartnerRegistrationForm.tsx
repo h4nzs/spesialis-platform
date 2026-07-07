@@ -6,7 +6,11 @@ import { partnerRegistrationSchema } from '@specialist/validation';
 export function PartnerRegistrationForm() {
   const api = createBrowserClient();
   const [form, setForm] = useState({
-    fullName: '', email: '', phone: '', password: '', ktpNumber: '',
+    fullName: '',
+    email: '',
+    phone: '',
+    password: '',
+    ktpNumber: '',
   });
   const [errors, setErrors] = useState<{ field: string; message: string }[]>([]);
   const [submitting, setSubmitting] = useState(false);
@@ -17,7 +21,7 @@ export function PartnerRegistrationForm() {
     setErrors((prev) => prev.filter((e) => e.field !== field));
   }
 
-  async function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setErrors([]);
     setSubmitting(true);
@@ -60,7 +64,8 @@ export function PartnerRegistrationForm() {
       <Card padding="lg" className="text-center">
         <p className="text-lg font-semibold text-success">Registrasi Berhasil!</p>
         <p className="mt-2 text-sm text-text-muted">
-          Akun Anda sedang menunggu verifikasi Admin. Kami akan menghubungi Anda setelah akun disetujui.
+          Akun Anda sedang menunggu verifikasi Admin. Kami akan menghubungi Anda setelah akun
+          disetujui.
         </p>
         <a href="/login" className="mt-4 inline-block text-sm text-primary hover:underline">
           Masuk ke Akun
@@ -125,7 +130,9 @@ export function PartnerRegistrationForm() {
       </Button>
       <p className="text-center text-xs text-text-muted">
         Sudah punya akun?{' '}
-        <a href="/login" className="text-primary hover:underline">Masuk</a>
+        <a href="/login" className="text-primary hover:underline">
+          Masuk
+        </a>
       </p>
     </form>
   );

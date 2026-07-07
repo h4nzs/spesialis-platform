@@ -8,6 +8,7 @@ export const registerPartnerSchema = z.object({
     .max(30)
     .regex(/^\+?[0-9]+$/),
   ktpNumber: z.string().min(1).max(30),
+  password: z.string().min(8).max(128),
 });
 
 export const updatePartnerSchema = z.object({

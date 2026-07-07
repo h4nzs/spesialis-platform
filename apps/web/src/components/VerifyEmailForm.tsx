@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { createBrowserClient } from '@specialist/shared';
 
 interface Props {
@@ -6,7 +6,7 @@ interface Props {
 }
 
 export function VerifyEmailForm({ token }: Props) {
-  const api = createBrowserClient();
+  const api = useMemo(() => createBrowserClient(), []);
   const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading');
   const [message, setMessage] = useState('');
 
@@ -22,7 +22,7 @@ export function VerifyEmailForm({ token }: Props) {
       }
     }
     verify();
-  }, []);
+  }, [api, token]);
 
   if (status === 'loading') {
     return (

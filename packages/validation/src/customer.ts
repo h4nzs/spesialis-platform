@@ -1,15 +1,5 @@
 import { z } from 'zod';
 
-export const createCustomerSchema = z.object({
-  fullName: z.string().min(1).max(255),
-  guestPhone: z
-    .string()
-    .min(10)
-    .max(30)
-    .regex(/^\+?[0-9]+$/)
-    .optional(),
-});
-
 export const updateCustomerSchema = z.object({
   fullName: z.string().min(1).max(255).optional(),
   avatar: z.string().url().optional(),
@@ -21,5 +11,9 @@ export const updateCustomerSchema = z.object({
   defaultAddressId: z.string().uuid().optional(),
 });
 
-export type CreateCustomerInput = z.infer<typeof createCustomerSchema>;
+export const updateCustomerStatusSchema = z.object({
+  status: z.enum(['active', 'suspended', 'blocked']),
+});
+
 export type UpdateCustomerInput = z.infer<typeof updateCustomerSchema>;
+export type UpdateCustomerStatusInput = z.infer<typeof updateCustomerStatusSchema>;

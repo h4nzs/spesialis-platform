@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { createBrowserClient, formatDate } from '@specialist/shared';
 
 interface NotificationItem {
@@ -11,7 +11,7 @@ interface NotificationItem {
 }
 
 export function NotificationBell() {
-  const api = createBrowserClient();
+  const api = useMemo(() => createBrowserClient(), []);
   const [open, setOpen] = useState(false);
   const [unread, setUnread] = useState(0);
   const [notifications, setNotifications] = useState<NotificationItem[]>([]);
@@ -25,7 +25,7 @@ export function NotificationBell() {
     } catch {
       // silent
     }
-  }, []);
+  }, [api]);
 
   const fetchRecent = useCallback(async () => {
     setLoading(true);
@@ -40,17 +40,17 @@ export function NotificationBell() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [api]);
 
   useEffect(() => {
     fetchUnread();
     const interval = setInterval(fetchUnread, 30_000);
     return () => clearInterval(interval);
-  }, []);
+  }, [fetchUnread]);
 
   useEffect(() => {
     if (open) fetchRecent();
-  }, [open]);
+  }, [open, fetchRecent]);
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {

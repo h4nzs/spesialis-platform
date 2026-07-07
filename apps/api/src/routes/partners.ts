@@ -12,6 +12,7 @@ import {
   reviews,
 } from '../lib/db.ts';
 import { authMiddleware, requireRole } from '../middleware/auth.ts';
+import { validateBody, validateQuery } from '../middleware/validation.ts';
 import { hashPassword } from '../lib/auth.ts';
 import {
   partnerRegistrationSchema,
@@ -23,19 +24,24 @@ import {
   paginationQuerySchema,
 } from '@specialist/validation';
 import type {
-  PaginationMeta,
-  PartnerAvailability,
-  PartnerVerificationStatus,
-} from '@specialist/types';
+  PartnerRegistrationInput,
+  UpdatePartnerInput,
+  UpdateAvailabilityInput,
+  AddSkillInput,
+  CreatePartnerDocumentInput,
+  VerifyPartnerInput,
+} from '@specialist/validation';
+import type { PartnerAvailability, PartnerVerificationStatus } from '@specialist/types';
 import {
   success,
   successPaginated,
   created,
-  error,
   notFound,
   conflict,
   serverError,
 } from '../lib/response.ts';
+import { buildPaginationMeta } from '../lib/pagination.ts';
+import { omitUndefined } from '../lib/update.ts';
 import { sendPartnerVerifiedEmail } from '../lib/email.ts';
 import { createNotification, notifyAdmins } from '../lib/notification.ts';
 import { rateLimit } from '../middleware/rate-limiter.ts';
@@ -60,64 +66,57 @@ async function listPartnerJobs(partnerId: string) {
     .orderBy(desc(assignments.assignedAt));
 }
 
-router.post('/register', rateLimit(5, 60_000), async (c) => {
-  const body = await c.req.json();
-  const parsed = partnerRegistrationSchema.safeParse(body);
-  if (!parsed.success) {
-    return error(
-      c,
-      'VALIDATION_ERROR',
-      'Validation failed',
-      422,
-      parsed.error.issues.map((i) => ({ field: i.path.join('.'), message: i.message })),
-    );
-  }
+router.post(
+  '/register',
+  rateLimit(5, 60_000),
+  validateBody(partnerRegistrationSchema),
+  async (c) => {
+    const { email, phone, password, fullName, ktpNumber } = c.get(
+      'validated',
+    ) as PartnerRegistrationInput;
 
-  const { email, phone, password, fullName, ktpNumber } = parsed.data;
+    const existing = await db
+      .select({ id: users.id })
+      .from(users)
+      .where(eq(users.email, email))
+      .limit(1);
 
-  const existing = await db
-    .select({ id: users.id })
-    .from(users)
-    .where(eq(users.email, email))
-    .limit(1);
+    if (existing[0]) return conflict(c, 'Email sudah terdaftar');
 
-  if (existing[0]) return conflict(c, 'Email sudah terdaftar');
+    const passwordHash = await hashPassword(password);
 
-  const passwordHash = await hashPassword(password);
+    const [user] = await db
+      .insert(users)
+      .values({
+        email,
+        phone,
+        passwordHash,
+        role: 'partner',
+        status: 'active',
+      })
+      .returning({ id: users.id, email: users.email, role: users.role });
 
-  const [user] = await db
-    .insert(users)
-    .values({
-      email,
+    if (!user) return serverError(c, 'Gagal membuat user');
+
+    await db.insert(partnerProfiles).values({
+      userId: user.id,
+      fullName,
       phone,
-      passwordHash,
-      role: 'partner',
-      status: 'active',
-    })
-    .returning({ id: users.id, email: users.email, role: users.role });
+      ktpNumber,
+    });
 
-  if (!user) return serverError(c, 'Gagal membuat user');
+    notifyAdmins(
+      'partner.registered',
+      'Partner Baru',
+      `Mitra baru mendaftar: ${fullName} (${email})`,
+    );
 
-  await db.insert(partnerProfiles).values({
-    userId: user.id,
-    fullName,
-    phone,
-    ktpNumber,
-  });
+    return created(c, { user }, 'Registrasi partner berhasil');
+  },
+);
 
-  notifyAdmins(
-    'partner.registered',
-    'Partner Baru',
-    `Mitra baru mendaftar: ${fullName} (${email})`,
-  );
-
-  return created(c, { user }, 'Registrasi partner berhasil');
-});
-
-router.get('/', async (c) => {
-  const parsed = paginationQuerySchema.safeParse(c.req.query());
-  if (!parsed.success) return error(c, 'VALIDATION_ERROR', 'Parameter tidak valid', 422);
-  const query = parsed.data;
+router.get('/', validateQuery(paginationQuerySchema), async (c) => {
+  const query = c.get('validated') as { page: number; limit: number };
 
   const availability = c.req.query('availability');
   const verification = c.req.query('verification');
@@ -161,16 +160,7 @@ router.get('/', async (c) => {
     .from(partnerProfiles)
     .where(conditions.length > 0 ? and(...conditions) : undefined);
   const total = Number(countResult[0]?.count ?? 0);
-  const totalPages = Math.ceil(total / query.limit);
-
-  const pagination: PaginationMeta = {
-    page: query.page,
-    limit: query.limit,
-    total,
-    totalPages,
-    hasNext: query.page < totalPages,
-    hasPrev: query.page > 1,
-  };
+  const pagination = buildPaginationMeta(query.page, query.limit, total);
 
   return successPaginated(c, items, pagination);
 });
@@ -188,30 +178,13 @@ router.get('/me', authMiddleware, async (c) => {
   return success(c, profile);
 });
 
-router.patch('/me', authMiddleware, async (c) => {
+router.patch('/me', authMiddleware, validateBody(updatePartnerSchema), async (c) => {
   const userId = c.get('userId');
-  const body = await c.req.json();
-  const parsed = updatePartnerSchema.safeParse(body);
-  if (!parsed.success) {
-    return error(
-      c,
-      'VALIDATION_ERROR',
-      'Validation failed',
-      422,
-      parsed.error.issues.map((i) => ({ field: i.path.join('.'), message: i.message })),
-    );
-  }
-
-  const updateData: Record<string, unknown> = {};
-  if (parsed.data.fullName !== undefined) updateData.fullName = parsed.data.fullName;
-  if (parsed.data.phone !== undefined) updateData.phone = parsed.data.phone;
-  if (parsed.data.bio !== undefined) updateData.bio = parsed.data.bio;
-  if (parsed.data.experienceYear !== undefined)
-    updateData.experienceYear = parsed.data.experienceYear;
+  const data = c.get('validated') as UpdatePartnerInput;
 
   const [updated] = await db
     .update(partnerProfiles)
-    .set(updateData)
+    .set(omitUndefined(data))
     .where(eq(partnerProfiles.userId, userId))
     .returning({
       id: partnerProfiles.id,
@@ -225,29 +198,24 @@ router.patch('/me', authMiddleware, async (c) => {
   return success(c, updated, 'Profil berhasil diperbarui');
 });
 
-router.patch('/me/availability', authMiddleware, async (c) => {
-  const userId = c.get('userId');
-  const body = await c.req.json();
-  const parsed = updateAvailabilitySchema.safeParse(body);
-  if (!parsed.success) {
-    return error(
-      c,
-      'VALIDATION_ERROR',
-      'Validation failed',
-      422,
-      parsed.error.issues.map((i) => ({ field: i.path.join('.'), message: i.message })),
-    );
-  }
+router.patch(
+  '/me/availability',
+  authMiddleware,
+  validateBody(updateAvailabilitySchema),
+  async (c) => {
+    const userId = c.get('userId');
+    const { availability } = c.get('validated') as UpdateAvailabilityInput;
 
-  const [updated] = await db
-    .update(partnerProfiles)
-    .set({ availability: parsed.data.availability })
-    .where(eq(partnerProfiles.userId, userId))
-    .returning({ availability: partnerProfiles.availability });
+    const [updated] = await db
+      .update(partnerProfiles)
+      .set({ availability: availability as PartnerAvailability })
+      .where(eq(partnerProfiles.userId, userId))
+      .returning({ availability: partnerProfiles.availability });
 
-  if (!updated) return serverError(c, 'Gagal update availability');
-  return success(c, updated, 'Status berhasil diperbarui');
-});
+    if (!updated) return serverError(c, 'Gagal update availability');
+    return success(c, updated, 'Status berhasil diperbarui');
+  },
+);
 
 router.get('/me/skills', authMiddleware, async (c) => {
   const userId = c.get('userId');
@@ -273,7 +241,7 @@ router.get('/me/skills', authMiddleware, async (c) => {
   return success(c, items);
 });
 
-router.post('/me/skills', authMiddleware, async (c) => {
+router.post('/me/skills', authMiddleware, validateBody(addSkillSchema), async (c) => {
   const userId = c.get('userId');
   const [profile] = await db
     .select({ id: partnerProfiles.id })
@@ -282,27 +250,12 @@ router.post('/me/skills', authMiddleware, async (c) => {
     .limit(1);
   if (!profile) return notFound(c, 'Profil partner tidak ditemukan');
 
-  const body = await c.req.json();
-  const parsed = addSkillSchema.safeParse(body);
-  if (!parsed.success) {
-    return error(
-      c,
-      'VALIDATION_ERROR',
-      'Validation failed',
-      422,
-      parsed.error.issues.map((i) => ({ field: i.path.join('.'), message: i.message })),
-    );
-  }
+  const { categoryId, proficiency } = c.get('validated') as AddSkillInput;
 
   const existing = await db
     .select({ id: partnerSkills.id })
     .from(partnerSkills)
-    .where(
-      and(
-        eq(partnerSkills.partnerId, profile.id),
-        eq(partnerSkills.categoryId, parsed.data.categoryId),
-      ),
-    )
+    .where(and(eq(partnerSkills.partnerId, profile.id), eq(partnerSkills.categoryId, categoryId)))
     .limit(1);
   if (existing[0]) return conflict(c, 'Skill sudah terdaftar');
 
@@ -310,8 +263,8 @@ router.post('/me/skills', authMiddleware, async (c) => {
     .insert(partnerSkills)
     .values({
       partnerId: profile.id,
-      categoryId: parsed.data.categoryId,
-      proficiency: parsed.data.proficiency ?? 'Intermediate',
+      categoryId,
+      proficiency: proficiency ?? 'Intermediate',
     })
     .returning();
 
@@ -373,39 +326,34 @@ router.get('/me/documents', authMiddleware, async (c) => {
   return success(c, items);
 });
 
-router.post('/me/documents', authMiddleware, async (c) => {
-  const userId = c.get('userId');
-  const body = await c.req.json();
-  const parsed = createPartnerDocumentSchema.safeParse(body);
-  if (!parsed.success) {
-    return error(
-      c,
-      'VALIDATION_ERROR',
-      'Validation failed',
-      422,
-      parsed.error.issues.map((i) => ({ field: i.path.join('.'), message: i.message })),
-    );
-  }
+router.post(
+  '/me/documents',
+  authMiddleware,
+  validateBody(createPartnerDocumentSchema),
+  async (c) => {
+    const userId = c.get('userId');
+    const { type, mediaId, fileName } = c.get('validated') as CreatePartnerDocumentInput;
 
-  const [profile] = await db
-    .select({ id: partnerProfiles.id })
-    .from(partnerProfiles)
-    .where(eq(partnerProfiles.userId, userId))
-    .limit(1);
-  if (!profile) return notFound(c, 'Profil partner tidak ditemukan');
+    const [profile] = await db
+      .select({ id: partnerProfiles.id })
+      .from(partnerProfiles)
+      .where(eq(partnerProfiles.userId, userId))
+      .limit(1);
+    if (!profile) return notFound(c, 'Profil partner tidak ditemukan');
 
-  const [doc] = await db
-    .insert(partnerDocuments)
-    .values({
-      partnerId: profile.id,
-      type: parsed.data.type,
-      mediaId: parsed.data.mediaId,
-      fileName: parsed.data.fileName,
-    })
-    .returning();
+    const [doc] = await db
+      .insert(partnerDocuments)
+      .values({
+        partnerId: profile.id,
+        type,
+        mediaId,
+        fileName,
+      })
+      .returning();
 
-  return created(c, doc, 'Dokumen berhasil diupload');
-});
+    return created(c, doc, 'Dokumen berhasil diupload');
+  },
+);
 
 router.delete('/me/documents/:documentId', authMiddleware, async (c) => {
   const userId = c.get('userId');
@@ -491,69 +439,63 @@ router.get('/:id/reviews', async (c) => {
   return success(c, items);
 });
 
-router.post('/:id/verify', authMiddleware, requireRole('admin', 'super_admin'), async (c) => {
-  const partnerId = c.req.param('id')!;
-  const body = await c.req.json();
-  const parsed = verifyPartnerSchema.safeParse(body);
-  if (!parsed.success) {
-    return error(
+router.post(
+  '/:id/verify',
+  authMiddleware,
+  requireRole('admin', 'super_admin'),
+  validateBody(verifyPartnerSchema),
+  async (c) => {
+    const partnerId = c.req.param('id')!;
+    const data = c.get('validated') as VerifyPartnerInput;
+
+    const [profile] = await db
+      .select({ id: partnerProfiles.id, verificationStatus: partnerProfiles.verificationStatus })
+      .from(partnerProfiles)
+      .where(eq(partnerProfiles.id, partnerId))
+      .limit(1);
+    if (!profile) return notFound(c, 'Partner tidak ditemukan');
+
+    await db
+      .update(partnerProfiles)
+      .set({ verificationStatus: data.verificationStatus as PartnerVerificationStatus })
+      .where(eq(partnerProfiles.id, partnerId));
+
+    const [partnerUser] = await db
+      .select({ email: users.email, fullName: partnerProfiles.fullName, userId: users.id })
+      .from(partnerProfiles)
+      .innerJoin(users, eq(users.id, partnerProfiles.userId))
+      .where(eq(partnerProfiles.id, partnerId))
+      .limit(1);
+
+    if (partnerUser?.userId) {
+      await createNotification({
+        userId: partnerUser.userId,
+        type: 'partner.verified',
+        title:
+          data.verificationStatus === 'Approved' ? 'Verifikasi Disetujui' : 'Verifikasi Ditolak',
+        message:
+          data.verificationStatus === 'Approved'
+            ? 'Selamat! Akun mitra Anda telah diverifikasi.'
+            : `Verifikasi akun mitra Anda ditolak. Alasan: ${data.note ?? 'tidak ada'}`,
+      });
+    }
+
+    if (partnerUser?.email) {
+      sendPartnerVerifiedEmail(
+        partnerUser.email,
+        partnerUser.fullName,
+        data.verificationStatus as 'Approved' | 'Rejected',
+        data.note ?? null,
+      );
+    }
+
+    return success(
       c,
-      'VALIDATION_ERROR',
-      'Validation failed',
-      422,
-      parsed.error.issues.map((i) => ({ field: i.path.join('.'), message: i.message })),
+      { id: partnerId, verificationStatus: data.verificationStatus },
+      `Partner ${data.verificationStatus === 'Approved' ? 'disetujui' : 'ditolak'}`,
     );
-  }
-
-  const [profile] = await db
-    .select({ id: partnerProfiles.id, verificationStatus: partnerProfiles.verificationStatus })
-    .from(partnerProfiles)
-    .where(eq(partnerProfiles.id, partnerId))
-    .limit(1);
-  if (!profile) return notFound(c, 'Partner tidak ditemukan');
-
-  await db
-    .update(partnerProfiles)
-    .set({ verificationStatus: parsed.data.verificationStatus as PartnerVerificationStatus })
-    .where(eq(partnerProfiles.id, partnerId));
-
-  const [partnerUser] = await db
-    .select({ email: users.email, fullName: partnerProfiles.fullName, userId: users.id })
-    .from(partnerProfiles)
-    .innerJoin(users, eq(users.id, partnerProfiles.userId))
-    .where(eq(partnerProfiles.id, partnerId))
-    .limit(1);
-
-  if (partnerUser?.userId) {
-    await createNotification({
-      userId: partnerUser.userId,
-      type: 'partner.verified',
-      title:
-        parsed.data.verificationStatus === 'Approved'
-          ? 'Verifikasi Disetujui'
-          : 'Verifikasi Ditolak',
-      message:
-        parsed.data.verificationStatus === 'Approved'
-          ? 'Selamat! Akun mitra Anda telah diverifikasi.'
-          : `Verifikasi akun mitra Anda ditolak. Alasan: ${parsed.data.note ?? 'tidak ada'}`,
-    });
-  }
-
-  if (partnerUser?.email) {
-    sendPartnerVerifiedEmail(
-      partnerUser.email,
-      partnerUser.fullName,
-      parsed.data.verificationStatus as 'Approved' | 'Rejected',
-      parsed.data.note ?? null,
-    );
-  }
-
-  return success(
-    c,
-    { id: partnerId, verificationStatus: parsed.data.verificationStatus },
-    `Partner ${parsed.data.verificationStatus === 'Approved' ? 'disetujui' : 'ditolak'}`,
-  );
-});
+  },
+);
 
 router.get('/:id/jobs', async (c) => {
   const partnerId = c.req.param('id')!;

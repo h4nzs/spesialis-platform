@@ -67,8 +67,18 @@ export const convertGuestSchema = z.object({
   fullName: z.string().min(1).max(255),
 });
 
+export const refreshTokenSchema = z.object({
+  refreshToken: z.string().min(1, 'Refresh token wajib diisi'),
+});
+
+export const verifyEmailSchema = z.object({
+  token: z.string().min(1, 'Token verifikasi wajib diisi'),
+});
+
 export type UpdateUserStatusInput = z.infer<typeof updateUserStatusSchema>;
 export type ConvertGuestInput = z.infer<typeof convertGuestSchema>;
+export type RefreshTokenInput = z.infer<typeof refreshTokenSchema>;
+export type VerifyEmailInput = z.infer<typeof verifyEmailSchema>;
 
 export type RegisterInput = z.infer<typeof registerSchema>;
 export type LoginInput = z.infer<typeof loginSchema>;

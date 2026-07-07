@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { createBrowserClient } from '@specialist/shared';
 import { updateProfileSchema, changePasswordSchema } from '@specialist/validation';
 import { Input, Button } from '@specialist/ui';
@@ -12,7 +12,7 @@ interface UserProfile {
 }
 
 export function ProfileSettings() {
-  const api = createBrowserClient();
+  const api = useMemo(() => createBrowserClient(), []);
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -38,9 +38,9 @@ export function ProfileSettings() {
       })
       .catch(() => {})
       .finally(() => setLoading(false));
-  }, []);
+  }, [api]);
 
-  async function handleProfileUpdate(e: React.FormEvent) {
+  async function handleProfileUpdate(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setProfileSuccess(false);
     setProfileErrors([]);
@@ -63,7 +63,7 @@ export function ProfileSettings() {
     }
   }
 
-  async function handlePasswordChange(e: React.FormEvent) {
+  async function handlePasswordChange(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setPwSuccess(false);
     setPwErrors([]);

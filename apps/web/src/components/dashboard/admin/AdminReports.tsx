@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { createBrowserClient, formatCurrency } from '@specialist/shared';
 import { Card } from '@specialist/ui';
 
@@ -69,7 +69,7 @@ function statusBadgeStyle(status: string): string {
 }
 
 export function AdminReports() {
-  const api = createBrowserClient();
+  const api = useMemo(() => createBrowserClient(), []);
   const [data, setData] = useState<ReportsData | null>(null);
   const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState('revenue');
@@ -86,7 +86,7 @@ export function AdminReports() {
       }
     }
     load();
-  }, []);
+  }, [api]);
 
   if (loading) {
     return <div className="py-8 text-center text-sm text-text-muted">Memuat laporan...</div>;

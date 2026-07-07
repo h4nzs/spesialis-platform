@@ -3,7 +3,8 @@ import { eq, desc } from 'drizzle-orm';
 import { z } from 'zod';
 import { db, systemSettings } from '../../lib/db.ts';
 import { authMiddleware, requireRole } from '../../middleware/auth.ts';
-import { success, error } from '../../lib/response.ts';
+import { validateBody } from '../../middleware/validation.ts';
+import { success } from '../../lib/response.ts';
 import { createAuditLog } from '../../lib/audit.ts';
 
 const router = new Hono();
@@ -43,62 +44,59 @@ router.get('/', authMiddleware, requireRole('admin', 'super_admin'), async (c) =
   return success(c, grouped);
 });
 
-router.patch('/', authMiddleware, requireRole('admin', 'super_admin'), async (c) => {
-  const body = await c.req.json();
-  const parsed = updateSettingsSchema.safeParse(body);
+router.patch(
+  '/',
+  authMiddleware,
+  requireRole('admin', 'super_admin'),
+  validateBody(updateSettingsSchema),
+  async (c) => {
+    const data = c.get('validated') as {
+      settings: Array<{ key: string; value: string; category?: string; description?: string }>;
+    };
 
-  if (!parsed.success) {
-    return error(
-      c,
-      'VALIDATION_ERROR',
-      'Validation failed',
-      422,
-      parsed.error.issues.map((i) => ({ field: i.path.join('.'), message: i.message })),
-    );
-  }
+    const userId = c.get('userId');
+    const results: Array<{ key: string; updated: boolean }> = [];
 
-  const userId = c.get('userId');
-  const results: Array<{ key: string; updated: boolean }> = [];
+    for (const setting of data.settings) {
+      const [existing] = await db
+        .select({ id: systemSettings.id, value: systemSettings.value })
+        .from(systemSettings)
+        .where(eq(systemSettings.key, setting.key))
+        .limit(1);
 
-  for (const setting of parsed.data.settings) {
-    const [existing] = await db
-      .select({ id: systemSettings.id, value: systemSettings.value })
-      .from(systemSettings)
-      .where(eq(systemSettings.key, setting.key))
-      .limit(1);
-
-    if (existing) {
-      await db
-        .update(systemSettings)
-        .set({
+      if (existing) {
+        await db
+          .update(systemSettings)
+          .set({
+            value: setting.value,
+            updatedBy: userId,
+            updatedAt: new Date(),
+          })
+          .where(eq(systemSettings.id, existing.id));
+        results.push({ key: setting.key, updated: true });
+      } else {
+        await db.insert(systemSettings).values({
+          key: setting.key,
           value: setting.value,
+          category: setting.category ?? 'general',
+          description: setting.description ?? null,
           updatedBy: userId,
-          updatedAt: new Date(),
-        })
-        .where(eq(systemSettings.id, existing.id));
-      results.push({ key: setting.key, updated: true });
-    } else {
-      await db.insert(systemSettings).values({
-        key: setting.key,
-        value: setting.value,
-        category: setting.category ?? 'general',
-        description: setting.description ?? null,
-        updatedBy: userId,
-      });
-      results.push({ key: setting.key, updated: true });
+        });
+        results.push({ key: setting.key, updated: true });
+      }
     }
-  }
 
-  await createAuditLog(c, {
-    userId,
-    action: 'UPDATE_SETTINGS',
-    entity: 'system_settings',
-    entityId: 'bulk',
-    oldValue: null,
-    newValue: { updated: results.length },
-  });
+    await createAuditLog(c, {
+      userId,
+      action: 'UPDATE_SETTINGS',
+      entity: 'system_settings',
+      entityId: 'bulk',
+      oldValue: null,
+      newValue: { updated: results.length },
+    });
 
-  return success(c, { updated: results.length });
-});
+    return success(c, { updated: results.length });
+  },
+);
 
 export { router as adminSettingsRouter };

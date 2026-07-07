@@ -9,7 +9,7 @@ export type {
 
 export type { UserRole, UserStatus, User, CreateUserInput, UpdateUserInput } from './user.ts';
 
-export type { CustomerProfile, CreateCustomerInput, UpdateCustomerInput } from './customer.ts';
+export type { CustomerProfile, UpdateCustomerInput } from './customer.ts';
 
 export type {
   PartnerAvailability,

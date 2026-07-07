@@ -2,32 +2,17 @@ import { Hono } from 'hono';
 import { eq, and, desc } from 'drizzle-orm';
 import { db, reviews, orders, customerProfiles } from '../lib/db.ts';
 import { authMiddleware } from '../middleware/auth.ts';
+import { validateBody } from '../middleware/validation.ts';
 import { createReviewSchema } from '@specialist/validation';
+import type { CreateReviewInput } from '@specialist/validation';
 import type { OrderStatus } from '@specialist/types';
-import {
-  success,
-  created,
-  error,
-  notFound,
-  forbidden,
-  conflict,
-} from '../lib/response.ts';
+import { success, created, notFound, forbidden, conflict } from '../lib/response.ts';
 
 const router = new Hono();
 
-router.post('/', authMiddleware, async (c) => {
+router.post('/', authMiddleware, validateBody(createReviewSchema), async (c) => {
   const userId = c.get('userId');
-  const body = await c.req.json();
-  const parsed = createReviewSchema.safeParse(body);
-  if (!parsed.success) {
-    return error(
-      c,
-      'VALIDATION_ERROR',
-      'Validation failed',
-      422,
-      parsed.error.issues.map((i) => ({ field: i.path.join('.'), message: i.message })),
-    );
-  }
+  const data = c.get('validated') as CreateReviewInput;
 
   const [profile] = await db
     .select({ id: customerProfiles.id })
@@ -44,7 +29,7 @@ router.post('/', authMiddleware, async (c) => {
       status: orders.status,
     })
     .from(orders)
-    .where(eq(orders.id, parsed.data.orderId))
+    .where(eq(orders.id, data.orderId))
     .limit(1);
 
   if (!order) return notFound(c, 'Order tidak ditemukan');
@@ -69,8 +54,8 @@ router.post('/', authMiddleware, async (c) => {
       orderId: order.id,
       customerId: profile.id,
       partnerId: order.partnerId,
-      rating: String(parsed.data.rating),
-      review: parsed.data.review ?? null,
+      rating: String(data.rating),
+      review: data.review ?? null,
     })
     .returning();
 

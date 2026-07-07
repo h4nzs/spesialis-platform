@@ -247,14 +247,14 @@ describe('POST /refresh', () => {
     expect(res.status).toBe(401);
     expect(body.success).toBe(false);
   });
-  it('401 missing', async () => {
+  it('422 missing', async () => {
     const res = await mkApp().request('/api/v1/auth/refresh', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({}),
     });
     const body = (await res.json()) as ApiTestResponse;
-    expect(res.status).toBe(401);
+    expect(res.status).toBe(422);
     expect(body.success).toBe(false);
   });
 });

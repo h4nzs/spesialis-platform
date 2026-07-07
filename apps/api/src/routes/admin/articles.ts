@@ -2,11 +2,18 @@ import { Hono } from 'hono';
 import { eq, and, asc, desc, sql, isNull } from 'drizzle-orm';
 import { db, articles, articleCategories } from '../../lib/db.ts';
 import { authMiddleware, requireRole } from '../../middleware/auth.ts';
+import { validateBody } from '../../middleware/validation.ts';
 import {
   createArticleSchema,
   updateArticleSchema,
   createArticleCategorySchema,
   updateArticleCategorySchema,
+} from '@specialist/validation';
+import type {
+  CreateArticleCategoryInput,
+  UpdateArticleCategoryInput,
+  CreateArticleInput,
+  UpdateArticleInput,
 } from '@specialist/validation';
 import {
   success,
@@ -16,7 +23,8 @@ import {
   serverError,
   successPaginated,
 } from '../../lib/response.ts';
-import type { PaginationMeta } from '@specialist/types';
+import { buildPaginationMeta } from '../../lib/pagination.ts';
+import { omitUndefined } from '../../lib/update.ts';
 
 const router = new Hono();
 
@@ -38,33 +46,24 @@ router.post(
   '/categories',
   authMiddleware,
   requireRole('admin', 'super_admin', 'content_manager'),
+  validateBody(createArticleCategorySchema),
   async (c) => {
-    const body = await c.req.json();
-    const parsed = createArticleCategorySchema.safeParse(body);
-    if (!parsed.success) {
-      return error(
-        c,
-        'VALIDATION_ERROR',
-        'Validation failed',
-        422,
-        parsed.error.issues.map((i) => ({ field: i.path.join('.'), message: i.message })),
-      );
-    }
+    const data = c.get('validated') as CreateArticleCategoryInput;
 
     const [existing] = await db
       .select({ id: articleCategories.id })
       .from(articleCategories)
-      .where(eq(articleCategories.slug, parsed.data.slug))
+      .where(eq(articleCategories.slug, data.slug))
       .limit(1);
     if (existing) return error(c, 'SLUG_EXISTS', 'Slug sudah digunakan', 409);
 
     const [created_category] = await db
       .insert(articleCategories)
       .values({
-        name: parsed.data.name,
-        slug: parsed.data.slug,
-        description: parsed.data.description ?? null,
-        displayOrder: parsed.data.displayOrder ?? 0,
+        name: data.name,
+        slug: data.slug,
+        description: data.description ?? null,
+        displayOrder: data.displayOrder ?? 0,
       })
       .returning();
 
@@ -77,19 +76,10 @@ router.patch(
   '/categories/:id',
   authMiddleware,
   requireRole('admin', 'super_admin', 'content_manager'),
+  validateBody(updateArticleCategorySchema),
   async (c) => {
     const id = c.req.param('id')!;
-    const body = await c.req.json();
-    const parsed = updateArticleCategorySchema.safeParse(body);
-    if (!parsed.success) {
-      return error(
-        c,
-        'VALIDATION_ERROR',
-        'Validation failed',
-        422,
-        parsed.error.issues.map((i) => ({ field: i.path.join('.'), message: i.message })),
-      );
-    }
+    const data = c.get('validated') as UpdateArticleCategoryInput;
 
     const [category] = await db
       .select({ id: articleCategories.id })
@@ -98,26 +88,18 @@ router.patch(
       .limit(1);
     if (!category) return notFound(c, 'Kategori tidak ditemukan');
 
-    if (parsed.data.slug) {
+    if (data.slug) {
       const [existing] = await db
         .select({ id: articleCategories.id })
         .from(articleCategories)
-        .where(
-          and(eq(articleCategories.slug, parsed.data.slug), sql`${articleCategories.id} != ${id}`),
-        )
+        .where(and(eq(articleCategories.slug, data.slug), sql`${articleCategories.id} != ${id}`))
         .limit(1);
       if (existing) return error(c, 'SLUG_EXISTS', 'Slug sudah digunakan', 409);
     }
 
-    const updateData: Record<string, unknown> = {};
-    if (parsed.data.name !== undefined) updateData.name = parsed.data.name;
-    if (parsed.data.slug !== undefined) updateData.slug = parsed.data.slug;
-    if (parsed.data.description !== undefined) updateData.description = parsed.data.description;
-    if (parsed.data.displayOrder !== undefined) updateData.displayOrder = parsed.data.displayOrder;
-
     const [updated] = await db
       .update(articleCategories)
-      .set(updateData)
+      .set(omitUndefined(data))
       .where(eq(articleCategories.id, id))
       .returning();
 
@@ -180,16 +162,7 @@ router.get(
       .from(articles)
       .where(conditions);
     const total = Number(countResult[0]?.count ?? 0);
-    const totalPages = Math.ceil(total / limit);
-
-    const pagination: PaginationMeta = {
-      page,
-      limit,
-      total,
-      totalPages,
-      hasNext: page < totalPages,
-      hasPrev: page > 1,
-    };
+    const pagination = buildPaginationMeta(page, limit, total);
 
     return successPaginated(c, items, pagination);
   },
@@ -233,41 +206,32 @@ router.post(
   '/',
   authMiddleware,
   requireRole('admin', 'super_admin', 'content_manager'),
+  validateBody(createArticleSchema),
   async (c) => {
-    const body = await c.req.json();
-    const parsed = createArticleSchema.safeParse(body);
-    if (!parsed.success) {
-      return error(
-        c,
-        'VALIDATION_ERROR',
-        'Validation failed',
-        422,
-        parsed.error.issues.map((i) => ({ field: i.path.join('.'), message: i.message })),
-      );
-    }
+    const data = c.get('validated') as CreateArticleInput;
 
     const [existing] = await db
       .select({ id: articles.id })
       .from(articles)
-      .where(eq(articles.slug, parsed.data.slug))
+      .where(eq(articles.slug, data.slug))
       .limit(1);
     if (existing) return error(c, 'SLUG_EXISTS', 'Slug sudah digunakan', 409);
 
     const now = new Date();
-    const isPublished = parsed.data.status === 'Published';
+    const isPublished = data.status === 'Published';
 
     const [created_article] = await db
       .insert(articles)
       .values({
-        categoryId: parsed.data.categoryId ?? null,
-        title: parsed.data.title,
-        slug: parsed.data.slug,
-        summary: parsed.data.summary ?? null,
-        content: parsed.data.content ?? null,
-        coverImage: parsed.data.coverImage ?? null,
-        authorName: parsed.data.authorName ?? null,
-        status: parsed.data.status ?? 'Draft',
-        isFeatured: parsed.data.isFeatured ?? false,
+        categoryId: data.categoryId ?? null,
+        title: data.title,
+        slug: data.slug,
+        summary: data.summary ?? null,
+        content: data.content ?? null,
+        coverImage: data.coverImage ?? null,
+        authorName: data.authorName ?? null,
+        status: data.status ?? 'Draft',
+        isFeatured: data.isFeatured ?? false,
         publishedAt: isPublished ? now : null,
       })
       .returning();
@@ -281,19 +245,10 @@ router.patch(
   '/:id',
   authMiddleware,
   requireRole('admin', 'super_admin', 'content_manager'),
+  validateBody(updateArticleSchema),
   async (c) => {
     const id = c.req.param('id')!;
-    const body = await c.req.json();
-    const parsed = updateArticleSchema.safeParse(body);
-    if (!parsed.success) {
-      return error(
-        c,
-        'VALIDATION_ERROR',
-        'Validation failed',
-        422,
-        parsed.error.issues.map((i) => ({ field: i.path.join('.'), message: i.message })),
-      );
-    }
+    const data = c.get('validated') as UpdateArticleInput;
 
     const [article] = await db
       .select({ id: articles.id, status: articles.status, publishedAt: articles.publishedAt })
@@ -302,28 +257,29 @@ router.patch(
       .limit(1);
     if (!article) return notFound(c, 'Artikel tidak ditemukan');
 
-    if (parsed.data.slug) {
+    if (data.slug) {
       const [existing] = await db
         .select({ id: articles.id })
         .from(articles)
-        .where(and(eq(articles.slug, parsed.data.slug), sql`${articles.id} != ${id}`))
+        .where(and(eq(articles.slug, data.slug), sql`${articles.id} != ${id}`))
         .limit(1);
       if (existing) return error(c, 'SLUG_EXISTS', 'Slug sudah digunakan', 409);
     }
 
-    const updateData: Record<string, unknown> = {};
-    if (parsed.data.categoryId !== undefined) updateData.categoryId = parsed.data.categoryId;
-    if (parsed.data.title !== undefined) updateData.title = parsed.data.title;
-    if (parsed.data.slug !== undefined) updateData.slug = parsed.data.slug;
-    if (parsed.data.summary !== undefined) updateData.summary = parsed.data.summary;
-    if (parsed.data.content !== undefined) updateData.content = parsed.data.content;
-    if (parsed.data.coverImage !== undefined) updateData.coverImage = parsed.data.coverImage;
-    if (parsed.data.authorName !== undefined) updateData.authorName = parsed.data.authorName;
-    if (parsed.data.isFeatured !== undefined) updateData.isFeatured = parsed.data.isFeatured;
+    const updateData = omitUndefined({
+      categoryId: data.categoryId,
+      title: data.title,
+      slug: data.slug,
+      summary: data.summary,
+      content: data.content,
+      coverImage: data.coverImage,
+      authorName: data.authorName,
+      isFeatured: data.isFeatured,
+    });
 
-    if (parsed.data.status !== undefined) {
-      updateData.status = parsed.data.status;
-      if (parsed.data.status === 'Published' && article.status !== 'Published') {
+    if (data.status !== undefined) {
+      updateData.status = data.status;
+      if (data.status === 'Published' && article.status !== 'Published') {
         updateData.publishedAt = new Date();
       }
     }

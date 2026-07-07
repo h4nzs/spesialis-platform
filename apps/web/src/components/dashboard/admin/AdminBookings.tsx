@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import {
   createBrowserClient,
   formatCurrency,
@@ -21,7 +21,7 @@ interface BookingItem {
 }
 
 export function AdminBookings() {
-  const api = createBrowserClient();
+  const api = useMemo(() => createBrowserClient(), []);
   const [bookings, setBookings] = useState<BookingItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
@@ -34,7 +34,7 @@ export function AdminBookings() {
   const [partnerId, setPartnerId] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
-  async function loadBookings() {
+  const loadBookings = useCallback(async () => {
     setLoading(true);
     try {
       const data = await api.get<BookingItem[]>('/api/v1/bookings', {
@@ -48,11 +48,11 @@ export function AdminBookings() {
     } finally {
       setLoading(false);
     }
-  }
+  }, [page, api]);
 
   useEffect(() => {
     loadBookings();
-  }, [page]);
+  }, [loadBookings]);
 
   async function handleAction() {
     if (!actionModal) return;

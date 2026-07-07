@@ -1,46 +1,23 @@
 import { Hono } from 'hono';
 import { eq } from 'drizzle-orm';
-import { db, orders, payments, orderStatusHistory, customerProfiles, users } from '../lib/db.ts';
+import { db, orders, payments, customerProfiles, users } from '../lib/db.ts';
 import { authMiddleware, requireRole } from '../middleware/auth.ts';
+import { validateBody } from '../middleware/validation.ts';
 import { createPaymentSchema, verifyPaymentSchema } from '@specialist/validation';
-import { success, created, error, notFound, forbidden, conflict } from '../lib/response.ts';
+import type { CreatePaymentInput, VerifyPaymentInput } from '@specialist/validation';
+import { success, created, notFound, forbidden, conflict } from '../lib/response.ts';
 import type { OrderStatus } from '@specialist/types';
 import { createAuditLog } from '../lib/audit.ts';
+import { recordStatusHistory } from '../lib/order-status.ts';
 import { createNotification, notifyAdmins } from '../lib/notification.ts';
 import { sendPaymentVerifiedEmail } from '../lib/email.ts';
 
-async function recordStatusHistory(
-  orderId: string,
-  from: OrderStatus | null,
-  to: OrderStatus,
-  changedBy: string,
-  note?: string,
-) {
-  await db.insert(orderStatusHistory).values({
-    orderId,
-    fromStatus: from,
-    toStatus: to,
-    changedBy,
-    note: note ?? null,
-  });
-}
-
 const router = new Hono();
 
-router.post('/', authMiddleware, async (c) => {
+router.post('/', authMiddleware, validateBody(createPaymentSchema), async (c) => {
   const userId = c.get('userId');
   const userRole = c.get('userRole');
-  const body = await c.req.json();
-  const parsed = createPaymentSchema.safeParse(body);
-  if (!parsed.success) {
-    return error(
-      c,
-      'VALIDATION_ERROR',
-      'Validation failed',
-      422,
-      parsed.error.issues.map((i) => ({ field: i.path.join('.'), message: i.message })),
-    );
-  }
+  const data = c.get('validated') as CreatePaymentInput;
 
   const [order] = await db
     .select({
@@ -49,7 +26,7 @@ router.post('/', authMiddleware, async (c) => {
       customerId: orders.customerId,
     })
     .from(orders)
-    .where(eq(orders.id, parsed.data.orderId))
+    .where(eq(orders.id, data.orderId))
     .limit(1);
 
   if (!order) return notFound(c, 'Order tidak ditemukan');
@@ -74,10 +51,10 @@ router.post('/', authMiddleware, async (c) => {
     .insert(payments)
     .values({
       orderId: order.id,
-      method: parsed.data.method,
-      amount: String(parsed.data.amount),
-      proofMediaId: parsed.data.proofMediaId ?? null,
-      notes: parsed.data.notes ?? null,
+      method: data.method,
+      amount: String(data.amount),
+      proofMediaId: data.proofMediaId ?? null,
+      notes: data.notes ?? null,
       status: 'Waiting',
     })
     .returning();
@@ -96,7 +73,7 @@ router.post('/', authMiddleware, async (c) => {
   notifyAdmins(
     'payment.submitted',
     'Pembayaran Baru',
-    `Pembayaran baru untuk order #${order.id} — ${parsed.data.method} ${parsed.data.amount}`,
+    `Pembayaran baru untuk order #${order.id} — ${data.method} ${data.amount}`,
   );
 
   return created(c, payment, 'Pembayaran berhasil diajukan');
@@ -148,20 +125,11 @@ router.post(
   '/:id/verify',
   authMiddleware,
   requireRole('admin', 'super_admin', 'finance'),
+  validateBody(verifyPaymentSchema),
   async (c) => {
     const paymentId = c.req.param('id')!;
     const userId = c.get('userId');
-    const body = await c.req.json();
-    const parsed = verifyPaymentSchema.safeParse(body);
-    if (!parsed.success) {
-      return error(
-        c,
-        'VALIDATION_ERROR',
-        'Validation failed',
-        422,
-        parsed.error.issues.map((i) => ({ field: i.path.join('.'), message: i.message })),
-      );
-    }
+    const data = c.get('validated') as VerifyPaymentInput;
 
     const [payment] = await db
       .select({
@@ -188,14 +156,14 @@ router.post(
     if (!order) return notFound(c, 'Order tidak ditemukan');
 
     await db.transaction(async (tx) => {
-      if (parsed.data.status === 'Paid') {
+      if (data.status === 'Paid') {
         await tx
           .update(payments)
           .set({
             status: 'Paid',
             verifiedBy: userId,
             verifiedAt: new Date(),
-            notes: parsed.data.notes ?? null,
+            notes: data.notes ?? null,
           })
           .where(eq(payments.id, paymentId));
 
@@ -205,7 +173,7 @@ router.post(
           order.status as OrderStatus,
           'Paid',
           userId,
-          parsed.data.notes,
+          data.notes,
         );
       } else {
         await tx
@@ -214,7 +182,7 @@ router.post(
             status: 'Failed',
             verifiedBy: userId,
             verifiedAt: new Date(),
-            notes: parsed.data.notes ?? null,
+            notes: data.notes ?? null,
           })
           .where(eq(payments.id, paymentId));
 
@@ -223,17 +191,17 @@ router.post(
           order.status as OrderStatus,
           'Completed',
           userId,
-          `Pembayaran ditolak: ${parsed.data.notes ?? ''}`,
+          `Pembayaran ditolak: ${data.notes ?? ''}`,
         );
       }
     });
 
     await createAuditLog(c, {
       userId,
-      action: `payment.${parsed.data.status === 'Paid' ? 'verify' : 'reject'}`,
+      action: `payment.${data.status === 'Paid' ? 'verify' : 'reject'}`,
       entity: 'payment',
       entityId: paymentId,
-      newValue: { status: parsed.data.status, verifiedBy: userId },
+      newValue: { status: data.status, verifiedBy: userId },
       oldValue: { status: payment.status },
     });
 
@@ -247,11 +215,11 @@ router.post(
       await createNotification({
         userId: cp.userId,
         type: 'payment.received',
-        title: parsed.data.status === 'Paid' ? 'Pembayaran Diterima' : 'Pembayaran Ditolak',
+        title: data.status === 'Paid' ? 'Pembayaran Diterima' : 'Pembayaran Ditolak',
         message:
-          parsed.data.status === 'Paid'
+          data.status === 'Paid'
             ? 'Pembayaran Anda telah dikonfirmasi. Terima kasih!'
-            : `Pembayaran ditolak: ${parsed.data.notes ?? ''}`,
+            : `Pembayaran ditolak: ${data.notes ?? ''}`,
       });
 
       const [customerUser] = await db
@@ -273,13 +241,13 @@ router.post(
           orderInfo?.bookingNumber ?? '',
           `Rp${Number(payment.amount).toLocaleString('id-ID')}`,
           payment.method,
-          parsed.data.status as 'Paid' | 'Failed',
-          parsed.data.notes ?? null,
+          data.status as 'Paid' | 'Failed',
+          data.notes ?? null,
         );
       }
     }
 
-    return success(c, { id: paymentId, status: parsed.data.status }, 'Pembayaran diverifikasi');
+    return success(c, { id: paymentId, status: data.status }, 'Pembayaran diverifikasi');
   },
 );
 

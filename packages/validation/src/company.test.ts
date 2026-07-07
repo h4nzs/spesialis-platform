@@ -6,6 +6,7 @@ const validCompany = {
   legalName: 'PT Maju Jaya Abadi',
   email: 'info@majujaya.com',
   phone: '6281234567890',
+  password: 'rahasia123',
 };
 
 describe('createCompanySchema', () => {

@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { createBrowserClient } from '@specialist/shared';
 import { Card } from '@specialist/ui';
 
@@ -10,7 +10,7 @@ interface CompanyProfile {
 }
 
 export function CorporateOverview() {
-  const api = createBrowserClient();
+  const api = useMemo(() => createBrowserClient(), []);
   const [profile, setProfile] = useState<CompanyProfile | null>(null);
   const [activeOrders, setActiveOrders] = useState(0);
   const [branchCount, setBranchCount] = useState(0);
@@ -41,11 +41,11 @@ export function CorporateOverview() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [api]);
 
   useEffect(() => {
     loadData();
-  }, []);
+  }, [loadData]);
 
   if (loading) {
     return <div className="text-sm text-text-muted">Memuat...</div>;

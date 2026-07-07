@@ -57,7 +57,7 @@ async function handleLogout() {
 
 export function Sidebar({ role, currentPath }: { role: UserRole; currentPath?: string }) {
   const [open, setOpen] = useState(false);
-  const items = NAV_MAP[role] ?? NAV_MAP.customer;
+  const items = (NAV_MAP[role] ?? NAV_MAP.customer)!;
   const path = currentPath ?? (typeof window !== 'undefined' ? window.location.pathname : '');
 
   function isActive(href: string) {

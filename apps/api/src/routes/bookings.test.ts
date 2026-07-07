@@ -392,6 +392,7 @@ describe('POST /:id/cancel', () => {
     const res = await mkApp('customer').request('/api/v1/bookings/o1/cancel', {
       method: 'POST',
       headers: a(),
+      body: JSON.stringify({ reason: 'Test' }),
     });
     const body = (await res.json()) as ApiTestResponse;
     expect(res.status).toBe(409);
@@ -402,6 +403,7 @@ describe('POST /:id/cancel', () => {
     const res = await mkApp('customer').request('/api/v1/bookings/o1/cancel', {
       method: 'POST',
       headers: a(),
+      body: JSON.stringify({ reason: 'Test' }),
     });
     const body = (await res.json()) as ApiTestResponse;
     expect(res.status).toBe(404);

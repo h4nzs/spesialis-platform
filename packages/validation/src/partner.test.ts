@@ -13,8 +13,28 @@ describe('registerPartnerSchema', () => {
       fullName: 'Partner Satu',
       phone: '08123456789',
       ktpNumber: '3171010101000001',
+      password: 'rahasia123',
     });
     expect(result.success).toBe(true);
+  });
+
+  it('rejects short password', () => {
+    const result = registerPartnerSchema.safeParse({
+      fullName: 'Partner Satu',
+      phone: '08123456789',
+      ktpNumber: '3171010101000001',
+      password: 'short',
+    });
+    expect(result.success).toBe(false);
+  });
+
+  it('rejects missing password', () => {
+    const result = registerPartnerSchema.safeParse({
+      fullName: 'Partner Satu',
+      phone: '08123456789',
+      ktpNumber: '3171010101000001',
+    });
+    expect(result.success).toBe(false);
   });
 });
 

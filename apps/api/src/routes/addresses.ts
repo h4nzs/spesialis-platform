@@ -2,8 +2,10 @@ import { Hono } from 'hono';
 import { eq, and, isNull } from 'drizzle-orm';
 import { db, addresses, customerProfiles } from '../lib/db.ts';
 import { authMiddleware } from '../middleware/auth.ts';
+import { validateBody } from '../middleware/validation.ts';
 import { createAddressSchema, updateAddressSchema } from '@specialist/validation';
-import { success, created, error, notFound } from '../lib/response.ts';
+import type { CreateAddressInput, UpdateAddressInput } from '@specialist/validation';
+import { success, created, notFound } from '../lib/response.ts';
 
 const router = new Hono();
 
@@ -32,24 +34,14 @@ router.get('/', async (c) => {
   return success(c, items);
 });
 
-router.post('/', async (c) => {
+router.post('/', validateBody(createAddressSchema), async (c) => {
   const userId = c.get('userId');
   const profile = await getCustomerProfile(userId);
   if (!profile) return notFound(c, 'Profil tidak ditemukan');
 
-  const body = await c.req.json();
-  const parsed = createAddressSchema.safeParse(body);
-  if (!parsed.success) {
-    return error(
-      c,
-      'VALIDATION_ERROR',
-      'Validation failed',
-      422,
-      parsed.error.issues.map((i) => ({ field: i.path.join('.'), message: i.message })),
-    );
-  }
+  const data = c.get('validated') as CreateAddressInput;
 
-  if (parsed.data.isDefault) {
+  if (data.isDefault) {
     await db
       .update(addresses)
       .set({ isDefault: false })
@@ -60,15 +52,15 @@ router.post('/', async (c) => {
     .insert(addresses)
     .values({
       customerId: profile.id,
-      label: parsed.data.label,
-      receiverName: parsed.data.receiverName,
-      receiverPhone: parsed.data.receiverPhone,
-      province: parsed.data.province,
-      city: parsed.data.city,
-      district: parsed.data.district,
-      postalCode: parsed.data.postalCode,
-      address: parsed.data.address,
-      isDefault: parsed.data.isDefault ?? false,
+      label: data.label,
+      receiverName: data.receiverName,
+      receiverPhone: data.receiverPhone,
+      province: data.province,
+      city: data.city,
+      district: data.district,
+      postalCode: data.postalCode,
+      address: data.address,
+      isDefault: data.isDefault ?? false,
     })
     .returning();
 
@@ -91,24 +83,13 @@ router.get('/:id', async (c) => {
   return success(c, address);
 });
 
-router.patch('/:id', async (c) => {
+router.patch('/:id', validateBody(updateAddressSchema), async (c) => {
   const userId = c.get('userId');
   const profile = await getCustomerProfile(userId);
   if (!profile) return notFound(c, 'Profil tidak ditemukan');
 
   const addressId = c.req.param('id')!;
-  const body = await c.req.json();
-
-  const parsed = updateAddressSchema.safeParse(body);
-  if (!parsed.success) {
-    return error(
-      c,
-      'VALIDATION_ERROR',
-      'Validation failed',
-      422,
-      parsed.error.issues.map((i) => ({ field: i.path.join('.'), message: i.message })),
-    );
-  }
+  const data = c.get('validated') as UpdateAddressInput;
 
   const existing = await db
     .select({ id: addresses.id })
@@ -118,7 +99,7 @@ router.patch('/:id', async (c) => {
 
   if (!existing[0]) return notFound(c, 'Alamat tidak ditemukan');
 
-  if (parsed.data.isDefault) {
+  if (data.isDefault) {
     await db
       .update(addresses)
       .set({ isDefault: false })
@@ -127,7 +108,7 @@ router.patch('/:id', async (c) => {
 
   const [updated] = await db
     .update(addresses)
-    .set(parsed.data)
+    .set(data)
     .where(eq(addresses.id, addressId))
     .returning();
 

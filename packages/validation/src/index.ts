@@ -14,6 +14,8 @@ export {
   deleteAccountSchema,
   updateUserStatusSchema,
   convertGuestSchema,
+  refreshTokenSchema,
+  verifyEmailSchema,
 } from './user.ts';
 export type {
   RegisterInput,
@@ -25,10 +27,12 @@ export type {
   DeleteAccountInput,
   UpdateUserStatusInput,
   ConvertGuestInput,
+  RefreshTokenInput,
+  VerifyEmailInput,
 } from './user.ts';
 
-export { createCustomerSchema, updateCustomerSchema } from './customer.ts';
-export type { CreateCustomerInput, UpdateCustomerInput } from './customer.ts';
+export { updateCustomerSchema, updateCustomerStatusSchema } from './customer.ts';
+export type { UpdateCustomerInput, UpdateCustomerStatusInput } from './customer.ts';
 
 export {
   registerPartnerSchema,
@@ -79,6 +83,7 @@ export {
   assignPartnerSchema,
   acceptAssignmentSchema,
   rejectAssignmentSchema,
+  cancelBookingSchema,
 } from './booking.ts';
 export type {
   CreateGuestBookingInput,
@@ -87,6 +92,7 @@ export type {
   AssignPartnerInput,
   AcceptAssignmentInput,
   RejectAssignmentInput,
+  CancelBookingInput,
 } from './booking.ts';
 
 export { assignSchema, acceptSchema, rejectSchema } from './assignment.ts';
@@ -136,6 +142,9 @@ export type {
 
 export { createInvoiceSchema, updateInvoiceStatusSchema } from './invoice.ts';
 export type { CreateInvoiceInput, UpdateInvoiceStatusInput } from './invoice.ts';
+
+export { createServiceCategorySchema, updateServiceCategorySchema } from './service-category.ts';
+export type { CreateServiceCategoryInput, UpdateServiceCategoryInput } from './service-category.ts';
 
 export { createFaqSchema, updateFaqSchema } from './faq.ts';
 export type { CreateFaqInput, UpdateFaqInput } from './faq.ts';

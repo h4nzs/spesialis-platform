@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { createBrowserClient, formatDate, formatRating } from '@specialist/shared';
 import { Table } from '@specialist/ui';
 import type { Column } from '@specialist/ui';
@@ -11,7 +11,7 @@ interface Review {
 }
 
 export function PartnerReviews() {
-  const api = createBrowserClient();
+  const api = useMemo(() => createBrowserClient(), []);
   const [reviews, setReviews] = useState<Review[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -28,7 +28,7 @@ export function PartnerReviews() {
       }
     }
     load();
-  }, []);
+  }, [api]);
 
   const columns: Column<Review>[] = [
     {
@@ -53,6 +53,11 @@ export function PartnerReviews() {
   }
 
   return (
-    <Table columns={columns} data={reviews} keyExtractor={(r) => r.id} emptyMessage="Belum ada ulasan" />
+    <Table
+      columns={columns}
+      data={reviews}
+      keyExtractor={(r) => r.id}
+      emptyMessage="Belum ada ulasan"
+    />
   );
 }

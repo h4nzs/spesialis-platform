@@ -65,11 +65,11 @@ describe('signAccessToken', () => {
     vi.mocked(sign).mockResolvedValue(mockToken);
 
     const mod = await import('./auth.ts');
-    const result = await mod.signAccessToken('user-123', 'customer');
+    const result = await mod.signAccessToken('user-123', 'email@test.com', 'customer');
 
     expect(result).toBe(mockToken);
     expect(sign).toHaveBeenCalledWith(
-      expect.objectContaining({ sub: 'user-123', role: 'customer' }),
+      expect.objectContaining({ sub: 'user-123', email: 'email@test.com', role: 'customer' }),
       'test-secret',
       'HS256',
     );

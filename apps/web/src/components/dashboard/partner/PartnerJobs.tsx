@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { createBrowserClient, formatDate, getStatusLabel } from '@specialist/shared';
 import { Badge, Card, Button, Modal, Input } from '@specialist/ui';
 import type { OrderStatus } from '@specialist/types';
@@ -15,13 +15,13 @@ interface JobItem {
 }
 
 export function PartnerJobs() {
-  const api = createBrowserClient();
+  const api = useMemo(() => createBrowserClient(), []);
   const [jobs, setJobs] = useState<JobItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [rejectTarget, setRejectTarget] = useState<string | null>(null);
   const [rejectReason, setRejectReason] = useState('');
 
-  async function loadJobs() {
+  const loadJobs = useCallback(async () => {
     setLoading(true);
     try {
       const data = await api.get<JobItem[]>('/api/v1/partners/me/jobs');
@@ -31,11 +31,11 @@ export function PartnerJobs() {
     } finally {
       setLoading(false);
     }
-  }
+  }, [api]);
 
   useEffect(() => {
     loadJobs();
-  }, []);
+  }, [loadJobs]);
 
   async function handleAccept(orderId: string) {
     try {

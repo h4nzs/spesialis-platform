@@ -1,5 +1,11 @@
-import { useState, useEffect } from 'react';
-import { createBrowserClient, formatCurrency, formatDate, getStatusLabel, getStatusColor } from '@specialist/shared';
+import { useState, useEffect, useMemo } from 'react';
+import {
+  createBrowserClient,
+  formatCurrency,
+  formatDate,
+  getStatusLabel,
+  getStatusColor,
+} from '@specialist/shared';
 import { Badge, Table, Pagination } from '@specialist/ui';
 import type { Column } from '@specialist/ui';
 import type { OrderStatus } from '@specialist/types';
@@ -15,7 +21,7 @@ interface OrderItem {
 }
 
 export function CustomerOrders() {
-  const api = createBrowserClient();
+  const api = useMemo(() => createBrowserClient(), []);
   const [orders, setOrders] = useState<OrderItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
@@ -23,7 +29,8 @@ export function CustomerOrders() {
 
   useEffect(() => {
     setLoading(true);
-    api.get<OrderItem[]>('/api/v1/bookings', { params: { page, limit: 20 } })
+    api
+      .get<OrderItem[]>('/api/v1/bookings', { params: { page, limit: 20 } })
       .then((data) => {
         const items = Array.isArray(data) ? data : [];
         setOrders(items);
@@ -31,7 +38,7 @@ export function CustomerOrders() {
       })
       .catch(() => setOrders([]))
       .finally(() => setLoading(false));
-  }, [page]);
+  }, [page, api]);
 
   const columns: Column<OrderItem>[] = [
     { key: 'bookingNumber', header: 'No. Booking' },
@@ -39,7 +46,12 @@ export function CustomerOrders() {
       key: 'status',
       header: 'Status',
       render: (item) => (
-        <Badge variant={getStatusColor(item.status as OrderStatus) as 'default' | 'success' | 'warning' | 'danger' | 'info'}>
+        <Badge
+          variant={
+            getStatusColor(item.status as OrderStatus) as
+              'default' | 'success' | 'warning' | 'danger' | 'info'
+          }
+        >
           {getStatusLabel(item.status as OrderStatus)}
         </Badge>
       ),
@@ -74,7 +86,12 @@ export function CustomerOrders() {
 
   return (
     <div className="space-y-4">
-      <Table columns={columns} data={orders} keyExtractor={(o) => o.id} emptyMessage="Belum ada pesanan" />
+      <Table
+        columns={columns}
+        data={orders}
+        keyExtractor={(o) => o.id}
+        emptyMessage="Belum ada pesanan"
+      />
       <Pagination page={page} totalPages={hasMore ? page + 1 : page} onPageChange={setPage} />
     </div>
   );

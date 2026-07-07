@@ -2,8 +2,10 @@ import { Hono } from 'hono';
 import { eq, and } from 'drizzle-orm';
 import { db, seoMetadata } from '../lib/db.ts';
 import { authMiddleware, requireRole } from '../middleware/auth.ts';
+import { validateBody } from '../middleware/validation.ts';
 import { upsertSeoSchema } from '@specialist/validation';
-import { success, created, error, notFound } from '../lib/response.ts';
+import type { UpsertSeoInput } from '@specialist/validation';
+import { success, created, notFound } from '../lib/response.ts';
 
 const router = new Hono();
 
@@ -34,56 +36,33 @@ router.get('/:id', async (c) => {
   return success(c, item);
 });
 
-router.post('/', async (c) => {
-  const body = await c.req.json();
-  const parsed = upsertSeoSchema.safeParse(body);
-  if (!parsed.success) {
-    return error(
-      c,
-      'VALIDATION_ERROR',
-      'Validation failed',
-      422,
-      parsed.error.issues.map((i) => ({ field: i.path.join('.'), message: i.message })),
-    );
-  }
+router.post('/', validateBody(upsertSeoSchema), async (c) => {
+  const data = c.get('validated') as UpsertSeoInput;
 
   const [existing] = await db
     .select({ id: seoMetadata.id })
     .from(seoMetadata)
     .where(
-      and(
-        eq(seoMetadata.entityType, parsed.data.entityType),
-        eq(seoMetadata.entityId, parsed.data.entityId),
-      ),
+      and(eq(seoMetadata.entityType, data.entityType), eq(seoMetadata.entityId, data.entityId)),
     )
     .limit(1);
 
   if (existing) {
     const [updated] = await db
       .update(seoMetadata)
-      .set(parsed.data)
+      .set(data)
       .where(eq(seoMetadata.id, existing.id))
       .returning();
     return success(c, updated, 'SEO metadata berhasil diperbarui');
   }
 
-  const [created_item] = await db.insert(seoMetadata).values(parsed.data).returning();
+  const [created_item] = await db.insert(seoMetadata).values(data).returning();
   return created(c, created_item, 'SEO metadata berhasil dibuat');
 });
 
-router.patch('/:id', async (c) => {
+router.patch('/:id', validateBody(upsertSeoSchema.partial()), async (c) => {
   const id = c.req.param('id')!;
-  const body = await c.req.json();
-  const parsed = upsertSeoSchema.partial().safeParse(body);
-  if (!parsed.success) {
-    return error(
-      c,
-      'VALIDATION_ERROR',
-      'Validation failed',
-      422,
-      parsed.error.issues.map((i) => ({ field: i.path.join('.'), message: i.message })),
-    );
-  }
+  const data = c.get('validated') as UpsertSeoInput;
 
   const [existing] = await db
     .select({ id: seoMetadata.id })
@@ -94,7 +73,7 @@ router.patch('/:id', async (c) => {
 
   const [updated] = await db
     .update(seoMetadata)
-    .set(parsed.data)
+    .set(data)
     .where(eq(seoMetadata.id, id))
     .returning();
 

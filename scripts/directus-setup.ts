@@ -745,3 +745,5 @@ main().catch((err) => {
   console.error('');
   process.exit(1);
 });
+
+export {};

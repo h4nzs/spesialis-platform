@@ -12,7 +12,7 @@ export function ComplaintForm() {
   const [success, setSuccess] = useState(false);
   const [errors, setErrors] = useState<string[]>([]);
 
-  async function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setErrors([]);
 

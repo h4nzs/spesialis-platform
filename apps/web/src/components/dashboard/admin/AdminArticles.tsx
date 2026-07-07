@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { createBrowserClient } from '@specialist/shared';
 import { Button, Input, Select, Textarea, Modal, Table, Badge } from '@specialist/ui';
 import type { Column } from '@specialist/ui';
@@ -56,7 +56,7 @@ const STATUS_OPTIONS = [
 ];
 
 export function AdminArticles() {
-  const api = createBrowserClient();
+  const api = useMemo(() => createBrowserClient(), []);
   const [articles, setArticles] = useState<ArticleItem[]>([]);
   const [categories, setCategories] = useState<CategoryItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -79,11 +79,11 @@ export function AdminArticles() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [api]);
 
   useEffect(() => {
     loadData();
-  }, []);
+  }, [loadData]);
 
   function openCreate() {
     setEditing(null);
@@ -114,7 +114,7 @@ export function AdminArticles() {
     }
   }
 
-  async function handleSave(e: React.FormEvent) {
+  async function handleSave(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     if (!form.title || !form.slug) {
       setError('Judul dan slug wajib diisi');

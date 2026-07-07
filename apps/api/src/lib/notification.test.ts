@@ -1,7 +1,7 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, beforeAll } from 'vitest';
 
 const mockDb = { insert: vi.fn(), select: vi.fn() };
-const mockUsers = { id: 'users.id' as string };
+const mockUsers = { id: 'users.id' as string, phone: 'users.phone' as string };
 vi.mock('./db.ts', () => ({ db: mockDb, notifications: {}, users: mockUsers }));
 vi.mock('./email.ts', () => ({ sendNotificationEmail: vi.fn() }));
 vi.mock('./whatsapp.ts', () => ({ sendWhatsApp: vi.fn() }));
@@ -9,38 +9,101 @@ vi.mock('./whatsapp.ts', () => ({ sendWhatsApp: vi.fn() }));
 import { sendNotificationEmail } from './email.ts';
 import { sendWhatsApp } from './whatsapp.ts';
 
+let createNotification: (params: {
+  userId: string;
+  type: string;
+  title: string;
+  message: string;
+  channel?: 'Email' | 'WhatsApp' | 'Push' | 'In App';
+  email?: string;
+  fullName?: string;
+  phone?: string;
+}) => Promise<void>;
+
+let notifyAdmins: (type: string, title: string, message: string) => Promise<void>;
+
+beforeAll(async () => {
+  const mod = await import('./notification.ts');
+  createNotification = mod.createNotification;
+  notifyAdmins = mod.notifyAdmins;
+});
+
 beforeEach(() => {
   vi.clearAllMocks();
 });
 
 describe('createNotification', () => {
-  it('stores notification in DB for In App channel', async () => {
+  function mockPhoneLookup(phone: string | null) {
+    const mockLimit = vi.fn().mockResolvedValue(phone ? [{ phone }] : []);
+    const mockWhere = vi.fn().mockReturnValue({ limit: mockLimit });
+    const mockFrom = vi.fn().mockReturnValue({ where: mockWhere });
+    mockDb.select.mockReturnValue({ from: mockFrom });
+  }
+
+  function mockInsert() {
     const mockValues = vi.fn().mockResolvedValue(undefined);
     mockDb.insert.mockReturnValue({ values: mockValues });
+    return mockValues;
+  }
 
-    const mod = await import('./notification.ts');
-    await mod.createNotification({
+  it('stores in-app notification and sends WhatsApp when user has phone', async () => {
+    mockPhoneLookup('08123456789');
+    const mockValues = mockInsert();
+
+    await createNotification({
       userId: 'uid-1',
       type: 'booking.confirm',
       title: 'Confirmed',
       message: 'Your booking is confirmed',
     });
 
-    expect(mockDb.insert).toHaveBeenCalled();
+    // Should store as In App
     expect(mockValues).toHaveBeenCalledWith(
       expect.objectContaining({ channel: 'In App', userId: 'uid-1', type: 'booking.confirm' }),
     );
+    // Should send WhatsApp since phone was looked up
+    expect(sendWhatsApp).toHaveBeenCalledWith('08123456789', 'Your booking is confirmed');
+    // Should NOT send email
     expect(sendNotificationEmail).not.toHaveBeenCalled();
+  });
+
+  it('does not send WhatsApp when user has no phone in DB', async () => {
+    mockPhoneLookup(null);
+    mockInsert();
+
+    await createNotification({
+      userId: 'uid-2',
+      type: 'booking.confirm',
+      title: 'Confirmed',
+      message: 'Message',
+    });
+
     expect(sendWhatsApp).not.toHaveBeenCalled();
   });
 
-  it('sends email when channel is Email', async () => {
-    const mockValues = vi.fn().mockResolvedValue(undefined);
-    mockDb.insert.mockReturnValue({ values: mockValues });
+  it('uses provided phone instead of looking up DB', async () => {
+    // DB lookup not called because phone is provided
+    mockInsert();
 
-    const mod = await import('./notification.ts');
-    await mod.createNotification({
-      userId: 'uid-2',
+    await createNotification({
+      userId: 'uid-3',
+      type: 'booking.confirm',
+      title: 'Confirmed',
+      message: 'Booking confirmed',
+      phone: '08123456789',
+    });
+
+    expect(sendWhatsApp).toHaveBeenCalledWith('08123456789', 'Booking confirmed');
+    // Should NOT have done DB lookup
+    expect(mockDb.select).not.toHaveBeenCalled();
+  });
+
+  it('sends email when channel is Email and email + fullName are provided', async () => {
+    mockPhoneLookup('08123456789');
+    const mockValues = mockInsert();
+
+    await createNotification({
+      userId: 'uid-4',
       type: 'booking.confirm',
       title: 'Confirmed',
       message: 'Your booking is confirmed',
@@ -49,6 +112,11 @@ describe('createNotification', () => {
       fullName: 'User',
     });
 
+    // Should still store as In App
+    expect(mockValues).toHaveBeenCalledWith(expect.objectContaining({ channel: 'In App' }));
+    // Should send WhatsApp (phone found)
+    expect(sendWhatsApp).toHaveBeenCalled();
+    // Should ALSO send email
     expect(sendNotificationEmail).toHaveBeenCalledWith(
       'user@test.com',
       'User',
@@ -58,12 +126,11 @@ describe('createNotification', () => {
   });
 
   it('does not send email when fullName is missing', async () => {
-    const mockValues = vi.fn().mockResolvedValue(undefined);
-    mockDb.insert.mockReturnValue({ values: mockValues });
+    mockPhoneLookup(null);
+    mockInsert();
 
-    const mod = await import('./notification.ts');
-    await mod.createNotification({
-      userId: 'uid-3',
+    await createNotification({
+      userId: 'uid-5',
       type: 'booking.confirm',
       title: 'Confirmed',
       message: 'Message',
@@ -74,45 +141,11 @@ describe('createNotification', () => {
     expect(sendNotificationEmail).not.toHaveBeenCalled();
   });
 
-  it('sends WhatsApp when channel is WhatsApp', async () => {
-    const mockValues = vi.fn().mockResolvedValue(undefined);
-    mockDb.insert.mockReturnValue({ values: mockValues });
+  it('always stores with In App channel regardless of params', async () => {
+    mockPhoneLookup(null);
+    const mockValues = mockInsert();
 
-    const mod = await import('./notification.ts');
-    await mod.createNotification({
-      userId: 'uid-4',
-      type: 'booking.confirm',
-      title: 'Confirmed',
-      message: 'Booking confirmed',
-      channel: 'WhatsApp',
-      phone: '08123456789',
-    });
-
-    expect(sendWhatsApp).toHaveBeenCalledWith('08123456789', 'Booking confirmed');
-  });
-
-  it('does not send WhatsApp when phone is missing', async () => {
-    const mockValues = vi.fn().mockResolvedValue(undefined);
-    mockDb.insert.mockReturnValue({ values: mockValues });
-
-    const mod = await import('./notification.ts');
-    await mod.createNotification({
-      userId: 'uid-5',
-      type: 'booking.confirm',
-      title: 'Confirmed',
-      message: 'Booking confirmed',
-      channel: 'WhatsApp',
-    });
-
-    expect(sendWhatsApp).not.toHaveBeenCalled();
-  });
-
-  it('defaults to In App channel when channel is not provided', async () => {
-    const mockValues = vi.fn().mockResolvedValue(undefined);
-    mockDb.insert.mockReturnValue({ values: mockValues });
-
-    const mod = await import('./notification.ts');
-    await mod.createNotification({
+    await createNotification({
       userId: 'uid-6',
       type: 'booking.confirm',
       title: 'Confirmed',
@@ -122,56 +155,64 @@ describe('createNotification', () => {
     expect(mockValues).toHaveBeenCalledWith(expect.objectContaining({ channel: 'In App' }));
   });
 
-  it('fires email as part of createNotification flow', async () => {
-    const mockValues = vi.fn().mockResolvedValue(undefined);
-    mockDb.insert.mockReturnValue({ values: mockValues });
+  it('sends WhatsApp and Email simultaneously when both are possible', async () => {
+    mockPhoneLookup('08123456789');
+    mockInsert();
 
-    const mod = await import('./notification.ts');
-    await mod.createNotification({
+    await createNotification({
       userId: 'uid-7',
       type: 'booking.confirm',
       title: 'Confirmed',
-      message: 'Message',
+      message: 'Multi-channel notification',
       channel: 'Email',
       email: 'user@test.com',
       fullName: 'User',
     });
 
+    expect(sendWhatsApp).toHaveBeenCalledWith('08123456789', 'Multi-channel notification');
     expect(sendNotificationEmail).toHaveBeenCalledWith(
       'user@test.com',
       'User',
       'Confirmed',
-      'Message',
+      'Multi-channel notification',
     );
   });
 });
 
 describe('notifyAdmins', () => {
-  it('sends notification to all admin-role users', async () => {
-    const mockWhere = vi
-      .fn()
-      .mockResolvedValue([{ id: 'admin-1' }, { id: 'admin-2' }, { id: 'admin-3' }]);
+  function mockAdminDb(admins: { id: string }[], phone: string | null) {
+    const mockLimit = vi.fn().mockResolvedValue(phone ? [{ phone }] : []);
+    const mockWhere = vi.fn().mockReturnValue({ limit: mockLimit });
     const mockFrom = vi.fn().mockReturnValue({ where: mockWhere });
-    mockDb.select.mockReturnValue({ from: mockFrom });
 
-    const mod = await import('./notification.ts');
-    await mod.notifyAdmins('new.booking', 'New Booking', 'A new booking was created');
+    // First call = admin lookup, subsequent calls = phone lookups per admin
+    mockDb.select
+      .mockImplementationOnce(() => ({
+        from: vi.fn().mockReturnValue({ where: vi.fn().mockResolvedValue(admins) }),
+      }))
+      .mockImplementation(() => ({ from: mockFrom }));
+  }
 
-    expect(mockDb.select).toHaveBeenCalledWith({ id: mockUsers.id });
-    expect(mockFrom).toHaveBeenCalledWith(mockUsers);
-    expect(mockWhere).toHaveBeenCalled();
-  });
-
-  it('sends createNotification for each admin', async () => {
+  function mockInsert() {
     const mockValues = vi.fn().mockResolvedValue(undefined);
     mockDb.insert.mockReturnValue({ values: mockValues });
+    return mockValues;
+  }
 
-    const mockWhere = vi.fn().mockResolvedValue([{ id: 'admin-1' }, { id: 'admin-2' }]);
-    const mockFrom = vi.fn().mockReturnValue({ where: mockWhere });
-    mockDb.select.mockReturnValue({ from: mockFrom });
+  it('sends notification to all admin-role users', async () => {
+    mockAdminDb([{ id: 'admin-1' }, { id: 'admin-2' }, { id: 'admin-3' }], '08123456789');
+    mockInsert();
 
-    const mod = await import('./notification.ts');
-    await mod.notifyAdmins('new.booking', 'New Booking', 'A new booking was created');
+    await notifyAdmins('new.booking', 'New Booking', 'A new booking was created');
+
+    expect(mockDb.select).toHaveBeenCalled();
+  });
+
+  it('sends in-app notification for each admin', async () => {
+    const mockValues = mockInsert();
+    mockAdminDb([{ id: 'admin-1' }, { id: 'admin-2' }], null);
+
+    await notifyAdmins('new.booking', 'New Booking', 'A new booking was created');
 
     expect(mockValues).toHaveBeenCalledTimes(2);
     expect(mockValues).toHaveBeenCalledWith(
@@ -183,12 +224,10 @@ describe('notifyAdmins', () => {
   });
 
   it('does nothing when no admins exist', async () => {
-    const mockWhere = vi.fn().mockResolvedValue([]);
-    const mockFrom = vi.fn().mockReturnValue({ where: mockWhere });
-    mockDb.select.mockReturnValue({ from: mockFrom });
+    mockInsert();
+    mockAdminDb([], null);
 
-    const mod = await import('./notification.ts');
-    await mod.notifyAdmins('type', 'Title', 'Message');
+    await notifyAdmins('type', 'Title', 'Message');
 
     expect(mockDb.select).toHaveBeenCalled();
   });

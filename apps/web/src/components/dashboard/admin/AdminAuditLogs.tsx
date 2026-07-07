@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { createBrowserClient, formatDate } from '@specialist/shared';
 import { Table, Pagination, Input, Badge } from '@specialist/ui';
 import type { Column } from '@specialist/ui';
@@ -32,7 +32,7 @@ function actionBadge(action: string) {
 }
 
 export function AdminAuditLogs() {
-  const api = createBrowserClient();
+  const api = useMemo(() => createBrowserClient(), []);
   const [logs, setLogs] = useState<AuditLogItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -66,13 +66,13 @@ export function AdminAuditLogs() {
     } finally {
       setLoading(false);
     }
-  }, [page, actionFilter, entityFilter, dateFrom, dateTo]);
+  }, [page, actionFilter, entityFilter, dateFrom, dateTo, api]);
 
   useEffect(() => {
     loadLogs();
   }, [loadLogs]);
 
-  function handleFilter(e: React.FormEvent) {
+  function handleFilter(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setPage(1);
     setExpandedId(null);

@@ -1,19 +1,16 @@
 import { Hono } from 'hono';
 import { eq, and, asc, sql } from 'drizzle-orm';
 import { db, services } from '../lib/db.ts';
-import type { PaginationMeta } from '@specialist/types';
-import { success, successPaginated, notFound, error } from '../lib/response.ts';
+import { success, successPaginated, notFound } from '../lib/response.ts';
+import { validateQuery } from '../middleware/validation.ts';
+import { buildPaginationMeta } from '../lib/pagination.ts';
 import { paginationQuerySchema } from '@specialist/validation';
 
 const router = new Hono();
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
-router.get('/', async (c) => {
-  const parsed = paginationQuerySchema.safeParse(c.req.query());
-  if (!parsed.success) {
-    return error(c, 'VALIDATION_ERROR', 'Parameter tidak valid', 422);
-  }
-  const query = parsed.data;
+router.get('/', validateQuery(paginationQuerySchema), async (c) => {
+  const query = c.get('validated') as { page: number; limit: number };
 
   const categoryId = c.req.query('categoryId');
   const featured = c.req.query('featured');
@@ -45,16 +42,7 @@ router.get('/', async (c) => {
     .from(services)
     .where(and(...conditions));
   const total = Number(countResult[0]?.count ?? 0);
-  const totalPages = Math.ceil(total / query.limit);
-
-  const pagination: PaginationMeta = {
-    page: query.page,
-    limit: query.limit,
-    total,
-    totalPages,
-    hasNext: query.page < totalPages,
-    hasPrev: query.page > 1,
-  };
+  const pagination = buildPaginationMeta(query.page, query.limit, total);
 
   return successPaginated(c, items, pagination);
 });

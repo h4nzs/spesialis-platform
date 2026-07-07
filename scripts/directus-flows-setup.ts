@@ -153,7 +153,7 @@ async function deleteFlow(token: string, flowId: string): Promise<void> {
 
 async function createFlow(token: string, flow: FlowRecord): Promise<string> {
   console.log(`  Creating flow "${flow.name}"...`);
-  const result = await request('POST', '/flows', token, flow as Record<string, unknown>);
+  const result = await request('POST', '/flows', token, flow as unknown as Record<string, unknown>);
   const data = result.data as FlowRecord | undefined;
   if (!data?.id) {
     throw new Error(`Failed to create flow "${flow.name}" — no ID returned`);
@@ -164,7 +164,12 @@ async function createFlow(token: string, flow: FlowRecord): Promise<string> {
 
 async function createOperation(token: string, operation: OperationRecord): Promise<string> {
   console.log(`  Creating operation "${operation.name}"...`);
-  const result = await request('POST', '/operations', token, operation as Record<string, unknown>);
+  const result = await request(
+    'POST',
+    '/operations',
+    token,
+    operation as unknown as Record<string, unknown>,
+  );
   const data = result.data as OperationRecord | undefined;
   if (!data?.id) {
     throw new Error(`Failed to create operation "${operation.name}" — no ID returned`);
@@ -270,3 +275,5 @@ async function main(): Promise<void> {
 }
 
 main();
+
+export {};

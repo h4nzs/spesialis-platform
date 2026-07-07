@@ -1,8 +1,18 @@
-import { inArray } from 'drizzle-orm';
+import { eq, inArray } from 'drizzle-orm';
 import { db, notifications, users } from './db.ts';
 import { sendNotificationEmail } from './email.ts';
 import { sendWhatsApp } from './whatsapp.ts';
 
+/**
+ * Create a notification for a user.
+ *
+ * Always stores an in-app notification. Additionally sends:
+ * - WhatsApp if the user has a phone number (looked up automatically)
+ * - Email if `channel: 'Email'` is explicitly set and `email` + `fullName` are provided
+ *
+ * This ensures users get notified through multiple channels without
+ * requiring every call site to manage channel logic.
+ */
 export async function createNotification(params: {
   userId: string;
   type: string;
@@ -13,23 +23,39 @@ export async function createNotification(params: {
   fullName?: string;
   phone?: string;
 }) {
-  const channel = params.channel ?? 'In App';
+  // Look up user's phone from DB if not provided
+  let phone = params.phone;
+  if (!phone) {
+    try {
+      const [user] = await db
+        .select({ phone: users.phone })
+        .from(users)
+        .where(eq(users.id, params.userId))
+        .limit(1);
+      if (user?.phone) phone = user.phone;
+    } catch {
+      // Non-critical — proceed without WhatsApp
+    }
+  }
 
+  // Always store in-app notification
   await db.insert(notifications).values({
     userId: params.userId,
     type: params.type,
-    channel,
+    channel: 'In App',
     title: params.title,
     message: params.message,
     sentAt: new Date(),
   });
 
-  if (channel === 'Email' && params.email && params.fullName) {
-    sendNotificationEmail(params.email, params.fullName, params.title, params.message);
+  // Send WhatsApp if phone is available
+  if (phone) {
+    sendWhatsApp(phone, params.message);
   }
 
-  if (channel === 'WhatsApp' && params.phone && params.message) {
-    sendWhatsApp(params.phone, params.message);
+  // Send Email if explicitly requested
+  if (params.channel === 'Email' && params.email && params.fullName) {
+    sendNotificationEmail(params.email, params.fullName, params.title, params.message);
   }
 }
 

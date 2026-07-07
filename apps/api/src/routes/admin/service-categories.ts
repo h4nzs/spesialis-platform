@@ -2,8 +2,15 @@ import { Hono } from 'hono';
 import { eq, asc } from 'drizzle-orm';
 import { db, serviceCategories } from '../../lib/db.ts';
 import { authMiddleware, requireRole } from '../../middleware/auth.ts';
-import { success, created, error, notFound } from '../../lib/response.ts';
+import { validateBody } from '../../middleware/validation.ts';
+import { createServiceCategorySchema, updateServiceCategorySchema } from '@specialist/validation';
+import type {
+  CreateServiceCategoryInput,
+  UpdateServiceCategoryInput,
+} from '@specialist/validation';
 import { slugSchema } from '@specialist/validation';
+import { success, created, error, notFound } from '../../lib/response.ts';
+import { omitUndefined } from '../../lib/update.ts';
 
 const router = new Hono();
 
@@ -21,77 +28,83 @@ router.get(
   },
 );
 
-router.post('/', authMiddleware, requireRole('admin', 'super_admin'), async (c) => {
-  const body = await c.req.json();
+router.post(
+  '/',
+  authMiddleware,
+  requireRole('admin', 'super_admin'),
+  validateBody(createServiceCategorySchema),
+  async (c) => {
+    const data = c.get('validated') as CreateServiceCategoryInput;
 
-  if (!body.name || typeof body.name !== 'string') {
-    return error(c, 'VALIDATION_ERROR', 'Nama kategori wajib diisi', 422);
-  }
-
-  const slugParsed = slugSchema.safeParse(
-    body.slug ??
-      body.name
+    const slug =
+      data.slug ??
+      data.name
         .toLowerCase()
         .replace(/[^a-z0-9]+/g, '-')
-        .replace(/^-|-$/g, ''),
-  );
-  if (!slugParsed.success) {
-    return error(c, 'VALIDATION_ERROR', 'Slug tidak valid', 422);
-  }
+        .replace(/^-|-$/g, '');
 
-  const [existing] = await db
-    .select({ id: serviceCategories.id })
-    .from(serviceCategories)
-    .where(eq(serviceCategories.slug, slugParsed.data))
-    .limit(1);
-  if (existing) return error(c, 'SLUG_EXISTS', 'Slug sudah digunakan', 409);
+    const slugParsed = slugSchema.safeParse(slug);
+    if (!slugParsed.success) {
+      return error(c, 'VALIDATION_ERROR', 'Slug tidak valid', 422);
+    }
 
-  const [category] = await db
-    .insert(serviceCategories)
-    .values({
-      name: body.name,
-      slug: slugParsed.data,
-      description: body.description ?? null,
-      icon: body.icon ?? null,
-      displayOrder: Number(body.displayOrder) || 0,
-      isActive: true,
-    })
-    .returning();
+    const [existing] = await db
+      .select({ id: serviceCategories.id })
+      .from(serviceCategories)
+      .where(eq(serviceCategories.slug, slugParsed.data))
+      .limit(1);
+    if (existing) return error(c, 'SLUG_EXISTS', 'Slug sudah digunakan', 409);
 
-  return created(c, category, 'Kategori berhasil dibuat');
-});
+    const [category] = await db
+      .insert(serviceCategories)
+      .values({
+        name: data.name,
+        slug,
+        description: data.description ?? null,
+        icon: data.icon ?? null,
+        displayOrder: data.displayOrder ?? 0,
+        isActive: true,
+      })
+      .returning();
 
-router.patch('/:id', authMiddleware, requireRole('admin', 'super_admin'), async (c) => {
-  const id = c.req.param('id')!;
-  const body = await c.req.json();
+    return created(c, category, 'Kategori berhasil dibuat');
+  },
+);
 
-  const [category] = await db
-    .select({ id: serviceCategories.id })
-    .from(serviceCategories)
-    .where(eq(serviceCategories.id, id))
-    .limit(1);
-  if (!category) return notFound(c, 'Kategori tidak ditemukan');
+router.patch(
+  '/:id',
+  authMiddleware,
+  requireRole('admin', 'super_admin'),
+  validateBody(updateServiceCategorySchema),
+  async (c) => {
+    const id = c.req.param('id')!;
+    const data = c.get('validated') as UpdateServiceCategoryInput;
 
-  const updateData: Record<string, unknown> = {};
-  if (body.name !== undefined) updateData.name = body.name;
-  if (body.slug !== undefined) {
-    const slugParsed = slugSchema.safeParse(body.slug);
-    if (!slugParsed.success) return error(c, 'VALIDATION_ERROR', 'Slug tidak valid', 422);
-    updateData.slug = slugParsed.data;
-  }
-  if (body.description !== undefined) updateData.description = body.description;
-  if (body.icon !== undefined) updateData.icon = body.icon;
-  if (body.displayOrder !== undefined) updateData.displayOrder = Number(body.displayOrder);
-  if (body.isActive !== undefined) updateData.isActive = body.isActive;
+    const [category] = await db
+      .select({ id: serviceCategories.id })
+      .from(serviceCategories)
+      .where(eq(serviceCategories.id, id))
+      .limit(1);
+    if (!category) return notFound(c, 'Kategori tidak ditemukan');
 
-  const [updated] = await db
-    .update(serviceCategories)
-    .set(updateData)
-    .where(eq(serviceCategories.id, id))
-    .returning();
+    if (data.slug) {
+      const [existing] = await db
+        .select({ id: serviceCategories.id })
+        .from(serviceCategories)
+        .where(eq(serviceCategories.slug, data.slug))
+        .limit(1);
+      if (existing) return error(c, 'SLUG_EXISTS', 'Slug sudah digunakan', 409);
+    }
 
-  return success(c, updated, 'Kategori berhasil diperbarui');
-});
+    const [updated] = await db
+      .update(serviceCategories)
+      .set(omitUndefined(data))
+      .where(eq(serviceCategories.id, id))
+      .returning();
+
+    return success(c, updated, 'Kategori berhasil diperbarui');
+  },
+);
 
 router.delete('/:id', authMiddleware, requireRole('admin', 'super_admin'), async (c) => {
   const id = c.req.param('id')!;

@@ -7,6 +7,7 @@ export default defineConfig({
     testTimeout: 60000,
     hookTimeout: 60000,
     pool: 'forks',
+    // @ts-expect-error - singleFork is valid for vitest/forks pool but not yet in types
     singleFork: true,
   },
 });

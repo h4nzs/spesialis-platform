@@ -1,7 +1,7 @@
 import { Hono } from 'hono';
 import type { Context } from 'hono';
 import { eq, and, desc, inArray, sql } from 'drizzle-orm';
-import type { OrderStatus, PaginationMeta } from '@specialist/types';
+import type { OrderStatus } from '@specialist/types';
 import {
   db,
   orders,
@@ -25,6 +25,7 @@ import {
   confirmBookingSchema,
   assignPartnerSchema,
   rejectAssignmentSchema,
+  cancelBookingSchema,
 } from '@specialist/validation';
 import {
   success,
@@ -38,8 +39,13 @@ import {
   unauthorized,
 } from '../lib/response.ts';
 import { createAuditLog } from '../lib/audit.ts';
+import { recordStatusHistory } from '../lib/order-status.ts';
+import { buildPaginationMeta } from '../lib/pagination.ts';
 import { createNotification, notifyAdmins } from '../lib/notification.ts';
 import { APP_URL, sendBookingConfirmationEmail, sendPartnerAssignedEmail } from '../lib/email.ts';
+import { parseBody } from '../lib/parse-body.ts';
+import { omitUndefined } from '../lib/update.ts';
+import { validateBody } from '../middleware/validation.ts';
 import { rateLimit } from '../middleware/rate-limiter.ts';
 
 const router = new Hono();
@@ -54,22 +60,6 @@ async function getNextBookingNumber(): Promise<string> {
   const row = result[0] as { next: number } | undefined;
   const next = Number(row?.next ?? 1);
   return `${prefix}${String(next).padStart(6, '0')}`;
-}
-
-async function recordStatusHistory(
-  orderId: string,
-  from: OrderStatus | null,
-  to: OrderStatus,
-  changedBy: string | null,
-  note?: string,
-) {
-  await db.insert(orderStatusHistory).values({
-    orderId,
-    fromStatus: from,
-    toStatus: to,
-    changedBy: changedBy,
-    note: note ?? null,
-  });
 }
 
 function validTransitions(current: OrderStatus): OrderStatus[] {
@@ -125,17 +115,8 @@ async function attachMediaToOrder(orderId: string, mediaIds: string[], uploadedB
 }
 
 async function createGuestBooking(c: Context) {
-  const body = await c.req.json();
-  const parsed = createGuestBookingSchema.safeParse(body);
-  if (!parsed.success) {
-    return error(
-      c,
-      'VALIDATION_ERROR',
-      'Validation failed',
-      422,
-      parsed.error.issues.map((i) => ({ field: i.path.join('.'), message: i.message })),
-    );
-  }
+  const parsed = await parseBody(c, createGuestBookingSchema);
+  if (!parsed.ok) return parsed.response;
 
   const {
     fullName,
@@ -268,17 +249,8 @@ async function createCustomerBooking(c: Context) {
     return unauthorized(c, 'Invalid or expired token');
   }
 
-  const body = await c.req.json();
-  const parsed = createCustomerBookingSchema.safeParse(body);
-  if (!parsed.success) {
-    return error(
-      c,
-      'VALIDATION_ERROR',
-      'Validation failed',
-      422,
-      parsed.error.issues.map((i) => ({ field: i.path.join('.'), message: i.message })),
-    );
-  }
+  const parsed = await parseBody(c, createCustomerBookingSchema);
+  if (!parsed.ok) return parsed.response;
 
   const {
     addressId,
@@ -456,16 +428,7 @@ router.get('/', authMiddleware, async (c) => {
         .where(conditions.length > 0 ? and(...conditions) : undefined)
     : [{ count: 0 }];
   const total = Number(countResult[0]?.count ?? 0);
-  const totalPages = Math.ceil(total / limit);
-
-  const pagination: PaginationMeta = {
-    page,
-    limit,
-    total,
-    totalPages,
-    hasNext: page < totalPages,
-    hasPrev: page > 1,
-  };
+  const pagination = buildPaginationMeta(page, limit, total);
 
   return successPaginated(c, items, pagination);
 });
@@ -551,106 +514,98 @@ router.get('/:id', authMiddleware, async (c) => {
   return success(c, { ...order, items, media: attachedMedia, timeline });
 });
 
-router.post('/:id/confirm', authMiddleware, requireRole('admin', 'super_admin'), async (c) => {
-  const orderId = c.req.param('id')!;
-  const userId = c.get('userId');
-  const body = await c.req.json();
-  const parsed = confirmBookingSchema.safeParse(body);
-  if (!parsed.success) {
-    return error(
-      c,
-      'VALIDATION_ERROR',
-      'Validation failed',
-      422,
-      parsed.error.issues.map((i) => ({ field: i.path.join('.'), message: i.message })),
-    );
-  }
+router.post(
+  '/:id/confirm',
+  authMiddleware,
+  requireRole('admin', 'super_admin'),
+  validateBody(confirmBookingSchema),
+  async (c) => {
+    const orderId = c.req.param('id')!;
+    const userId = c.get('userId');
+    const data = c.get('validated') as { finalPrice?: number; note?: string };
 
-  const [order] = await db
-    .select({ id: orders.id, status: orders.status })
-    .from(orders)
-    .where(eq(orders.id, orderId))
-    .limit(1);
-  if (!order) return notFound(c, 'Booking tidak ditemukan');
-
-  if (!validTransitions(order.status).includes('Confirmed')) {
-    return conflict(c, `Tidak bisa konfirmasi dari status ${order.status}`);
-  }
-
-  await db.transaction(async (tx) => {
-    const updateData: Record<string, unknown> = { status: 'Confirmed' };
-    if (parsed.data.finalPrice !== undefined)
-      updateData.finalPrice = String(parsed.data.finalPrice);
-    await tx.update(orders).set(updateData).where(eq(orders.id, orderId));
-
-    await recordStatusHistory(orderId, order.status, 'Confirmed', userId, parsed.data.note);
-  });
-
-  await createAuditLog(c, {
-    userId,
-    action: 'booking.confirm',
-    entity: 'order',
-    entityId: orderId,
-    newValue: { status: 'Confirmed', finalPrice: parsed.data.finalPrice },
-    oldValue: { status: order.status },
-  });
-
-  try {
-    const [customerInfo] = await db
-      .select({
-        email: users.email,
-        fullName: customerProfiles.fullName,
-        userId: users.id,
-        bookingNumber: orders.bookingNumber,
-      })
+    const [order] = await db
+      .select({ id: orders.id, status: orders.status })
       .from(orders)
-      .innerJoin(customerProfiles, eq(customerProfiles.id, orders.customerId))
-      .leftJoin(users, eq(users.id, customerProfiles.userId))
       .where(eq(orders.id, orderId))
       .limit(1);
+    if (!order) return notFound(c, 'Booking tidak ditemukan');
 
-    if (customerInfo?.email && customerInfo?.bookingNumber) {
-      sendBookingConfirmationEmail(
-        customerInfo.email,
-        customerInfo.fullName ?? 'Pelanggan',
-        customerInfo.bookingNumber,
-        `${APP_URL}/tracking`,
-      );
+    if (!validTransitions(order.status).includes('Confirmed')) {
+      return conflict(c, `Tidak bisa konfirmasi dari status ${order.status}`);
     }
 
-    if (customerInfo?.userId) {
-      createNotification({
-        userId: customerInfo.userId,
-        type: 'booking.confirmed',
-        title: 'Booking Dikonfirmasi',
-        message: `Booking #${customerInfo.bookingNumber} telah dikonfirmasi.`,
-      });
-    }
-  } catch {
-    // Email is non-critical — proceed
-  }
+    await db.transaction(async (tx) => {
+      await tx
+        .update(orders)
+        .set({
+          status: 'Confirmed',
+          ...omitUndefined({
+            finalPrice: data.finalPrice !== undefined ? String(data.finalPrice) : undefined,
+          }),
+        })
+        .where(eq(orders.id, orderId));
 
-  return success(c, { id: orderId, status: 'Confirmed' }, 'Booking dikonfirmasi');
-});
+      await recordStatusHistory(orderId, order.status, 'Confirmed', userId, data.note);
+    });
+
+    await createAuditLog(c, {
+      userId,
+      action: 'booking.confirm',
+      entity: 'order',
+      entityId: orderId,
+      newValue: { status: 'Confirmed', finalPrice: data.finalPrice },
+      oldValue: { status: order.status },
+    });
+
+    try {
+      const [customerInfo] = await db
+        .select({
+          email: users.email,
+          fullName: customerProfiles.fullName,
+          userId: users.id,
+          bookingNumber: orders.bookingNumber,
+        })
+        .from(orders)
+        .innerJoin(customerProfiles, eq(customerProfiles.id, orders.customerId))
+        .leftJoin(users, eq(users.id, customerProfiles.userId))
+        .where(eq(orders.id, orderId))
+        .limit(1);
+
+      if (customerInfo?.email && customerInfo?.bookingNumber) {
+        sendBookingConfirmationEmail(
+          customerInfo.email,
+          customerInfo.fullName ?? 'Pelanggan',
+          customerInfo.bookingNumber,
+          `${APP_URL}/tracking`,
+        );
+      }
+
+      if (customerInfo?.userId) {
+        createNotification({
+          userId: customerInfo.userId,
+          type: 'booking.confirmed',
+          title: 'Booking Dikonfirmasi',
+          message: `Booking #${customerInfo.bookingNumber} telah dikonfirmasi.`,
+        });
+      }
+    } catch {
+      // Email is non-critical — proceed
+    }
+
+    return success(c, { id: orderId, status: 'Confirmed' }, 'Booking dikonfirmasi');
+  },
+);
 
 router.post(
   '/:id/assign',
   authMiddleware,
   requireRole('admin', 'super_admin', 'dispatcher'),
+  validateBody(assignPartnerSchema),
   async (c) => {
     const orderId = c.req.param('id')!;
     const userId = c.get('userId');
-    const body = await c.req.json();
-    const parsed = assignPartnerSchema.safeParse(body);
-    if (!parsed.success) {
-      return error(
-        c,
-        'VALIDATION_ERROR',
-        'Validation failed',
-        422,
-        parsed.error.issues.map((i) => ({ field: i.path.join('.'), message: i.message })),
-      );
-    }
+    const data = c.get('validated') as { partnerId: string; note?: string };
 
     const [order] = await db
       .select({ id: orders.id, status: orders.status })
@@ -666,7 +621,7 @@ router.post(
     const [partner] = await db
       .select({ id: partnerProfiles.id, availability: partnerProfiles.availability })
       .from(partnerProfiles)
-      .where(eq(partnerProfiles.userId, parsed.data.partnerId))
+      .where(eq(partnerProfiles.userId, data.partnerId))
       .limit(1);
     if (!partner) return error(c, 'PARTNER_NOT_FOUND', 'Partner tidak ditemukan', 404);
 
@@ -682,13 +637,7 @@ router.post(
         status: 'Assigned',
       });
 
-      await recordStatusHistory(
-        orderId,
-        order.status,
-        'Partner Assigned',
-        userId,
-        parsed.data.note,
-      );
+      await recordStatusHistory(orderId, order.status, 'Partner Assigned', userId, data.note);
     });
 
     await createAuditLog(c, {
@@ -703,7 +652,7 @@ router.post(
     const [partnerUser] = await db
       .select({ id: users.id, email: users.email })
       .from(users)
-      .where(eq(users.id, parsed.data.partnerId))
+      .where(eq(users.id, data.partnerId))
       .limit(1);
     if (partnerUser) {
       await createNotification({
@@ -828,20 +777,10 @@ router.post('/:id/on-the-way', authMiddleware, async (c) => {
   return success(c, { id: orderId, status: 'On The Way' }, 'Partner dalam perjalanan');
 });
 
-router.post('/:id/reject', authMiddleware, async (c) => {
+router.post('/:id/reject', authMiddleware, validateBody(rejectAssignmentSchema), async (c) => {
   const orderId = c.req.param('id')!;
   const userId = c.get('userId');
-  const body = await c.req.json();
-  const parsed = rejectAssignmentSchema.safeParse(body);
-  if (!parsed.success) {
-    return error(
-      c,
-      'VALIDATION_ERROR',
-      'Reason wajib diisi',
-      422,
-      parsed.error.issues.map((i) => ({ field: i.path.join('.'), message: i.message })),
-    );
-  }
+  const data = c.get('validated') as { reason: string };
 
   const [profile] = await db
     .select({ id: partnerProfiles.id })
@@ -868,16 +807,10 @@ router.post('/:id/reject', authMiddleware, async (c) => {
       .where(eq(orders.id, orderId));
     await tx
       .update(assignments)
-      .set({ status: 'Rejected', rejectedAt: new Date(), rejectionReason: parsed.data.reason })
+      .set({ status: 'Rejected', rejectedAt: new Date(), rejectionReason: data.reason })
       .where(and(eq(assignments.orderId, orderId), eq(assignments.partnerId, profile.id)));
 
-    await recordStatusHistory(
-      orderId,
-      order.status,
-      'Waiting Assignment',
-      userId,
-      parsed.data.reason,
-    );
+    await recordStatusHistory(orderId, order.status, 'Waiting Assignment', userId, data.reason);
   });
 
   await createAuditLog(c, {
@@ -885,14 +818,14 @@ router.post('/:id/reject', authMiddleware, async (c) => {
     action: 'booking.reject',
     entity: 'order',
     entityId: orderId,
-    newValue: { status: 'Waiting Assignment', rejectionReason: parsed.data.reason },
+    newValue: { status: 'Waiting Assignment', rejectionReason: data.reason },
     oldValue: { status: order.status },
   });
 
   notifyAdmins(
     'booking.rejected',
     'Partner Menolak Assignment',
-    `Partner menolak assignment untuk order #${orderId}. Alasan: ${parsed.data.reason}`,
+    `Partner menolak assignment untuk order #${orderId}. Alasan: ${data.reason}`,
   );
 
   return success(c, { id: orderId, status: 'Waiting Assignment' }, 'Assignment ditolak');
@@ -1032,11 +965,10 @@ router.post('/:id/complete', authMiddleware, async (c) => {
   return success(c, { id: orderId, status: 'Completed' }, 'Pekerjaan selesai');
 });
 
-router.post('/:id/cancel', authMiddleware, async (c) => {
+router.post('/:id/cancel', authMiddleware, validateBody(cancelBookingSchema), async (c) => {
   const orderId = c.req.param('id')!;
   const userId = c.get('userId');
-  const body = await c.req.json().catch(() => ({}));
-  const reason: string = body.reason ?? '';
+  const { reason } = c.get('validated') as { reason: string };
 
   const [order] = await db
     .select({ id: orders.id, status: orders.status, customerId: orders.customerId })

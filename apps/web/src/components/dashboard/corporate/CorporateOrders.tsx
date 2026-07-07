@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import {
   createBrowserClient,
   formatCurrency,
@@ -21,7 +21,7 @@ interface OrderItem {
 }
 
 export function CorporateOrders() {
-  const api = createBrowserClient();
+  const api = useMemo(() => createBrowserClient(), []);
   const [orders, setOrders] = useState<OrderItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
@@ -38,7 +38,7 @@ export function CorporateOrders() {
       })
       .catch(() => setOrders([]))
       .finally(() => setLoading(false));
-  }, [page]);
+  }, [page, api]);
 
   const columns: Column<OrderItem>[] = [
     { key: 'bookingNumber', header: 'No. Booking' },

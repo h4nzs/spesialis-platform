@@ -3,7 +3,7 @@ import { eq, and, desc, like, gte, lte, sql } from 'drizzle-orm';
 import { db, auditLogs, users } from '../../lib/db.ts';
 import { authMiddleware, requireRole } from '../../middleware/auth.ts';
 import { successPaginated } from '../../lib/response.ts';
-import type { PaginationMeta } from '@specialist/types';
+import { buildPaginationMeta } from '../../lib/pagination.ts';
 
 const router = new Hono();
 
@@ -34,7 +34,6 @@ router.get('/', authMiddleware, requireRole('admin', 'super_admin'), async (c) =
     .where(where);
 
   const total = countResult?.total ?? 0;
-  const totalPages = Math.ceil(total / limit);
 
   const items = await db
     .select({
@@ -57,14 +56,7 @@ router.get('/', authMiddleware, requireRole('admin', 'super_admin'), async (c) =
     .limit(limit)
     .offset(offset);
 
-  const pagination: PaginationMeta = {
-    page,
-    limit,
-    total,
-    totalPages,
-    hasNext: page < totalPages,
-    hasPrev: page > 1,
-  };
+  const pagination = buildPaginationMeta(page, limit, total);
 
   return successPaginated(c, items, pagination, 'Daftar audit log berhasil diambil');
 });

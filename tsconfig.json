@@ -1,3 +1,10 @@
 {
-  "extends": "./packages/config/typescript/base.json"
+  "extends": "./packages/config/typescript/base.json",
+  "compilerOptions": {
+    "allowImportingTsExtensions": true,
+    "noEmit": true,
+    "jsx": "react-jsx",
+    "exactOptionalPropertyTypes": false
+  },
+  "exclude": ["node_modules", ".pnpm-store", "dist", ".astro", ".turbo"]
 }

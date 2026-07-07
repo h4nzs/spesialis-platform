@@ -61,9 +61,14 @@ export const rejectAssignmentSchema = z.object({
   reason: z.string().min(1).max(500),
 });
 
+export const cancelBookingSchema = z.object({
+  reason: z.string().min(1).max(500),
+});
+
 export type CreateGuestBookingInput = z.infer<typeof createGuestBookingSchema>;
 export type CreateCustomerBookingInput = z.infer<typeof createCustomerBookingSchema>;
 export type ConfirmBookingInput = z.infer<typeof confirmBookingSchema>;
 export type AssignPartnerInput = z.infer<typeof assignPartnerSchema>;
 export type AcceptAssignmentInput = z.infer<typeof acceptAssignmentSchema>;
 export type RejectAssignmentInput = z.infer<typeof rejectAssignmentSchema>;
+export type CancelBookingInput = z.infer<typeof cancelBookingSchema>;

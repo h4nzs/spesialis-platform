@@ -10,6 +10,7 @@ import {
 } from '../lib/auth.ts';
 import { db, users, customerProfiles, refreshTokens, passwordResets } from '../lib/db.ts';
 import { authMiddleware } from '../middleware/auth.ts';
+import { validateBody } from '../middleware/validation.ts';
 import { rateLimit } from '../middleware/rate-limiter.ts';
 import { sendPasswordResetEmail, sendVerificationEmail } from '../lib/email.ts';
 import {
@@ -21,7 +22,22 @@ import {
   changePasswordSchema,
   deleteAccountSchema,
   convertGuestSchema,
+  refreshTokenSchema,
+  verifyEmailSchema,
 } from '@specialist/validation';
+import type {
+  RegisterInput,
+  LoginInput,
+  ResetPasswordInput,
+  UpdateProfileInput,
+  ChangePasswordInput,
+  DeleteAccountInput,
+  ConvertGuestInput,
+  RefreshTokenInput,
+  VerifyEmailInput,
+} from '@specialist/validation';
+import { parseBody } from '../lib/parse-body.ts';
+import { omitUndefined } from '../lib/update.ts';
 import {
   success,
   created,
@@ -37,23 +53,8 @@ import {
 
 const router = new Hono();
 
-router.post('/register', rateLimit(10, 60_000), async (c) => {
-  const body = await c.req.json();
-  const parsed = registerSchema.safeParse(body);
-  if (!parsed.success) {
-    return error(
-      c,
-      'VALIDATION_ERROR',
-      'Validation failed',
-      422,
-      parsed.error.issues.map((i) => ({
-        field: i.path.join('.'),
-        message: i.message,
-      })),
-    );
-  }
-
-  const { email, phone, password, fullName } = parsed.data;
+router.post('/register', rateLimit(10, 60_000), validateBody(registerSchema), async (c) => {
+  const { email, phone, password, fullName } = c.get('validated') as RegisterInput;
 
   const existing = await db
     .select({ id: users.id })
@@ -86,7 +87,7 @@ router.post('/register', rateLimit(10, 60_000), async (c) => {
     fullName,
   });
 
-  const token = await signAccessToken(user.id, user.role);
+  const token = await signAccessToken(user.id, user.email, user.role);
 
   const verificationToken = generateRefreshToken();
   await db.insert(passwordResets).values({
@@ -101,96 +102,71 @@ router.post('/register', rateLimit(10, 60_000), async (c) => {
   return created(c, { user: { id: user.id, email: user.email, role: user.role }, token });
 });
 
-router.post('/convert-guest', rateLimit(10, 60_000), async (c) => {
-  const body = await c.req.json();
-  const parsed = convertGuestSchema.safeParse(body);
-  if (!parsed.success) {
-    return error(
-      c,
-      'VALIDATION_ERROR',
-      'Validation failed',
-      422,
-      parsed.error.issues.map((i) => ({
-        field: i.path.join('.'),
-        message: i.message,
-      })),
-    );
-  }
+router.post(
+  '/convert-guest',
+  rateLimit(10, 60_000),
+  validateBody(convertGuestSchema),
+  async (c) => {
+    const { phone, email, password, fullName } = c.get('validated') as ConvertGuestInput;
 
-  const { phone, email, password, fullName } = parsed.data;
+    const existingUser = await db
+      .select({ id: users.id })
+      .from(users)
+      .where(or(eq(users.email, email), eq(users.phone, phone)))
+      .limit(1);
 
-  const existingUser = await db
-    .select({ id: users.id })
-    .from(users)
-    .where(or(eq(users.email, email), eq(users.phone, phone)))
-    .limit(1);
+    if (existingUser[0]) {
+      return conflict(c, 'Email atau nomor HP sudah terdaftar');
+    }
 
-  if (existingUser[0]) {
-    return conflict(c, 'Email atau nomor HP sudah terdaftar');
-  }
+    const [guestProfile] = await db
+      .select({ id: customerProfiles.id })
+      .from(customerProfiles)
+      .where(
+        and(
+          eq(customerProfiles.guestPhone, phone),
+          eq(customerProfiles.userId, null as unknown as string),
+        ),
+      )
+      .limit(1);
 
-  const [guestProfile] = await db
-    .select({ id: customerProfiles.id })
-    .from(customerProfiles)
-    .where(
-      and(
-        eq(customerProfiles.guestPhone, phone),
-        eq(customerProfiles.userId, null as unknown as string),
-      ),
-    )
-    .limit(1);
+    if (!guestProfile) {
+      return error(c, 'GUEST_NOT_FOUND', 'Tidak ada booking guest dengan nomor HP ini', 404);
+    }
 
-  if (!guestProfile) {
-    return error(c, 'GUEST_NOT_FOUND', 'Tidak ada booking guest dengan nomor HP ini', 404);
-  }
+    const passwordHash = await hashPassword(password);
 
-  const passwordHash = await hashPassword(password);
+    const [user] = await db
+      .insert(users)
+      .values({
+        email,
+        phone,
+        passwordHash,
+        role: 'customer',
+        status: 'active',
+      })
+      .returning({ id: users.id, email: users.email, role: users.role });
 
-  const [user] = await db
-    .insert(users)
-    .values({
-      email,
-      phone,
-      passwordHash,
-      role: 'customer',
-      status: 'active',
-    })
-    .returning({ id: users.id, email: users.email, role: users.role });
+    if (!user) return serverError(c, 'Gagal membuat user');
 
-  if (!user) return serverError(c, 'Gagal membuat user');
+    await db
+      .update(customerProfiles)
+      .set({
+        userId: user.id,
+        fullName,
+        guestPhone: null,
+      })
+      .where(eq(customerProfiles.id, guestProfile.id));
 
-  await db
-    .update(customerProfiles)
-    .set({
-      userId: user.id,
-      fullName,
-      guestPhone: null,
-    })
-    .where(eq(customerProfiles.id, guestProfile.id));
+    const token = await signAccessToken(user.id, user.email, user.role);
 
-  const token = await signAccessToken(user.id, user.role);
+    setAuthCookies(c, token);
+    return created(c, { user, token }, 'Akun berhasil dibuat');
+  },
+);
 
-  setAuthCookies(c, token);
-  return created(c, { user, token }, 'Akun berhasil dibuat');
-});
-
-router.post('/login', rateLimit(10, 60_000), async (c) => {
-  const body = await c.req.json();
-  const parsed = loginSchema.safeParse(body);
-  if (!parsed.success) {
-    return error(
-      c,
-      'VALIDATION_ERROR',
-      'Validation failed',
-      422,
-      parsed.error.issues.map((i) => ({
-        field: i.path.join('.'),
-        message: i.message,
-      })),
-    );
-  }
-
-  const { email, password } = parsed.data;
+router.post('/login', rateLimit(10, 60_000), validateBody(loginSchema), async (c) => {
+  const { email, password } = c.get('validated') as LoginInput;
 
   const [user] = await db
     .select({
@@ -224,7 +200,7 @@ router.post('/login', rateLimit(10, 60_000), async (c) => {
     expiresAt: getRefreshTokenExpiry(),
   });
 
-  const token = await signAccessToken(user.id, user.role);
+  const token = await signAccessToken(user.id, user.email, user.role);
 
   setAuthCookies(c, token, refreshToken);
   return success(c, {
@@ -234,11 +210,8 @@ router.post('/login', rateLimit(10, 60_000), async (c) => {
   });
 });
 
-router.post('/refresh', rateLimit(20, 60_000), async (c) => {
-  const body = (await c.req.json()) as { refreshToken?: string };
-  if (!body.refreshToken) {
-    return unauthorized(c, 'Refresh token required');
-  }
+router.post('/refresh', rateLimit(20, 60_000), validateBody(refreshTokenSchema), async (c) => {
+  const { refreshToken } = c.get('validated') as RefreshTokenInput;
 
   const [stored] = await db
     .select({
@@ -249,10 +222,7 @@ router.post('/refresh', rateLimit(20, 60_000), async (c) => {
     })
     .from(refreshTokens)
     .where(
-      and(
-        eq(refreshTokens.tokenHash, hashToken(body.refreshToken)),
-        eq(refreshTokens.revoked, false),
-      ),
+      and(eq(refreshTokens.tokenHash, hashToken(refreshToken)), eq(refreshTokens.revoked, false)),
     )
     .limit(1);
 
@@ -261,7 +231,7 @@ router.post('/refresh', rateLimit(20, 60_000), async (c) => {
   }
 
   const [user] = await db
-    .select({ id: users.id, role: users.role })
+    .select({ id: users.id, email: users.email, role: users.role })
     .from(users)
     .where(eq(users.id, stored.userId))
     .limit(1);
@@ -279,7 +249,7 @@ router.post('/refresh', rateLimit(20, 60_000), async (c) => {
     expiresAt: getRefreshTokenExpiry(),
   });
 
-  const token = await signAccessToken(user.id, user.role);
+  const token = await signAccessToken(user.id, user.email, user.role);
 
   setAuthCookies(c, token, newRefreshToken);
   return success(c, { token, refreshToken: newRefreshToken });
@@ -298,9 +268,8 @@ router.post('/logout', authMiddleware, async (c) => {
 });
 
 router.post('/forgot-password', rateLimit(5, 60_000), async (c) => {
-  const body = await c.req.json();
-  const parsed = forgotPasswordSchema.safeParse(body);
-  if (!parsed.success) {
+  const parsed = await parseBody(c, forgotPasswordSchema);
+  if (!parsed.ok) {
     return success(c, null, 'Jika email terdaftar, link reset password akan dikirim');
   }
 
@@ -327,23 +296,8 @@ router.post('/forgot-password', rateLimit(5, 60_000), async (c) => {
   return success(c, null, 'Jika email terdaftar, link reset password akan dikirim');
 });
 
-router.post('/reset-password', async (c) => {
-  const body = await c.req.json();
-  const parsed = resetPasswordSchema.safeParse(body);
-  if (!parsed.success) {
-    return error(
-      c,
-      'VALIDATION_ERROR',
-      'Validation failed',
-      422,
-      parsed.error.issues.map((i) => ({
-        field: i.path.join('.'),
-        message: i.message,
-      })),
-    );
-  }
-
-  const { token, password } = parsed.data;
+router.post('/reset-password', validateBody(resetPasswordSchema), async (c) => {
+  const { token, password } = c.get('validated') as ResetPasswordInput;
 
   const [stored] = await db
     .select({
@@ -370,11 +324,8 @@ router.post('/reset-password', async (c) => {
   return success(c, null, 'Password berhasil direset');
 });
 
-router.post('/verify-email', async (c) => {
-  const body = (await c.req.json()) as { token?: string };
-  if (!body.token) {
-    return error(c, 'VALIDATION_ERROR', 'Token verifikasi diperlukan', 422);
-  }
+router.post('/verify-email', validateBody(verifyEmailSchema), async (c) => {
+  const { token } = c.get('validated') as VerifyEmailInput;
 
   const [stored] = await db
     .select({
@@ -384,7 +335,7 @@ router.post('/verify-email', async (c) => {
       expiresAt: passwordResets.expiresAt,
     })
     .from(passwordResets)
-    .where(and(eq(passwordResets.tokenHash, hashToken(body.token)), eq(passwordResets.used, false)))
+    .where(and(eq(passwordResets.tokenHash, hashToken(token)), eq(passwordResets.used, false)))
     .limit(1);
 
   if (!stored || stored.expiresAt < new Date()) {
@@ -458,23 +409,9 @@ router.get('/me', authMiddleware, async (c) => {
   return success(c, { user });
 });
 
-router.patch('/profile', authMiddleware, async (c) => {
+router.patch('/profile', authMiddleware, validateBody(updateProfileSchema), async (c) => {
   const userId = c.get('userId');
-  const body = await c.req.json();
-  const parsed = updateProfileSchema.safeParse(body);
-
-  if (!parsed.success) {
-    return error(
-      c,
-      'VALIDATION_ERROR',
-      'Validation failed',
-      422,
-      parsed.error.issues.map((i) => ({
-        field: i.path.join('.'),
-        message: i.message,
-      })),
-    );
-  }
+  const data = c.get('validated') as UpdateProfileInput;
 
   const [user] = await db
     .select({ id: users.id, email: users.email })
@@ -484,23 +421,19 @@ router.patch('/profile', authMiddleware, async (c) => {
 
   if (!user) return notFound(c, 'User tidak ditemukan');
 
-  const updateData: Record<string, string> = {};
-
-  if (parsed.data.email !== undefined) {
-    if (parsed.data.email !== user.email) {
-      const [existing] = await db
-        .select({ id: users.id })
-        .from(users)
-        .where(and(eq(users.email, parsed.data.email), isNull(users.deletedAt)))
-        .limit(1);
-      if (existing) return conflict(c, 'Email sudah digunakan');
-    }
-    updateData.email = parsed.data.email;
+  if (data.email !== undefined && data.email !== user.email) {
+    const [existing] = await db
+      .select({ id: users.id })
+      .from(users)
+      .where(and(eq(users.email, data.email), isNull(users.deletedAt)))
+      .limit(1);
+    if (existing) return conflict(c, 'Email sudah digunakan');
   }
 
-  if (parsed.data.phone !== undefined) {
-    updateData.phone = parsed.data.phone;
-  }
+  const updateData = omitUndefined({
+    email: data.email,
+    phone: data.phone,
+  });
 
   if (Object.keys(updateData).length === 0) {
     return success(c, null, 'Tidak ada data yang diubah');
@@ -517,23 +450,9 @@ router.patch('/profile', authMiddleware, async (c) => {
   return success(c, { user: updated }, 'Profil berhasil diperbarui');
 });
 
-router.patch('/change-password', authMiddleware, async (c) => {
+router.patch('/change-password', authMiddleware, validateBody(changePasswordSchema), async (c) => {
   const userId = c.get('userId');
-  const body = await c.req.json();
-  const parsed = changePasswordSchema.safeParse(body);
-
-  if (!parsed.success) {
-    return error(
-      c,
-      'VALIDATION_ERROR',
-      'Validation failed',
-      422,
-      parsed.error.issues.map((i) => ({
-        field: i.path.join('.'),
-        message: i.message,
-      })),
-    );
-  }
+  const { currentPassword, newPassword } = c.get('validated') as ChangePasswordInput;
 
   const [user] = await db
     .select({ id: users.id, passwordHash: users.passwordHash })
@@ -543,10 +462,10 @@ router.patch('/change-password', authMiddleware, async (c) => {
 
   if (!user) return notFound(c, 'User tidak ditemukan');
 
-  const valid = await verifyPassword(user.passwordHash, parsed.data.currentPassword);
+  const valid = await verifyPassword(user.passwordHash, currentPassword);
   if (!valid) return forbidden(c, 'Password saat ini salah');
 
-  const passwordHash = await hashPassword(parsed.data.newPassword);
+  const passwordHash = await hashPassword(newPassword);
 
   await db.transaction(async (tx) => {
     await tx.update(users).set({ passwordHash }).where(eq(users.id, userId));
@@ -559,23 +478,9 @@ router.patch('/change-password', authMiddleware, async (c) => {
   return success(c, null, 'Password berhasil diubah');
 });
 
-router.delete('/account', authMiddleware, async (c) => {
+router.delete('/account', authMiddleware, validateBody(deleteAccountSchema), async (c) => {
   const userId = c.get('userId');
-  const body = await c.req.json();
-  const parsed = deleteAccountSchema.safeParse(body);
-
-  if (!parsed.success) {
-    return error(
-      c,
-      'VALIDATION_ERROR',
-      'Validation failed',
-      422,
-      parsed.error.issues.map((i) => ({
-        field: i.path.join('.'),
-        message: i.message,
-      })),
-    );
-  }
+  const { password } = c.get('validated') as DeleteAccountInput;
 
   const [user] = await db
     .select({ id: users.id, passwordHash: users.passwordHash })
@@ -585,7 +490,7 @@ router.delete('/account', authMiddleware, async (c) => {
 
   if (!user) return notFound(c, 'User tidak ditemukan');
 
-  const valid = await verifyPassword(user.passwordHash, parsed.data.password);
+  const valid = await verifyPassword(user.passwordHash, password);
   if (!valid) return forbidden(c, 'Password salah');
 
   await db.transaction(async (tx) => {

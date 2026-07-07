@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { createBrowserClient, formatCurrency } from '@specialist/shared';
 import { Button, Input, Select, Textarea, Modal, Table, Badge } from '@specialist/ui';
 import type { Column } from '@specialist/ui';
@@ -49,7 +49,7 @@ const EMPTY_FORM: ServiceForm = {
 };
 
 export function AdminServices() {
-  const api = createBrowserClient();
+  const api = useMemo(() => createBrowserClient(), []);
   const [services, setServices] = useState<ServiceItem[]>([]);
   const [categories, setCategories] = useState<CategoryItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -72,11 +72,11 @@ export function AdminServices() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [api]);
 
   useEffect(() => {
     loadData();
-  }, []);
+  }, [loadData]);
 
   function openCreate() {
     setEditing(null);
@@ -108,7 +108,7 @@ export function AdminServices() {
     }
   }
 
-  async function handleSave(e: React.FormEvent) {
+  async function handleSave(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     if (!form.categoryId || !form.name || !form.slug || !form.basePrice) {
       setError('Nama, slug, kategori, dan harga wajib diisi');

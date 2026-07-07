@@ -1,9 +1,9 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { createBrowserClient } from '@specialist/shared';
 import { Card } from '@specialist/ui';
 
 export function PartnerOverview() {
-  const api = createBrowserClient();
+  const api = useMemo(() => createBrowserClient(), []);
   const [profile, setProfile] = useState<{
     fullName: string;
     ratingAverage: string | null;
@@ -28,7 +28,7 @@ export function PartnerOverview() {
       }
     }
     load();
-  }, []);
+  }, [api]);
 
   if (loading) {
     return <div className="text-sm text-text-muted">Memuat...</div>;

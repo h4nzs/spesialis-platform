@@ -1,19 +1,20 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { createBrowserClient } from '@specialist/shared';
 import { Card, Button, Select } from '@specialist/ui';
 
 export function PartnerAvailability() {
-  const api = createBrowserClient();
+  const api = useMemo(() => createBrowserClient(), []);
   const [current, setCurrent] = useState('Available');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    api.get<{ availability: string }>('/api/v1/partners/me')
+    api
+      .get<{ availability: string }>('/api/v1/partners/me')
       .then((data) => setCurrent(data.availability ?? 'Available'))
       .catch(() => {})
       .finally(() => setLoading(false));
-  }, []);
+  }, [api]);
 
   async function handleSave() {
     setSaving(true);

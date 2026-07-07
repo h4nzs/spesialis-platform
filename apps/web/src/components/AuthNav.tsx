@@ -18,7 +18,8 @@ export function AuthNav() {
       return;
     }
     const apiUrl =
-      (typeof import.meta !== 'undefined' && import.meta.env?.PUBLIC_API_URL) ||
+      (typeof import.meta !== 'undefined' &&
+        (import.meta as { env?: Record<string, string | undefined> }).env?.PUBLIC_API_URL) ||
       'http://localhost:3000';
     fetch(`${apiUrl}/api/v1/auth/me`, {
       headers: { Authorization: `Bearer ${token}` },

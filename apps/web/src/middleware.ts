@@ -1,4 +1,5 @@
 import { defineMiddleware } from 'astro/middleware';
+import { verifyAccessToken, extractCookie } from './lib/jwt.ts';
 
 export interface AuthLocals {
   userId: string;
@@ -29,33 +30,27 @@ export const onRequest = defineMiddleware(async ({ locals, request }, next) => {
     return next();
   }
 
-  try {
-    const apiUrl = import.meta.env.PUBLIC_API_URL ?? 'http://localhost:3000';
-    const response = await fetch(`${apiUrl}/api/v1/auth/me`, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-
-    if (!response.ok) {
-      locals.auth = null;
-      return Response.redirect(new URL('/login', url), 302);
-    }
-
-    const json = (await response.json()) as {
-      data: { user: { id: string; email: string; role: string } };
-    };
-
-    const u = json.data.user;
-    locals.auth = {
-      userId: u.id,
-      userEmail: u.email,
-      userRole: u.role,
-    };
-  } catch {
+  const jwtSecret = process.env.JWT_SECRET;
+  if (!jwtSecret) {
+    console.error('[Middleware] JWT_SECRET is not configured');
     locals.auth = null;
     return Response.redirect(new URL('/login', url), 302);
   }
 
-  const role = locals.auth?.userRole;
+  const payload = verifyAccessToken(token, jwtSecret);
+
+  if (!payload) {
+    locals.auth = null;
+    return Response.redirect(new URL('/login', url), 302);
+  }
+
+  locals.auth = {
+    userId: payload.sub,
+    userEmail: payload.email,
+    userRole: payload.role,
+  };
+
+  const role = locals.auth.userRole;
   const path = url.pathname;
 
   const dashboardRootMap: Record<string, string> = {
@@ -83,7 +78,7 @@ export const onRequest = defineMiddleware(async ({ locals, request }, next) => {
 
   // Role-based access control — protect dashboard routes by role
   if (path.startsWith('/dashboard/')) {
-    const dashboardPrefix = path.split('/')[2]; // customer|partner|corporate|admin
+    const dashboardPrefix = path.split('/')[2] ?? ''; // customer|partner|corporate|admin
 
     if (!role) {
       return Response.redirect(new URL('/login', url), 302);
@@ -104,8 +99,3 @@ export const onRequest = defineMiddleware(async ({ locals, request }, next) => {
 
   return next();
 });
-
-function extractCookie(cookieHeader: string, name: string): string | null {
-  const match = cookieHeader.match(new RegExp(`(?:^|;\\s*)${name}=([^;]*)`));
-  return match ? decodeURIComponent(match[1]) : null;
-}

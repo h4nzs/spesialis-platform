@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { createBrowserClient, formatCurrency } from '@specialist/shared';
 import { Card } from '@specialist/ui';
 
@@ -17,7 +17,7 @@ interface DashboardResponse {
 }
 
 export function AdminOverview() {
-  const api = createBrowserClient();
+  const api = useMemo(() => createBrowserClient(), []);
   const [stats, setStats] = useState<DashboardResponse | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -33,7 +33,7 @@ export function AdminOverview() {
       }
     }
     load();
-  }, []);
+  }, [api]);
 
   if (loading) {
     return <div className="text-sm text-text-muted py-8 text-center">Memuat...</div>;

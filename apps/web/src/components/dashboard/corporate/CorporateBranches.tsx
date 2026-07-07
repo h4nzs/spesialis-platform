@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { createBrowserClient } from '@specialist/shared';
 import { Button, Input, Modal, Table } from '@specialist/ui';
 import type { Column } from '@specialist/ui';
@@ -16,7 +16,7 @@ interface CompanyProfile {
 }
 
 export function CorporateBranches() {
-  const api = createBrowserClient();
+  const api = useMemo(() => createBrowserClient(), []);
   const [profile, setProfile] = useState<CompanyProfile | null>(null);
   const [branches, setBranches] = useState<Branch[]>([]);
   const [loading, setLoading] = useState(true);
@@ -33,27 +33,30 @@ export function CorporateBranches() {
     } catch {
       return null;
     }
-  }, []);
+  }, [api]);
 
-  const loadBranches = useCallback(async (companyId: string) => {
-    try {
-      const data = await api.get<Branch[]>(`/api/v1/companies/${companyId}/branches`);
-      setBranches(Array.isArray(data) ? data : []);
-    } catch {
-      setBranches([]);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+  const loadBranches = useCallback(
+    async (companyId: string) => {
+      try {
+        const data = await api.get<Branch[]>(`/api/v1/companies/${companyId}/branches`);
+        setBranches(Array.isArray(data) ? data : []);
+      } catch {
+        setBranches([]);
+      } finally {
+        setLoading(false);
+      }
+    },
+    [api],
+  );
 
   useEffect(() => {
     loadCompany().then((data) => {
       if (data) loadBranches(data.id);
       else setLoading(false);
     });
-  }, []);
+  }, [loadCompany, loadBranches]);
 
-  async function handleAdd(e: React.FormEvent) {
+  async function handleAdd(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     if (!profile) return;
     if (!form.name || !form.address || !form.city) {

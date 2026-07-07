@@ -2,13 +2,20 @@ import { Hono } from 'hono';
 import { eq, and, desc, sql } from 'drizzle-orm';
 import { db, contracts, companies, companyUsers } from '../lib/db.ts';
 import { authMiddleware, requireRole } from '../middleware/auth.ts';
+import { validateBody } from '../middleware/validation.ts';
 import {
   createContractSchema,
   updateContractSchema,
   updateContractStatusSchema,
 } from '@specialist/validation';
-import type { PaginationMeta } from '@specialist/types';
+import type {
+  CreateContractInput,
+  UpdateContractInput,
+  UpdateContractStatusInput,
+} from '@specialist/validation';
 import { success, successPaginated, created, error, notFound, forbidden } from '../lib/response.ts';
+import { buildPaginationMeta } from '../lib/pagination.ts';
+import { omitUndefined } from '../lib/update.ts';
 import { createAuditLog } from '../lib/audit.ts';
 
 const router = new Hono();
@@ -50,16 +57,7 @@ router.get('/', requireRole('admin', 'super_admin'), async (c) => {
     .from(contracts)
     .where(conditions.length > 0 ? and(...conditions) : undefined);
   const total = Number(countResult[0]?.count ?? 0);
-  const totalPages = Math.ceil(total / limit);
-
-  const pagination: PaginationMeta = {
-    page,
-    limit,
-    total,
-    totalPages,
-    hasNext: page < totalPages,
-    hasPrev: page > 1,
-  };
+  const pagination = buildPaginationMeta(page, limit, total);
 
   return successPaginated(c, items, pagination);
 });
@@ -84,148 +82,137 @@ router.get('/:id', async (c) => {
   return success(c, contract);
 });
 
-router.post('/', requireRole('admin', 'super_admin'), async (c) => {
-  const body = await c.req.json();
-  const parsed = createContractSchema.safeParse(body);
-  if (!parsed.success) {
-    return error(
-      c,
-      'VALIDATION_ERROR',
-      'Validation failed',
-      422,
-      parsed.error.issues.map((i) => ({ field: i.path.join('.'), message: i.message })),
-    );
-  }
+router.post(
+  '/',
+  requireRole('admin', 'super_admin'),
+  validateBody(createContractSchema),
+  async (c) => {
+    const data = c.get('validated') as CreateContractInput;
 
-  const [company] = await db
-    .select({ id: companies.id })
-    .from(companies)
-    .where(eq(companies.id, parsed.data.companyId))
-    .limit(1);
-  if (!company) return error(c, 'COMPANY_NOT_FOUND', 'Perusahaan tidak ditemukan', 404);
+    const [company] = await db
+      .select({ id: companies.id })
+      .from(companies)
+      .where(eq(companies.id, data.companyId))
+      .limit(1);
+    if (!company) return error(c, 'COMPANY_NOT_FOUND', 'Perusahaan tidak ditemukan', 404);
 
-  const contractNumber = await getContractNumber();
-  const userId = c.get('userId');
+    const contractNumber = await getContractNumber();
+    const userId = c.get('userId');
 
-  const [contract] = await db
-    .insert(contracts)
-    .values({
-      ...parsed.data,
-      contractNumber,
-      slaResponseHours: parsed.data.slaResponseHours ?? null,
-      slaResolutionHours: parsed.data.slaResolutionHours ?? null,
-      discountPercent:
-        parsed.data.discountPercent !== undefined && parsed.data.discountPercent !== null
-          ? String(parsed.data.discountPercent)
-          : null,
-      discountAmount:
-        parsed.data.discountAmount !== undefined && parsed.data.discountAmount !== null
-          ? String(parsed.data.discountAmount)
-          : null,
-      createdBy: userId,
-    })
-    .returning();
+    const [contract] = await db
+      .insert(contracts)
+      .values({
+        ...data,
+        contractNumber,
+        slaResponseHours: data.slaResponseHours ?? null,
+        slaResolutionHours: data.slaResolutionHours ?? null,
+        discountPercent:
+          data.discountPercent !== undefined && data.discountPercent !== null
+            ? String(data.discountPercent)
+            : null,
+        discountAmount:
+          data.discountAmount !== undefined && data.discountAmount !== null
+            ? String(data.discountAmount)
+            : null,
+        createdBy: userId,
+      })
+      .returning();
 
-  await createAuditLog(c, {
-    userId,
-    action: 'contract.create',
-    entity: 'contract',
-    entityId: contract!.id,
-    newValue: { contractNumber },
-    oldValue: null,
-  });
+    await createAuditLog(c, {
+      userId,
+      action: 'contract.create',
+      entity: 'contract',
+      entityId: contract!.id,
+      newValue: { contractNumber },
+      oldValue: null,
+    });
 
-  return created(c, contract, 'Kontrak berhasil dibuat');
-});
+    return created(c, contract, 'Kontrak berhasil dibuat');
+  },
+);
 
-router.patch('/:id', requireRole('admin', 'super_admin'), async (c) => {
-  const contractId = c.req.param('id')!;
-  const userId = c.get('userId');
-  const body = await c.req.json();
-  const parsed = updateContractSchema.safeParse(body);
-  if (!parsed.success) {
-    return error(
-      c,
-      'VALIDATION_ERROR',
-      'Validation failed',
-      422,
-      parsed.error.issues.map((i) => ({ field: i.path.join('.'), message: i.message })),
-    );
-  }
+router.patch(
+  '/:id',
+  requireRole('admin', 'super_admin'),
+  validateBody(updateContractSchema),
+  async (c) => {
+    const contractId = c.req.param('id')!;
+    const userId = c.get('userId');
+    const data = c.get('validated') as UpdateContractInput;
 
-  const [existing] = await db
-    .select({ id: contracts.id, status: contracts.status })
-    .from(contracts)
-    .where(eq(contracts.id, contractId))
-    .limit(1);
-  if (!existing) return notFound(c, 'Kontrak tidak ditemukan');
+    const [existing] = await db
+      .select({ id: contracts.id, status: contracts.status })
+      .from(contracts)
+      .where(eq(contracts.id, contractId))
+      .limit(1);
+    if (!existing) return notFound(c, 'Kontrak tidak ditemukan');
 
-  const updateData: Record<string, unknown> = { ...parsed.data, updatedBy: userId };
-  if (parsed.data.discountPercent !== undefined) {
-    updateData.discountPercent =
-      parsed.data.discountPercent !== null ? String(parsed.data.discountPercent) : null;
-  }
-  if (parsed.data.discountAmount !== undefined) {
-    updateData.discountAmount =
-      parsed.data.discountAmount !== null ? String(parsed.data.discountAmount) : null;
-  }
+    const { discountPercent, discountAmount, ...rest } = data;
+    const [updated] = await db
+      .update(contracts)
+      .set({
+        ...omitUndefined(rest),
+        updatedBy: userId,
+        ...(discountPercent !== undefined
+          ? {
+              discountPercent: discountPercent !== null ? String(discountPercent) : null,
+            }
+          : {}),
+        ...(discountAmount !== undefined
+          ? {
+              discountAmount: discountAmount !== null ? String(discountAmount) : null,
+            }
+          : {}),
+      })
+      .where(eq(contracts.id, contractId))
+      .returning();
 
-  const [updated] = await db
-    .update(contracts)
-    .set(updateData)
-    .where(eq(contracts.id, contractId))
-    .returning();
+    await createAuditLog(c, {
+      userId,
+      action: 'contract.update',
+      entity: 'contract',
+      entityId: contractId,
+      newValue: data,
+      oldValue: { status: existing.status },
+    });
 
-  await createAuditLog(c, {
-    userId,
-    action: 'contract.update',
-    entity: 'contract',
-    entityId: contractId,
-    newValue: parsed.data,
-    oldValue: { status: existing.status },
-  });
+    return success(c, updated, 'Kontrak berhasil diperbarui');
+  },
+);
 
-  return success(c, updated, 'Kontrak berhasil diperbarui');
-});
+router.patch(
+  '/:id/status',
+  requireRole('admin', 'super_admin'),
+  validateBody(updateContractStatusSchema),
+  async (c) => {
+    const contractId = c.req.param('id')!;
+    const userId = c.get('userId');
+    const data = c.get('validated') as UpdateContractStatusInput;
 
-router.patch('/:id/status', requireRole('admin', 'super_admin'), async (c) => {
-  const contractId = c.req.param('id')!;
-  const userId = c.get('userId');
-  const body = await c.req.json();
-  const parsed = updateContractStatusSchema.safeParse(body);
-  if (!parsed.success) {
-    return error(
-      c,
-      'VALIDATION_ERROR',
-      'Validation failed',
-      422,
-      parsed.error.issues.map((i) => ({ field: i.path.join('.'), message: i.message })),
-    );
-  }
+    const [existing] = await db
+      .select({ id: contracts.id, status: contracts.status })
+      .from(contracts)
+      .where(eq(contracts.id, contractId))
+      .limit(1);
+    if (!existing) return notFound(c, 'Kontrak tidak ditemukan');
 
-  const [existing] = await db
-    .select({ id: contracts.id, status: contracts.status })
-    .from(contracts)
-    .where(eq(contracts.id, contractId))
-    .limit(1);
-  if (!existing) return notFound(c, 'Kontrak tidak ditemukan');
+    const [updated] = await db
+      .update(contracts)
+      .set({ status: data.status, updatedBy: userId })
+      .where(eq(contracts.id, contractId))
+      .returning();
 
-  const [updated] = await db
-    .update(contracts)
-    .set({ status: parsed.data.status, updatedBy: userId })
-    .where(eq(contracts.id, contractId))
-    .returning();
+    await createAuditLog(c, {
+      userId,
+      action: 'contract.status',
+      entity: 'contract',
+      entityId: contractId,
+      newValue: { status: data.status },
+      oldValue: { status: existing.status },
+    });
 
-  await createAuditLog(c, {
-    userId,
-    action: 'contract.status',
-    entity: 'contract',
-    entityId: contractId,
-    newValue: { status: parsed.data.status },
-    oldValue: { status: existing.status },
-  });
-
-  return success(c, updated, `Status kontrak diubah ke ${parsed.data.status}`);
-});
+    return success(c, updated, `Status kontrak diubah ke ${data.status}`);
+  },
+);
 
 export { router as contractsRouter };

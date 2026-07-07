@@ -12,12 +12,6 @@ export interface CustomerProfile {
   deletedAt: string | null;
 }
 
-export type CreateCustomerInput = {
-  userId?: string;
-  fullName: string;
-  guestPhone?: string;
-};
-
 export type UpdateCustomerInput = Partial<
   Pick<CustomerProfile, 'fullName' | 'avatar' | 'birthDate' | 'gender' | 'defaultAddressId'>
 >;

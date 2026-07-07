@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { createBrowserClient } from '@specialist/shared';
 import { createAddressSchema } from '@specialist/validation';
 import { Card, Button, Input, Modal } from '@specialist/ui';
@@ -29,7 +29,7 @@ const emptyForm = {
 };
 
 export function CustomerAddresses() {
-  const api = createBrowserClient();
+  const api = useMemo(() => createBrowserClient(), []);
   const [addresses, setAddresses] = useState<Address[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
@@ -43,13 +43,13 @@ export function CustomerAddresses() {
       .then((data) => setAddresses(Array.isArray(data) ? data : []))
       .catch(() => setAddresses([]))
       .finally(() => setLoading(false));
-  }, []);
+  }, [api]);
 
   function setField(field: string, value: string | boolean) {
     setForm((prev) => ({ ...prev, [field]: value }));
   }
 
-  async function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setFormError('');
 

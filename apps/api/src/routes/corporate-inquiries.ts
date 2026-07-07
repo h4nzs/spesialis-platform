@@ -2,43 +2,36 @@ import { Hono } from 'hono';
 import { eq, desc, sql, and } from 'drizzle-orm';
 import { db, corporateInquiries } from '../lib/db.ts';
 import { authMiddleware, requireRole } from '../middleware/auth.ts';
+import { validateBody } from '../middleware/validation.ts';
 import { createCorporateInquirySchema, updateCorporateInquirySchema } from '@specialist/validation';
-import type { PaginationMeta } from '@specialist/types';
-import {
-  success,
-  created,
-  error,
-  notFound,
-  serverError,
-  successPaginated,
-} from '../lib/response.ts';
+import { success, created, notFound, serverError, successPaginated } from '../lib/response.ts';
+import { buildPaginationMeta } from '../lib/pagination.ts';
+import { omitUndefined } from '../lib/update.ts';
 import { notifyAdmins } from '../lib/notification.ts';
 
 const router = new Hono();
 
-router.post('/', async (c) => {
-  const body = await c.req.json();
-  const parsed = createCorporateInquirySchema.safeParse(body);
-  if (!parsed.success) {
-    return error(
-      c,
-      'VALIDATION_ERROR',
-      'Validation failed',
-      422,
-      parsed.error.issues.map((i) => ({ field: i.path.join('.'), message: i.message })),
-    );
-  }
+router.post('/', validateBody(createCorporateInquirySchema), async (c) => {
+  const data = c.get('validated') as {
+    companyName: string;
+    legalName?: string;
+    email: string;
+    phone: string;
+    industry?: string;
+    employeeCount?: number;
+    notes?: string;
+  };
 
   const [inquiry] = await db
     .insert(corporateInquiries)
     .values({
-      companyName: parsed.data.companyName,
-      legalName: parsed.data.legalName ?? null,
-      email: parsed.data.email,
-      phone: parsed.data.phone,
-      industry: parsed.data.industry ?? null,
-      employeeCount: parsed.data.employeeCount ?? null,
-      notes: parsed.data.notes ?? null,
+      companyName: data.companyName,
+      legalName: data.legalName ?? null,
+      email: data.email,
+      phone: data.phone,
+      industry: data.industry ?? null,
+      employeeCount: data.employeeCount ?? null,
+      notes: data.notes ?? null,
     })
     .returning();
 
@@ -47,7 +40,7 @@ router.post('/', async (c) => {
   notifyAdmins(
     'corporate.inquiry',
     'Inquiry Perusahaan Baru',
-    `Inquiry baru dari ${parsed.data.companyName} (${parsed.data.email})`,
+    `Inquiry baru dari ${data.companyName} (${data.email})`,
   );
 
   return created(c, inquiry, 'Inquiry berhasil dikirim');
@@ -73,16 +66,7 @@ router.get('/', authMiddleware, requireRole('admin', 'super_admin'), async (c) =
     .from(corporateInquiries)
     .where(conditions);
   const total = Number(countResult[0]?.count ?? 0);
-  const totalPages = Math.ceil(total / limit);
-
-  const pagination: PaginationMeta = {
-    page,
-    limit,
-    total,
-    totalPages,
-    hasNext: page < totalPages,
-    hasPrev: page > 1,
-  };
+  const pagination = buildPaginationMeta(page, limit, total);
 
   return successPaginated(c, items, pagination);
 });
@@ -99,42 +83,38 @@ router.get('/:id', authMiddleware, requireRole('admin', 'super_admin'), async (c
   return success(c, inquiry);
 });
 
-router.patch('/:id', authMiddleware, requireRole('admin', 'super_admin'), async (c) => {
-  const id = c.req.param('id')!;
-  const userId = c.get('userId');
-  const body = await c.req.json();
-  const parsed = updateCorporateInquirySchema.safeParse(body);
-  if (!parsed.success) {
-    return error(
-      c,
-      'VALIDATION_ERROR',
-      'Validation failed',
-      422,
-      parsed.error.issues.map((i) => ({ field: i.path.join('.'), message: i.message })),
-    );
-  }
+router.patch(
+  '/:id',
+  authMiddleware,
+  requireRole('admin', 'super_admin'),
+  validateBody(updateCorporateInquirySchema),
+  async (c) => {
+    const id = c.req.param('id')!;
+    const userId = c.get('userId');
+    const data = c.get('validated') as { status: string; notes?: string };
 
-  const [inquiry] = await db
-    .select({ id: corporateInquiries.id })
-    .from(corporateInquiries)
-    .where(eq(corporateInquiries.id, id))
-    .limit(1);
-  if (!inquiry) return notFound(c, 'Inquiry tidak ditemukan');
+    const [inquiry] = await db
+      .select({ id: corporateInquiries.id })
+      .from(corporateInquiries)
+      .where(eq(corporateInquiries.id, id))
+      .limit(1);
+    if (!inquiry) return notFound(c, 'Inquiry tidak ditemukan');
 
-  const updateData: Record<string, unknown> = {
-    status: parsed.data.status,
-    handledBy: userId,
-    handledAt: new Date(),
-  };
-  if (parsed.data.notes !== undefined) updateData.notes = parsed.data.notes;
+    const updateData = {
+      status: data.status,
+      handledBy: userId,
+      handledAt: new Date(),
+      ...omitUndefined({ notes: data.notes }),
+    };
 
-  const [updated] = await db
-    .update(corporateInquiries)
-    .set(updateData)
-    .where(eq(corporateInquiries.id, id))
-    .returning();
+    const [updated] = await db
+      .update(corporateInquiries)
+      .set(updateData)
+      .where(eq(corporateInquiries.id, id))
+      .returning();
 
-  return success(c, updated, 'Inquiry berhasil diperbarui');
-});
+    return success(c, updated, 'Inquiry berhasil diperbarui');
+  },
+);
 
 export { router as corporateInquiriesRouter };

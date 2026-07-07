@@ -2,9 +2,11 @@ import { Hono } from 'hono';
 import { eq, and, desc, sql } from 'drizzle-orm';
 import { db, notifications } from '../lib/db.ts';
 import { authMiddleware } from '../middleware/auth.ts';
+import { validateBody } from '../middleware/validation.ts';
 import { markNotificationReadSchema } from '@specialist/validation';
-import type { PaginationMeta } from '@specialist/types';
-import { success, successPaginated, error } from '../lib/response.ts';
+
+import { success, successPaginated } from '../lib/response.ts';
+import { buildPaginationMeta } from '../lib/pagination.ts';
 
 const router = new Hono();
 
@@ -34,16 +36,7 @@ router.get('/', authMiddleware, async (c) => {
     .from(notifications)
     .where(eq(notifications.userId, userId));
   const total = Number(countResult[0]?.count ?? 0);
-  const totalPages = Math.ceil(total / limit);
-
-  const pagination: PaginationMeta = {
-    page,
-    limit,
-    total,
-    totalPages,
-    hasNext: page < totalPages,
-    hasPrev: page > 1,
-  };
+  const pagination = buildPaginationMeta(page, limit, total);
 
   return successPaginated(c, items, pagination);
 });
@@ -57,28 +50,18 @@ router.get('/unread-count', authMiddleware, async (c) => {
   return success(c, { unread: Number(result?.count ?? 0) });
 });
 
-router.patch('/read', authMiddleware, async (c) => {
+router.patch('/read', authMiddleware, validateBody(markNotificationReadSchema), async (c) => {
   const userId = c.get('userId');
-  const body = await c.req.json();
-  const parsed = markNotificationReadSchema.safeParse(body);
-  if (!parsed.success) {
-    return error(
-      c,
-      'VALIDATION_ERROR',
-      'Validation failed',
-      422,
-      parsed.error.issues.map((i) => ({ field: i.path.join('.'), message: i.message })),
-    );
-  }
+  const data = c.get('validated') as { notificationIds: string[] };
 
-  for (const id of parsed.data.notificationIds) {
+  for (const id of data.notificationIds) {
     await db
       .update(notifications)
       .set({ isRead: true })
       .where(and(eq(notifications.id, id), eq(notifications.userId, userId)));
   }
 
-  return success(c, null, `${parsed.data.notificationIds.length} notifikasi ditandai dibaca`);
+  return success(c, null, `${data.notificationIds.length} notifikasi ditandai dibaca`);
 });
 
 export { router as notificationsRouter };

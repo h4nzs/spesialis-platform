@@ -1,6 +1,11 @@
 import { useState } from 'react';
 import { Button, Badge } from '@specialist/ui';
-import { createBrowserClient, formatCurrency, getStatusLabel, getStatusColor } from '@specialist/shared';
+import {
+  createBrowserClient,
+  formatCurrency,
+  getStatusLabel,
+  getStatusColor,
+} from '@specialist/shared';
 import type { OrderStatus } from '@specialist/types';
 
 interface TimelineEntry {
@@ -29,7 +34,7 @@ export function TrackingForm() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  async function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     if (!bookingNumber.trim()) return;
 
@@ -82,7 +87,12 @@ export function TrackingForm() {
                 <p className="text-xs text-text-muted">No. Booking</p>
                 <p className="text-xl font-bold tracking-wider text-text">{result.bookingNumber}</p>
               </div>
-              <Badge variant={getStatusColor(result.status) as 'default' | 'success' | 'warning' | 'danger' | 'info'}>
+              <Badge
+                variant={
+                  getStatusColor(result.status) as
+                    'default' | 'success' | 'warning' | 'danger' | 'info'
+                }
+              >
                 {getStatusLabel(result.status)}
               </Badge>
             </div>

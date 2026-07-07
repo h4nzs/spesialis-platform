@@ -1,8 +1,9 @@
 import { Hono } from 'hono';
 import { eq, and, desc, sql, isNull } from 'drizzle-orm';
-import type { PaginationMeta } from '@specialist/types';
+
 import { db, articles, articleCategories } from '../lib/db.ts';
 import { successPaginated } from '../lib/response.ts';
+import { buildPaginationMeta } from '../lib/pagination.ts';
 
 const router = new Hono();
 
@@ -42,16 +43,7 @@ router.get('/', async (c) => {
     .from(articles)
     .where(conditions);
   const total = Number(countResult[0]?.count ?? 0);
-  const totalPages = Math.ceil(total / limit);
-
-  const pagination: PaginationMeta = {
-    page,
-    limit,
-    total,
-    totalPages,
-    hasNext: page < totalPages,
-    hasPrev: page > 1,
-  };
+  const pagination = buildPaginationMeta(page, limit, total);
 
   return successPaginated(c, items, pagination);
 });

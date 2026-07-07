@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { createBrowserClient, formatDate, formatRating } from '@specialist/shared';
 import { Button, Textarea, Select, Modal, Table } from '@specialist/ui';
 import type { Column } from '@specialist/ui';
@@ -29,7 +29,7 @@ const RATING_OPTIONS = [
 ];
 
 export function CustomerReviews() {
-  const api = createBrowserClient();
+  const api = useMemo(() => createBrowserClient(), []);
   const [reviews, setReviews] = useState<ReviewItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
@@ -49,11 +49,11 @@ export function CustomerReviews() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [api]);
 
   useEffect(() => {
     loadReviews();
-  }, []);
+  }, [loadReviews]);
 
   async function openCreate() {
     setError('');
@@ -73,7 +73,7 @@ export function CustomerReviews() {
     }
   }
 
-  async function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     if (!orderId || !rating) {
       setError('Pilih pesanan dan rating wajib diisi');
