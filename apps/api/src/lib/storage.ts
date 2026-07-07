@@ -32,6 +32,14 @@ export async function ensureUploadDir(): Promise<void> {
 }
 
 export async function saveFile(file: File): Promise<StoredFile> {
+  if (!isAllowedMimeType(file.type)) {
+    throw new Error(`File type ${file.type} not allowed`);
+  }
+
+  if (!isWithinSizeLimit(file.size)) {
+    throw new Error('File exceeds maximum size');
+  }
+
   await ensureUploadDir();
 
   const ext = extname(file.name) || '';

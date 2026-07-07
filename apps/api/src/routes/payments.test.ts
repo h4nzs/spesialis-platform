@@ -5,6 +5,7 @@ import type { UserRole } from '@specialist/types';
 import { paymentsRouter } from './payments.ts';
 import { errorHandler } from '../middleware/error-handler.ts';
 import { setTestEnv, makeChain, insertChain, updateChain } from '../test-utils.ts';
+import type { ApiTestResponse } from '../test-utils.ts';
 
 const { mockDb, authState, mockAudit, mockNotif, mockEmail, em } = vi.hoisted(() => {
   const db = {
@@ -99,7 +100,10 @@ describe('POST /', () => {
         amount: '150000',
       }),
     });
+    const body = (await res.json()) as ApiTestResponse;
     expect(res.status).toBe(201);
+    expect(body.success).toBe(true);
+    expect(body.data).toBeDefined();
   });
   it('404 order not found', async () => {
     mockDb.select.mockReturnValueOnce(makeChain([]));
@@ -112,7 +116,9 @@ describe('POST /', () => {
         amount: '150000',
       }),
     });
+    const body = (await res.json()) as ApiTestResponse;
     expect(res.status).toBe(404);
+    expect(body.success).toBe(false);
   });
   it('409 duplicate payment', async () => {
     mockDb.select.mockReturnValueOnce(
@@ -129,7 +135,9 @@ describe('POST /', () => {
         amount: '150000',
       }),
     });
+    const body = (await res.json()) as ApiTestResponse;
     expect(res.status).toBe(409);
+    expect(body.success).toBe(false);
   });
   it('422 validation', async () => {
     const res = await mkApp().request('/api/v1/payments', {
@@ -137,7 +145,9 @@ describe('POST /', () => {
       headers: a(),
       body: JSON.stringify({}),
     });
+    const body = (await res.json()) as ApiTestResponse;
     expect(res.status).toBe(422);
+    expect(body.success).toBe(false);
   });
   it('404 partner (route has no role restriction)', async () => {
     const res = await mkApp('partner').request('/api/v1/payments', {
@@ -149,7 +159,9 @@ describe('POST /', () => {
         amount: '150000',
       }),
     });
+    const body = (await res.json()) as ApiTestResponse;
     expect(res.status).toBe(404);
+    expect(body.success).toBe(false);
   });
 });
 
@@ -161,12 +173,17 @@ describe('GET /:id', () => {
     mockDb.select.mockReturnValueOnce(makeChain([{ customerId: 'cp1' }]));
     mockDb.select.mockReturnValue(makeChain([{ id: 'cp1' }]));
     const res = await mkApp().request('/api/v1/payments/p1', { headers: a() });
+    const body = (await res.json()) as ApiTestResponse;
     expect(res.status).toBe(200);
+    expect(body.success).toBe(true);
+    expect(body.data).toBeDefined();
   });
   it('404', async () => {
     mockDb.select.mockReturnValue(makeChain([]));
     const res = await mkApp().request('/api/v1/payments/p1', { headers: a() });
+    const body = (await res.json()) as ApiTestResponse;
     expect(res.status).toBe(404);
+    expect(body.success).toBe(false);
   });
 });
 
@@ -196,7 +213,10 @@ describe('POST /:id/verify', () => {
       headers: a(),
       body: JSON.stringify({ status: 'Paid' }),
     });
+    const body = (await res.json()) as ApiTestResponse;
     expect(res.status).toBe(200);
+    expect(body.success).toBe(true);
+    expect(body.data).toBeDefined();
   });
   it('403 customer', async () => {
     const res = await mkApp('customer').request('/api/v1/payments/p1/verify', {
@@ -204,7 +224,9 @@ describe('POST /:id/verify', () => {
       headers: a(),
       body: JSON.stringify({ status: 'Paid' }),
     });
+    const body = (await res.json()) as ApiTestResponse;
     expect(res.status).toBe(403);
+    expect(body.success).toBe(false);
   });
   it('404 not found', async () => {
     mockDb.select.mockReturnValue(makeChain([]));
@@ -213,6 +235,75 @@ describe('POST /:id/verify', () => {
       headers: a(),
       body: JSON.stringify({ status: 'Paid' }),
     });
+    const body = (await res.json()) as ApiTestResponse;
     expect(res.status).toBe(404);
+    expect(body.success).toBe(false);
+  });
+
+  it('200 verified as Failed', async () => {
+    mockDb.select.mockReturnValueOnce(
+      makeChain([
+        {
+          id: 'p1',
+          orderId: '550e8400-e29b-41d4-a716-446655440001',
+          status: 'Waiting',
+          amount: '150000',
+          method: 'Transfer',
+        },
+      ]),
+    );
+    mockDb.select.mockReturnValueOnce(
+      makeChain([
+        {
+          id: '550e8400-e29b-41d4-a716-446655440001',
+          status: 'Waiting Payment',
+          customerId: 'cp1',
+        },
+      ]),
+    );
+    const res = await mkApp('admin').request('/api/v1/payments/p1/verify', {
+      method: 'POST',
+      headers: a(),
+      body: JSON.stringify({ status: 'Failed', notes: 'Saldo tidak cukup' }),
+    });
+    const body = (await res.json()) as ApiTestResponse;
+    expect(res.status).toBe(200);
+    expect(body.success).toBe(true);
+    expect(mockAudit.createAuditLog).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({ action: 'payment.reject' }),
+    );
+  });
+
+  it('409 duplicate verify', async () => {
+    mockDb.select.mockReturnValueOnce(
+      makeChain([
+        {
+          id: 'p1',
+          orderId: '550e8400-e29b-41d4-a716-446655440001',
+          status: 'Paid',
+          amount: '150000',
+        },
+      ]),
+    );
+    const res = await mkApp('admin').request('/api/v1/payments/p1/verify', {
+      method: 'POST',
+      headers: a(),
+      body: JSON.stringify({ status: 'Paid' }),
+    });
+    const body = (await res.json()) as ApiTestResponse;
+    expect(res.status).toBe(409);
+    expect(body.success).toBe(false);
+  });
+
+  it('422 validation', async () => {
+    const res = await mkApp('admin').request('/api/v1/payments/p1/verify', {
+      method: 'POST',
+      headers: a(),
+      body: JSON.stringify({}),
+    });
+    const body = (await res.json()) as ApiTestResponse;
+    expect(res.status).toBe(422);
+    expect(body.success).toBe(false);
   });
 });

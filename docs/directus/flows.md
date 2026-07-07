@@ -1,95 +1,76 @@
-# docs/directus/flows.md
-
 # Directus Flows
 
-Version 1
+Version 2
 
 ---
 
-Flow
+## SEO Revalidation Flow
 
-Create Booking
+**Status:** ✅ Active
 
-Trigger
+**Trigger:** Event — `items.create`, `items.update`, `items.delete`
 
-Order Created
+**Collections:**
 
-Action
+- `cms_articles`
+- `cms_faq`
+- `cms_pages`
+- `cms_homepage_sections`
 
-Generate Booking Number
+**Action:** Webhook → `POST http://api:3000/api/v1/cms/revalidate`
 
-↓
+**Headers:**
 
-Send Email
+- `Authorization: Bearer {{env.REVALIDATION_TOKEN}}`
+- `Content-Type: application/json`
 
-↓
+**Body:**
 
-Send WhatsApp
+```json
+{
+  "collection": "{{$trigger.collection}}",
+  "event": "{{$trigger.action}}",
+  "key": "{{$trigger.key}}"
+}
+```
 
-↓
+**Setup:** `pnpm cms:flows-setup`
 
-Notify Admin
+**Notes:**
 
----
-
-Flow
-
-Partner Approved
-
-Trigger
-
-Partner Status Updated
-
-↓
-
-Send Email
-
-↓
-
-Activate Account
+- Menggantikan `seo-revalidation` hook extension yang tidak didukung Directus 11.6 Docker.
+- `REVALIDATION_TOKEN` harus sama antara `docker-compose.yml` dan `.env`.
 
 ---
 
-Flow
+## Planned Flows
 
-Payment Verified
+### Create Booking
 
-↓
+Trigger: Order Created
 
-Update Order
-
-↓
-
-Notify Customer
-
-↓
-
-Notify Finance
+Action: Generate Booking Number → Send Email → Send WhatsApp → Notify Admin
 
 ---
 
-Flow
+### Partner Approved
 
-Complaint Created
+Trigger: Partner Status Updated
 
-↓
-
-Notify Admin
-
-↓
-
-Notify Dispatcher
+Action: Send Email → Activate Account
 
 ---
 
-Flow
+### Payment Verified
 
-Article Published
+Trigger: Payment Status Updated
 
-↓
+Action: Update Order → Notify Customer → Notify Finance
 
-Clear Cache
+---
 
-↓
+### Complaint Created
 
-Revalidate Astro
+Trigger: Complaint Created
+
+Action: Notify Admin → Notify Dispatcher

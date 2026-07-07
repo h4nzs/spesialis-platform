@@ -21,3 +21,8 @@ coverage
 .vscode/settings.json
 
 *.log
+
+# Playwright
+playwright-report/
+test-results/
+playwright/.cache/

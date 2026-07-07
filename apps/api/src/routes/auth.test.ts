@@ -4,6 +4,7 @@ import type { Context } from 'hono';
 import { authRouter } from './auth.ts';
 import { errorHandler } from '../middleware/error-handler.ts';
 import { setTestEnv, makeChain } from '../test-utils.ts';
+import type { ApiTestResponse } from '../test-utils.ts';
 
 const { mockDb, mockAuth, mockEmail, mockAudit, em } = vi.hoisted(() => {
   const baseThen = (r: unknown) => ({
@@ -100,7 +101,11 @@ describe('POST /register', () => {
         fullName: 'A',
       }),
     });
+    const body = (await res.json()) as ApiTestResponse;
     expect(res.status).toBe(201);
+    expect(body.success).toBe(true);
+    expect(body.data).toBeDefined();
+    expect(mockAuth.hashPassword).toHaveBeenCalledWith('Str0ng!P1');
   });
   it('409 duplicate', async () => {
     mockDb.select.mockReturnValue(makeChain([{ id: 'x' }]));
@@ -114,7 +119,9 @@ describe('POST /register', () => {
         fullName: 'A',
       }),
     });
+    const body = (await res.json()) as ApiTestResponse;
     expect(res.status).toBe(409);
+    expect(body.success).toBe(false);
   });
   it('422 missing', async () => {
     const res = await mkApp().request('/api/v1/auth/register', {
@@ -122,7 +129,9 @@ describe('POST /register', () => {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({}),
     });
+    const body = (await res.json()) as ApiTestResponse;
     expect(res.status).toBe(422);
+    expect(body.success).toBe(false);
   });
   it('422 weak password', async () => {
     const res = await mkApp().request('/api/v1/auth/register', {
@@ -130,7 +139,9 @@ describe('POST /register', () => {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email: 'a@b.com', phone: '08123456789', password: '123' }),
     });
+    const body = (await res.json()) as ApiTestResponse;
     expect(res.status).toBe(422);
+    expect(body.success).toBe(false);
   });
 });
 
@@ -146,7 +157,12 @@ describe('POST /login', () => {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email: 'a@b.com', password: 'Str0ng!P1' }),
     });
+    const body = (await res.json()) as ApiTestResponse;
     expect(res.status).toBe(200);
+    expect(body.success).toBe(true);
+    expect(body.data).toBeDefined();
+    expect(mockAuth.verifyPassword).toHaveBeenCalled();
+    expect(mockAuth.signAccessToken).toHaveBeenCalled();
   });
   it('401 wrong password', async () => {
     mockAuth.verifyPassword.mockResolvedValue(false);
@@ -160,7 +176,9 @@ describe('POST /login', () => {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email: 'a@b.com', password: 'Bad' }),
     });
+    const body = (await res.json()) as ApiTestResponse;
     expect(res.status).toBe(401);
+    expect(body.success).toBe(false);
   });
   it('401 unknown email', async () => {
     mockDb.select.mockReturnValue(makeChain([]));
@@ -169,9 +187,11 @@ describe('POST /login', () => {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email: 'nope@b.com', password: 'S' }),
     });
+    const body = (await res.json()) as ApiTestResponse;
     expect(res.status).toBe(401);
+    expect(body.success).toBe(false);
   });
-  it('403 inactive', async () => {
+  it('403 blocked', async () => {
     mockDb.select.mockReturnValue(
       makeChain([
         { id: 'uid', email: 'a@b.com', passwordHash: 'h', role: 'customer', status: 'blocked' },
@@ -182,7 +202,9 @@ describe('POST /login', () => {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email: 'a@b.com', password: 'S' }),
     });
+    const body = (await res.json()) as ApiTestResponse;
     expect(res.status).toBe(403);
+    expect(body.success).toBe(false);
   });
   it('422 missing', async () => {
     const res = await mkApp().request('/api/v1/auth/login', {
@@ -190,7 +212,9 @@ describe('POST /login', () => {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({}),
     });
+    const body = (await res.json()) as ApiTestResponse;
     expect(res.status).toBe(422);
+    expect(body.success).toBe(false);
   });
 });
 
@@ -207,7 +231,10 @@ describe('POST /refresh', () => {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ refreshToken: 'valid-refresh-token' }),
     });
+    const body = (await res.json()) as ApiTestResponse;
     expect(res.status).toBe(200);
+    expect(body.success).toBe(true);
+    expect(body.data).toBeDefined();
   });
   it('401 expired', async () => {
     mockDb.select.mockReturnValue(makeChain([]));
@@ -216,7 +243,9 @@ describe('POST /refresh', () => {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ refreshToken: 'bad' }),
     });
+    const body = (await res.json()) as ApiTestResponse;
     expect(res.status).toBe(401);
+    expect(body.success).toBe(false);
   });
   it('401 missing', async () => {
     const res = await mkApp().request('/api/v1/auth/refresh', {
@@ -224,7 +253,9 @@ describe('POST /refresh', () => {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({}),
     });
+    const body = (await res.json()) as ApiTestResponse;
     expect(res.status).toBe(401);
+    expect(body.success).toBe(false);
   });
 });
 
@@ -234,11 +265,15 @@ describe('POST /logout', () => {
       method: 'POST',
       headers: auth('x'),
     });
+    const body = (await res.json()) as ApiTestResponse;
     expect(res.status).toBe(200);
+    expect(body.success).toBe(true);
   });
   it('401 unauth', async () => {
     const res = await mkApp().request('/api/v1/auth/logout', { method: 'POST' });
+    const body = (await res.json()) as ApiTestResponse;
     expect(res.status).toBe(401);
+    expect(body.success).toBe(false);
   });
 });
 
@@ -250,12 +285,17 @@ describe('GET /me', () => {
       ]),
     );
     const res = await mkApp().request('/api/v1/auth/me', { headers: auth('x') });
+    const body = (await res.json()) as ApiTestResponse;
     expect(res.status).toBe(200);
+    expect(body.success).toBe(true);
+    expect(body.data).toBeDefined();
   });
   it('404 not found', async () => {
     mockDb.select.mockReturnValue(makeChain([]));
     const res = await mkApp().request('/api/v1/auth/me', { headers: auth('x') });
+    const body = (await res.json()) as ApiTestResponse;
     expect(res.status).toBe(404);
+    expect(body.success).toBe(false);
   });
 });
 
@@ -279,7 +319,10 @@ describe('PATCH /profile', () => {
       headers: auth('x'),
       body: JSON.stringify({ email: 'a@b.com', phone: '08123456789' }),
     });
+    const body = (await res.json()) as ApiTestResponse;
     expect(res.status).toBe(200);
+    expect(body.success).toBe(true);
+    expect(body.data).toBeDefined();
   });
   it('200 no changes', async () => {
     mockDb.select.mockReturnValueOnce(makeChain([{ id: 'uid', email: 'a@b.com' }]));
@@ -288,7 +331,9 @@ describe('PATCH /profile', () => {
       headers: auth('x'),
       body: JSON.stringify({}),
     });
+    const body = (await res.json()) as ApiTestResponse;
     expect(res.status).toBe(200);
+    expect(body.success).toBe(true);
   });
   it('409 duplicate email', async () => {
     mockDb.select.mockReturnValueOnce(makeChain([{ id: 'uid', email: 'old@b.com' }]));
@@ -298,7 +343,9 @@ describe('PATCH /profile', () => {
       headers: auth('x'),
       body: JSON.stringify({ email: 'dup@b.com' }),
     });
+    const body = (await res.json()) as ApiTestResponse;
     expect(res.status).toBe(409);
+    expect(body.success).toBe(false);
   });
 });
 
@@ -310,7 +357,10 @@ describe('PATCH /change-password', () => {
       headers: auth('x'),
       body: JSON.stringify({ currentPassword: 'Old!', newPassword: 'NewStr0ng!1' }),
     });
+    const body = (await res.json()) as ApiTestResponse;
     expect(res.status).toBe(200);
+    expect(body.success).toBe(true);
+    expect(mockAuth.hashPassword).toHaveBeenCalledWith('NewStr0ng!1');
   });
   it('403 wrong current', async () => {
     mockAuth.verifyPassword.mockResolvedValue(false);
@@ -320,7 +370,9 @@ describe('PATCH /change-password', () => {
       headers: auth('x'),
       body: JSON.stringify({ currentPassword: 'Bad', newPassword: 'NewStr0ng!1' }),
     });
+    const body = (await res.json()) as ApiTestResponse;
     expect(res.status).toBe(403);
+    expect(body.success).toBe(false);
   });
 });
 
@@ -332,7 +384,9 @@ describe('DELETE /account', () => {
       headers: auth('x'),
       body: JSON.stringify({ password: 'Str0ng!P1' }),
     });
+    const body = (await res.json()) as ApiTestResponse;
     expect(res.status).toBe(200);
+    expect(body.success).toBe(true);
   });
   it('403 wrong password', async () => {
     mockAuth.verifyPassword.mockResolvedValue(false);
@@ -342,7 +396,9 @@ describe('DELETE /account', () => {
       headers: auth('x'),
       body: JSON.stringify({ password: 'Bad' }),
     });
+    const body = (await res.json()) as ApiTestResponse;
     expect(res.status).toBe(403);
+    expect(body.success).toBe(false);
   });
   it('422 missing password', async () => {
     mockDb.select.mockReturnValue(makeChain([{ id: 'uid', passwordHash: 'h' }]));
@@ -351,7 +407,9 @@ describe('DELETE /account', () => {
       headers: auth('x'),
       body: JSON.stringify({}),
     });
+    const body = (await res.json()) as ApiTestResponse;
     expect(res.status).toBe(422);
+    expect(body.success).toBe(false);
   });
 });
 
@@ -362,7 +420,10 @@ describe('POST /forgot-password', () => {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email: 'a@b.com' }),
     });
+    const body = (await res.json()) as ApiTestResponse;
     expect(res.status).toBe(200);
+    expect(body.success).toBe(true);
+    expect(mockEmail.sendPasswordResetEmail).not.toHaveBeenCalled();
   });
   it('200 user exists', async () => {
     mockDb.select.mockReturnValue(makeChain([{ id: 'uid', email: 'exists@b.com' }]));
@@ -374,7 +435,10 @@ describe('POST /forgot-password', () => {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email: 'exists@b.com' }),
     });
+    const body = (await res.json()) as ApiTestResponse;
     expect(res.status).toBe(200);
+    expect(body.success).toBe(true);
+    expect(mockEmail.sendPasswordResetEmail).toHaveBeenCalled();
   });
 });
 
@@ -390,7 +454,9 @@ describe('POST /reset-password', () => {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ token: 'valid', password: 'NewStr0ng!1' }),
     });
+    const body = (await res.json()) as ApiTestResponse;
     expect(res.status).toBe(200);
+    expect(body.success).toBe(true);
   });
   it('400 expired', async () => {
     mockDb.select.mockReturnValue(makeChain([]));
@@ -399,6 +465,180 @@ describe('POST /reset-password', () => {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ token: 'bad', password: 'NewStr0ng!1' }),
     });
+    const body = (await res.json()) as ApiTestResponse;
     expect(res.status).toBe(400);
+    expect(body.success).toBe(false);
+  });
+});
+
+describe('POST /convert-guest', () => {
+  it('201 creates account for guest', async () => {
+    mockDb.select.mockReturnValueOnce(makeChain([])); // no existing user
+    mockDb.select.mockReturnValueOnce(
+      makeChain([{ id: 'guest-profile-1' }]), // guest profile found
+    );
+    mockDb.insert.mockReturnValue({
+      values: vi.fn().mockReturnValue({
+        returning: vi
+          .fn()
+          .mockResolvedValue([{ id: 'new-uid', email: 'guest@test.com', role: 'customer' }]),
+      }),
+    });
+    const res = await mkApp().request('/api/v1/auth/convert-guest', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        phone: '08123456789',
+        email: 'guest@test.com',
+        password: 'Str0ng!P1',
+        fullName: 'Guest User',
+      }),
+    });
+    const body = (await res.json()) as ApiTestResponse;
+    expect(res.status).toBe(201);
+    expect(body.success).toBe(true);
+    expect(body.data).toBeDefined();
+    expect(mockAuth.hashPassword).toHaveBeenCalledWith('Str0ng!P1');
+    expect(mockAuth.signAccessToken).toHaveBeenCalled();
+  });
+
+  it('409 duplicate email', async () => {
+    mockDb.select.mockReturnValueOnce(makeChain([{ id: 'existing' }]));
+    const res = await mkApp().request('/api/v1/auth/convert-guest', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        phone: '08123456789',
+        email: 'exists@test.com',
+        password: 'Str0ng!P1',
+        fullName: 'Exists',
+      }),
+    });
+    const body = (await res.json()) as ApiTestResponse;
+    expect(res.status).toBe(409);
+    expect(body.success).toBe(false);
+  });
+
+  it('404 guest profile not found', async () => {
+    mockDb.select.mockReturnValueOnce(makeChain([]));
+    mockDb.select.mockReturnValueOnce(makeChain([]));
+    const res = await mkApp().request('/api/v1/auth/convert-guest', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        phone: '08123456789',
+        email: 'new@test.com',
+        password: 'Str0ng!P1',
+        fullName: 'New',
+      }),
+    });
+    const body = (await res.json()) as ApiTestResponse;
+    expect(res.status).toBe(404);
+    expect(body.success).toBe(false);
+  });
+
+  it('422 validation', async () => {
+    const res = await mkApp().request('/api/v1/auth/convert-guest', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({}),
+    });
+    const body = (await res.json()) as ApiTestResponse;
+    expect(res.status).toBe(422);
+    expect(body.success).toBe(false);
+  });
+});
+
+describe('POST /verify-email', () => {
+  it('200 verified', async () => {
+    mockDb.select.mockReturnValue(
+      makeChain([
+        {
+          id: 'pr1',
+          userId: 'uid',
+          used: false,
+          expiresAt: new Date(Date.now() + 86400000),
+        },
+      ]),
+    );
+    const res = await mkApp().request('/api/v1/auth/verify-email', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token: 'valid-token' }),
+    });
+    const body = (await res.json()) as ApiTestResponse;
+    expect(res.status).toBe(200);
+    expect(body.success).toBe(true);
+  });
+
+  it('400 invalid token', async () => {
+    mockDb.select.mockReturnValue(makeChain([]));
+    const res = await mkApp().request('/api/v1/auth/verify-email', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token: 'bad-token' }),
+    });
+    const body = (await res.json()) as ApiTestResponse;
+    expect(res.status).toBe(400);
+    expect(body.success).toBe(false);
+  });
+
+  it('422 missing token', async () => {
+    const res = await mkApp().request('/api/v1/auth/verify-email', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({}),
+    });
+    const body = (await res.json()) as ApiTestResponse;
+    expect(res.status).toBe(422);
+    expect(body.success).toBe(false);
+  });
+});
+
+describe('POST /resend-verification', () => {
+  it('200 resend', async () => {
+    mockDb.select.mockReturnValue(
+      makeChain([{ id: 'uid', email: 'user@test.com', emailVerifiedAt: null }]),
+    );
+    const res = await mkApp().request('/api/v1/auth/resend-verification', {
+      method: 'POST',
+      headers: auth('x'),
+    });
+    const body = (await res.json()) as ApiTestResponse;
+    expect(res.status).toBe(200);
+    expect(body.success).toBe(true);
+    expect(mockEmail.sendVerificationEmail).toHaveBeenCalled();
+  });
+
+  it('200 already verified', async () => {
+    mockDb.select.mockReturnValue(
+      makeChain([{ id: 'uid', email: 'user@test.com', emailVerifiedAt: new Date() }]),
+    );
+    const res = await mkApp().request('/api/v1/auth/resend-verification', {
+      method: 'POST',
+      headers: auth('x'),
+    });
+    const body = (await res.json()) as ApiTestResponse;
+    expect(res.status).toBe(200);
+    expect(body.success).toBe(true);
+    expect(mockEmail.sendVerificationEmail).not.toHaveBeenCalled();
+  });
+
+  it('404 user not found', async () => {
+    mockDb.select.mockReturnValue(makeChain([]));
+    const res = await mkApp().request('/api/v1/auth/resend-verification', {
+      method: 'POST',
+      headers: auth('x'),
+    });
+    const body = (await res.json()) as ApiTestResponse;
+    expect(res.status).toBe(404);
+    expect(body.success).toBe(false);
+  });
+
+  it('401 unauth', async () => {
+    const res = await mkApp().request('/api/v1/auth/resend-verification', { method: 'POST' });
+    const body = (await res.json()) as ApiTestResponse;
+    expect(res.status).toBe(401);
+    expect(body.success).toBe(false);
   });
 });

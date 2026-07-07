@@ -189,7 +189,7 @@ pnpm cli db:migrate               # Apply pending migrations
 pnpm cli db:push                  # Push schema langsung ke DB
 pnpm cli db:seed                  # Seed demo data
 pnpm cli cms:setup                # Setup Directus collections & roles
-pnpm cli cms:build-extensions     # Build Directus extensions
+pnpm cli cms:flows-setup          # Setup Directus Flows (SEO revalidation)
 pnpm cli generate resource <name> # Scaffold route + test baru
 pnpm cli start                    # Start full dev environment
 pnpm cli help                     # Show all commands

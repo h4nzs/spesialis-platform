@@ -4,6 +4,6 @@
   "type": "module",
   "description": "Directus CMS configuration & extensions",
   "scripts": {
-    "build:extensions": "cd src/extensions/seo-revalidation && npx directus-extension build && cd ../dashboard-stats && npx directus-extension build"
+    "setup:flows": "pnpm --filter root cms:flows-setup"
   }
 }

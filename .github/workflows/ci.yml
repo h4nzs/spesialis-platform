@@ -8,6 +8,21 @@ jobs:
   check:
     runs-on: ubuntu-latest
 
+    services:
+      postgres:
+        image: postgres:18
+        env:
+          POSTGRES_DB: specialist
+          POSTGRES_USER: specialist
+          POSTGRES_PASSWORD: specialist
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready -U specialist
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
     steps:
       - uses: actions/checkout@v4
 
@@ -22,6 +37,27 @@ jobs:
 
       - run: pnpm install
 
+      - run: pnpm --filter @specialist/database db:migrate
+        env:
+          DATABASE_URL: postgres://specialist:specialist@localhost:5432/specialist
+
+      - run: pnpm --filter @specialist/api db:seed
+        env:
+          DATABASE_URL: postgres://specialist:specialist@localhost:5432/specialist
+          JWT_SECRET: test-secret
+
       - run: pnpm lint
       - run: pnpm typecheck
       - run: pnpm test
+        env:
+          JWT_SECRET: test-secret
+
+      - name: Install Playwright Browsers
+        run: npx playwright install chromium
+        working-directory: apps/web
+
+      - name: Run E2E Tests
+        run: pnpm --filter web test:e2e
+        env:
+          DATABASE_URL: postgres://specialist:specialist@localhost:5432/specialist
+          JWT_SECRET: test-secret

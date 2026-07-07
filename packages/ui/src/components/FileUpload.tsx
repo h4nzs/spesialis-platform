@@ -46,7 +46,19 @@ export function FileUpload({
         onClick={() => inputRef.current?.click()}
         className="flex cursor-pointer items-center justify-center gap-2 rounded-md border-2 border-dashed border-border bg-surface px-4 py-6 text-sm text-text-muted hover:border-primary hover:text-primary transition-colors"
       >
-        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="20"
+          height="20"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+        >
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+          <polyline points="17 8 12 3 7 8" />
+          <line x1="12" y1="3" x2="12" y2="15" />
+        </svg>
         Klik untuk upload
       </button>
       <input
@@ -55,15 +67,17 @@ export function FileUpload({
         accept={accept}
         multiple={multiple}
         className="hidden"
+        data-testid="file-input"
         onChange={handleChange}
       />
-      {(fileError ?? error) && (
-        <span className="text-xs text-danger">{fileError ?? error}</span>
-      )}
+      {(fileError ?? error) && <span className="text-xs text-danger">{fileError ?? error}</span>}
       {previews.length > 0 && (
         <div className="mt-1 flex flex-wrap gap-2">
           {previews.map((src, i) => (
-            <div key={src} className="relative h-16 w-16 overflow-hidden rounded-md border border-border">
+            <div
+              key={src}
+              className="relative h-16 w-16 overflow-hidden rounded-md border border-border"
+            >
               <img
                 src={src}
                 alt={`Preview ${i + 1}`}

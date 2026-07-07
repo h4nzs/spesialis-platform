@@ -110,22 +110,25 @@ Yang dilakukan script:
 6. Ensure Content Manager role + CMS Full Access policy
 7. Grant CRUD permissions
 
-## Extensions
+## Flows (Pengganti Extensions)
 
-Ekstensi kustom diletakkan di `apps/cms/src/extensions/`.
+⚠️ **Directus 11.6 Docker tidak mendukung file system API extensions (hooks/endpoints).**
 
-| Extension          | Type     | Fungsi                                                        |
-| ------------------ | -------- | ------------------------------------------------------------- |
-| `seo-revalidation` | Hook     | Trigger revalidasi Astro saat CMS content berubah             |
-| `dashboard-stats`  | Endpoint | Menyediakan statistik koleksi untuk widget dashboard Directus |
+Sebagai gantinya, gunakan **Directus Flows** yang merupakan fitur bawaan Directus.
 
-### Build Extensions
+### SEO Revalidation Flow
+
+Trigger revalidasi Astro saat CMS content berubah:
+
+- **Trigger:** Event — `items.create`, `items.update`, `items.delete`
+- **Collections:** `cms_articles`, `cms_faq`, `cms_pages`, `cms_homepage_sections`
+- **Action:** Webhook → `POST http://api:3000/api/v1/cms/revalidate`
+
+### Setup Flows
 
 ```bash
-pnpm cms:build-extensions
+pnpm cms:flows-setup
 ```
-
-Ekstensi akan di-build ke `apps/cms/src/extensions/*/dist/` dan otomatis dimuat oleh Directus via volume mount.
 
 ## Storage
 

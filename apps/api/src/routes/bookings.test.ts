@@ -5,6 +5,7 @@ import type { UserRole } from '@specialist/types';
 import { bookingsRouter } from './bookings.ts';
 import { errorHandler } from '../middleware/error-handler.ts';
 import { setTestEnv, makeChain, insertChain, updateChain } from '../test-utils.ts';
+import type { ApiTestResponse } from '../test-utils.ts';
 
 const mockRateLimit = vi.hoisted(() => ({
   rateLimit: () => async (_c: unknown, next: () => unknown) => next(),
@@ -135,7 +136,10 @@ describe('POST / — guest', () => {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(GB),
     });
+    const body = (await res.json()) as ApiTestResponse;
     expect(res.status).toBe(201);
+    expect(body.success).toBe(true);
+    expect(body.data).toBeDefined();
   });
   it('422 empty', async () => {
     const res = await mkApp().request('/api/v1/bookings', {
@@ -143,7 +147,9 @@ describe('POST / — guest', () => {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({}),
     });
+    const body = (await res.json()) as ApiTestResponse;
     expect(res.status).toBe(422);
+    expect(body.success).toBe(false);
   });
   it('422 bad date', async () => {
     const res = await mkApp().request('/api/v1/bookings', {
@@ -151,7 +157,9 @@ describe('POST / — guest', () => {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ ...GB, bookingDate: 'bad' }),
     });
+    const body = (await res.json()) as ApiTestResponse;
     expect(res.status).toBe(422);
+    expect(body.success).toBe(false);
   });
 });
 
@@ -168,7 +176,10 @@ describe('POST / — customer', () => {
       headers: a(),
       body: JSON.stringify(CB),
     });
+    const body = (await res.json()) as ApiTestResponse;
     expect(res.status).toBe(201);
+    expect(body.success).toBe(true);
+    expect(body.data).toBeDefined();
   });
   it('400 no profile', async () => {
     mockDb.select.mockReturnValue(makeChain([]));
@@ -177,7 +188,9 @@ describe('POST / — customer', () => {
       headers: a(),
       body: JSON.stringify(CB),
     });
+    const body = (await res.json()) as ApiTestResponse;
     expect(res.status).toBe(400);
+    expect(body.success).toBe(false);
   });
   it('404 bad address', async () => {
     mockDb.select.mockReturnValueOnce(makeChain([{ id: 'p1' }]));
@@ -187,7 +200,9 @@ describe('POST / — customer', () => {
       headers: a(),
       body: JSON.stringify(CB),
     });
+    const body = (await res.json()) as ApiTestResponse;
     expect(res.status).toBe(404);
+    expect(body.success).toBe(false);
   });
 });
 
@@ -196,16 +211,23 @@ describe('GET /', () => {
     mockDb.select.mockReturnValueOnce(makeChain([{ id: 'p1' }]));
     mockDb.select.mockReturnValue(makeChain([]));
     const res = await mkApp('customer').request('/api/v1/bookings', { headers: a() });
+    const body = (await res.json()) as ApiTestResponse;
     expect(res.status).toBe(200);
+    expect(body.success).toBe(true);
+    expect(body.data).toBeDefined();
   });
   it('200 admin', async () => {
     mockDb.select.mockReturnValue(makeChain([]));
     const res = await mkApp('admin').request('/api/v1/bookings', { headers: a() });
+    const body = (await res.json()) as ApiTestResponse;
     expect(res.status).toBe(200);
+    expect(body.success).toBe(true);
   });
   it('401', async () => {
     const res = await mkApp().request('/api/v1/bookings');
+    const body = (await res.json()) as ApiTestResponse;
     expect(res.status).toBe(401);
+    expect(body.success).toBe(false);
   });
 });
 
@@ -229,12 +251,17 @@ describe('GET /tracking/:bn', () => {
       makeChain([{ fromStatus: null, toStatus: 'Pending', createdAt: new Date() }]),
     );
     const res = await mkApp().request('/api/v1/bookings/tracking/SP-2026-000001');
+    const body = (await res.json()) as ApiTestResponse;
     expect(res.status).toBe(200);
+    expect(body.success).toBe(true);
+    expect(body.data).toBeDefined();
   });
   it('404', async () => {
     mockDb.select.mockReturnValue(makeChain([]));
     const res = await mkApp().request('/api/v1/bookings/tracking/XX');
+    const body = (await res.json()) as ApiTestResponse;
     expect(res.status).toBe(404);
+    expect(body.success).toBe(false);
   });
 });
 
@@ -246,7 +273,9 @@ describe('POST /:id/confirm', () => {
       headers: a(),
       body: JSON.stringify({ finalPrice: '150000' }),
     });
+    const body = (await res.json()) as ApiTestResponse;
     expect(res.status).toBe(200);
+    expect(body.success).toBe(true);
   });
   it('403 customer', async () => {
     const res = await mkApp('customer').request('/api/v1/bookings/o1/confirm', {
@@ -254,7 +283,9 @@ describe('POST /:id/confirm', () => {
       headers: a(),
       body: JSON.stringify({}),
     });
+    const body = (await res.json()) as ApiTestResponse;
     expect(res.status).toBe(403);
+    expect(body.success).toBe(false);
   });
   it('404', async () => {
     mockDb.select.mockReturnValue(makeChain([]));
@@ -263,7 +294,9 @@ describe('POST /:id/confirm', () => {
       headers: a(),
       body: JSON.stringify({}),
     });
+    const body = (await res.json()) as ApiTestResponse;
     expect(res.status).toBe(404);
+    expect(body.success).toBe(false);
   });
   it('409 bad transition', async () => {
     mockDb.select.mockReturnValue(makeChain([{ id: 'o1', status: 'Closed' }]));
@@ -272,7 +305,9 @@ describe('POST /:id/confirm', () => {
       headers: a(),
       body: JSON.stringify({}),
     });
+    const body = (await res.json()) as ApiTestResponse;
     expect(res.status).toBe(409);
+    expect(body.success).toBe(false);
   });
 });
 
@@ -289,11 +324,10 @@ describe('POST /:id/assign', () => {
       headers: a(),
       body: JSON.stringify({ partnerId: PARTNER_USER_ID }),
     });
-    if (res.status !== 200) {
-      const body = await res.json();
-      console.error('Assign test body:', JSON.stringify(body));
-    }
+    const body = (await res.json()) as ApiTestResponse;
     expect(res.status).toBe(200);
+    expect(body.success).toBe(true);
+    expect(mockNotif.createNotification).toHaveBeenCalled();
   });
   it('403 customer', async () => {
     const res = await mkApp('customer').request('/api/v1/bookings/o1/assign', {
@@ -301,7 +335,9 @@ describe('POST /:id/assign', () => {
       headers: a(),
       body: JSON.stringify({ partnerId: 'p' }),
     });
+    const body = (await res.json()) as ApiTestResponse;
     expect(res.status).toBe(403);
+    expect(body.success).toBe(false);
   });
 });
 
@@ -315,7 +351,10 @@ describe('POST /:id/accept', () => {
       method: 'POST',
       headers: a(),
     });
+    const body = (await res.json()) as ApiTestResponse;
     expect(res.status).toBe(200);
+    expect(body.success).toBe(true);
+    expect(mockAudit.createAuditLog).toHaveBeenCalled();
   });
   it('403 customer', async () => {
     mockDb.select.mockReturnValue(makeChain([]));
@@ -323,7 +362,9 @@ describe('POST /:id/accept', () => {
       method: 'POST',
       headers: a(),
     });
+    const body = (await res.json()) as ApiTestResponse;
     expect(res.status).toBe(403);
+    expect(body.success).toBe(false);
   });
 });
 
@@ -338,7 +379,10 @@ describe('POST /:id/cancel', () => {
       headers: a(),
       body: JSON.stringify({ reason: 'Change' }),
     });
+    const body = (await res.json()) as ApiTestResponse;
     expect(res.status).toBe(200);
+    expect(body.success).toBe(true);
+    expect(mockAudit.createAuditLog).toHaveBeenCalled();
   });
   it('409 bad status', async () => {
     mockDb.select.mockReturnValueOnce(
@@ -349,7 +393,9 @@ describe('POST /:id/cancel', () => {
       method: 'POST',
       headers: a(),
     });
+    const body = (await res.json()) as ApiTestResponse;
     expect(res.status).toBe(409);
+    expect(body.success).toBe(false);
   });
   it('404', async () => {
     mockDb.select.mockReturnValue(makeChain([]));
@@ -357,6 +403,286 @@ describe('POST /:id/cancel', () => {
       method: 'POST',
       headers: a(),
     });
+    const body = (await res.json()) as ApiTestResponse;
     expect(res.status).toBe(404);
+    expect(body.success).toBe(false);
+  });
+});
+
+describe('GET /:id', () => {
+  it('200 customer', async () => {
+    mockDb.select.mockReturnValueOnce(
+      makeChain([
+        {
+          id: 'o1',
+          customerId: 'cp1',
+          status: 'Pending Confirmation',
+          bookingNumber: 'SP-2026-0001',
+          bookingDate: '2026-07-15',
+          bookingTime: '10:00',
+        },
+      ]),
+    );
+    mockDb.select.mockReturnValueOnce(makeChain([{ id: 'cp1' }]));
+    mockDb.select.mockReturnValueOnce(makeChain([{ id: 'oi1', serviceId: 's1', quantity: 1 }]));
+    mockDb.select.mockReturnValueOnce(
+      makeChain([{ fromStatus: null, toStatus: 'Pending Confirmation', createdAt: new Date() }]),
+    );
+    mockDb.select.mockReturnValueOnce(makeChain([]));
+    const res = await mkApp('customer').request('/api/v1/bookings/o1', { headers: a() });
+    const body = (await res.json()) as ApiTestResponse;
+    expect(res.status).toBe(200);
+    expect(body.success).toBe(true);
+    expect(body.data).toBeDefined();
+    expect(body.data.id).toBe('o1');
+    expect(Array.isArray(body.data.items)).toBe(true);
+    expect(Array.isArray(body.data.timeline)).toBe(true);
+  });
+
+  it('200 admin', async () => {
+    mockDb.select.mockReturnValueOnce(
+      makeChain([
+        {
+          id: 'o1',
+          customerId: 'cp1',
+          status: 'Pending Confirmation',
+          bookingNumber: 'SP-2026-0001',
+        },
+      ]),
+    );
+    mockDb.select.mockReturnValueOnce(makeChain([{ id: 'oi1' }]));
+    mockDb.select.mockReturnValueOnce(makeChain([]));
+    mockDb.select.mockReturnValueOnce(makeChain([]));
+    const res = await mkApp('admin').request('/api/v1/bookings/o1', { headers: a() });
+    const body = (await res.json()) as ApiTestResponse;
+    expect(res.status).toBe(200);
+    expect(body.success).toBe(true);
+  });
+
+  it('404', async () => {
+    mockDb.select.mockReturnValue(makeChain([]));
+    const res = await mkApp('customer').request('/api/v1/bookings/o1', { headers: a() });
+    const body = (await res.json()) as ApiTestResponse;
+    expect(res.status).toBe(404);
+    expect(body.success).toBe(false);
+  });
+
+  it('403 wrong customer', async () => {
+    mockDb.select.mockReturnValueOnce(
+      makeChain([{ id: 'o1', customerId: 'other-cp', status: 'Pending Confirmation' }]),
+    );
+    mockDb.select.mockReturnValueOnce(makeChain([{ id: 'cp1' }]));
+    const res = await mkApp('customer').request('/api/v1/bookings/o1', { headers: a() });
+    const body = (await res.json()) as ApiTestResponse;
+    expect(res.status).toBe(403);
+    expect(body.success).toBe(false);
+  });
+});
+
+describe('POST /:id/reject', () => {
+  it('200 partner', async () => {
+    mockDb.select.mockReturnValueOnce(makeChain([{ id: 'pp1' }]));
+    mockDb.select.mockReturnValueOnce(
+      makeChain([{ id: 'o1', status: 'Partner Assigned', partnerId: 'pp1' }]),
+    );
+    const res = await mkApp('partner').request('/api/v1/bookings/o1/reject', {
+      method: 'POST',
+      headers: a(),
+      body: JSON.stringify({ reason: 'Too busy' }),
+    });
+    const body = (await res.json()) as ApiTestResponse;
+    expect(res.status).toBe(200);
+    expect(body.success).toBe(true);
+    expect(mockAudit.createAuditLog).toHaveBeenCalled();
+    expect(mockNotif.notifyAdmins).toHaveBeenCalled();
+  });
+
+  it('403 customer', async () => {
+    const res = await mkApp('customer').request('/api/v1/bookings/o1/reject', {
+      method: 'POST',
+      headers: a(),
+      body: JSON.stringify({ reason: 'N/A' }),
+    });
+    const body = (await res.json()) as ApiTestResponse;
+    expect(res.status).toBe(403);
+    expect(body.success).toBe(false);
+  });
+
+  it('404', async () => {
+    mockDb.select.mockReturnValueOnce(makeChain([{ id: 'pp1' }]));
+    mockDb.select.mockReturnValueOnce(makeChain([]));
+    const res = await mkApp('partner').request('/api/v1/bookings/o1/reject', {
+      method: 'POST',
+      headers: a(),
+      body: JSON.stringify({ reason: 'Busy' }),
+    });
+    const body = (await res.json()) as ApiTestResponse;
+    expect(res.status).toBe(404);
+    expect(body.success).toBe(false);
+  });
+
+  it('422 missing reason', async () => {
+    mockDb.select.mockReturnValue(makeChain([]));
+    const res = await mkApp('partner').request('/api/v1/bookings/o1/reject', {
+      method: 'POST',
+      headers: a(),
+      body: JSON.stringify({}),
+    });
+    const body = (await res.json()) as ApiTestResponse;
+    expect(res.status).toBe(422);
+    expect(body.success).toBe(false);
+  });
+
+  it('409 bad transition', async () => {
+    mockDb.select.mockReturnValueOnce(makeChain([{ id: 'pp1' }]));
+    mockDb.select.mockReturnValueOnce(
+      makeChain([{ id: 'o1', status: 'Working', partnerId: 'pp1' }]),
+    );
+    const res = await mkApp('partner').request('/api/v1/bookings/o1/reject', {
+      method: 'POST',
+      headers: a(),
+      body: JSON.stringify({ reason: 'Busy' }),
+    });
+    const body = (await res.json()) as ApiTestResponse;
+    expect(res.status).toBe(409);
+    expect(body.success).toBe(false);
+  });
+});
+
+describe('POST /:id/on-the-way', () => {
+  it('200 partner', async () => {
+    mockDb.select.mockReturnValueOnce(makeChain([{ id: 'pp1' }]));
+    mockDb.select.mockReturnValueOnce(
+      makeChain([{ id: 'o1', status: 'Partner Accepted', partnerId: 'pp1' }]),
+    );
+    mockDb.select.mockReturnValueOnce(makeChain([{ userId: 'cust-user-1' }]));
+    const res = await mkApp('partner').request('/api/v1/bookings/o1/on-the-way', {
+      method: 'POST',
+      headers: a(),
+    });
+    const body = (await res.json()) as ApiTestResponse;
+    expect(res.status).toBe(200);
+    expect(body.success).toBe(true);
+    expect(mockNotif.createNotification).toHaveBeenCalled();
+  });
+
+  it('403 customer', async () => {
+    mockDb.select.mockReturnValue(makeChain([]));
+    const res = await mkApp('customer').request('/api/v1/bookings/o1/on-the-way', {
+      method: 'POST',
+      headers: a(),
+    });
+    const body = (await res.json()) as ApiTestResponse;
+    expect(res.status).toBe(403);
+    expect(body.success).toBe(false);
+  });
+
+  it('404', async () => {
+    mockDb.select.mockReturnValueOnce(makeChain([{ id: 'pp1' }]));
+    mockDb.select.mockReturnValueOnce(makeChain([]));
+    const res = await mkApp('partner').request('/api/v1/bookings/o1/on-the-way', {
+      method: 'POST',
+      headers: a(),
+    });
+    const body = (await res.json()) as ApiTestResponse;
+    expect(res.status).toBe(404);
+    expect(body.success).toBe(false);
+  });
+});
+
+describe('POST /:id/start', () => {
+  it('200 partner', async () => {
+    mockDb.select.mockReturnValueOnce(makeChain([{ id: 'pp1' }]));
+    mockDb.select.mockReturnValueOnce(
+      makeChain([{ id: 'o1', status: 'On The Way', partnerId: 'pp1' }]),
+    );
+    const res = await mkApp('partner').request('/api/v1/bookings/o1/start', {
+      method: 'POST',
+      headers: a(),
+    });
+    const body = (await res.json()) as ApiTestResponse;
+    expect(res.status).toBe(200);
+    expect(body.success).toBe(true);
+    expect(mockAudit.createAuditLog).toHaveBeenCalled();
+    expect(mockNotif.notifyAdmins).toHaveBeenCalled();
+  });
+
+  it('403 customer', async () => {
+    const res = await mkApp('customer').request('/api/v1/bookings/o1/start', {
+      method: 'POST',
+      headers: a(),
+    });
+    const body = (await res.json()) as ApiTestResponse;
+    expect(res.status).toBe(403);
+    expect(body.success).toBe(false);
+  });
+
+  it('409 bad transition', async () => {
+    mockDb.select.mockReturnValueOnce(makeChain([{ id: 'pp1' }]));
+    mockDb.select.mockReturnValueOnce(
+      makeChain([{ id: 'o1', status: 'Pending Confirmation', partnerId: 'pp1' }]),
+    );
+    const res = await mkApp('partner').request('/api/v1/bookings/o1/start', {
+      method: 'POST',
+      headers: a(),
+    });
+    const body = (await res.json()) as ApiTestResponse;
+    expect(res.status).toBe(409);
+    expect(body.success).toBe(false);
+  });
+});
+
+describe('POST /:id/complete', () => {
+  it('200 partner', async () => {
+    mockDb.select.mockReturnValueOnce(makeChain([{ id: 'pp1' }]));
+    mockDb.select.mockReturnValueOnce(
+      makeChain([{ id: 'o1', status: 'Working', partnerId: 'pp1', customerId: 'cp1' }]),
+    );
+    mockDb.select.mockReturnValueOnce(makeChain([{ userId: 'cust-user' }]));
+    const res = await mkApp('partner').request('/api/v1/bookings/o1/complete', {
+      method: 'POST',
+      headers: a(),
+    });
+    const body = (await res.json()) as ApiTestResponse;
+    expect(res.status).toBe(200);
+    expect(body.success).toBe(true);
+    expect(mockAudit.createAuditLog).toHaveBeenCalled();
+    expect(mockNotif.notifyAdmins).toHaveBeenCalled();
+  });
+
+  it('403 customer', async () => {
+    const res = await mkApp('customer').request('/api/v1/bookings/o1/complete', {
+      method: 'POST',
+      headers: a(),
+    });
+    const body = (await res.json()) as ApiTestResponse;
+    expect(res.status).toBe(403);
+    expect(body.success).toBe(false);
+  });
+
+  it('404', async () => {
+    mockDb.select.mockReturnValueOnce(makeChain([{ id: 'pp1' }]));
+    mockDb.select.mockReturnValueOnce(makeChain([]));
+    const res = await mkApp('partner').request('/api/v1/bookings/o1/complete', {
+      method: 'POST',
+      headers: a(),
+    });
+    const body = (await res.json()) as ApiTestResponse;
+    expect(res.status).toBe(404);
+    expect(body.success).toBe(false);
+  });
+
+  it('409 bad transition', async () => {
+    mockDb.select.mockReturnValueOnce(makeChain([{ id: 'pp1' }]));
+    mockDb.select.mockReturnValueOnce(
+      makeChain([{ id: 'o1', status: 'Pending Confirmation', partnerId: 'pp1' }]),
+    );
+    const res = await mkApp('partner').request('/api/v1/bookings/o1/complete', {
+      method: 'POST',
+      headers: a(),
+    });
+    const body = (await res.json()) as ApiTestResponse;
+    expect(res.status).toBe(409);
+    expect(body.success).toBe(false);
   });
 });

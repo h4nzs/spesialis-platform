@@ -18,6 +18,7 @@ import {
   orderMedia,
 } from '../lib/db.ts';
 import { authMiddleware, requireRole } from '../middleware/auth.ts';
+import { verifyAccessToken } from '../lib/auth.ts';
 import {
   createGuestBookingSchema,
   createCustomerBookingSchema,
@@ -34,6 +35,7 @@ import {
   forbidden,
   conflict,
   serverError,
+  unauthorized,
 } from '../lib/response.ts';
 import { createAuditLog } from '../lib/audit.ts';
 import { createNotification, notifyAdmins } from '../lib/notification.ts';
@@ -253,7 +255,19 @@ async function createGuestBooking(c: Context) {
 }
 
 async function createCustomerBooking(c: Context) {
-  const userId = c.get('userId');
+  // Verify JWT — route doesn't use authMiddleware (supports both guest & auth)
+  const authHeader = c.req.header('Authorization');
+  const token = authHeader?.startsWith('Bearer ') ? authHeader.slice(7) : null;
+  if (!token) return unauthorized(c, 'Missing authentication token');
+
+  let userId: string;
+  try {
+    const payload = await verifyAccessToken(token);
+    userId = payload.sub;
+  } catch {
+    return unauthorized(c, 'Invalid or expired token');
+  }
+
   const body = await c.req.json();
   const parsed = createCustomerBookingSchema.safeParse(body);
   if (!parsed.success) {
