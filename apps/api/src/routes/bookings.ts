@@ -76,7 +76,7 @@ function validTransitions(current: OrderStatus): OrderStatus[] {
   const map: Record<OrderStatus, OrderStatus[]> = {
     Draft: ['Pending Confirmation'],
     'Pending Confirmation': ['Confirmed', 'Cancelled'],
-    Confirmed: ['Waiting Assignment', 'Cancelled'],
+    Confirmed: ['Waiting Assignment', 'Partner Assigned', 'Cancelled'],
     'Waiting Assignment': ['Partner Assigned', 'Cancelled'],
     'Partner Assigned': ['Partner Accepted', 'Waiting Assignment', 'Cancelled'],
     'Partner Accepted': ['On The Way', 'Cancelled'],
