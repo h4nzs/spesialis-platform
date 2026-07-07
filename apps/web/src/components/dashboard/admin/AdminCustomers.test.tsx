@@ -1,0 +1,100 @@
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { render, screen } from '@testing-library/react';
+import { AdminCustomers } from './AdminCustomers';
+
+const mockGet = vi.fn();
+const mockPatch = vi.fn();
+
+vi.mock('@specialist/shared', () => ({
+  createBrowserClient: () => ({ get: mockGet, patch: mockPatch }),
+}));
+
+beforeEach(() => {
+  vi.clearAllMocks();
+});
+
+describe('AdminCustomers', () => {
+  it('shows loading state initially', () => {
+    mockGet.mockImplementation(() => new Promise(() => {}));
+    render(<AdminCustomers />);
+    expect(screen.getByText('Memuat...')).toBeInTheDocument();
+  });
+
+  it('shows customer table when loaded', async () => {
+    mockGet.mockResolvedValue([
+      {
+        id: 'c1',
+        email: 'user@test.com',
+        phone: '08123456789',
+        fullName: 'John Doe',
+        status: 'active',
+        createdAt: '2026-01-01',
+      },
+    ]);
+    render(<AdminCustomers />);
+    expect(await screen.findByText('John Doe')).toBeInTheDocument();
+    expect(screen.getByText('user@test.com')).toBeInTheDocument();
+    expect(screen.getByText('08123456789')).toBeInTheDocument();
+    expect(screen.getByText('active')).toBeInTheDocument();
+  });
+
+  it('shows suspend button for active customer', async () => {
+    mockGet.mockResolvedValue([
+      {
+        id: 'c1',
+        email: 'a@b.com',
+        phone: '081',
+        fullName: 'A',
+        status: 'active',
+        createdAt: '2026-01-01',
+      },
+    ]);
+    render(<AdminCustomers />);
+    expect(await screen.findByText('Suspends')).toBeInTheDocument();
+  });
+
+  it('shows activate button for suspended customer', async () => {
+    mockGet.mockResolvedValue([
+      {
+        id: 'c2',
+        email: 'b@b.com',
+        phone: '082',
+        fullName: 'B',
+        status: 'suspended',
+        createdAt: '2026-01-01',
+      },
+    ]);
+    render(<AdminCustomers />);
+    expect(await screen.findByText('Aktifkan')).toBeInTheDocument();
+  });
+
+  it('shows blocked customer without action buttons', async () => {
+    mockGet.mockResolvedValue([
+      {
+        id: 'c3',
+        email: 'c@b.com',
+        phone: '083',
+        fullName: 'C',
+        status: 'blocked',
+        createdAt: '2026-01-01',
+      },
+    ]);
+    render(<AdminCustomers />);
+    expect(await screen.findByText('C')).toBeInTheDocument();
+    expect(screen.queryByText('Suspends')).not.toBeInTheDocument();
+    expect(screen.queryByText('Aktifkan')).not.toBeInTheDocument();
+    expect(screen.queryByText('Blokir')).not.toBeInTheDocument();
+  });
+
+  it('shows empty state when no customers', async () => {
+    mockGet.mockResolvedValue([]);
+    render(<AdminCustomers />);
+    expect(await screen.findByText('Belum ada customer')).toBeInTheDocument();
+  });
+
+  it('shows empty state on API error', async () => {
+    mockGet.mockRejectedValue(new Error('Gagal'));
+    render(<AdminCustomers />);
+    expect(await screen.findByText('Belum ada customer')).toBeInTheDocument();
+  });
+});

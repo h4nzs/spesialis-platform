@@ -17,6 +17,21 @@ env:
   JWT_SECRET: test-secret
 
 jobs:
+  format:
+    name: Format
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm format:check
+
   lint-typecheck:
     name: Lint & Typecheck
     runs-on: ubuntu-latest
@@ -29,9 +44,12 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: pnpm
-      - run: pnpm install --frozen-lockfile
-      - run: pnpm lint
-      - run: pnpm typecheck
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Lint
+        run: pnpm lint
+      - name: Typecheck
+        run: pnpm typecheck
 
   unit-test:
     name: Unit Tests
@@ -45,8 +63,10 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: pnpm
-      - run: pnpm install --frozen-lockfile
-      - run: pnpm test
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Run tests
+        run: pnpm test
 
   e2e-test:
     name: E2E Tests
@@ -74,9 +94,10 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: pnpm
-      - run: pnpm install --frozen-lockfile
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
       - name: Create env file
-        run: echo "DATABASE_URL=$DATABASE_URL\nJWT_SECRET=$JWT_SECRET" > .env
+        run: printf 'DATABASE_URL=%s\nJWT_SECRET=%s\n' "$DATABASE_URL" "$JWT_SECRET" > .env
       - name: Run migrations
         run: pnpm --filter @specialist/database db:migrate
       - name: Seed data
@@ -84,7 +105,7 @@ jobs:
       - name: Install Playwright
         run: npx playwright install chromium
         working-directory: apps/web
-      - name: Run E2E
+      - name: Run E2E tests
         run: pnpm --filter web test:e2e
       - uses: actions/upload-artifact@v4
         if: always()

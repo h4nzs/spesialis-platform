@@ -306,4 +306,76 @@ describe('POST /:id/verify', () => {
     expect(res.status).toBe(422);
     expect(body.success).toBe(false);
   });
+
+  it('500 transaction rollback when payment update fails (Paid path)', async () => {
+    mockDb.select.mockReturnValueOnce(
+      makeChain([
+        {
+          id: 'p1',
+          orderId: '550e8400-e29b-41d4-a716-446655440001',
+          status: 'Waiting',
+          amount: '150000',
+          method: 'Transfer',
+        },
+      ]),
+    );
+    mockDb.select.mockReturnValueOnce(
+      makeChain([
+        {
+          id: '550e8400-e29b-41d4-a716-446655440001',
+          status: 'Waiting Payment',
+          customerId: 'cp1',
+        },
+      ]),
+    );
+    mockDb.update.mockReturnValueOnce({
+      set: vi.fn().mockReturnValue({
+        where: vi.fn().mockRejectedValue(new Error('DB error')),
+      }),
+    });
+    const res = await mkApp('admin').request('/api/v1/payments/p1/verify', {
+      method: 'POST',
+      headers: a(),
+      body: JSON.stringify({ status: 'Paid' }),
+    });
+    const body = (await res.json()) as ApiTestResponse;
+    expect(res.status).toBe(500);
+    expect(body.success).toBe(false);
+  });
+
+  it('500 transaction rollback when payment update fails (Failed path)', async () => {
+    mockDb.select.mockReturnValueOnce(
+      makeChain([
+        {
+          id: 'p1',
+          orderId: '550e8400-e29b-41d4-a716-446655440001',
+          status: 'Waiting',
+          amount: '150000',
+          method: 'Transfer',
+        },
+      ]),
+    );
+    mockDb.select.mockReturnValueOnce(
+      makeChain([
+        {
+          id: '550e8400-e29b-41d4-a716-446655440001',
+          status: 'Waiting Payment',
+          customerId: 'cp1',
+        },
+      ]),
+    );
+    mockDb.update.mockReturnValueOnce({
+      set: vi.fn().mockReturnValue({
+        where: vi.fn().mockRejectedValue(new Error('DB error')),
+      }),
+    });
+    const res = await mkApp('admin').request('/api/v1/payments/p1/verify', {
+      method: 'POST',
+      headers: a(),
+      body: JSON.stringify({ status: 'Failed', notes: 'Test rollback' }),
+    });
+    const body = (await res.json()) as ApiTestResponse;
+    expect(res.status).toBe(500);
+    expect(body.success).toBe(false);
+  });
 });

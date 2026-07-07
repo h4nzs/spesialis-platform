@@ -309,6 +309,39 @@ describe('POST /:id/confirm', () => {
     expect(res.status).toBe(409);
     expect(body.success).toBe(false);
   });
+
+  it('500 transaction rollback when DB update fails', async () => {
+    mockDb.select.mockReturnValue(makeChain([{ id: 'o1', status: 'Pending Confirmation' }]));
+    mockDb.update.mockReturnValueOnce({
+      set: vi.fn().mockReturnValue({
+        where: vi.fn().mockRejectedValue(new Error('DB error')),
+      }),
+    });
+    const res = await mkApp('admin').request('/api/v1/bookings/o1/confirm', {
+      method: 'POST',
+      headers: a(),
+      body: JSON.stringify({ finalPrice: '150000' }),
+    });
+    const body = (await res.json()) as ApiTestResponse;
+    expect(res.status).toBe(500);
+    expect(body.success).toBe(false);
+  });
+
+  it('200 still succeeds when email sending fails (non-critical)', async () => {
+    const emailModule = await import('../lib/email.ts');
+    vi.mocked(emailModule.sendBookingConfirmationEmail).mockRejectedValueOnce(
+      new Error('SMTP error'),
+    );
+    mockDb.select.mockReturnValue(makeChain([{ id: 'o1', status: 'Pending Confirmation' }]));
+    const res = await mkApp('admin').request('/api/v1/bookings/o1/confirm', {
+      method: 'POST',
+      headers: a(),
+      body: JSON.stringify({ finalPrice: '150000' }),
+    });
+    const body = (await res.json()) as ApiTestResponse;
+    expect(res.status).toBe(200);
+    expect(body.success).toBe(true);
+  });
 });
 
 describe('POST /:id/assign', () => {
@@ -631,6 +664,25 @@ describe('POST /:id/start', () => {
     });
     const body = (await res.json()) as ApiTestResponse;
     expect(res.status).toBe(409);
+    expect(body.success).toBe(false);
+  });
+
+  it('500 transaction rollback when DB update fails', async () => {
+    mockDb.select.mockReturnValueOnce(makeChain([{ id: 'pp1' }]));
+    mockDb.select.mockReturnValueOnce(
+      makeChain([{ id: 'o1', status: 'On The Way', partnerId: 'pp1' }]),
+    );
+    mockDb.update.mockReturnValueOnce({
+      set: vi.fn().mockReturnValue({
+        where: vi.fn().mockRejectedValue(new Error('DB error')),
+      }),
+    });
+    const res = await mkApp('partner').request('/api/v1/bookings/o1/start', {
+      method: 'POST',
+      headers: a(),
+    });
+    const body = (await res.json()) as ApiTestResponse;
+    expect(res.status).toBe(500);
     expect(body.success).toBe(false);
   });
 });

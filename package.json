@@ -13,6 +13,7 @@
     "lint": "turbo run lint",
     "typecheck": "turbo run typecheck",
     "format": "prettier --write .",
+    "format:check": "prettier --check .",
     "prepare": "husky",
     "cli": "node packages/cli/bin/spesialis.mjs",
     "cms:setup": "tsx scripts/directus-setup.ts",
