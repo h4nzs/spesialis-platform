@@ -165,9 +165,6 @@ describe('updateContractSchema', () => {
 
   it('rejects companyId (should be omitted)', () => {
     // partial().omit({ companyId: true }) means companyId is not accepted
-    const result = updateContractSchema.safeParse({
-      companyId: UUID,
-    });
     // Zod strips unknown keys by default
     const data = updateContractSchema.parse({ companyId: UUID });
     expect(data.companyId).toBeUndefined();

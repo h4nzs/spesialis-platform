@@ -14,7 +14,12 @@ export interface TableProps<T> {
   emptyMessage?: string;
 }
 
-export function Table<T>({ columns, data, keyExtractor, emptyMessage = 'Tidak ada data' }: TableProps<T>) {
+export function Table<T>({
+  columns,
+  data,
+  keyExtractor,
+  emptyMessage = 'Tidak ada data',
+}: TableProps<T>) {
   if (data.length === 0) {
     return (
       <div className="rounded-lg border border-border bg-surface p-8 text-center text-sm text-text-muted">
@@ -40,10 +45,15 @@ export function Table<T>({ columns, data, keyExtractor, emptyMessage = 'Tidak ad
         </thead>
         <tbody>
           {data.map((item) => (
-            <tr key={keyExtractor(item)} className="border-b border-border last:border-b-0 hover:bg-background/50">
+            <tr
+              key={keyExtractor(item)}
+              className="border-b border-border last:border-b-0 hover:bg-background/50"
+            >
               {columns.map((col) => (
                 <td key={col.key} className={`px-4 py-3 text-text ${col.className ?? ''}`}>
-                  {col.render ? col.render(item) : String((item as Record<string, unknown>)[col.key] ?? '')}
+                  {col.render
+                    ? col.render(item)
+                    : String((item as Record<string, unknown>)[col.key] ?? '')}
                 </td>
               ))}
             </tr>

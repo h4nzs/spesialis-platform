@@ -17,8 +17,10 @@ test.describe('Partner Registration - E2E-012', () => {
   test('E2E-012: Registration page loads with form fields', async ({ page }) => {
     await page.goto('/register/partner');
     await expect(page).toHaveURL(/\/register\/partner/);
-    await expect(page.locator('h1')).toContainText('Mitra', { timeout: 10000 });
-    await expect(page.locator('form, input')).toBeVisible();
+    await expect(page.getByRole('heading', { name: /Daftar sebagai Mitra/ })).toBeVisible({
+      timeout: 10000,
+    });
+    await expect(page.getByRole('button', { name: /Daftar sebagai Mitra/ })).toBeVisible();
   });
 
   test('E2E-012: Registration form has all required fields', async ({ page }) => {

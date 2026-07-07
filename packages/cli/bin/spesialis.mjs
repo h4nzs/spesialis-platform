@@ -115,7 +115,10 @@ function toCamelCase(s) {
 }
 
 function toKebabCase(s) {
-  return s.replace(/([a-z])([A-Z])/g, '$1-$2').replace(/[_ ]/g, '-').toLowerCase();
+  return s
+    .replace(/([a-z])([A-Z])/g, '$1-$2')
+    .replace(/[_ ]/g, '-')
+    .toLowerCase();
 }
 
 async function generateResource(name) {

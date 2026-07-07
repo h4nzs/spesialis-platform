@@ -12,7 +12,15 @@ export interface SelectProps extends Omit<SelectHTMLAttributes<HTMLSelectElement
   placeholder?: string;
 }
 
-export function Select({ label, error, options, placeholder, className = '', id, ...props }: SelectProps) {
+export function Select({
+  label,
+  error,
+  options,
+  placeholder,
+  className = '',
+  id,
+  ...props
+}: SelectProps) {
   const inputId = id ?? label?.toLowerCase().replace(/\s+/g, '-');
 
   return (

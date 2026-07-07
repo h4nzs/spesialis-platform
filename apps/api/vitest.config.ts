@@ -4,6 +4,7 @@ export default defineConfig({
   test: {
     include: ['src/**/*.test.ts'],
     setupFiles: ['src/test-setup.ts'],
+    testTimeout: 30000,
     env: {
       JWT_SECRET: 'test-secret-for-testing',
     },

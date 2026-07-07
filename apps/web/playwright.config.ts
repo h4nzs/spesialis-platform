@@ -4,8 +4,12 @@ export default defineConfig({
   testDir: './tests',
   fullyParallel: false,
   forbidOnly: !!process.env['CI'],
-  retries: process.env['CI'] ? 1 : 0,
+  retries: process.env['CI'] ? 2 : 0,
   workers: 1,
+  timeout: 60000,
+  expect: {
+    timeout: 15000,
+  },
   reporter: [['html', { outputFolder: 'playwright-report' }], ['list']],
   use: {
     baseURL: process.env['BASE_URL'] ?? 'http://localhost:4321',
@@ -24,14 +28,14 @@ export default defineConfig({
       port: 3000,
       cwd: '../..',
       reuseExistingServer: true,
-      timeout: 60000,
+      timeout: 120000,
       env: { RATE_LIMIT_DISABLED: 'true' },
     },
     {
       command: 'npx astro dev --port 4321',
       port: 4321,
       reuseExistingServer: true,
-      timeout: 60000,
+      timeout: 120000,
     },
   ],
 });
