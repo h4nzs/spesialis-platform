@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { Hono } from 'hono';
 import { cmsRevalidationRouter } from './cms-revalidation.ts';
+import type { ApiTestResponse } from '../test-utils.ts';
 
 function mkApp() {
   const app = new Hono();
@@ -23,7 +24,10 @@ describe('POST /revalidate', () => {
       },
       body: JSON.stringify({ collection: 'cms_articles', event: 'update', key: '1' }),
     });
+    const body = (await res.json()) as ApiTestResponse;
     expect(res.status).toBe(200);
+    expect(body.success).toBe(true);
+    expect(body.data).toEqual({ revalidated: true });
   });
 
   it('401 invalid token', async () => {
@@ -35,7 +39,9 @@ describe('POST /revalidate', () => {
       },
       body: JSON.stringify({ collection: 'cms_articles' }),
     });
+    const body = (await res.json()) as ApiTestResponse;
     expect(res.status).toBe(401);
+    expect(body.success).toBe(false);
   });
 
   it('401 no token', async () => {
@@ -44,6 +50,8 @@ describe('POST /revalidate', () => {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ collection: 'cms_articles' }),
     });
+    const body = (await res.json()) as ApiTestResponse;
     expect(res.status).toBe(401);
+    expect(body.success).toBe(false);
   });
 });

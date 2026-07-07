@@ -4,6 +4,7 @@ services:
     image: postgres:18
     container_name: specialist-postgres
     restart: unless-stopped
+
     environment:
       POSTGRES_DB: specialist
       POSTGRES_USER: specialist
@@ -26,6 +27,7 @@ services:
     restart: unless-stopped
     profiles:
       - cache
+      - test
     ports:
       - "6379:6379"
     volumes:
@@ -129,11 +131,31 @@ services:
     restart: unless-stopped
     profiles:
       - mail
+      - test
     ports:
       - "1025:1025"
       - "8025:8025"
     networks:
       - specialist
+
+  test-db:
+    image: postgres:18
+    container_name: specialist-test-db
+    profiles:
+      - test
+    environment:
+      POSTGRES_DB: specialist_test
+      POSTGRES_USER: specialist
+      POSTGRES_PASSWORD: specialist
+    ports:
+      - "5433:5432"
+    networks:
+      - specialist
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U specialist -d specialist_test"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
 volumes:
   postgres_data:

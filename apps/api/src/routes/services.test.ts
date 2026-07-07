@@ -44,21 +44,29 @@ describe('GET /api/v1/services', () => {
   it('filter category', async () => {
     mockDb.select.mockReturnValue(makeChain([]));
     const res = await mkApp().request('/api/v1/services?categoryId=c1');
+    const body = (await res.json()) as ApiTestResponse;
     expect(res.status).toBe(200);
+    expect(body.success).toBe(true);
   });
   it('filter featured', async () => {
     mockDb.select.mockReturnValue(makeChain([]));
     const res = await mkApp().request('/api/v1/services?featured=true');
+    const body = (await res.json()) as ApiTestResponse;
     expect(res.status).toBe(200);
+    expect(body.success).toBe(true);
   });
   it('pagination params', async () => {
     mockDb.select.mockReturnValue(makeChain([]));
     const res = await mkApp().request('/api/v1/services?page=2&limit=5');
+    const body = (await res.json()) as ApiTestResponse;
     expect(res.status).toBe(200);
+    expect(body.success).toBe(true);
   });
   it('422 bad params', async () => {
     const res = await mkApp().request('/api/v1/services?page=-1');
+    const body = (await res.json()) as ApiTestResponse;
     expect(res.status).toBe(422);
+    expect(body.success).toBe(false);
   });
   it('returns data', async () => {
     mockDb.select.mockReturnValue(
@@ -78,6 +86,7 @@ describe('GET /api/v1/services', () => {
     );
     const res = await mkApp().request('/api/v1/services');
     const j = (await res.json()) as ApiTestResponse;
+    expect(j.success).toBe(true);
     expect(j.data).toHaveLength(1);
   });
 });
@@ -102,11 +111,16 @@ describe('GET /:slug', () => {
       ]),
     );
     const res = await mkApp().request('/api/v1/services/ac');
+    const body = (await res.json()) as ApiTestResponse;
     expect(res.status).toBe(200);
+    expect(body.success).toBe(true);
+    expect(body.data).toBeDefined();
   });
   it('404', async () => {
     mockDb.select.mockReturnValue(makeChain([]));
     const res = await mkApp().request('/api/v1/services/nope');
+    const body = (await res.json()) as ApiTestResponse;
     expect(res.status).toBe(404);
+    expect(body.success).toBe(false);
   });
 });

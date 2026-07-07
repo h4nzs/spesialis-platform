@@ -5,6 +5,7 @@ import type { UserRole } from '@specialist/types';
 import { invoicesRouter } from './invoices.ts';
 import { errorHandler } from '../middleware/error-handler.ts';
 import { setTestEnv, makeChain, updateChain, insertChain } from '../test-utils.ts';
+import type { ApiTestResponse } from '../test-utils.ts';
 
 const { mockDb, authState, mockAudit, em } = vi.hoisted(() => {
   const db = {
@@ -82,7 +83,11 @@ describe('GET /', () => {
       )
       .mockReturnValueOnce(makeChain([{ count: 1 }]));
     const res = await mkApp().request('/api/v1/invoices', { headers: a() });
+    const body = (await res.json()) as ApiTestResponse;
     expect(res.status).toBe(200);
+    expect(body.success).toBe(true);
+    expect(Array.isArray(body.data)).toBe(true);
+    expect(body.pagination).toBeDefined();
   });
 
   it('200 filter by companyId', async () => {
@@ -90,13 +95,17 @@ describe('GET /', () => {
       .mockReturnValueOnce(makeChain([{ id: 'inv1' }]))
       .mockReturnValueOnce(makeChain([{ count: 1 }]));
     const res = await mkApp().request('/api/v1/invoices?companyId=cp1', { headers: a() });
+    const body = (await res.json()) as ApiTestResponse;
     expect(res.status).toBe(200);
+    expect(body.success).toBe(true);
   });
 
   it('200 filter by status', async () => {
     mockDb.select.mockReturnValueOnce(makeChain([])).mockReturnValueOnce(makeChain([{ count: 0 }]));
     const res = await mkApp().request('/api/v1/invoices?status=Draft', { headers: a() });
+    const body = (await res.json()) as ApiTestResponse;
     expect(res.status).toBe(200);
+    expect(body.success).toBe(true);
   });
 
   it('200 corporate sees own invoices', async () => {
@@ -107,18 +116,24 @@ describe('GET /', () => {
       )
       .mockReturnValueOnce(makeChain([{ count: 1 }]));
     const res = await mkApp('corporate').request('/api/v1/invoices', { headers: a() });
+    const body = (await res.json()) as ApiTestResponse;
     expect(res.status).toBe(200);
+    expect(body.success).toBe(true);
   });
 
   it('403 corporate no company', async () => {
     mockDb.select.mockReturnValueOnce(makeChain([]));
     const res = await mkApp('corporate').request('/api/v1/invoices', { headers: a() });
+    const body = (await res.json()) as ApiTestResponse;
     expect(res.status).toBe(403);
+    expect(body.success).toBe(false);
   });
 
   it('403 customer', async () => {
     const res = await mkApp('customer').request('/api/v1/invoices', { headers: a() });
+    const body = (await res.json()) as ApiTestResponse;
     expect(res.status).toBe(403);
+    expect(body.success).toBe(false);
   });
 });
 
@@ -130,7 +145,10 @@ describe('GET /:id', () => {
       ]),
     );
     const res = await mkApp().request('/api/v1/invoices/inv1', { headers: a() });
+    const body = (await res.json()) as ApiTestResponse;
     expect(res.status).toBe(200);
+    expect(body.success).toBe(true);
+    expect(body.data).toBeDefined();
   });
 
   it('200 found corporate (own)', async () => {
@@ -142,7 +160,10 @@ describe('GET /:id', () => {
       )
       .mockReturnValueOnce(makeChain([{ id: 'cu1' }]));
     const res = await mkApp('corporate').request('/api/v1/invoices/inv1', { headers: a() });
+    const body = (await res.json()) as ApiTestResponse;
     expect(res.status).toBe(200);
+    expect(body.success).toBe(true);
+    expect(body.data).toBeDefined();
   });
 
   it('403 corporate not member', async () => {
@@ -154,13 +175,17 @@ describe('GET /:id', () => {
       )
       .mockReturnValueOnce(makeChain([]));
     const res = await mkApp('corporate').request('/api/v1/invoices/inv1', { headers: a() });
+    const body = (await res.json()) as ApiTestResponse;
     expect(res.status).toBe(403);
+    expect(body.success).toBe(false);
   });
 
   it('404 not found', async () => {
     mockDb.select.mockReturnValueOnce(makeChain([]));
     const res = await mkApp().request('/api/v1/invoices/inv1', { headers: a() });
+    const body = (await res.json()) as ApiTestResponse;
     expect(res.status).toBe(404);
+    expect(body.success).toBe(false);
   });
 });
 
@@ -180,7 +205,11 @@ describe('POST /', () => {
       headers: a(),
       body: JSON.stringify({ companyId: UUID, amount: 500000, dueDate: '2025-06-30' }),
     });
+    const body = (await res.json()) as ApiTestResponse;
     expect(res.status).toBe(201);
+    expect(body.success).toBe(true);
+    expect(body.data).toBeDefined();
+    expect(mockAudit.createAuditLog).toHaveBeenCalled();
   });
 
   it('404 company not found', async () => {
@@ -190,7 +219,9 @@ describe('POST /', () => {
       headers: a(),
       body: JSON.stringify({ companyId: UUID, amount: 500000, dueDate: '2025-06-30' }),
     });
+    const body = (await res.json()) as ApiTestResponse;
     expect(res.status).toBe(404);
+    expect(body.success).toBe(false);
   });
 
   it('404 order not found', async () => {
@@ -207,7 +238,9 @@ describe('POST /', () => {
         dueDate: '2025-06-30',
       }),
     });
+    const body = (await res.json()) as ApiTestResponse;
     expect(res.status).toBe(404);
+    expect(body.success).toBe(false);
   });
 
   it('422 validation', async () => {
@@ -216,7 +249,9 @@ describe('POST /', () => {
       headers: a(),
       body: JSON.stringify({}),
     });
+    const body = (await res.json()) as ApiTestResponse;
     expect(res.status).toBe(422);
+    expect(body.success).toBe(false);
   });
 
   it('403 customer', async () => {
@@ -225,7 +260,9 @@ describe('POST /', () => {
       headers: a(),
       body: JSON.stringify({ companyId: UUID, amount: 500000, dueDate: '2025-06-30' }),
     });
+    const body = (await res.json()) as ApiTestResponse;
     expect(res.status).toBe(403);
+    expect(body.success).toBe(false);
   });
 });
 
@@ -238,7 +275,11 @@ describe('PATCH /:id/status', () => {
       headers: a(),
       body: JSON.stringify({ status: 'Issued' }),
     });
+    const body = (await res.json()) as ApiTestResponse;
     expect(res.status).toBe(200);
+    expect(body.success).toBe(true);
+    expect(body.data).toBeDefined();
+    expect(mockAudit.createAuditLog).toHaveBeenCalled();
   });
 
   it('200 status changed to Paid', async () => {
@@ -249,7 +290,11 @@ describe('PATCH /:id/status', () => {
       headers: a(),
       body: JSON.stringify({ status: 'Paid' }),
     });
+    const body = (await res.json()) as ApiTestResponse;
     expect(res.status).toBe(200);
+    expect(body.success).toBe(true);
+    expect(body.data).toBeDefined();
+    expect(mockAudit.createAuditLog).toHaveBeenCalled();
   });
 
   it('404 not found', async () => {
@@ -259,7 +304,9 @@ describe('PATCH /:id/status', () => {
       headers: a(),
       body: JSON.stringify({ status: 'Paid' }),
     });
+    const body = (await res.json()) as ApiTestResponse;
     expect(res.status).toBe(404);
+    expect(body.success).toBe(false);
   });
 
   it('422 validation', async () => {
@@ -268,6 +315,8 @@ describe('PATCH /:id/status', () => {
       headers: a(),
       body: JSON.stringify({ status: '' }),
     });
+    const body = (await res.json()) as ApiTestResponse;
     expect(res.status).toBe(422);
+    expect(body.success).toBe(false);
   });
 });

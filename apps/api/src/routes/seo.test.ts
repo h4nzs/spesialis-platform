@@ -3,7 +3,9 @@ import { Hono } from 'hono';
 import type { Context } from 'hono';
 import type { UserRole } from '@specialist/types';
 import { seoRouter } from './seo.ts';
+import { errorHandler } from '../middleware/error-handler.ts';
 import { setTestEnv, makeChain, insertChain, updateChain } from '../test-utils.ts';
+import type { ApiTestResponse } from '../test-utils.ts';
 
 const { mockDb, authState, em } = vi.hoisted(() => {
   const db = {
@@ -51,6 +53,7 @@ function mkApp(role: UserRole = 'admin') {
   authState.userRole = role;
   authState.userId = 'uid';
   const app = new Hono();
+  app.onError(errorHandler);
   app.route('/api/v1/seo', seoRouter);
   return app;
 }
@@ -71,25 +74,34 @@ describe('GET /', () => {
       makeChain([{ id: UUID, entityType: 'Article', entityId: UUID }]),
     );
     const res = await mkApp().request('/api/v1/seo', { headers: a() });
+    const body = (await res.json()) as ApiTestResponse;
     expect(res.status).toBe(200);
+    expect(body.success).toBe(true);
+    expect(Array.isArray(body.data)).toBe(true);
   });
 
   it('200 empty', async () => {
     mockDb.select.mockReturnValueOnce(makeChain([]));
     const res = await mkApp().request('/api/v1/seo', { headers: a() });
+    const body = (await res.json()) as ApiTestResponse;
     expect(res.status).toBe(200);
-    expect((await res.json()).data).toEqual([]);
+    expect(body.success).toBe(true);
+    expect(body.data).toEqual([]);
   });
 
   it('403 customer', async () => {
     const res = await mkApp('customer').request('/api/v1/seo', { headers: a() });
+    const body = (await res.json()) as ApiTestResponse;
     expect(res.status).toBe(403);
+    expect(body.success).toBe(false);
   });
 
   it('200 content_manager', async () => {
     mockDb.select.mockReturnValueOnce(makeChain([]));
     const res = await mkApp('content_manager').request('/api/v1/seo', { headers: a() });
+    const body = (await res.json()) as ApiTestResponse;
     expect(res.status).toBe(200);
+    expect(body.success).toBe(true);
   });
 });
 
@@ -97,13 +109,18 @@ describe('GET /:id', () => {
   it('200 found', async () => {
     mockDb.select.mockReturnValueOnce(makeChain([{ id: UUID }]));
     const res = await mkApp().request(`/api/v1/seo/${UUID}`, { headers: a() });
+    const body = (await res.json()) as ApiTestResponse;
     expect(res.status).toBe(200);
+    expect(body.success).toBe(true);
+    expect(body.data).toBeDefined();
   });
 
   it('404 not found', async () => {
     mockDb.select.mockReturnValueOnce(makeChain([]));
     const res = await mkApp().request(`/api/v1/seo/${UUID}`, { headers: a() });
+    const body = (await res.json()) as ApiTestResponse;
     expect(res.status).toBe(404);
+    expect(body.success).toBe(false);
   });
 });
 
@@ -116,7 +133,10 @@ describe('POST /', () => {
       headers: a(),
       body: JSON.stringify(validBody),
     });
+    const body = (await res.json()) as ApiTestResponse;
     expect(res.status).toBe(201);
+    expect(body.success).toBe(true);
+    expect(body.data).toBeDefined();
   });
 
   it('200 updated existing', async () => {
@@ -127,7 +147,10 @@ describe('POST /', () => {
       headers: a(),
       body: JSON.stringify(validBody),
     });
+    const body = (await res.json()) as ApiTestResponse;
     expect(res.status).toBe(200);
+    expect(body.success).toBe(true);
+    expect(body.data).toBeDefined();
   });
 
   it('422 validation', async () => {
@@ -136,7 +159,9 @@ describe('POST /', () => {
       headers: a(),
       body: JSON.stringify({}),
     });
+    const body = (await res.json()) as ApiTestResponse;
     expect(res.status).toBe(422);
+    expect(body.success).toBe(false);
   });
 });
 
@@ -149,7 +174,10 @@ describe('PATCH /:id', () => {
       headers: a(),
       body: JSON.stringify({ metaTitle: 'Updated' }),
     });
+    const body = (await res.json()) as ApiTestResponse;
     expect(res.status).toBe(200);
+    expect(body.success).toBe(true);
+    expect(body.data).toBeDefined();
   });
 
   it('404 not found', async () => {
@@ -159,7 +187,9 @@ describe('PATCH /:id', () => {
       headers: a(),
       body: JSON.stringify({ metaTitle: 'Updated' }),
     });
+    const body = (await res.json()) as ApiTestResponse;
     expect(res.status).toBe(404);
+    expect(body.success).toBe(false);
   });
 });
 
@@ -171,7 +201,9 @@ describe('DELETE /:id', () => {
       method: 'DELETE',
       headers: a(),
     });
+    const body = (await res.json()) as ApiTestResponse;
     expect(res.status).toBe(200);
+    expect(body.success).toBe(true);
   });
 
   it('404 not found', async () => {
@@ -180,6 +212,8 @@ describe('DELETE /:id', () => {
       method: 'DELETE',
       headers: a(),
     });
+    const body = (await res.json()) as ApiTestResponse;
     expect(res.status).toBe(404);
+    expect(body.success).toBe(false);
   });
 });

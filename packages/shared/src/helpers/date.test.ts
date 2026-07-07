@@ -1,5 +1,11 @@
-import { describe, it, expect } from 'vitest';
-import { parseBookingDateTime, daysBetween, addDays } from './date.ts';
+import { describe, it, expect, vi, afterEach, beforeEach } from 'vitest';
+import {
+  parseBookingDateTime,
+  daysBetween,
+  addDays,
+  isBookingPast,
+  isWithinHours,
+} from './date.ts';
 
 describe('parseBookingDateTime', () => {
   it('parses date and time correctly', () => {
@@ -16,6 +22,68 @@ describe('parseBookingDateTime', () => {
     expect(d.getMonth()).toBe(0);
     expect(d.getDate()).toBe(5);
     expect(d.getMinutes()).toBe(5);
+  });
+});
+
+describe('isBookingPast', () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2026-07-15T10:00:00'));
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it('returns false for future date', () => {
+    expect(isBookingPast('2026-07-15', '11:00')).toBe(false);
+  });
+
+  it('returns true for past date', () => {
+    expect(isBookingPast('2026-07-15', '09:00')).toBe(true);
+  });
+
+  it('returns false for exactly now', () => {
+    expect(isBookingPast('2026-07-15', '10:00')).toBe(false);
+  });
+
+  it('returns true for past day', () => {
+    expect(isBookingPast('2026-07-14', '10:00')).toBe(true);
+  });
+});
+
+describe('isWithinHours', () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2026-07-15T10:00:00'));
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it('returns true within 1 hour', () => {
+    expect(isWithinHours('2026-07-15', '10:30', 1)).toBe(true);
+  });
+
+  it('returns false beyond hours', () => {
+    expect(isWithinHours('2026-07-15', '14:00', 2)).toBe(false);
+  });
+
+  it('returns false for already past', () => {
+    expect(isWithinHours('2026-07-15', '09:00', 1)).toBe(false);
+  });
+
+  it('returns true at exact boundary', () => {
+    expect(isWithinHours('2026-07-15', '12:00', 2)).toBe(true);
+  });
+
+  it('returns true at 2h boundary when within 3h window', () => {
+    expect(isWithinHours('2026-07-15', '12:00', 3)).toBe(true);
+  });
+
+  it('returns false when just past boundary', () => {
+    expect(isWithinHours('2026-07-15', '13:01', 3)).toBe(false);
   });
 });
 

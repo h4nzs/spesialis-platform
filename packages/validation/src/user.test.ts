@@ -46,6 +46,21 @@ describe('registerSchema', () => {
     const result = registerSchema.safeParse({ ...validUser, fullName: '' });
     expect(result.success).toBe(false);
   });
+
+  it('rejects phone with letters', () => {
+    const result = registerSchema.safeParse({ ...validUser, phone: '0812abc5678' });
+    expect(result.success).toBe(false);
+  });
+
+  it('rejects phone too short', () => {
+    const result = registerSchema.safeParse({ ...validUser, phone: '081' });
+    expect(result.success).toBe(false);
+  });
+
+  it('accepts phone with leading +', () => {
+    const result = registerSchema.safeParse({ ...validUser, phone: '+6281234567890' });
+    expect(result.success).toBe(true);
+  });
 });
 
 describe('loginSchema', () => {
