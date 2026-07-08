@@ -82,7 +82,7 @@ export function NotificationBell() {
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className="relative rounded-md p-2 text-text-primary-secondary transition-colors hover:bg-neutral-100 hover:text-text-primary-primary"
+        className="relative rounded-md p-2 text-text-secondary transition-colors hover:bg-neutral-100 hover:text-text-primary"
         aria-label={`Notifikasi${unread > 0 ? ` (${unread} belum dibaca)` : ''}`}
       >
         <svg
@@ -133,7 +133,7 @@ export function NotificationBell() {
 
           <div className="max-h-80 overflow-y-auto">
             {loading ? (
-              <p className="px-4 py-6 text-center text-sm text-text-primary-secondary">Memuat...</p>
+              <p className="px-4 py-6 text-center text-sm text-text-secondary">Memuat...</p>
             ) : notifications.length === 0 ? (
               <EmptyState title="Belum ada notifikasi" className="px-4 py-6" />
             ) : (
@@ -149,7 +149,7 @@ export function NotificationBell() {
                   <div className="flex items-start justify-between gap-2">
                     <span
                       className={`text-sm ${
-                        n.isRead ? 'text-text-primary-secondary' : 'font-medium text-text-primary'
+                        n.isRead ? 'text-text-secondary' : 'font-medium text-text-primary'
                       }`}
                     >
                       {n.title}
@@ -159,13 +159,9 @@ export function NotificationBell() {
                     )}
                   </div>
                   {n.message && (
-                    <p className="mt-0.5 text-xs text-text-primary-secondary line-clamp-2">
-                      {n.message}
-                    </p>
+                    <p className="mt-0.5 text-xs text-text-secondary line-clamp-2">{n.message}</p>
                   )}
-                  <p className="mt-1 text-[10px] text-text-primary-secondary">
-                    {formatDate(n.createdAt)}
-                  </p>
+                  <p className="mt-1 text-[10px] text-text-secondary">{formatDate(n.createdAt)}</p>
                 </button>
               ))
             )}

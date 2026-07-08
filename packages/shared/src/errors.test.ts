@@ -9,7 +9,7 @@ import {
 describe('ApiClientError', () => {
   it('creates error with message, code, and status', () => {
     const error = new ApiClientError(
-      { message: 'Validation failed', code: 'VALIDATION_ERROR' },
+      { success: false, message: 'Validation failed', code: 'VALIDATION_ERROR' },
       400,
     );
     expect(error).toBeInstanceOf(Error);
@@ -23,7 +23,7 @@ describe('ApiClientError', () => {
   it('stores validation errors when provided', () => {
     const errors = [{ field: 'email', message: 'Invalid email' }];
     const error = new ApiClientError(
-      { message: 'Validation failed', code: 'VALIDATION_ERROR', errors },
+      { success: false, message: 'Validation failed', code: 'VALIDATION_ERROR', errors },
       422,
     );
     expect(error.errors).toEqual(errors);

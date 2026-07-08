@@ -63,7 +63,7 @@ export function PartnerRegistrationForm() {
     return (
       <Card padding="lg" className="text-center">
         <p className="text-lg font-semibold text-success">Registrasi Berhasil!</p>
-        <p className="mt-2 text-sm text-text-primary-secondary">
+        <p className="mt-2 text-sm text-text-secondary">
           Akun Anda sedang menunggu verifikasi Admin. Kami akan menghubungi Anda setelah akun
           disetujui.
         </p>
@@ -128,7 +128,7 @@ export function PartnerRegistrationForm() {
       <Button type="submit" className="w-full" disabled={submitting}>
         {submitting ? 'Mendaftarkan...' : 'Daftar sebagai Mitra'}
       </Button>
-      <p className="text-center text-xs text-text-primary-secondary">
+      <p className="text-center text-xs text-text-secondary">
         Sudah punya akun?{' '}
         <a href="/login" className="text-primary hover:underline">
           Masuk

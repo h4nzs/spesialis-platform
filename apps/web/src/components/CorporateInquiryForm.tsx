@@ -55,7 +55,7 @@ export function CorporateInquiryForm() {
     return (
       <Card padding="lg" className="text-center">
         <p className="text-lg font-semibold text-success">Pendaftaran Terkirim!</p>
-        <p className="mt-2 text-sm text-text-primary-secondary">
+        <p className="mt-2 text-sm text-text-secondary">
           Tim kami akan menghubungi Anda dalam 1x24 jam.
         </p>
         <a href="/" className="mt-4 inline-block text-sm text-primary hover:underline">

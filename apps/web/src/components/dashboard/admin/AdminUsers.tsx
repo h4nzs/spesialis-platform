@@ -141,7 +141,7 @@ export function AdminUsers() {
       render: (item) => (
         <div>
           <span className="font-medium text-text-primary">{item.email}</span>
-          <span className="ml-2 text-xs text-text-primary-secondary">{item.phone}</span>
+          <span className="ml-2 text-xs text-text-secondary">{item.phone}</span>
         </div>
       ),
     },
@@ -245,7 +245,7 @@ export function AdminUsers() {
               <button
                 type="button"
                 onClick={handleExportCSV}
-                className="inline-flex items-center gap-1.5 rounded-lg border border-border-default bg-bg-surface px-3 py-1.5 text-body-sm font-medium text-text-primary-primary shadow-xs transition-all duration-150 ease-out hover:bg-neutral-100 hover:shadow-sm"
+                className="inline-flex items-center gap-1.5 rounded-lg border border-border-default bg-bg-surface px-3 py-1.5 text-body-sm font-medium text-text-primary shadow-xs transition-all duration-150 ease-out hover:bg-neutral-100 hover:shadow-sm"
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -282,7 +282,7 @@ export function AdminUsers() {
         title={`Ubah Status - ${selectedUser?.email ?? ''}`}
       >
         <div className="space-y-4">
-          <p className="text-sm text-text-primary-secondary">
+          <p className="text-sm text-text-secondary">
             Status saat ini: <strong>{selectedUser?.status}</strong>
           </p>
           <Select

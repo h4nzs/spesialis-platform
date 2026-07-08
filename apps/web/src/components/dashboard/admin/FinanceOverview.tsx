@@ -75,10 +75,7 @@ export function FinanceOverview() {
       <div className="space-y-6">
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {[1, 2, 3, 4].map((i) => (
-            <div
-              key={i}
-              className="rounded-xl border border-border-default-default bg-bg-bg-surface p-6"
-            >
+            <div key={i} className="rounded-xl border border-border-default bg-bg-surface p-6">
               <div
                 className="animate-skeleton h-4 w-1/2 rounded-sm bg-neutral-200"
                 aria-hidden="true"
@@ -110,7 +107,7 @@ export function FinanceOverview() {
         </Card>
         <Card padding="lg">
           <p className="text-body-sm text-text-primary-secondary">Pesanan Dibayar</p>
-          <p className="mt-1 text-h3 font-bold text-text-primary-primary">{latestOrders}</p>
+          <p className="mt-1 text-h3 font-bold text-text-primary">{latestOrders}</p>
         </Card>
         <Card padding="lg">
           <p className="text-body-sm text-text-primary-secondary">Pertumbuhan</p>
@@ -155,7 +152,7 @@ export function FinanceOverview() {
                 `pendapatan-${months}bln.csv`,
               )
             }
-            className="inline-flex items-center gap-1.5 rounded-lg border border-border-default-default bg-bg-bg-surface px-3 py-1.5 text-body-sm font-medium text-text-primary-primary shadow-xs transition-all duration-150 ease-out hover:bg-neutral-100 hover:shadow-sm"
+            className="inline-flex items-center gap-1.5 rounded-lg border border-border-default bg-bg-surface px-3 py-1.5 text-body-sm font-medium text-text-primary shadow-xs transition-all duration-150 ease-out hover:bg-neutral-100 hover:shadow-sm"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -179,7 +176,7 @@ export function FinanceOverview() {
       </div>
 
       {/* Monthly breakdown table */}
-      <div className="rounded-xl border border-border-default-default bg-bg-bg-surface p-6">
+      <div className="rounded-xl border border-border-default bg-bg-surface p-6">
         <h3 className="mb-4 text-caption font-semibold uppercase tracking-wider text-text-primary-secondary">
           Rincian Bulanan
         </h3>
