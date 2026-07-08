@@ -158,10 +158,18 @@
   --color-bg-overlay: rgba(0, 0, 0, 0.5);
   --color-bg-surface: var(--color-neutral-0);
 
+  /* ── Surface Tokens (tinted backgrounds for cards/alerts/sections) ── */
+  --color-surface-primary: var(--color-neutral-0);
+  --color-surface-secondary: var(--color-neutral-100);
+  --color-surface-brand: var(--color-primary-100);
+  --color-surface-success: var(--color-success-100);
+  --color-surface-warning: var(--color-warning-100);
+  --color-surface-danger: var(--color-danger-100);
+
   /* ── Text Tokens ─────────────────────────────────────────────────── */
   --color-text-primary: var(--color-neutral-900);
   --color-text-secondary: var(--color-neutral-600);
-  --color-text-muted: var(--color-neutral-600);
+  --color-text-muted: var(--color-text-secondary);
   --color-text-disabled: var(--color-neutral-300);
   --color-text-white: var(--color-neutral-0);
   --color-text-link: var(--color-primary-500);

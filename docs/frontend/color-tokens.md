@@ -66,6 +66,30 @@ primary-800
 primary-900
 primary-950
 
+### Variants
+
+primary-hover
+
+Digunakan untuk tombol dan link saat di-hover.
+
+Value: primary-600
+
+---
+
+primary-active
+
+Digunakan untuk tombol saat diklik (active state).
+
+Value: primary-700
+
+---
+
+primary-light
+
+Digunakan untuk background ringan berbasis primary.
+
+Value: primary-100
+
 ---
 
 ## Secondary
@@ -84,6 +108,14 @@ secondary-50
 ↓
 
 secondary-950
+
+### Variants
+
+secondary-hover
+
+Digunakan untuk elemen secondary saat di-hover.
+
+Value: secondary-600
 
 ---
 
@@ -691,9 +723,15 @@ Minimum Contrast Ratio
 
 # Tailwind Mapping
 
-Seluruh token harus didefinisikan pada:
+Seluruh token didefinisikan pada:
 
-tailwind.config.ts
+apps/web/src/styles/global.css
+
+Di dalam blok `@theme { }`.
+
+Tailwind v4 tidak lagi menggunakan `tailwind.config.ts`.
+
+Semua warna hanya boleh dirujuk melalui utility class.
 
 Tidak boleh menggunakan hex color secara langsung pada Component.
 
@@ -713,7 +751,7 @@ Contoh
 
 --color-text-primary
 
---color-background
+--color-bg-page
 
 ---
 
