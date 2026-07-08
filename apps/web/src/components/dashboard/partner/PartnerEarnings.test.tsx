@@ -44,6 +44,7 @@ vi.mock('@specialist/ui', () => ({
   EmptyState: ({ title, children }: { title?: string; children?: React.ReactNode }) => (
     <div>{title ?? children}</div>
   ),
+  Skeleton: () => <div aria-hidden="true" />,
 }));
 
 beforeEach(() => {
@@ -52,12 +53,11 @@ beforeEach(() => {
 
 describe('PartnerEarnings', () => {
   it('shows loading state initially', () => {
-    EmptyState: (({ title, children }: { title?: string; children?: React.ReactNode }) => (
-      <div>{title ?? children}</div>
-    ),
-      mockGet.mockImplementation(() => new Promise(() => {})));
+    mockGet.mockImplementation(() => new Promise(() => {}));
     render(<PartnerEarnings />);
-    expect(screen.getByText('Memuat...')).toBeInTheDocument();
+    // Loading state renders Skeleton components (aria-hidden, no visible text)
+    // Data elements should not be present during loading
+    expect(screen.queryByText('Pekerjaan Selesai')).not.toBeInTheDocument();
   });
 
   it('shows stats cards when loaded', async () => {

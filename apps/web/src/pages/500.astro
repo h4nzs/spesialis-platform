@@ -5,6 +5,7 @@ import BaseLayout from '../layouts/BaseLayout.astro'
 <BaseLayout
   title="500 - Kesalahan Server - Spesialis"
   description="Terjadi kesalahan pada server. Silakan coba lagi."
+  noindex={true}
   jsonLd={{
     '@context': 'https://schema.org',
     '@type': 'BreadcrumbList',
@@ -14,8 +15,8 @@ import BaseLayout from '../layouts/BaseLayout.astro'
   }}>
   <div class="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
     <div class="mx-auto max-w-lg text-center">
-      <h1 class="text-6xl font-bold text-danger">500</h1>
-      <p class="mt-4 text-lg text-text-muted">Terjadi kesalahan pada server. Silakan coba lagi.</p>
+      <h1 class="text-display-xl font-bold text-danger">500</h1>
+      <p class="mt-4 text-body-lg text-text-secondary">Terjadi kesalahan pada server. Silakan coba lagi.</p>
       <a
         href="/"
         class="mt-6 inline-flex items-center gap-2 rounded-md bg-primary px-6 py-3 text-base font-medium text-white transition-colors hover:bg-primary-hover"

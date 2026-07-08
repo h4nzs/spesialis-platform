@@ -68,7 +68,7 @@ describe('Sidebar', () => {
   it('highlights active nav item', () => {
     render(<Sidebar role="customer" currentPath="/dashboard/customer/orders" />);
     const pesananLink = screen.getByText('Pesanan');
-    expect(pesananLink.closest('a')).toHaveClass('text-primary');
+    expect(pesananLink.closest('a')).toHaveClass('text-primary-700');
   });
 
   it('href attribute points to correct dashboard paths', () => {

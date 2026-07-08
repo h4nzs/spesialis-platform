@@ -22,7 +22,8 @@ describe('AdminCustomers', () => {
   it('shows loading state initially', () => {
     mockGet.mockImplementation(() => new Promise(() => {}));
     render(<AdminCustomers />);
-    expect(screen.getByText('Memuat...')).toBeInTheDocument();
+    // Loading state renders skeleton shimmer (aria-hidden, no visible text)
+    expect(screen.queryByText('Export CSV')).not.toBeInTheDocument();
   });
 
   it('shows customer table when loaded', async () => {

@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { createBrowserClient, formatDate, getStatusLabel, downloadCSV } from '@specialist/shared';
-import { Card, Table, Badge, EmptyState } from '@specialist/ui';
+import { Card, Table, Badge, EmptyState, Skeleton } from '@specialist/ui';
 import type { OrderStatus } from '@specialist/types';
 
 interface JobItem {
@@ -38,7 +38,20 @@ export function PartnerEarnings() {
   const completedJobs = jobs.filter((j) => ['Completed', 'Paid', 'Closed'].includes(j.orderStatus));
 
   if (loading) {
-    return <div className="text-sm text-text-muted">Memuat...</div>;
+    return (
+      <div className="space-y-6">
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {[1, 2, 3, 4].map((i) => (
+            <Card key={i} padding="lg">
+              <Skeleton variant="text" className="w-1/2" />
+              <div className="mt-2">
+                <Skeleton variant="heading" className="w-1/3 h-8" />
+              </div>
+            </Card>
+          ))}
+        </div>
+      </div>
+    );
   }
 
   function handleExportCSV() {
@@ -55,22 +68,22 @@ export function PartnerEarnings() {
     <div className="space-y-6">
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <Card padding="lg">
-          <p className="text-sm text-text-muted">Pekerjaan Selesai</p>
-          <p className="mt-1 text-3xl font-bold text-text">{profile?.completedJobs ?? 0}</p>
+          <p className="text-body-sm text-text-secondary">Pekerjaan Selesai</p>
+          <p className="mt-1 text-h3 font-bold text-text-primary">{profile?.completedJobs ?? 0}</p>
         </Card>
         <Card padding="lg">
-          <p className="text-sm text-text-muted">Rating</p>
-          <p className="mt-1 text-3xl font-bold text-text">
+          <p className="text-body-sm text-text-secondary">Rating</p>
+          <p className="mt-1 text-h3 font-bold text-text-primary">
             {profile?.ratingAverage ? Number(profile.ratingAverage).toFixed(1) : '-'}
           </p>
         </Card>
         <Card padding="lg">
-          <p className="text-sm text-text-muted">Total Pekerjaan</p>
-          <p className="mt-1 text-3xl font-bold text-text">{jobs.length}</p>
+          <p className="text-body-sm text-text-secondary">Total Pekerjaan</p>
+          <p className="mt-1 text-h3 font-bold text-text-primary">{jobs.length}</p>
         </Card>
         <Card padding="lg">
-          <p className="text-sm text-text-muted">Menunggu Pembayaran</p>
-          <p className="mt-1 text-3xl font-bold text-text">
+          <p className="text-body-sm text-text-secondary">Menunggu Pembayaran</p>
+          <p className="mt-1 text-h3 font-bold text-text-primary">
             {jobs.filter((j) => j.orderStatus === 'Waiting Payment').length}
           </p>
         </Card>
@@ -79,11 +92,11 @@ export function PartnerEarnings() {
       {completedJobs.length > 0 && (
         <div>
           <div className="mb-3 flex items-center justify-between">
-            <h3 className="text-lg font-semibold text-text">Riwayat Pekerjaan</h3>
+            <h3 className="text-h5 text-text-primary">Riwayat Pekerjaan</h3>
             <button
               type="button"
               onClick={handleExportCSV}
-              className="inline-flex items-center gap-1.5 rounded-md border border-border bg-background px-3 py-1.5 text-sm font-medium text-text transition-colors hover:bg-surface"
+              className="inline-flex items-center gap-1.5 rounded-lg border border-border-default bg-bg-surface px-3 py-1.5 text-body-sm font-medium text-text-primary shadow-xs transition-all duration-150 ease-out hover:bg-neutral-100 hover:shadow-sm"
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"

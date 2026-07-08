@@ -16,7 +16,8 @@ describe('PartnerOverview', () => {
   it('shows loading state initially', () => {
     mockGet.mockImplementation(() => new Promise(() => {}));
     render(<PartnerOverview />);
-    expect(screen.getByText('Memuat...')).toBeInTheDocument();
+    // Loading state renders Skeleton + Card components (aria-hidden, no visible text)
+    expect(screen.queryByText('Selamat datang,')).not.toBeInTheDocument();
   });
 
   it('shows profile and stats when loaded', async () => {
@@ -32,14 +33,14 @@ describe('PartnerOverview', () => {
     expect(await screen.findByText('Selamat datang, Budi Partner')).toBeInTheDocument();
     expect(screen.getByText('4.5 / 5.0')).toBeInTheDocument();
     expect(screen.getByText('12')).toBeInTheDocument();
-    expect(screen.getByText('Available')).toBeInTheDocument();
+    expect(screen.getByText('Tersedia')).toBeInTheDocument();
     expect(screen.getByText('Verified')).toBeInTheDocument();
   });
 
   it('shows fallback when loading fails', async () => {
     mockGet.mockRejectedValue(new Error('Gagal'));
     render(<PartnerOverview />);
-    expect(await screen.findByText('Gagal memuat profil')).toBeInTheDocument();
+    expect(await screen.findByText('Gagal memuat profil mitra.')).toBeInTheDocument();
   });
 
   it('shows dash for no rating', async () => {

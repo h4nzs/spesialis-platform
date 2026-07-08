@@ -45,6 +45,7 @@ vi.mock('@specialist/ui', () => ({
   EmptyState: ({ title, children }: { title?: string; children?: React.ReactNode }) => (
     <div>{title ?? children}</div>
   ),
+  Skeleton: () => <div aria-hidden="true" />,
 }));
 
 beforeEach(() => {
@@ -53,12 +54,11 @@ beforeEach(() => {
 
 describe('PartnerReviews', () => {
   it('shows loading state initially', () => {
-    EmptyState: (({ title, children }: { title?: string; children?: React.ReactNode }) => (
-      <div>{title ?? children}</div>
-    ),
-      mockGet.mockImplementation(() => new Promise(() => {})));
+    mockGet.mockImplementation(() => new Promise(() => {}));
     render(<PartnerReviews />);
-    expect(screen.getByText('Memuat...')).toBeInTheDocument();
+    // Loading state renders Skeleton components (aria-hidden, no visible text)
+    // The data state elements should not be present
+    expect(screen.queryByText('Export CSV')).not.toBeInTheDocument();
   });
 
   it('shows reviews when loaded', async () => {

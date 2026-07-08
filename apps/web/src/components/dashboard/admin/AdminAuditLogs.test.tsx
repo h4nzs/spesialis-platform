@@ -101,12 +101,11 @@ const mockPaginated = (data: unknown[], pagination: { page: number; totalPages: 
 
 describe('AdminAuditLogs', () => {
   it('shows loading state initially', () => {
-    EmptyState: (({ title, children }: { title?: string; children?: React.ReactNode }) => (
-      <div>{title ?? children}</div>
-    ),
-      mockGet.mockImplementation(() => new Promise(() => {})));
+    mockGet.mockImplementation(() => new Promise(() => {}));
     render(<AdminAuditLogs />);
-    expect(screen.getByText('Memuat data audit log...')).toBeInTheDocument();
+    // Loading state renders skeleton shimmer (aria-hidden, no visible text)
+    // Filter form is always rendered; check that table data is absent
+    expect(screen.queryByText('Belum ada audit log')).not.toBeInTheDocument();
   });
 
   it('shows audit log table when loaded', async () => {

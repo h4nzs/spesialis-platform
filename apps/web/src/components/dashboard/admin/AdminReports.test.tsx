@@ -44,7 +44,8 @@ describe('AdminReports', () => {
   it('shows loading state initially', () => {
     mockGet.mockImplementation(() => new Promise(() => {}));
     render(<AdminReports />);
-    expect(screen.getByText('Memuat laporan...')).toBeInTheDocument();
+    // Loading state renders skeleton shimmer (aria-hidden, no visible text)
+    expect(screen.queryByText('Total Pesanan')).not.toBeInTheDocument();
   });
 
   it('shows summary cards when loaded', async () => {

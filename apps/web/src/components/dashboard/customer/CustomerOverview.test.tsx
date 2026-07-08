@@ -16,7 +16,8 @@ describe('CustomerOverview', () => {
   it('shows loading state initially', () => {
     mockGet.mockImplementation(() => new Promise(() => {}));
     render(<CustomerOverview />);
-    expect(screen.getByText('Memuat...')).toBeInTheDocument();
+    // Loading state renders Card + Skeleton components (aria-hidden, no visible text)
+    expect(screen.queryByText('Pesanan Aktif')).not.toBeInTheDocument();
   });
 
   it('shows stats when loaded', async () => {

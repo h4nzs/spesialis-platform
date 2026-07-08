@@ -83,7 +83,38 @@ export function CustomerAddresses() {
   }
 
   if (loading) {
-    return <div className="text-sm text-text-muted">Memuat...</div>;
+    return (
+      <div className="space-y-4">
+        <div className="flex justify-end">
+          <div
+            className="animate-skeleton h-10 w-36 rounded-lg bg-neutral-200"
+            aria-hidden="true"
+          />
+        </div>
+        <div className="grid gap-4 sm:grid-cols-2">
+          {[1, 2].map((i) => (
+            <div key={i} className="rounded-xl border border-border-default bg-bg-surface p-4">
+              <div
+                className="animate-skeleton h-4 w-1/3 rounded-sm bg-neutral-200"
+                aria-hidden="true"
+              />
+              <div
+                className="mt-2 animate-skeleton h-3 w-1/2 rounded-sm bg-neutral-200"
+                aria-hidden="true"
+              />
+              <div
+                className="mt-1 animate-skeleton h-3 w-1/2 rounded-sm bg-neutral-200"
+                aria-hidden="true"
+              />
+              <div
+                className="mt-2 animate-skeleton h-3 w-3/4 rounded-sm bg-neutral-200"
+                aria-hidden="true"
+              />
+            </div>
+          ))}
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -99,23 +130,23 @@ export function CustomerAddresses() {
           <Card key={addr.id}>
             <div className="flex items-start justify-between">
               <div>
-                <p className="font-medium text-text">
+                <p className="font-medium text-text-primary">
                   {addr.label ?? 'Alamat'}
                   {addr.isDefault && (
-                    <span className="ml-2 rounded bg-primary/10 px-2 py-0.5 text-xs text-primary">
+                    <span className="ml-2 rounded bg-primary-50 px-2 py-0.5 text-caption text-primary-700">
                       Utama
                     </span>
                   )}
                 </p>
-                <p className="mt-1 text-sm text-text-muted">{addr.receiverName}</p>
-                <p className="text-sm text-text-muted">{addr.receiverPhone}</p>
-                <p className="mt-1 text-xs text-text-muted">
+                <p className="mt-1 text-body-sm text-text-secondary">{addr.receiverName}</p>
+                <p className="text-body-sm text-text-secondary">{addr.receiverPhone}</p>
+                <p className="mt-1 text-caption text-text-muted">
                   {addr.address}, {addr.city}, {addr.province} {addr.postalCode}
                 </p>
               </div>
               <button
                 onClick={() => handleDelete(addr.id)}
-                className="text-xs text-danger hover:underline cursor-pointer"
+                className="text-caption text-danger-500 hover:underline cursor-pointer"
               >
                 Hapus
               </button>

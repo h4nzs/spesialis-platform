@@ -71,7 +71,24 @@ export function FinanceOverview() {
   }
 
   if (loading && !revenueData) {
-    return <div className="text-sm text-text-muted py-8 text-center">Memuat...</div>;
+    return (
+      <div className="space-y-6">
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {[1, 2, 3, 4].map((i) => (
+            <div key={i} className="rounded-xl border border-border-default bg-bg-surface p-6">
+              <div
+                className="animate-skeleton h-4 w-1/2 rounded-sm bg-neutral-200"
+                aria-hidden="true"
+              />
+              <div
+                className="mt-2 animate-skeleton h-8 w-1/3 rounded-sm bg-neutral-200"
+                aria-hidden="true"
+              />
+            </div>
+          ))}
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -79,23 +96,23 @@ export function FinanceOverview() {
       {/* Summary cards */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <Card padding="lg">
-          <p className="text-sm text-text-muted">Total Pendapatan</p>
-          <p className="mt-1 text-3xl font-bold text-success">{formatCurrency(totalRevenue)}</p>
+          <p className="text-body-sm text-text-secondary">Total Pendapatan</p>
+          <p className="mt-1 text-h3 font-bold text-success">{formatCurrency(totalRevenue)}</p>
         </Card>
         <Card padding="lg">
-          <p className="text-sm text-text-muted">
+          <p className="text-body-sm text-text-secondary">
             {latestMonth ? formatMonth(latestMonth.month) : 'Bulan Ini'}
           </p>
-          <p className="mt-1 text-3xl font-bold text-primary">{formatCurrency(latestRevenue)}</p>
+          <p className="mt-1 text-h3 font-bold text-primary">{formatCurrency(latestRevenue)}</p>
         </Card>
         <Card padding="lg">
-          <p className="text-sm text-text-muted">Pesanan Dibayar</p>
-          <p className="mt-1 text-3xl font-bold text-text">{latestOrders}</p>
+          <p className="text-body-sm text-text-secondary">Pesanan Dibayar</p>
+          <p className="mt-1 text-h3 font-bold text-text-primary">{latestOrders}</p>
         </Card>
         <Card padding="lg">
-          <p className="text-sm text-text-muted">Pertumbuhan</p>
+          <p className="text-body-sm text-text-secondary">Pertumbuhan</p>
           <p
-            className={`mt-1 text-3xl font-bold ${growthPercent !== null && growthPercent >= 0 ? 'text-success' : 'text-danger'}`}
+            className={`mt-1 text-h3 font-bold ${growthPercent !== null && growthPercent >= 0 ? 'text-success' : 'text-danger'}`}
           >
             {growthPercent !== null ? `${growthPercent >= 0 ? '+' : ''}${growthPercent}%` : '-'}
           </p>
@@ -135,7 +152,7 @@ export function FinanceOverview() {
                 `pendapatan-${months}bln.csv`,
               )
             }
-            className="inline-flex items-center gap-1.5 rounded-md border border-border bg-background px-3 py-1.5 text-sm font-medium text-text transition-colors hover:bg-surface"
+            className="inline-flex items-center gap-1.5 rounded-lg border border-border-default bg-bg-surface px-3 py-1.5 text-body-sm font-medium text-text-primary shadow-xs transition-all duration-150 ease-out hover:bg-neutral-100 hover:shadow-sm"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -159,8 +176,8 @@ export function FinanceOverview() {
       </div>
 
       {/* Monthly breakdown table */}
-      <div className="rounded-xl border border-border bg-surface p-6">
-        <h3 className="mb-4 text-sm font-semibold text-text-muted uppercase tracking-wide">
+      <div className="rounded-xl border border-border-default bg-bg-surface p-6">
+        <h3 className="mb-4 text-caption font-semibold uppercase tracking-wider text-text-muted">
           Rincian Bulanan
         </h3>
         {monthlyData.length > 0 ? (

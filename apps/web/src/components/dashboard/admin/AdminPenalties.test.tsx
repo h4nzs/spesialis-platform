@@ -146,7 +146,8 @@ describe('AdminPenalties', () => {
   it('shows loading state initially', () => {
     mockGet.mockImplementation(() => new Promise(() => {}));
     render(<AdminPenalties />);
-    expect(screen.getByText('Memuat...')).toBeInTheDocument();
+    // Loading state renders skeleton shimmer (aria-hidden, no visible text)
+    expect(screen.queryByText('Tambah Penalty')).not.toBeInTheDocument();
   });
 
   it('shows penalty table when loaded', async () => {
@@ -321,10 +322,7 @@ describe('AdminPenalties', () => {
         expect(screen.getByText('Mencari...')).toBeInTheDocument();
       });
 
-      EmptyState: (({ title, children }: { title?: string; children?: React.ReactNode }) => (
-        <div>{title ?? children}</div>
-      ),
-        resolveSearch!(Promise.resolve({ data: [] })));
+      resolveSearch!(Promise.resolve({ data: [] }));
     });
 
     it('shows not found message when search has no results', async () => {

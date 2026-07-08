@@ -83,24 +83,46 @@ export function CorporateInvoices() {
     downloadCSV(headers, rows, 'invoice-export.csv');
   }
 
-  if (loading) return <div className="text-sm text-text-muted py-8 text-center">Memuat...</div>;
+  if (loading) {
+    return (
+      <div className="space-y-4">
+        <div className="grid gap-4 sm:grid-cols-3">
+          {[1, 2, 3].map((i) => (
+            <div
+              key={i}
+              className="rounded-lg border border-border-default bg-bg-surface p-4 space-y-2"
+            >
+              <div className="h-4 w-16 animate-skeleton rounded" />
+              <div className="h-8 w-12 animate-skeleton rounded" />
+            </div>
+          ))}
+        </div>
+        <div className="flex items-center justify-end">
+          <div className="h-9 w-28 animate-skeleton rounded-lg" />
+        </div>
+        <div className="space-y-2">
+          {[1, 2, 3].map((i) => (
+            <div key={i} className="h-12 animate-skeleton rounded-lg" />
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-4">
       <div className="grid gap-4 sm:grid-cols-3">
-        <div className="rounded-lg border border-border bg-surface p-4">
-          <p className="text-sm text-text-muted">Total</p>
-          <p className="mt-1 text-2xl font-bold text-text">{invoices.length}</p>
+        <div className="rounded-lg border border-border-default bg-bg-surface p-4 space-y-1">
+          <p className="text-body-sm text-text-secondary">Total</p>
+          <p className="text-h3 font-bold text-text-primary">{invoices.length}</p>
         </div>
-        <div className="rounded-lg border border-border bg-surface p-4">
-          <p className="text-sm text-text-muted">Lunas</p>
-          <p className="mt-1 text-2xl font-bold text-success">{paidInvoices.length}</p>
+        <div className="rounded-lg border border-border-default bg-bg-surface p-4 space-y-1">
+          <p className="text-body-sm text-text-secondary">Lunas</p>
+          <p className="text-h3 font-bold text-success">{paidInvoices.length}</p>
         </div>
-        <div className="rounded-lg border border-border bg-surface p-4">
-          <p className="text-sm text-text-muted">Menunggu</p>
-          <p className="mt-1 text-2xl font-bold text-warning">
-            {invoices.length - paidInvoices.length}
-          </p>
+        <div className="rounded-lg border border-border-default bg-bg-surface p-4 space-y-1">
+          <p className="text-body-sm text-text-secondary">Menunggu</p>
+          <p className="text-h3 font-bold text-warning">{invoices.length - paidInvoices.length}</p>
         </div>
       </div>
 
@@ -109,7 +131,7 @@ export function CorporateInvoices() {
           <button
             type="button"
             onClick={handleExportCSV}
-            className="inline-flex items-center gap-1.5 rounded-md border border-border bg-background px-3 py-1.5 text-sm font-medium text-text transition-colors hover:bg-surface"
+            className="inline-flex items-center gap-1.5 rounded-lg border border-border-default bg-bg-surface px-3 py-1.5 text-body-sm font-medium text-text-primary shadow-xs transition-all duration-150 ease-out hover:bg-neutral-100 hover:shadow-sm"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"

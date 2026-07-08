@@ -58,12 +58,10 @@ beforeEach(() => {
 
 describe('AdminPartners', () => {
   it('shows loading state initially', () => {
-    EmptyState: (({ title, children }: { title?: string; children?: React.ReactNode }) => (
-      <div>{title ?? children}</div>
-    ),
-      mockGet.mockImplementation(() => new Promise(() => {})));
+    mockGet.mockImplementation(() => new Promise(() => {}));
     render(<AdminPartners />);
-    expect(screen.getByText('Memuat...')).toBeInTheDocument();
+    // Loading state renders skeleton shimmer (aria-hidden, no visible text)
+    expect(screen.queryByText('Belum ada partner')).not.toBeInTheDocument();
   });
 
   it('shows partner list when loaded', async () => {

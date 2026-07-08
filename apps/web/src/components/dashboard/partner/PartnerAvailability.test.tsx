@@ -54,6 +54,7 @@ vi.mock('@specialist/ui', () => ({
       </select>
     </div>
   ),
+  Skeleton: () => <div aria-hidden="true" />,
 }));
 
 beforeEach(() => {
@@ -64,7 +65,9 @@ describe('PartnerAvailability', () => {
   it('shows loading state initially', () => {
     mockGet.mockImplementation(() => new Promise(() => {}));
     render(<PartnerAvailability />);
-    expect(screen.getByText('Memuat...')).toBeInTheDocument();
+    // Loading state renders Skeleton components (aria-hidden, no visible text)
+    // Data elements should not be present during loading
+    expect(screen.queryByText('Simpan')).not.toBeInTheDocument();
   });
 
   it('shows availability select when loaded', async () => {

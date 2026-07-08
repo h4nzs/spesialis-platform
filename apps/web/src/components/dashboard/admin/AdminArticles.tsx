@@ -226,7 +226,30 @@ export function AdminArticles() {
     downloadCSV(headers, rows, 'artikel-export.csv');
   }
 
-  if (loading) return <div className="text-sm text-text-muted py-8 text-center">Memuat...</div>;
+  if (loading) {
+    return (
+      <div className="space-y-4">
+        <div className="flex justify-end">
+          <div
+            className="animate-skeleton h-10 w-32 rounded-lg bg-neutral-200"
+            aria-hidden="true"
+          />
+        </div>
+        <div
+          className="animate-skeleton h-12 w-full rounded-lg bg-neutral-200"
+          aria-hidden="true"
+        />
+        <div
+          className="animate-skeleton h-12 w-full rounded-lg bg-neutral-200"
+          aria-hidden="true"
+        />
+        <div
+          className="animate-skeleton h-12 w-full rounded-lg bg-neutral-200"
+          aria-hidden="true"
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-4">
@@ -235,7 +258,7 @@ export function AdminArticles() {
           <button
             type="button"
             onClick={handleExportCSV}
-            className="inline-flex items-center gap-1.5 rounded-md border border-border bg-background px-3 py-1.5 text-sm font-medium text-text transition-colors hover:bg-surface"
+            className="inline-flex items-center gap-1.5 rounded-lg border border-border-default bg-bg-surface px-3 py-1.5 text-body-sm font-medium text-text-primary shadow-xs transition-all duration-150 ease-out hover:bg-neutral-100 hover:shadow-sm"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"

@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { createBrowserClient, formatDate, getStatusLabel } from '@specialist/shared';
-import { Badge, Card, Button, Modal, Input, EmptyState } from '@specialist/ui';
+import { Badge, Card, Button, Modal, Input, EmptyState, Skeleton } from '@specialist/ui';
 import type { OrderStatus } from '@specialist/types';
 
 interface JobItem {
@@ -85,7 +85,28 @@ export function PartnerJobs() {
   }
 
   if (loading) {
-    return <div className="text-sm text-text-muted">Memuat...</div>;
+    return (
+      <div className="space-y-4">
+        <Card padding="md">
+          <Skeleton variant="text" className="w-1/3" />
+          <div className="mt-3">
+            <Skeleton variant="text" className="w-1/4" />
+          </div>
+          <div className="mt-4">
+            <Skeleton variant="text" className="w-20" />
+          </div>
+        </Card>
+        <Card padding="md">
+          <Skeleton variant="text" className="w-1/2" />
+          <div className="mt-3">
+            <Skeleton variant="text" className="w-1/4" />
+          </div>
+          <div className="mt-4">
+            <Skeleton variant="text" className="w-20" />
+          </div>
+        </Card>
+      </div>
+    );
   }
 
   if (jobs.length === 0) {
@@ -98,8 +119,8 @@ export function PartnerJobs() {
         <Card key={job.id}>
           <div className="flex items-start justify-between">
             <div>
-              <p className="font-medium text-text">{job.bookingNumber}</p>
-              <p className="mt-1 text-sm text-text-muted">
+              <p className="font-medium text-text-primary">{job.bookingNumber}</p>
+              <p className="mt-1 text-body-sm text-text-muted">
                 Ditugaskan: {formatDate(job.assignedAt)}
               </p>
               <div className="mt-2">

@@ -17,7 +17,8 @@ describe('AdminOverview', () => {
   it('shows loading state initially', () => {
     mockGet.mockImplementation(() => new Promise(() => {}));
     render(<AdminOverview />);
-    expect(screen.getByText('Memuat...')).toBeInTheDocument();
+    // Loading state renders Card + Skeleton components (aria-hidden, no visible text)
+    expect(screen.queryByText('Pesanan Hari Ini')).not.toBeInTheDocument();
   });
 
   it('shows dashboard stats when loaded', async () => {

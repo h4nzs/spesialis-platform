@@ -84,6 +84,7 @@ if (service) {
   description={service?.shortDescription ?? error ?? 'Memuat detail layanan'}
   canonicalUrl={service ? `/services/${service.slug}` : '/services'}
   ogImage={service?.thumbnail ?? undefined}
+  ogImageAlt={service?.name ?? undefined}
   jsonLd={service ? { '@context': 'https://schema.org', '@graph': jsonLdGraph } : undefined}
 >
   <ServiceDetail slug={slug!} client:load />

@@ -89,7 +89,24 @@ export function AdminReports() {
   }, [api]);
 
   if (loading) {
-    return <div className="py-8 text-center text-sm text-text-muted">Memuat laporan...</div>;
+    return (
+      <div className="space-y-6">
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {[1, 2, 3, 4].map((i) => (
+            <div key={i} className="rounded-xl border border-border-default bg-bg-surface p-6">
+              <div
+                className="animate-skeleton h-4 w-1/2 rounded-sm bg-neutral-200"
+                aria-hidden="true"
+              />
+              <div
+                className="mt-2 animate-skeleton h-8 w-1/3 rounded-sm bg-neutral-200"
+                aria-hidden="true"
+              />
+            </div>
+          ))}
+        </div>
+      </div>
+    );
   }
 
   if (!data) {
@@ -110,22 +127,22 @@ export function AdminReports() {
       {/* Summary Cards */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <Card padding="lg">
-          <p className="text-sm text-text-muted">Total Pesanan</p>
-          <p className="mt-1 text-2xl font-bold text-text">{data.summary.totalOrders}</p>
+          <p className="text-body-sm text-text-secondary">Total Pesanan</p>
+          <p className="mt-1 text-h3 font-bold text-text-primary">{data.summary.totalOrders}</p>
         </Card>
         <Card padding="lg">
-          <p className="text-sm text-text-muted">Partner Terverifikasi</p>
-          <p className="mt-1 text-2xl font-bold text-text">{data.summary.totalPartners}</p>
+          <p className="text-body-sm text-text-secondary">Partner Terverifikasi</p>
+          <p className="mt-1 text-h3 font-bold text-text-primary">{data.summary.totalPartners}</p>
         </Card>
         <Card padding="lg">
-          <p className="text-sm text-text-muted">Rating Rata-rata</p>
-          <p className="mt-1 text-2xl font-bold text-accent">
+          <p className="text-body-sm text-text-secondary">Rating Rata-rata</p>
+          <p className="mt-1 text-h3 font-bold text-accent">
             {Number(data.summary.avgRating).toFixed(1)}
           </p>
         </Card>
         <Card padding="lg">
-          <p className="text-sm text-text-muted">Pekerjaan Selesai</p>
-          <p className="mt-1 text-2xl font-bold text-success">{data.summary.totalCompletedJobs}</p>
+          <p className="text-body-sm text-text-secondary">Pekerjaan Selesai</p>
+          <p className="mt-1 text-h3 font-bold text-success">{data.summary.totalCompletedJobs}</p>
         </Card>
       </div>
 

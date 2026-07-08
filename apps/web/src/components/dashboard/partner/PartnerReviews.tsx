@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { createBrowserClient, formatDate, formatRating, downloadCSV } from '@specialist/shared';
-import { Table, EmptyState } from '@specialist/ui';
+import { Table, EmptyState, Skeleton } from '@specialist/ui';
 import type { Column } from '@specialist/ui';
 
 interface Review {
@@ -55,7 +55,13 @@ export function PartnerReviews() {
   }
 
   if (loading) {
-    return <div className="text-sm text-text-muted">Memuat...</div>;
+    return (
+      <div className="space-y-3">
+        <Skeleton variant="table" />
+        <Skeleton variant="table" />
+        <Skeleton variant="table" />
+      </div>
+    );
   }
 
   return (
@@ -65,7 +71,7 @@ export function PartnerReviews() {
           <button
             type="button"
             onClick={handleExportCSV}
-            className="inline-flex items-center gap-1.5 rounded-md border border-border bg-background px-3 py-1.5 text-sm font-medium text-text transition-colors hover:bg-surface"
+            className="inline-flex items-center gap-1.5 rounded-lg border border-border-default bg-bg-surface px-3 py-1.5 text-body-sm font-medium text-text-primary shadow-xs transition-all duration-150 ease-out hover:bg-neutral-100 hover:shadow-sm"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"

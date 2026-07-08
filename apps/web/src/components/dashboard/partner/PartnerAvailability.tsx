@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { createBrowserClient } from '@specialist/shared';
-import { Card, Button, Select } from '@specialist/ui';
+import { Card, Button, Select, Skeleton } from '@specialist/ui';
 
 export function PartnerAvailability() {
   const api = useMemo(() => createBrowserClient(), []);
@@ -28,7 +28,17 @@ export function PartnerAvailability() {
   }
 
   if (loading) {
-    return <div className="text-sm text-text-muted">Memuat...</div>;
+    return (
+      <Card padding="lg" className="max-w-md">
+        <Skeleton variant="text" className="w-1/3" />
+        <div className="mt-3">
+          <Skeleton variant="form" />
+        </div>
+        <div className="mt-4">
+          <Skeleton variant="form" className="w-24" />
+        </div>
+      </Card>
+    );
   }
 
   return (

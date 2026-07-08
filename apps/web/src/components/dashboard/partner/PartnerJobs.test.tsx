@@ -19,7 +19,9 @@ describe('PartnerJobs', () => {
   it('shows loading state initially', () => {
     mockGet.mockImplementation(() => new Promise(() => {}));
     render(<PartnerJobs />);
-    expect(screen.getByText('Memuat...')).toBeInTheDocument();
+    // Loading state renders Skeleton components (aria-hidden, no visible text)
+    // Data elements should not be present during loading
+    expect(screen.queryByText('Belum ada pekerjaan')).not.toBeInTheDocument();
   });
 
   it('shows jobs with action buttons when loaded', async () => {

@@ -27,50 +27,69 @@ export function DispatcherOverview() {
   }, [api]);
 
   if (loading) {
-    return <div className="text-sm text-text-muted py-8 text-center">Memuat...</div>;
+    return (
+      <div className="space-y-6">
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {[1, 2, 3].map((i) => (
+            <div key={i} className="rounded-xl border border-border-default bg-bg-surface p-6">
+              <div
+                className="animate-skeleton h-4 w-1/2 rounded-sm bg-neutral-200"
+                aria-hidden="true"
+              />
+              <div
+                className="mt-2 animate-skeleton h-8 w-1/3 rounded-sm bg-neutral-200"
+                aria-hidden="true"
+              />
+            </div>
+          ))}
+        </div>
+      </div>
+    );
   }
 
   return (
     <div className="space-y-6">
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         <Card padding="lg">
-          <p className="text-sm text-text-muted">Sedang Berjalan</p>
-          <p className="mt-1 text-3xl font-bold text-primary">{stats?.orders?.active ?? 0}</p>
+          <p className="text-body-sm text-text-secondary">Sedang Berjalan</p>
+          <p className="mt-1 text-h3 font-bold text-primary">{stats?.orders?.active ?? 0}</p>
         </Card>
         <Card padding="lg">
-          <p className="text-sm text-text-muted">Menunggu Assignment</p>
-          <p className="mt-1 text-3xl font-bold text-accent">
+          <p className="text-body-sm text-text-secondary">Menunggu Assignment</p>
+          <p className="mt-1 text-h3 font-bold text-accent">
             {stats?.orders?.waitingAssignment ?? 0}
           </p>
         </Card>
         <Card padding="lg">
-          <p className="text-sm text-text-muted">Partner Tersedia</p>
-          <p className="mt-1 text-3xl font-bold text-success">{stats?.partners?.available ?? 0}</p>
+          <p className="text-body-sm text-text-secondary">Partner Tersedia</p>
+          <p className="mt-1 text-h3 font-bold text-success">{stats?.partners?.available ?? 0}</p>
         </Card>
       </div>
 
-      <div className="rounded-xl border border-border bg-surface p-6">
-        <h3 className="text-sm font-semibold text-text-muted uppercase tracking-wide">
+      <div className="rounded-xl border border-border-default bg-bg-surface p-6">
+        <h3 className="text-caption font-semibold uppercase tracking-wider text-text-muted">
           Aksi Cepat
         </h3>
         <div className="mt-4 flex flex-wrap gap-3">
           <a
             href="/dashboard/admin/bookings"
-            className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-primary-hover"
+            className="rounded-lg bg-primary-500 px-4 py-2 text-body-sm font-semibold text-white shadow-xs transition-all duration-150 ease-out hover:bg-primary-600 hover:shadow-sm"
           >
             Kelola Booking
           </a>
           <a
             href="/dashboard/admin/partners"
-            className="rounded-md border border-border bg-background px-4 py-2 text-sm font-medium text-text transition-colors hover:bg-surface"
+            className="rounded-lg border border-border-default bg-bg-surface px-4 py-2 text-body-sm font-medium text-text-primary shadow-xs transition-all duration-150 ease-out hover:bg-neutral-100 hover:shadow-sm"
           >
             Cari Partner
           </a>
         </div>
       </div>
 
-      <div className="rounded-xl border border-border bg-surface p-6">
-        <h3 className="text-sm font-semibold text-text-muted uppercase tracking-wide">Informasi</h3>
+      <div className="rounded-xl border border-border-default bg-bg-surface p-6">
+        <h3 className="text-caption font-semibold uppercase tracking-wider text-text-muted">
+          Informasi
+        </h3>
         <div className="mt-3 space-y-2 text-sm text-text-muted">
           <p>
             Sebagai <strong>Dispatcher</strong>, tugas Anda adalah:

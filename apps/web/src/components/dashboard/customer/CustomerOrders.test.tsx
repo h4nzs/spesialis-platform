@@ -25,7 +25,8 @@ describe('CustomerOrders', () => {
   it('shows loading state initially', () => {
     mockGet.mockImplementation(() => new Promise(() => {}));
     render(<CustomerOrders />);
-    expect(screen.getByText('Memuat...')).toBeInTheDocument();
+    // Loading state renders skeleton shimmer (aria-hidden, no visible text)
+    expect(screen.queryByText('Belum ada pesanan')).not.toBeInTheDocument();
   });
 
   it('shows order table when loaded', async () => {

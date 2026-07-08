@@ -63,7 +63,8 @@ describe('CorporateOrders', () => {
   it('shows loading state initially', () => {
     mockGet.mockImplementation(() => new Promise(() => {}));
     render(<CorporateOrders />);
-    expect(screen.getByText('Memuat...')).toBeInTheDocument();
+    // Loading state renders skeleton shimmer (aria-hidden, no visible text)
+    expect(screen.queryByText('Belum ada pesanan')).not.toBeInTheDocument();
   });
 
   it('shows orders when loaded', async () => {
@@ -93,9 +94,6 @@ describe('CorporateOrders', () => {
       basePrice: '100000',
       finalPrice: null,
       createdAt: '2026-07-15T10:00:00Z',
-      EmptyState: ({ title, children }: { title?: string; children?: React.ReactNode }) => (
-        <div>{title ?? children}</div>
-      ),
     }));
     mockGet.mockResolvedValue(items);
     render(<CorporateOrders />);

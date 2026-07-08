@@ -24,7 +24,8 @@ describe('CustomerAddresses', () => {
   it('shows loading state initially', () => {
     mockGet.mockImplementation(() => new Promise(() => {}));
     render(<CustomerAddresses />);
-    expect(screen.getByText('Memuat...')).toBeInTheDocument();
+    // Loading state renders skeleton shimmer (aria-hidden, no visible text)
+    expect(screen.queryByText('Tambah Alamat')).not.toBeInTheDocument();
   });
 
   it('shows addresses list when loaded', async () => {

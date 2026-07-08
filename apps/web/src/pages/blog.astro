@@ -87,27 +87,27 @@ const activeCategoryName = activeCategory
   }}
 >
   <div class="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8 motion-safe:animate-fade-in">
-    <nav class="mb-8 text-sm text-text-muted">
-      <a href="/" class="hover:text-text transition-colors">Beranda</a>
+    <nav class="mb-8 text-body-sm text-text-secondary">
+      <a href="/" class="hover:text-text-primary transition-colors">Beranda</a>
       <span class="mx-2">/</span>
-      <a href="/blog" class="hover:text-text transition-colors">Blog</a>
+      <a href="/blog" class="hover:text-text-primary transition-colors">Blog</a>
       {activeCategoryName && (
         <>
           <span class="mx-2">/</span>
-          <span class="text-text">{activeCategoryName}</span>
+          <span class="text-text-primary">{activeCategoryName}</span>
         </>
       )}
     </nav>
 
     <div class="flex items-baseline gap-3">
-      <h1 class="text-3xl font-bold text-text">
+      <h1 class="text-h2 font-bold text-text-primary">
         {activeCategoryName || 'Blog'}
       </h1>
       {activeCategoryName && (
-        <span class="text-sm text-text-muted">Blog</span>
+        <span class="text-body-sm text-text-secondary">Blog</span>
       )}
     </div>
-    <p class="mt-2 text-text-muted">
+    <p class="mt-2 text-text-secondary">
       {activeCategoryName ? `Artikel seputar ${activeCategoryName.toLowerCase()}` : 'Artikel dan tips seputar layanan profesional'}
     </p>
 
@@ -115,22 +115,21 @@ const activeCategoryName = activeCategory
       <div class="mt-6 flex flex-wrap gap-2">
         <a
           href="/blog"
-          class={`rounded-full px-4 py-1.5 text-sm font-medium transition-colors ${
+          class={`rounded-full px-4 py-1.5 text-body-sm font-medium transition-colors ${
             !activeCategory
               ? 'bg-primary text-white'
-              : 'border border-border bg-surface text-text-muted hover:text-text'
+              : 'border border-border-default bg-bg-surface text-text-secondary hover:text-text-primary'
           }`}
         >
           Semua
         </a>
-        {categories.map((cat) => (
-          <a
-            href={`/blog?kategori=${cat.slug}`}
-            class={`rounded-full px-4 py-1.5 text-sm font-medium transition-colors ${
-              activeCategory === cat.slug
-                ? 'bg-primary text-white'
-                : 'border border-border bg-surface text-text-muted hover:text-text'
-            }`}
+        {categories.map((cat) => (          <a
+          href={`/blog?kategori=${cat.slug}`}
+          class={`rounded-full px-4 py-1.5 text-body-sm font-medium transition-colors ${
+            activeCategory === cat.slug
+              ? 'bg-primary text-white'
+              : 'border border-border-default bg-bg-surface text-text-secondary hover:text-text-primary'
+          }`}
           >
             {cat.name}
           </a>

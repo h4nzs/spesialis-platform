@@ -16,7 +16,8 @@ describe('CorporateOverview', () => {
   it('shows loading state initially', () => {
     mockGet.mockImplementation(() => new Promise(() => {}));
     render(<CorporateOverview />);
-    expect(screen.getByText('Memuat...')).toBeInTheDocument();
+    // Loading state renders Card + Skeleton components (aria-hidden, no visible text)
+    expect(screen.queryByText('Perusahaan')).not.toBeInTheDocument();
   });
 
   it('shows company profile and stats when loaded', async () => {

@@ -122,12 +122,11 @@ beforeEach(() => {
 
 describe('AdminUsers', () => {
   it('shows loading state initially', () => {
-    EmptyState: (({ title, children }: { title?: string; children?: React.ReactNode }) => (
-      <div>{title ?? children}</div>
-    ),
-      mockGet.mockImplementation(() => new Promise(() => {})));
+    mockGet.mockImplementation(() => new Promise(() => {}));
     render(<AdminUsers />);
-    expect(screen.getByText('Memuat...')).toBeInTheDocument();
+    // Loading state renders skeleton shimmer (aria-hidden, no visible text)
+    // Search form is always rendered; check that user data table is absent
+    expect(screen.queryByText('Tidak ada user ditemukan')).not.toBeInTheDocument();
   });
 
   it('shows user list when loaded', async () => {
