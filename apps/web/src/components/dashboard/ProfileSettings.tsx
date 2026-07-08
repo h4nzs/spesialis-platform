@@ -89,17 +89,17 @@ export function ProfileSettings() {
   }
 
   if (loading) {
-    return <p className="text-sm text-text-muted">Memuat profil...</p>;
+    return <p className="text-sm text-text-primary-secondary">Memuat profil...</p>;
   }
 
   if (!profile) {
-    return <p className="text-sm text-danger">Gagal memuat profil</p>;
+    return <p className="text-sm text-danger-500">Gagal memuat profil</p>;
   }
 
   return (
     <div className="space-y-8">
       <section>
-        <h2 className="mb-4 text-lg font-semibold text-text">Profil</h2>
+        <h2 className="mb-4 text-lg font-semibold text-text-primary">Profil</h2>
         <form onSubmit={handleProfileUpdate} className="max-w-md space-y-4">
           <Input
             label="Email"
@@ -114,23 +114,23 @@ export function ProfileSettings() {
             onChange={(e) => setPhone(e.target.value)}
           />
           {profileErrors.length > 0 && (
-            <div className="rounded-md bg-danger/10 p-3 text-sm text-danger">
+            <div className="rounded-md bg-danger-500/10 p-3 text-sm text-danger-500">
               {profileErrors.map((err, i) => (
                 <p key={i}>{err}</p>
               ))}
             </div>
           )}
-          {profileSuccess && <p className="text-sm text-success">Profil berhasil diperbarui</p>}
+          {profileSuccess && <p className="text-sm text-success-500">Profil berhasil diperbarui</p>}
           <Button type="submit" disabled={profileSaving}>
             {profileSaving ? 'Menyimpan...' : 'Simpan Profil'}
           </Button>
         </form>
       </section>
 
-      <hr className="border-border" />
+      <hr className="border-border-default" />
 
       <section>
-        <h2 className="mb-4 text-lg font-semibold text-text">Ubah Password</h2>
+        <h2 className="mb-4 text-lg font-semibold text-text-primary">Ubah Password</h2>
         <form onSubmit={handlePasswordChange} className="max-w-md space-y-4">
           <Input
             label="Password Saat Ini"
@@ -145,13 +145,13 @@ export function ProfileSettings() {
             onChange={(e) => setNewPassword(e.target.value)}
           />
           {pwErrors.length > 0 && (
-            <div className="rounded-md bg-danger/10 p-3 text-sm text-danger">
+            <div className="rounded-md bg-danger-500/10 p-3 text-sm text-danger-500">
               {pwErrors.map((err, i) => (
                 <p key={i}>{err}</p>
               ))}
             </div>
           )}
-          {pwSuccess && <p className="text-sm text-success">Password berhasil diubah</p>}
+          {pwSuccess && <p className="text-sm text-success-500">Password berhasil diubah</p>}
           <Button type="submit" disabled={pwSaving}>
             {pwSaving ? 'Menyimpan...' : 'Ubah Password'}
           </Button>

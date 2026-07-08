@@ -14,13 +14,13 @@ export function Modal({ open, onClose, title, children, footer }: ModalProps) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       <div className="absolute inset-0 bg-black/50" onClick={onClose} />
-      <div className="relative z-10 mx-auto max-w-lg w-full rounded-lg border border-border bg-surface p-6 shadow-lg">
+      <div className="relative z-10 mx-auto max-w-lg w-full rounded-lg border border-border-default bg-bg-surface p-6 shadow-lg">
         {title && (
           <div className="mb-4 flex items-center justify-between">
-            <h2 className="text-lg font-semibold text-text">{title}</h2>
+            <h2 className="text-lg font-semibold text-text-primary">{title}</h2>
             <button
               onClick={onClose}
-              className="text-text-muted hover:text-text cursor-pointer"
+              className="text-text-muted hover:text-text-primary cursor-pointer"
               aria-label="Tutup"
             >
               <svg

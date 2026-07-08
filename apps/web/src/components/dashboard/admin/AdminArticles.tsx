@@ -165,8 +165,8 @@ export function AdminArticles() {
       header: 'Judul',
       render: (item) => (
         <div>
-          <span className="font-medium text-text">{item.title}</span>
-          <span className="ml-2 text-xs text-text-muted">({item.slug})</span>
+          <span className="font-medium text-text-primary">{item.title}</span>
+          <span className="ml-2 text-xs text-text-primary-secondary">({item.slug})</span>
         </div>
       ),
     },
@@ -258,7 +258,7 @@ export function AdminArticles() {
           <button
             type="button"
             onClick={handleExportCSV}
-            className="inline-flex items-center gap-1.5 rounded-lg border border-border-default bg-bg-surface px-3 py-1.5 text-body-sm font-medium text-text-primary shadow-xs transition-all duration-150 ease-out hover:bg-neutral-100 hover:shadow-sm"
+            className="inline-flex items-center gap-1.5 rounded-lg border border-border-default-default bg-bg-surface px-3 py-1.5 text-body-sm font-medium text-text-primary-primary shadow-xs transition-all duration-150 ease-out hover:bg-neutral-100 hover:shadow-sm"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -355,12 +355,12 @@ export function AdminArticles() {
           />
 
           <div className="flex items-center gap-2">
-            <label className="flex items-center gap-2 text-sm text-text">
+            <label className="flex items-center gap-2 text-sm text-text-primary">
               <input
                 type="checkbox"
                 checked={form.isFeatured}
                 onChange={(e) => setForm((f) => ({ ...f, isFeatured: e.target.checked }))}
-                className="rounded border-border"
+                className="rounded border-border-default"
               />
               Featured
             </label>

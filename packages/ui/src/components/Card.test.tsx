@@ -36,7 +36,7 @@ describe('Card', () => {
   it('renders with border and surface classes', () => {
     render(<Card>Content</Card>);
     const el = screen.getByText('Content');
-    expect(el.className).toContain('border-border');
-    expect(el.className).toContain('bg-surface');
+    expect(el.className).toContain('border-border-default');
+    expect(el.className).toContain('bg-bg-surface');
   });
 });

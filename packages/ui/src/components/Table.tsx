@@ -32,7 +32,7 @@ export function Table<T>({
   if (data.length === 0) {
     if (emptyState) return <>{emptyState}</>;
     return (
-      <div className="flex flex-col items-center justify-center rounded-lg border border-border bg-surface px-6 py-12 text-center">
+      <div className="flex flex-col items-center justify-center rounded-lg border border-border-default bg-bg-surface px-6 py-12 text-center">
         <div
           className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-neutral-100 text-text-muted"
           aria-hidden="true"
@@ -44,10 +44,10 @@ export function Table<T>({
   }
 
   return (
-    <div className="overflow-x-auto rounded-lg border border-border">
+    <div className="overflow-x-auto rounded-lg border border-border-default">
       <table className="w-full text-sm">
         <thead>
-          <tr className="border-b border-border bg-background">
+          <tr className="border-b border-border-default bg-bg-page">
             {columns.map((col) => (
               <th
                 key={col.key}
@@ -62,10 +62,10 @@ export function Table<T>({
           {data.map((item) => (
             <tr
               key={keyExtractor(item)}
-              className="border-b border-border last:border-b-0 hover:bg-background/50"
+              className="border-b border-border-default last:border-b-0 hover:bg-neutral-100/50"
             >
               {columns.map((col) => (
-                <td key={col.key} className={`px-4 py-3 text-text ${col.className ?? ''}`}>
+                <td key={col.key} className={`px-4 py-3 text-text-primary ${col.className ?? ''}`}>
                   {col.render
                     ? col.render(item)
                     : String((item as Record<string, unknown>)[col.key] ?? '')}

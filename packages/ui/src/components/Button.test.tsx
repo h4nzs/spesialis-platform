@@ -41,12 +41,12 @@ describe('Button', () => {
 
   it('renders with outline variant', () => {
     render(<Button variant="outline">Outline</Button>);
-    expect(screen.getByRole('button').className).toContain('border-border');
+    expect(screen.getByRole('button').className).toContain('border-border-default');
   });
 
   it('renders with danger variant', () => {
     render(<Button variant="danger">Danger</Button>);
-    expect(screen.getByRole('button').className).toContain('bg-danger');
+    expect(screen.getByRole('button').className).toContain('bg-danger-500');
   });
 
   it('renders with ghost variant', () => {

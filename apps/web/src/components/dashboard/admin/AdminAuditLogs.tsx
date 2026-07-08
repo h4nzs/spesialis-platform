@@ -131,7 +131,9 @@ export function AdminAuditLogs() {
     {
       key: 'ipAddress',
       header: 'IP',
-      render: (item) => <span className="text-xs text-text-muted">{item.ipAddress ?? '-'}</span>,
+      render: (item) => (
+        <span className="text-xs text-text-primary-secondary">{item.ipAddress ?? '-'}</span>
+      ),
     },
     {
       key: 'id',
@@ -197,7 +199,7 @@ export function AdminAuditLogs() {
           <button
             type="button"
             onClick={handleReset}
-            className="rounded-md border border-border px-4 py-2 text-sm font-medium text-text-muted hover:text-text cursor-pointer"
+            className="rounded-md border border-border-default px-4 py-2 text-sm font-medium text-text-primary-secondary hover:text-text-primary cursor-pointer"
           >
             Reset
           </button>
@@ -233,7 +235,7 @@ export function AdminAuditLogs() {
               <button
                 type="button"
                 onClick={handleExportCSV}
-                className="inline-flex items-center gap-1.5 rounded-lg border border-border-default bg-bg-surface px-3 py-1.5 text-body-sm font-medium text-text-primary shadow-xs transition-all duration-150 ease-out hover:bg-neutral-100 hover:shadow-sm"
+                className="inline-flex items-center gap-1.5 rounded-lg border border-border-default-default bg-bg-bg-surface px-3 py-1.5 text-body-sm font-medium text-text-primary-primary shadow-xs transition-all duration-150 ease-out hover:bg-neutral-100 hover:shadow-sm"
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -266,28 +268,28 @@ export function AdminAuditLogs() {
 
       {/* Expanded detail */}
       {!loading && expandedLog && (
-        <div className="rounded-lg border border-border bg-surface p-4 text-sm space-y-3">
-          <h4 className="font-medium text-text">Detail Audit Log</h4>
+        <div className="rounded-lg border border-border-default bg-bg-surface p-4 text-sm space-y-3">
+          <h4 className="font-medium text-text-primary">Detail Audit Log</h4>
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <span className="text-text-muted">User Agent:</span>
-              <p className="mt-0.5 break-words text-text">{expandedLog.userAgent ?? '-'}</p>
+              <span className="text-text-primary-secondary">User Agent:</span>
+              <p className="mt-0.5 break-words text-text-primary">{expandedLog.userAgent ?? '-'}</p>
             </div>
             <div>
-              <span className="text-text-muted">IP Address:</span>
-              <p className="mt-0.5 text-text">{expandedLog.ipAddress ?? '-'}</p>
+              <span className="text-text-primary-secondary">IP Address:</span>
+              <p className="mt-0.5 text-text-primary">{expandedLog.ipAddress ?? '-'}</p>
             </div>
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <span className="text-text-muted">Nilai Lama:</span>
-              <pre className="mt-0.5 max-h-40 overflow-auto rounded bg-background p-2 text-xs text-text">
+              <span className="text-text-primary-secondary">Nilai Lama:</span>
+              <pre className="mt-0.5 max-h-40 overflow-auto rounded bg-bg-page p-2 text-xs text-text-primary">
                 {expandedLog.oldValue ? JSON.stringify(expandedLog.oldValue, null, 2) : '-'}
               </pre>
             </div>
             <div>
-              <span className="text-text-muted">Nilai Baru:</span>
-              <pre className="mt-0.5 max-h-40 overflow-auto rounded bg-background p-2 text-xs text-text">
+              <span className="text-text-primary-secondary">Nilai Baru:</span>
+              <pre className="mt-0.5 max-h-40 overflow-auto rounded bg-bg-page p-2 text-xs text-text-primary">
                 {expandedLog.newValue ? JSON.stringify(expandedLog.newValue, null, 2) : '-'}
               </pre>
             </div>

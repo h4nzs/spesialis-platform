@@ -11,7 +11,10 @@ function StarRating({ value, size = 'sm' }: { value: number; size?: 'sm' | 'md' 
   return (
     <span className={`tracking-wide ${sizeClass}`}>
       {[1, 2, 3, 4, 5].map((star) => (
-        <span key={star} className={star <= Math.round(value) ? 'text-accent' : 'text-border'}>
+        <span
+          key={star}
+          className={star <= Math.round(value) ? 'text-accent-500' : 'text-neutral-200'}
+        >
           ★
         </span>
       ))}
@@ -56,32 +59,35 @@ export function ServiceDetail({ slug }: ServiceDetailProps) {
   if (loading) {
     return (
       <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
-        <div className="animate-pulse mb-8 h-4 w-64 rounded bg-border" />
+        <div className="animate-pulse mb-8 h-4 w-64 rounded bg-neutral-200" />
 
         <div className="grid gap-10 lg:grid-cols-5">
           <div className="lg:col-span-3">
-            <div className="h-8 w-3/4 rounded bg-border" />
-            <div className="mt-3 h-5 w-full rounded bg-border" />
-            <div className="mt-2 h-5 w-5/6 rounded bg-border" />
+            <div className="h-8 w-3/4 rounded bg-neutral-200" />
+            <div className="mt-3 h-5 w-full rounded bg-neutral-200" />
+            <div className="mt-2 h-5 w-5/6 rounded bg-neutral-200" />
             <div className="mt-6 space-y-4">
               {[1, 2, 3].map((i) => (
-                <div key={i} className="h-4 w-full rounded bg-border" />
+                <div key={i} className="h-4 w-full rounded bg-neutral-200" />
               ))}
             </div>
             <div className="mt-8 flex gap-6">
-              <div className="h-16 w-36 rounded-lg bg-border" />
-              <div className="h-16 w-36 rounded-lg bg-border" />
+              <div className="h-16 w-36 rounded-lg bg-neutral-200" />
+              <div className="h-16 w-36 rounded-lg bg-neutral-200" />
             </div>
 
-            <div className="mt-12 border-t border-border pt-8">
-              <div className="h-6 w-40 rounded bg-border" />
+            <div className="mt-12 border-t border-border-default pt-8">
+              <div className="h-6 w-40 rounded bg-neutral-200" />
               <div className="mt-6 space-y-6">
                 {[1, 2].map((i) => (
-                  <div key={i} className="rounded-lg border border-border bg-surface p-4">
-                    <div className="h-4 w-24 rounded bg-border" />
-                    <div className="mt-3 h-4 w-full rounded bg-border" />
-                    <div className="mt-2 h-4 w-4/5 rounded bg-border" />
-                    <div className="mt-3 h-3 w-32 rounded bg-border" />
+                  <div
+                    key={i}
+                    className="rounded-lg border border-border-default bg-bg-surface p-4"
+                  >
+                    <div className="h-4 w-24 rounded bg-neutral-200" />
+                    <div className="mt-3 h-4 w-full rounded bg-neutral-200" />
+                    <div className="mt-2 h-4 w-4/5 rounded bg-neutral-200" />
+                    <div className="mt-3 h-3 w-32 rounded bg-neutral-200" />
                   </div>
                 ))}
               </div>
@@ -89,15 +95,15 @@ export function ServiceDetail({ slug }: ServiceDetailProps) {
           </div>
 
           <div className="lg:col-span-2">
-            <div className="sticky top-24 rounded-xl border border-border bg-surface p-6 shadow-xs">
-              <div className="h-10 w-1/2 rounded bg-border" />
-              <div className="mt-2 h-4 w-3/4 rounded bg-border" />
+            <div className="sticky top-24 rounded-xl border border-border-default bg-bg-surface p-6 shadow-xs">
+              <div className="h-10 w-1/2 rounded bg-neutral-200" />
+              <div className="mt-2 h-4 w-3/4 rounded bg-neutral-200" />
               <div className="mt-4 space-y-2">
                 {[1, 2, 3].map((i) => (
-                  <div key={i} className="h-4 w-2/3 rounded bg-border" />
+                  <div key={i} className="h-4 w-2/3 rounded bg-neutral-200" />
                 ))}
               </div>
-              <div className="mt-6 h-12 w-full rounded-md bg-border" />
+              <div className="mt-6 h-12 w-full rounded-md bg-neutral-200" />
             </div>
           </div>
         </div>
@@ -111,7 +117,7 @@ export function ServiceDetail({ slug }: ServiceDetailProps) {
     return (
       <div className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-lg text-center">
-          <h1 className="text-2xl font-bold text-text">Layanan Tidak Ditemukan</h1>
+          <h1 className="text-h3 font-bold text-text-primary">Layanan Tidak Ditemukan</h1>
           <p className="mt-2 text-text-muted">{error}</p>
           <a
             href="/services"
@@ -132,26 +138,26 @@ export function ServiceDetail({ slug }: ServiceDetailProps) {
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8 motion-safe:animate-fade-in">
-      <nav className="mb-8 text-sm text-text-muted">
-        <a href="/" className="hover:text-text transition-colors">
+      <nav className="mb-8 text-body-sm text-text-muted">
+        <a href="/" className="hover:text-text-primary transition-colors">
           Beranda
         </a>
         <span className="mx-2">/</span>
-        <a href="/services" className="hover:text-text transition-colors">
+        <a href="/services" className="hover:text-text-primary transition-colors">
           Layanan
         </a>
         <span className="mx-2">/</span>
-        <span className="text-text">{service.name}</span>
+        <span className="text-text-primary">{service.name}</span>
       </nav>
 
       <div className="grid gap-10 lg:grid-cols-5">
         <div className="lg:col-span-3">
-          <h1 className="text-3xl font-bold text-text">{service.name}</h1>
+          <h1 className="text-h2 font-bold text-text-primary">{service.name}</h1>
           {service.shortDescription && (
-            <p className="mt-3 text-lg text-text-muted">{service.shortDescription}</p>
+            <p className="mt-3 text-body-lg text-text-muted">{service.shortDescription}</p>
           )}
           {service.description && (
-            <div className="mt-6 space-y-4 text-text">
+            <div className="mt-6 space-y-4 text-text-secondary">
               {service.description.split('\n').map((paragraph, i) => (
                 <p key={i}>{paragraph}</p>
               ))}
@@ -159,44 +165,48 @@ export function ServiceDetail({ slug }: ServiceDetailProps) {
           )}
           <div className="mt-8 flex flex-wrap gap-6 text-sm">
             {service.estimatedDuration && (
-              <div className="rounded-lg border border-border bg-surface px-4 py-3">
-                <span className="block text-xs text-text-muted">Estimasi</span>
-                <span className="font-semibold text-text">
+              <div className="rounded-lg border border-border-default bg-bg-surface px-4 py-3">
+                <span className="block text-caption text-text-muted">Estimasi</span>
+                <span className="font-semibold text-text-primary">
                   &plusmn;{service.estimatedDuration} menit
                 </span>
               </div>
             )}
             {service.warrantyDays && (
-              <div className="rounded-lg border border-border bg-surface px-4 py-3">
-                <span className="block text-xs text-text-muted">Garansi</span>
-                <span className="font-semibold text-text">{service.warrantyDays} hari</span>
+              <div className="rounded-lg border border-border-default bg-bg-surface px-4 py-3">
+                <span className="block text-caption text-text-muted">Garansi</span>
+                <span className="font-semibold text-text-primary">{service.warrantyDays} hari</span>
               </div>
             )}
           </div>
 
           {/* ─── Reviews section ──────────────────────────────── */}
           {hasReviews && (
-            <div className="mt-12 border-t border-border pt-8">
+            <div className="mt-12 border-t border-border-default pt-8">
               <div className="flex items-center gap-3">
-                <h2 className="text-xl font-semibold text-text">Ulasan Pelanggan</h2>
-                <span className="rounded-full bg-accent/10 px-3 py-0.5 text-sm font-medium text-accent">
+                <h2 className="text-h4 font-semibold text-text-primary">Ulasan Pelanggan</h2>
+                <span className="rounded-full bg-accent-500/10 px-3 py-0.5 text-sm font-medium text-accent-500">
                   {reviews.aggregate.averageRating.toFixed(1)}
                 </span>
                 <StarRating value={reviews.aggregate.averageRating} size="md" />
-                <span className="text-sm text-text-muted">({reviews.aggregate.totalReviews})</span>
+                <span className="text-body-sm text-text-muted">
+                  ({reviews.aggregate.totalReviews})
+                </span>
               </div>
 
               <div className="mt-6 space-y-4">
                 {reviews.items.map((r) => (
                   <div
                     key={r.id}
-                    className="rounded-lg border border-border bg-surface p-4 transition-shadow hover:shadow-sm"
+                    className="rounded-lg border border-border-default bg-bg-surface p-4 transition-shadow hover:shadow-sm"
                   >
                     <div className="flex items-center gap-2">
                       <StarRating value={Number(r.rating)} />
-                      <span className="text-xs text-text-muted">{formatDate(r.createdAt)}</span>
+                      <span className="text-caption text-text-muted">
+                        {formatDate(r.createdAt)}
+                      </span>
                     </div>
-                    {r.review && <p className="mt-2 text-sm text-text">{r.review}</p>}
+                    {r.review && <p className="mt-2 text-body-sm text-text-primary">{r.review}</p>}
                   </div>
                 ))}
               </div>
@@ -205,27 +215,27 @@ export function ServiceDetail({ slug }: ServiceDetailProps) {
         </div>
 
         <div className="lg:col-span-2">
-          <div className="sticky top-24 rounded-xl border border-border bg-surface p-6 shadow-xs">
+          <div className="sticky top-24 rounded-xl border border-border-default bg-bg-surface p-6 shadow-xs">
             <div className="flex items-baseline gap-2">
-              <span className="text-3xl font-bold text-primary">
+              <span className="text-h2 font-bold text-primary-500">
                 {formatCurrency(service.basePrice)}
               </span>
-              <span className="text-sm text-text-muted">/ sekali</span>
+              <span className="text-body-sm text-text-muted">/ sekali</span>
             </div>
             {service.estimatedDuration && (
-              <p className="mt-2 text-sm text-text-muted">
+              <p className="mt-2 text-body-sm text-text-muted">
                 Estimasi pengerjaan &plusmn;{service.estimatedDuration} menit
               </p>
             )}
-            <ul className="mt-4 space-y-2 text-sm text-text-muted">
+            <ul className="mt-4 space-y-2 text-body-sm text-text-muted">
               <li className="flex items-center gap-2">
-                <span className="text-success">{'\u2713'}</span> Teknisi berpengalaman
+                <span className="text-success-500">{'\u2713'}</span> Teknisi berpengalaman
               </li>
               <li className="flex items-center gap-2">
-                <span className="text-success">{'\u2713'}</span> Harga transparan
+                <span className="text-success-500">{'\u2713'}</span> Harga transparan
               </li>
               <li className="flex items-center gap-2">
-                <span className="text-success">{'\u2713'}</span> Garansi layanan
+                <span className="text-success-500">{'\u2713'}</span> Garansi layanan
               </li>
             </ul>
             <a

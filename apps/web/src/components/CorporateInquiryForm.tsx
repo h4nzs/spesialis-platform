@@ -55,7 +55,7 @@ export function CorporateInquiryForm() {
     return (
       <Card padding="lg" className="text-center">
         <p className="text-lg font-semibold text-success">Pendaftaran Terkirim!</p>
-        <p className="mt-2 text-sm text-text-muted">
+        <p className="mt-2 text-sm text-text-primary-secondary">
           Tim kami akan menghubungi Anda dalam 1x24 jam.
         </p>
         <a href="/" className="mt-4 inline-block text-sm text-primary hover:underline">
@@ -68,9 +68,9 @@ export function CorporateInquiryForm() {
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       {errors.length > 0 && (
-        <div className="rounded-md bg-danger/10 p-3">
+        <div className="rounded-md bg-danger-500/10 p-3">
           {errors.map((err, i) => (
-            <p key={i} className="text-sm text-danger">
+            <p key={i} className="text-sm text-danger-500">
               {err}
             </p>
           ))}

@@ -340,18 +340,6 @@
   --animate-pulse-soft: pulse-soft 2s ease-in-out infinite;
 
   /* =====================================================================
-     Backward Compatibility Aliases
-     These bridge the old token names (used in existing components)
-     to the new semantic token system.
-     Will be removed in Phase 4 after all components are migrated.
-     ===================================================================== */
-
-  --color-background: var(--color-bg-page);
-  --color-surface: var(--color-bg-surface);
-  --color-text: var(--color-text-primary);
-  --color-border: var(--color-border-default);
-
-  /* =====================================================================
      Z-Index Scale
      ===================================================================== */
 

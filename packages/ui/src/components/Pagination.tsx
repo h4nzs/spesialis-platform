@@ -27,7 +27,7 @@ export function Pagination({ page, totalPages, onPageChange }: PaginationProps) 
       <button
         onClick={() => onPageChange(page - 1)}
         disabled={page <= 1}
-        className="rounded px-2 py-1 text-sm text-text-muted hover:text-text disabled:opacity-30 cursor-pointer disabled:cursor-not-allowed"
+        className="rounded px-2 py-1 text-sm text-text-muted hover:text-text-primary disabled:opacity-30 cursor-pointer disabled:cursor-not-allowed"
         aria-label="Halaman sebelumnya"
       >
         &laquo;
@@ -44,7 +44,7 @@ export function Pagination({ page, totalPages, onPageChange }: PaginationProps) 
             className={`rounded px-3 py-1 text-sm font-medium cursor-pointer ${
               p === page
                 ? 'bg-primary text-white'
-                : 'text-text-muted hover:text-text hover:bg-background'
+                : 'text-text-muted hover:text-text-primary hover:bg-neutral-100'
             }`}
             aria-current={p === page ? 'page' : undefined}
           >
@@ -55,7 +55,7 @@ export function Pagination({ page, totalPages, onPageChange }: PaginationProps) 
       <button
         onClick={() => onPageChange(page + 1)}
         disabled={page >= totalPages}
-        className="rounded px-2 py-1 text-sm text-text-muted hover:text-text disabled:opacity-30 cursor-pointer disabled:cursor-not-allowed"
+        className="rounded px-2 py-1 text-sm text-text-muted hover:text-text-primary disabled:opacity-30 cursor-pointer disabled:cursor-not-allowed"
         aria-label="Halaman selanjutnya"
       >
         &raquo;

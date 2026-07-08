@@ -37,7 +37,7 @@ describe('Textarea', () => {
 
   it('applies error border style', () => {
     render(<Textarea error="Error" />);
-    expect(screen.getByRole('textbox').className).toContain('border-danger');
+    expect(screen.getByRole('textbox').className).toContain('border-danger-500');
   });
 
   it('renders disabled state', () => {

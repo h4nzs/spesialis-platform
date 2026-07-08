@@ -37,7 +37,7 @@ describe('Input', () => {
 
   it('applies error border style', () => {
     render(<Input error="Error" />);
-    expect(screen.getByRole('textbox').className).toContain('border-danger');
+    expect(screen.getByRole('textbox').className).toContain('border-danger-500');
   });
 
   it('renders disabled state', () => {

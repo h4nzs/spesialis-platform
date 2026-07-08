@@ -42,16 +42,19 @@ export function RelatedArticles({ currentSlug, categorySlug }: RelatedArticlesPr
 
   if (loading) {
     return (
-      <div className="mt-12 border-t border-border pt-8">
+      <div className="mt-12 border-t border-border-default pt-8">
         <h2 className="text-xl font-semibold text-text">Artikel Terkait</h2>
         <div className="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {[1, 2, 3].map((i) => (
-            <div key={i} className="animate-pulse rounded-xl border border-border bg-surface p-5">
-              <div className="h-40 w-full rounded-lg bg-border" />
-              <div className="mt-4 h-4 w-1/3 rounded bg-border" />
-              <div className="mt-3 h-5 w-4/5 rounded bg-border" />
-              <div className="mt-2 h-4 w-full rounded bg-border" />
-              <div className="mt-4 h-4 w-2/5 rounded bg-border" />
+            <div
+              key={i}
+              className="animate-pulse rounded-xl border border-border-default bg-bg-surface p-5"
+            >
+              <div className="h-40 w-full rounded-lg bg-neutral-200" />
+              <div className="mt-4 h-4 w-1/3 rounded bg-neutral-200" />
+              <div className="mt-3 h-5 w-4/5 rounded bg-neutral-200" />
+              <div className="mt-2 h-4 w-full rounded bg-neutral-200" />
+              <div className="mt-4 h-4 w-2/5 rounded bg-neutral-200" />
             </div>
           ))}
         </div>
@@ -62,14 +65,14 @@ export function RelatedArticles({ currentSlug, categorySlug }: RelatedArticlesPr
   // ─── Related articles grid ─────────────────────────────────────
 
   return (
-    <div className="mt-12 border-t border-border pt-8 motion-safe:animate-fade-in">
+    <div className="mt-12 border-t border-border-default pt-8 motion-safe:animate-fade-in">
       <h2 className="text-xl font-semibold text-text">Artikel Terkait</h2>
       <div className="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
         {articles.map((article) => (
           <a
             key={article.id}
             href={`/blog/${article.slug}`}
-            className="group rounded-xl border border-border bg-surface p-5 transition-shadow hover:shadow-md"
+            className="group rounded-xl border border-border-default bg-bg-surface p-5 transition-shadow hover:shadow-md"
           >
             {article.coverImage && (
               <div className="mb-4 overflow-hidden rounded-lg">
@@ -85,7 +88,7 @@ export function RelatedArticles({ currentSlug, categorySlug }: RelatedArticlesPr
               </div>
             )}
             {article.categoryName && (
-              <span className="inline-block rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
+              <span className="inline-block rounded-full bg-primary-500/10 px-3 py-1 text-xs font-medium text-primary">
                 {article.categoryName}
               </span>
             )}

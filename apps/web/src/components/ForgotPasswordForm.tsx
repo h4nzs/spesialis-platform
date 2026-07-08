@@ -55,7 +55,7 @@ export function ForgotPasswordForm() {
     return (
       <div className="rounded-md border border-success/30 bg-success/5 px-6 py-8 text-center">
         <div className="text-3xl mb-4">&#9993;</div>
-        <h2 className="text-lg font-semibold text-text">Cek Email Anda</h2>
+        <h2 className="text-h5 font-semibold text-text-primary">Cek Email Anda</h2>
         <p className="mt-2 text-sm text-text-muted">
           Jika email terdaftar, kami telah mengirimkan link reset password ke{' '}
           <strong>{email}</strong>.
@@ -75,13 +75,13 @@ export function ForgotPasswordForm() {
   return (
     <form onSubmit={handleSubmit} className="space-y-5" noValidate>
       {generalError && (
-        <div className="rounded-md border border-danger/30 bg-danger/5 px-4 py-3 text-sm text-danger">
+        <div className="rounded-md border border-danger-500/30 bg-danger-500/5 px-4 py-3 text-body text-danger-500">
           {generalError}
         </div>
       )}
 
       <div>
-        <label htmlFor="email" className="mb-1.5 block text-sm font-medium text-text">
+        <label htmlFor="email" className="mb-1.5 block text-body-sm font-medium text-text-primary">
           Email
         </label>
         <input
@@ -89,12 +89,12 @@ export function ForgotPasswordForm() {
           type="email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          className="w-full rounded-md border border-border bg-surface px-4 py-2.5 text-sm text-text outline-none transition-colors focus:border-primary focus:ring-1 focus:ring-primary placeholder:text-text-muted"
+          className="w-full rounded-md border border-border-default bg-bg-surface px-4 py-2.5 text-body text-text-primary outline-none transition-colors focus:border-primary focus:ring-1 focus:ring-primary placeholder:text-text-muted"
           placeholder="nama@email.com"
           autoComplete="email"
         />
         {getFieldError('email') && (
-          <p className="mt-1 text-xs text-danger">{getFieldError('email')}</p>
+          <p className="mt-1 text-caption text-danger-500">{getFieldError('email')}</p>
         )}
       </div>
 

@@ -23,7 +23,14 @@ export { Flex, type FlexProps } from './components/Flex.tsx';
 
 // ─── Data Display ───────────────────────────────────────────────────────
 export { Card, type CardProps } from './components/Card.tsx';
-export { Heading, Text } from './components/Typography.tsx';
+export {
+  Heading,
+  Display,
+  Text,
+  type HeadingProps,
+  type DisplayProps,
+  type TextProps,
+} from './components/Typography.tsx';
 export { Table, type TableProps, type Column } from './components/Table.tsx';
 export { Pagination, type PaginationProps } from './components/Pagination.tsx';
 

@@ -434,7 +434,7 @@ export function AdminPenalties() {
           <button
             type="button"
             onClick={handleExportCSV}
-            className="inline-flex items-center gap-1.5 rounded-lg border border-border-default bg-bg-surface px-3 py-1.5 text-body-sm font-medium text-text-primary shadow-xs transition-all duration-150 ease-out hover:bg-neutral-100 hover:shadow-sm"
+            className="inline-flex items-center gap-1.5 rounded-lg border border-border-default-default bg-bg-bg-surface px-3 py-1.5 text-body-sm font-medium text-text-primary-primary shadow-xs transition-all duration-150 ease-out hover:bg-neutral-100 hover:shadow-sm"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -468,18 +468,18 @@ export function AdminPenalties() {
       {/* Impose Penalty Modal */}
       <Modal open={showImpose} onClose={() => setShowImpose(false)} title="Tambah Penalty">
         <div className="space-y-3">
-          {imposeError && <p className="text-sm text-danger">{imposeError}</p>}
+          {imposeError && <p className="text-sm text-danger-500">{imposeError}</p>}
 
           {/* Partner Search */}
           <div data-partner-search className="relative">
-            <label className="mb-1.5 block text-sm font-medium text-text">Partner</label>
+            <label className="mb-1.5 block text-sm font-medium text-text-primary">Partner</label>
             {imposeForm.partnerId ? (
-              <div className="flex items-center gap-2 rounded-md border border-border bg-surface px-3 py-2">
-                <span className="flex-1 text-sm text-text">{imposeForm.partnerName}</span>
+              <div className="flex items-center gap-2 rounded-md border border-border-default bg-bg-surface px-3 py-2">
+                <span className="flex-1 text-sm text-text-primary">{imposeForm.partnerName}</span>
                 <button
                   type="button"
                   onClick={clearPartner}
-                  className="text-xs text-text-muted hover:text-danger cursor-pointer"
+                  className="text-xs text-text-primary-secondary hover:text-danger-500 cursor-pointer"
                 >
                   Ganti
                 </button>
@@ -491,22 +491,26 @@ export function AdminPenalties() {
                   value={partnerSearch}
                   onChange={(e) => handlePartnerSearchChange(e.target.value)}
                   placeholder="Cari nama partner..."
-                  className="w-full rounded-md border border-border bg-surface px-3 py-2 text-sm text-text placeholder:text-text-muted outline-none transition-colors focus:border-primary focus:ring-1 focus:ring-primary"
+                  className="w-full rounded-md border border-border-default bg-bg-surface px-3 py-2 text-sm text-text-primary placeholder:text-text-primary-secondary outline-none transition-colors focus:border-primary focus:ring-1 focus:ring-primary"
                 />
                 {partnerSearching && (
-                  <span className="absolute right-3 top-9 text-xs text-text-muted">Mencari...</span>
+                  <span className="absolute right-3 top-9 text-xs text-text-primary-secondary">
+                    Mencari...
+                  </span>
                 )}
                 {partnerSearchOpen && partnerResults.length > 0 && (
-                  <div className="absolute left-0 right-0 top-full z-50 mt-1 max-h-48 overflow-y-auto rounded-md border border-border bg-surface shadow-lg">
+                  <div className="absolute left-0 right-0 top-full z-50 mt-1 max-h-48 overflow-y-auto rounded-md border border-border-default bg-bg-surface shadow-lg">
                     {partnerResults.map((p) => (
                       <button
                         key={p.id}
                         type="button"
                         onClick={() => selectPartner(p)}
-                        className="w-full px-3 py-2 text-left text-sm text-text hover:bg-background transition-colors cursor-pointer"
+                        className="w-full px-3 py-2 text-left text-sm text-text-primary hover:bg-neutral-100 transition-colors cursor-pointer"
                       >
                         {p.fullName}
-                        <span className="ml-2 text-xs text-text-muted">{p.id.slice(0, 8)}…</span>
+                        <span className="ml-2 text-xs text-text-primary-secondary">
+                          {p.id.slice(0, 8)}…
+                        </span>
                       </button>
                     ))}
                   </div>
@@ -515,7 +519,7 @@ export function AdminPenalties() {
                   partnerResults.length === 0 &&
                   partnerSearch.trim() &&
                   !partnerSearching && (
-                    <div className="absolute left-0 right-0 top-full z-50 mt-1 rounded-md border border-border bg-surface p-3 text-sm text-text-muted shadow-lg">
+                    <div className="absolute left-0 right-0 top-full z-50 mt-1 rounded-md border border-border-default bg-bg-surface p-3 text-sm text-text-primary-secondary shadow-lg">
                       Partner tidak ditemukan
                     </div>
                   )}
@@ -525,14 +529,16 @@ export function AdminPenalties() {
 
           {/* Order Search */}
           <div data-order-search className="relative">
-            <label className="mb-1.5 block text-sm font-medium text-text">Order (opsional)</label>
+            <label className="mb-1.5 block text-sm font-medium text-text-primary">
+              Order (opsional)
+            </label>
             {imposeForm.orderId ? (
-              <div className="flex items-center gap-2 rounded-md border border-border bg-surface px-3 py-2">
-                <span className="flex-1 text-sm text-text">{orderSearch}</span>
+              <div className="flex items-center gap-2 rounded-md border border-border-default bg-bg-surface px-3 py-2">
+                <span className="flex-1 text-sm text-text-primary">{orderSearch}</span>
                 <button
                   type="button"
                   onClick={clearOrder}
-                  className="text-xs text-text-muted hover:text-danger cursor-pointer"
+                  className="text-xs text-text-primary-secondary hover:text-danger-500 cursor-pointer"
                 >
                   Ganti
                 </button>
@@ -544,22 +550,24 @@ export function AdminPenalties() {
                   value={orderSearch}
                   onChange={(e) => handleOrderSearchChange(e.target.value)}
                   placeholder="Cari nomor booking..."
-                  className="w-full rounded-md border border-border bg-surface px-3 py-2 text-sm text-text placeholder:text-text-muted outline-none transition-colors focus:border-primary focus:ring-1 focus:ring-primary"
+                  className="w-full rounded-md border border-border-default bg-bg-surface px-3 py-2 text-sm text-text-primary placeholder:text-text-primary-secondary outline-none transition-colors focus:border-primary focus:ring-1 focus:ring-primary"
                 />
                 {orderSearching && (
-                  <span className="absolute right-3 top-9 text-xs text-text-muted">Mencari...</span>
+                  <span className="absolute right-3 top-9 text-xs text-text-primary-secondary">
+                    Mencari...
+                  </span>
                 )}
                 {orderSearchOpen && orderResults.length > 0 && (
-                  <div className="absolute left-0 right-0 top-full z-50 mt-1 max-h-48 overflow-y-auto rounded-md border border-border bg-surface shadow-lg">
+                  <div className="absolute left-0 right-0 top-full z-50 mt-1 max-h-48 overflow-y-auto rounded-md border border-border-default bg-bg-surface shadow-lg">
                     {orderResults.map((o) => (
                       <button
                         key={o.id}
                         type="button"
                         onClick={() => selectOrder(o)}
-                        className="w-full px-3 py-2 text-left text-sm text-text hover:bg-background transition-colors cursor-pointer"
+                        className="w-full px-3 py-2 text-left text-sm text-text-primary hover:bg-neutral-100 transition-colors cursor-pointer"
                       >
                         <span className="font-medium">{o.bookingNumber}</span>
-                        <span className="ml-2 text-xs text-text-muted">{o.status}</span>
+                        <span className="ml-2 text-xs text-text-primary-secondary">{o.status}</span>
                       </button>
                     ))}
                   </div>
@@ -568,7 +576,7 @@ export function AdminPenalties() {
                   orderResults.length === 0 &&
                   orderSearch.trim() &&
                   !orderSearching && (
-                    <div className="absolute left-0 right-0 top-full z-50 mt-1 rounded-md border border-border bg-surface p-3 text-sm text-text-muted shadow-lg">
+                    <div className="absolute left-0 right-0 top-full z-50 mt-1 rounded-md border border-border-default bg-bg-surface p-3 text-sm text-text-primary-secondary shadow-lg">
                       Order tidak ditemukan
                     </div>
                   )}
@@ -625,7 +633,7 @@ export function AdminPenalties() {
         title={statusAction === 'Applied' ? 'Terapkan Penalty' : 'Hapuskan Penalty'}
       >
         <div className="space-y-4">
-          <p className="text-sm text-text-muted">
+          <p className="text-sm text-text-primary-secondary">
             {statusAction === 'Applied'
               ? `Penalty akan ditandai sebagai "${selectedPenalty?.type}" sebesar ${formatCurrency(selectedPenalty?.amount ?? '0')} untuk ${selectedPenalty?.partnerName ?? 'partner'}`
               : `Penalty sebesar ${formatCurrency(selectedPenalty?.amount ?? '0')} untuk ${selectedPenalty?.partnerName ?? 'partner'} akan dihapuskan`}

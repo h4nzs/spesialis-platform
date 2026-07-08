@@ -22,9 +22,7 @@ let app: Hono;
 let serviceWithReviewsId: string;
 let serviceWithReviewsSlug: string;
 let serviceWithOrdersNoReviewsId: string;
-let serviceWithOrdersNoReviewsSlug: string;
 let serviceNoOrdersId: string;
-let serviceNoOrdersSlug: string;
 
 beforeAll(async () => {
   process.env['RATE_LIMIT_DISABLED'] = 'true';
@@ -127,7 +125,6 @@ beforeAll(async () => {
     })
     .returning({ id: services.id });
   serviceWithOrdersNoReviewsId = svcOrdersNoReviews!.id;
-  serviceWithOrdersNoReviewsSlug = 'service-orders-no-reviews';
 
   const [svcNoOrders] = await db
     .insert(services)
@@ -143,7 +140,6 @@ beforeAll(async () => {
     })
     .returning({ id: services.id });
   serviceNoOrdersId = svcNoOrders!.id;
-  serviceNoOrdersSlug = 'service-no-orders';
 
   const [address] = await db
     .insert(addresses)

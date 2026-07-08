@@ -25,8 +25,10 @@ export function AuthGuard({ children, requiredRole, initialUser }: AuthGuardProp
     if (!allowedRoles.includes(initialUser.role)) {
       return (
         <div className="flex min-h-[60vh] flex-col items-center justify-center gap-4">
-          <h2 className="text-xl font-semibold text-text">Akses Ditolak</h2>
-          <p className="text-sm text-text-muted">Anda tidak memiliki akses ke halaman ini</p>
+          <h2 className="text-xl font-semibold text-text-primary">Akses Ditolak</h2>
+          <p className="text-sm text-text-primary-secondary">
+            Anda tidak memiliki akses ke halaman ini
+          </p>
           <a href="/" className="text-sm text-primary hover:underline">
             Kembali ke Beranda
           </a>

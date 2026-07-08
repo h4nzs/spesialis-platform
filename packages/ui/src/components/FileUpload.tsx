@@ -40,11 +40,11 @@ export function FileUpload({
 
   return (
     <div className="flex flex-col gap-1.5">
-      {label && <span className="text-sm font-medium text-text">{label}</span>}
+      {label && <span className="text-sm font-medium text-text-primary">{label}</span>}
       <button
         type="button"
         onClick={() => inputRef.current?.click()}
-        className="flex cursor-pointer items-center justify-center gap-2 rounded-md border-2 border-dashed border-border bg-surface px-4 py-6 text-sm text-text-muted hover:border-primary hover:text-primary transition-colors"
+        className="flex cursor-pointer items-center justify-center gap-2 rounded-md border-2 border-dashed border-border-default bg-bg-surface px-4 py-6 text-sm text-text-muted hover:border-primary hover:text-primary transition-colors"
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -70,13 +70,15 @@ export function FileUpload({
         data-testid="file-input"
         onChange={handleChange}
       />
-      {(fileError ?? error) && <span className="text-xs text-danger">{fileError ?? error}</span>}
+      {(fileError ?? error) && (
+        <span className="text-xs text-danger-500">{fileError ?? error}</span>
+      )}
       {previews.length > 0 && (
         <div className="mt-1 flex flex-wrap gap-2">
           {previews.map((src, i) => (
             <div
               key={src}
-              className="relative h-16 w-16 overflow-hidden rounded-md border border-border"
+              className="relative h-16 w-16 overflow-hidden rounded-md border border-border-default"
             >
               <img
                 src={src}
@@ -87,7 +89,7 @@ export function FileUpload({
               <button
                 type="button"
                 onClick={() => setPreviews((prev) => prev.filter((_, j) => j !== i))}
-                className="absolute right-0.5 top-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-danger text-white text-[10px] cursor-pointer"
+                className="absolute right-0.5 top-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-danger-500 text-white text-[10px] cursor-pointer"
                 aria-label="Hapus"
               >
                 &times;

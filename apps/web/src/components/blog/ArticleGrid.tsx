@@ -38,12 +38,15 @@ export function ArticleGrid({ activeCategory }: ArticleGridProps) {
     return (
       <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
         {[1, 2, 3].map((i) => (
-          <div key={i} className="animate-pulse rounded-xl border border-border bg-surface p-5">
-            <div className="h-40 w-full rounded-lg bg-border" />
-            <div className="mt-4 h-4 w-1/3 rounded bg-border" />
-            <div className="mt-3 h-5 w-4/5 rounded bg-border" />
-            <div className="mt-2 h-4 w-full rounded bg-border" />
-            <div className="mt-4 h-4 w-2/5 rounded bg-border" />
+          <div
+            key={i}
+            className="animate-pulse rounded-xl border border-border-default bg-bg-surface p-5"
+          >
+            <div className="h-40 w-full rounded-lg bg-neutral-200" />
+            <div className="mt-4 h-4 w-1/3 rounded bg-neutral-200" />
+            <div className="mt-3 h-5 w-4/5 rounded bg-neutral-200" />
+            <div className="mt-2 h-4 w-full rounded bg-neutral-200" />
+            <div className="mt-4 h-4 w-2/5 rounded bg-neutral-200" />
           </div>
         ))}
       </div>
@@ -54,8 +57,8 @@ export function ArticleGrid({ activeCategory }: ArticleGridProps) {
 
   if (error) {
     return (
-      <div className="mt-8 rounded-md border border-danger/30 bg-danger/5 px-6 py-8 text-center">
-        <p className="text-danger">{error}</p>
+      <div className="mt-8 rounded-md border border-danger-500/30 bg-danger-500/5 px-6 py-8 text-center">
+        <p className="text-danger-500">{error}</p>
       </div>
     );
   }
@@ -82,7 +85,7 @@ export function ArticleGrid({ activeCategory }: ArticleGridProps) {
           key={article.id}
           href={`/blog/${article.slug}`}
           style={{ '--i': i } as React.CSSProperties}
-          className="card-stagger group rounded-xl border border-border bg-surface p-5 transition-shadow hover:shadow-md"
+          className="card-stagger group rounded-xl border border-border-default bg-bg-surface p-5 transition-shadow hover:shadow-md"
         >
           {article.coverImage && (
             <div className="mb-4 overflow-hidden rounded-lg">
@@ -98,17 +101,17 @@ export function ArticleGrid({ activeCategory }: ArticleGridProps) {
             </div>
           )}
           {article.categoryName && (
-            <span className="inline-block rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
+            <span className="inline-block rounded-full bg-primary-500/10 px-3 py-1 text-xs font-medium text-primary">
               {article.categoryName}
             </span>
           )}
-          <h2 className="mt-3 text-lg font-semibold text-text group-hover:text-primary transition-colors">
+          <h2 className="mt-3 text-h5 font-semibold text-text-primary group-hover:text-primary-500 transition-colors">
             {article.title}
           </h2>
           {article.summary && (
-            <p className="mt-2 text-sm text-text-muted line-clamp-2">{article.summary}</p>
+            <p className="mt-2 text-body-sm text-text-muted line-clamp-2">{article.summary}</p>
           )}
-          <div className="mt-4 flex items-center gap-3 text-xs text-text-muted">
+          <div className="mt-4 flex items-center gap-3 text-caption text-text-muted">
             {article.authorName && <span>{article.authorName}</span>}
             {article.publishedAt && <span>{formatDate(article.publishedAt)}</span>}
           </div>

@@ -32,7 +32,7 @@ export function AuthNav() {
   if (!user) {
     return (
       <>
-        <a href="/login" className="hover:text-text transition-colors">
+        <a href="/login" className="hover:text-text-primary transition-colors">
           Masuk
         </a>
         <a

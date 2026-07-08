@@ -33,7 +33,7 @@ describe('DatePicker', () => {
 
   it('applies error border style', () => {
     render(<DatePicker label="Tgl" error="Error" />);
-    expect(screen.getByLabelText('Tgl').className).toContain('border-danger');
+    expect(screen.getByLabelText('Tgl').className).toContain('border-danger-500');
   });
 
   it('renders disabled state', () => {

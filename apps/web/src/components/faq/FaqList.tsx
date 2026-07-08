@@ -75,10 +75,13 @@ export function FaqList() {
     return (
       <div className="mt-8 space-y-4">
         {[1, 2, 3, 4].map((i) => (
-          <div key={i} className="animate-pulse rounded-lg border border-border bg-surface p-4">
-            <div className="h-5 w-3/4 rounded bg-border" />
-            <div className="mt-3 h-4 w-full rounded bg-border" />
-            <div className="mt-2 h-4 w-5/6 rounded bg-border" />
+          <div
+            key={i}
+            className="animate-pulse rounded-lg border border-border-default bg-bg-surface p-4"
+          >
+            <div className="h-5 w-3/4 rounded bg-neutral-200" />
+            <div className="mt-3 h-4 w-full rounded bg-neutral-200" />
+            <div className="mt-2 h-4 w-5/6 rounded bg-neutral-200" />
           </div>
         ))}
       </div>
@@ -92,7 +95,7 @@ export function FaqList() {
       {faqs?.map((faq, i) => (
         <details
           key={i}
-          className="group rounded-lg border border-border bg-surface transition-shadow hover:shadow-sm"
+          className="group rounded-lg border border-border-default bg-bg-surface transition-shadow hover:shadow-sm"
         >
           <summary className="flex cursor-pointer items-center justify-between p-4 font-medium text-text">
             {faq.q}

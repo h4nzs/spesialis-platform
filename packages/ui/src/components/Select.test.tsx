@@ -38,7 +38,7 @@ describe('Select', () => {
 
   it('applies error border style', () => {
     render(<Select options={options} error="Error" />);
-    expect(screen.getByRole('combobox').className).toContain('border-danger');
+    expect(screen.getByRole('combobox').className).toContain('border-danger-500');
   });
 
   it('calls onChange when selecting', () => {

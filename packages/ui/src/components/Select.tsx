@@ -26,13 +26,13 @@ export function Select({
   return (
     <div className="flex flex-col gap-1.5">
       {label && (
-        <label htmlFor={inputId} className="text-sm font-medium text-text">
+        <label htmlFor={inputId} className="text-sm font-medium text-text-primary">
           {label}
         </label>
       )}
       <select
         id={inputId}
-        className={`w-full rounded-md border px-3 py-2 text-sm text-text bg-surface outline-none transition-colors focus:border-primary focus:ring-1 focus:ring-primary ${error ? 'border-danger' : 'border-border'} ${className}`}
+        className={`w-full rounded-md border px-3 py-2 text-sm text-text-primary bg-bg-surface outline-none transition-colors focus:border-primary focus:ring-1 focus:ring-primary ${error ? 'border-danger-500' : 'border-border-default'} ${className}`}
         {...props}
       >
         {placeholder && (
@@ -46,7 +46,7 @@ export function Select({
           </option>
         ))}
       </select>
-      {error && <span className="text-xs text-danger">{error}</span>}
+      {error && <span className="text-xs text-danger-500">{error}</span>}
     </div>
   );
 }

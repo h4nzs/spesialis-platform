@@ -82,7 +82,7 @@ export function NotificationBell() {
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className="relative rounded-md p-2 text-text-muted transition-colors hover:bg-background hover:text-text"
+        className="relative rounded-md p-2 text-text-primary-secondary transition-colors hover:bg-neutral-100 hover:text-text-primary-primary"
         aria-label={`Notifikasi${unread > 0 ? ` (${unread} belum dibaca)` : ''}`}
       >
         <svg
@@ -99,16 +99,16 @@ export function NotificationBell() {
           />
         </svg>
         {unread > 0 && (
-          <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-danger px-1 text-[10px] font-bold leading-none text-white">
+          <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-danger-500 px-1 text-[10px] font-bold leading-none text-white">
             {unread > 99 ? '99+' : unread}
           </span>
         )}
       </button>
 
       {open && (
-        <div className="absolute right-0 z-50 mt-2 w-80 rounded-lg border border-border bg-surface shadow-lg">
-          <div className="flex items-center justify-between border-b border-border px-4 py-3">
-            <span className="text-sm font-semibold text-text">Notifikasi</span>
+        <div className="absolute right-0 z-50 mt-2 w-80 rounded-lg border border-border-default bg-bg-surface shadow-lg">
+          <div className="flex items-center justify-between border-b border-border-default px-4 py-3">
+            <span className="text-sm font-semibold text-text-primary">Notifikasi</span>
             {unreadItems.length > 0 && (
               <button
                 type="button"
@@ -133,7 +133,7 @@ export function NotificationBell() {
 
           <div className="max-h-80 overflow-y-auto">
             {loading ? (
-              <p className="px-4 py-6 text-center text-sm text-text-muted">Memuat...</p>
+              <p className="px-4 py-6 text-center text-sm text-text-primary-secondary">Memuat...</p>
             ) : notifications.length === 0 ? (
               <EmptyState title="Belum ada notifikasi" className="px-4 py-6" />
             ) : (
@@ -142,14 +142,14 @@ export function NotificationBell() {
                   key={n.id}
                   type="button"
                   onClick={() => !n.isRead && handleMarkRead(n.id)}
-                  className={`w-full border-b border-border px-4 py-3 text-left transition-colors last:border-b-0 hover:bg-background ${
+                  className={`w-full border-b border-border-default px-4 py-3 text-left transition-colors last:border-b-0 hover:bg-neutral-100 ${
                     !n.isRead ? 'bg-primary/5' : ''
                   }`}
                 >
                   <div className="flex items-start justify-between gap-2">
                     <span
                       className={`text-sm ${
-                        n.isRead ? 'text-text-muted' : 'font-medium text-text'
+                        n.isRead ? 'text-text-primary-secondary' : 'font-medium text-text-primary'
                       }`}
                     >
                       {n.title}
@@ -159,9 +159,13 @@ export function NotificationBell() {
                     )}
                   </div>
                   {n.message && (
-                    <p className="mt-0.5 text-xs text-text-muted line-clamp-2">{n.message}</p>
+                    <p className="mt-0.5 text-xs text-text-primary-secondary line-clamp-2">
+                      {n.message}
+                    </p>
                   )}
-                  <p className="mt-1 text-[10px] text-text-muted">{formatDate(n.createdAt)}</p>
+                  <p className="mt-1 text-[10px] text-text-primary-secondary">
+                    {formatDate(n.createdAt)}
+                  </p>
                 </button>
               ))
             )}

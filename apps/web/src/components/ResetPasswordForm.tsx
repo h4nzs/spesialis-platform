@@ -68,7 +68,7 @@ export function ResetPasswordForm({ token }: Props) {
     return (
       <div className="rounded-md border border-success/30 bg-success/5 px-6 py-8 text-center">
         <div className="text-3xl mb-4">&#10003;</div>
-        <h2 className="text-lg font-semibold text-text">Password Berhasil Diubah</h2>
+        <h2 className="text-h5 font-semibold text-text-primary">Password Berhasil Diubah</h2>
         <p className="mt-2 text-sm text-text-muted">Silakan masuk dengan password baru Anda.</p>
         <div className="mt-6">
           <a
@@ -85,13 +85,16 @@ export function ResetPasswordForm({ token }: Props) {
   return (
     <form onSubmit={handleSubmit} className="space-y-5" noValidate>
       {generalError && (
-        <div className="rounded-md border border-danger/30 bg-danger/5 px-4 py-3 text-sm text-danger">
+        <div className="rounded-md border border-danger-500/30 bg-danger-500/5 px-4 py-3 text-body text-danger-500">
           {generalError}
         </div>
       )}
 
       <div>
-        <label htmlFor="password" className="mb-1.5 block text-sm font-medium text-text">
+        <label
+          htmlFor="password"
+          className="mb-1.5 block text-body-sm font-medium text-text-primary"
+        >
           Password Baru
         </label>
         <input
@@ -99,17 +102,20 @@ export function ResetPasswordForm({ token }: Props) {
           type="password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          className="w-full rounded-md border border-border bg-surface px-4 py-2.5 text-sm text-text outline-none transition-colors focus:border-primary focus:ring-1 focus:ring-primary placeholder:text-text-muted"
+          className="w-full rounded-md border border-border-default bg-bg-surface px-4 py-2.5 text-body text-text-primary outline-none transition-colors focus:border-primary focus:ring-1 focus:ring-primary placeholder:text-text-muted"
           placeholder="Min. 8 karakter"
           autoComplete="new-password"
         />
         {getFieldError('password') && (
-          <p className="mt-1 text-xs text-danger">{getFieldError('password')}</p>
+          <p className="mt-1 text-caption text-danger-500">{getFieldError('password')}</p>
         )}
       </div>
 
       <div>
-        <label htmlFor="confirmPassword" className="mb-1.5 block text-sm font-medium text-text">
+        <label
+          htmlFor="confirmPassword"
+          className="mb-1.5 block text-body-sm font-medium text-text-primary"
+        >
           Konfirmasi Password
         </label>
         <input
@@ -117,12 +123,12 @@ export function ResetPasswordForm({ token }: Props) {
           type="password"
           value={confirmPassword}
           onChange={(e) => setConfirmPassword(e.target.value)}
-          className="w-full rounded-md border border-border bg-surface px-4 py-2.5 text-sm text-text outline-none transition-colors focus:border-primary focus:ring-1 focus:ring-primary placeholder:text-text-muted"
+          className="w-full rounded-md border border-border-default bg-bg-surface px-4 py-2.5 text-body text-text-primary outline-none transition-colors focus:border-primary focus:ring-1 focus:ring-primary placeholder:text-text-muted"
           placeholder="Ulangi password"
           autoComplete="new-password"
         />
         {getFieldError('confirmPassword') && (
-          <p className="mt-1 text-xs text-danger">{getFieldError('confirmPassword')}</p>
+          <p className="mt-1 text-caption text-danger-500">{getFieldError('confirmPassword')}</p>
         )}
       </div>
 
