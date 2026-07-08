@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { createBrowserClient, formatCurrency } from '@specialist/shared';
-import { Card } from '@specialist/ui';
+import { Card, EmptyState } from '@specialist/ui';
 
 interface RevenueMonth {
   month: string;
@@ -154,7 +154,10 @@ export function AdminReports() {
             Pendapatan per Bulan (12 Bulan Terakhir)
           </h3>
           {data.revenueByMonth.length === 0 ? (
-            <p className="text-sm text-text-muted">Belum ada data pendapatan.</p>
+            <EmptyState
+              title="Belum ada data pendapatan"
+              description="Data akan muncul setelah ada pesanan berbayar."
+            />
           ) : (
             <div className="space-y-2">
               {data.revenueByMonth.map((r) => (
@@ -193,7 +196,7 @@ export function AdminReports() {
               Status Pesanan
             </h3>
             {data.ordersByStatus.length === 0 ? (
-              <p className="text-sm text-text-muted">Belum ada pesanan.</p>
+              <EmptyState title="Belum ada data pesanan" />
             ) : (
               <div className="space-y-2">
                 {data.ordersByStatus.map((s) => (
@@ -218,7 +221,7 @@ export function AdminReports() {
               Pesanan per Hari (30 Hari Terakhir)
             </h3>
             {data.ordersByDay.length === 0 ? (
-              <p className="text-sm text-text-muted">Belum ada pesanan.</p>
+              <EmptyState title="Belum ada data pesanan" />
             ) : (
               <div className="flex items-end gap-[3px] h-40">
                 {data.ordersByDay.map((d) => (
@@ -244,7 +247,7 @@ export function AdminReports() {
             10 Layanan Terpopuler
           </h3>
           {data.topServices.length === 0 ? (
-            <p className="text-sm text-text-muted">Belum ada data layanan.</p>
+            <EmptyState title="Belum ada data layanan" />
           ) : (
             <div className="overflow-x-auto rounded-lg border border-border">
               <table className="w-full text-sm">

@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { createBrowserClient, formatDate, getStatusLabel } from '@specialist/shared';
-import { Badge, Card, Button, Modal, Input } from '@specialist/ui';
+import { Badge, Card, Button, Modal, Input, EmptyState } from '@specialist/ui';
 import type { OrderStatus } from '@specialist/types';
 
 interface JobItem {
@@ -89,7 +89,7 @@ export function PartnerJobs() {
   }
 
   if (jobs.length === 0) {
-    return <p className="text-sm text-text-muted">Belum ada pekerjaan</p>;
+    return <EmptyState title="Belum ada pekerjaan" />;
   }
 
   return (

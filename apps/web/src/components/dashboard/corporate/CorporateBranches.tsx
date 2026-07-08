@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { createBrowserClient, downloadCSV } from '@specialist/shared';
-import { Button, Input, Modal, Table } from '@specialist/ui';
+import { Button, Input, Modal, Table, EmptyState } from '@specialist/ui';
 import type { Column } from '@specialist/ui';
 
 interface Branch {
@@ -150,7 +150,7 @@ export function CorporateBranches() {
         data={branches}
         columns={columns}
         keyExtractor={(item) => item.id}
-        emptyMessage="Belum ada cabang"
+        emptyState={<EmptyState title="Belum ada cabang" />}
       />
 
       <Modal

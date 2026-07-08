@@ -1,0 +1,93 @@
+---
+/**
+ * Hero Section
+ *
+ * User problem: "I need a professional service urgently."
+ * Goal: Communicate identity + drive to CTA within 5 seconds.
+ * Visual: Typography-driven. No gradient blobs, no floating elements.
+ *   Trust markers build credibility immediately.
+ */
+
+interface Props {
+  totalServices?: number;
+  totalPartners?: number;
+  totalCities?: number;
+}
+
+const { totalServices = 50, totalPartners = 100, totalCities = 5 } = Astro.props as Props;
+---
+
+<section class="bg-bg-page">
+  <div class="container-page py-20 md:py-28">
+    <div class="mx-auto max-w-3xl text-center">
+      <!-- Overline label -->
+      <p class="text-overline text-primary-500 tracking-widest">
+        LAYANAN PROFESIONAL ON-DEMAND
+      </p>
+
+      <!-- Headline -->
+      <h1 class="mt-6 text-display-xl text-balance text-text-primary">
+        Layanan Profesional
+        <span class="text-primary-500">Tanpa Ribet</span>
+      </h1>
+
+      <!-- Subtitle -->
+      <p class="mt-4 text-body-lg text-text-secondary text-pretty max-w-xl mx-auto">
+        Temukan teknisi dan profesional terpercaya untuk kebutuhan rumah,
+        kantor, dan bisnis Anda. Booking dalam hitungan menit.
+      </p>
+
+      <!-- Search bar -->
+      <div class="mt-8 mx-auto max-w-lg">
+        <form action="/services" method="GET" role="search" class="relative">
+          <label for="hero-search" class="sr-only">Cari layanan</label>
+          <input
+            id="hero-search"
+            type="search"
+            name="q"
+            placeholder="Cari layanan... Misal: AC, plumbing, listrik"
+            class="h-12 w-full rounded-md border border-border-default bg-bg-surface pl-10 pr-4 text-body text-text-primary outline-none transition-colors duration-150 ease-out focus:border-primary-500 focus:ring-1 focus:ring-primary-500 placeholder:text-text-muted"
+          />
+          <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-text-muted" aria-hidden="true">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="11" cy="11" r="8"/>
+              <path d="m21 21-4.3-4.3"/>
+            </svg>
+          </div>
+        </form>
+      </div>
+
+      <!-- CTA Buttons -->
+      <div class="mt-8 flex flex-col items-center justify-center gap-4 sm:flex-row">
+        <a
+          href="/services"
+          class="inline-flex h-12 min-w-[200px] items-center justify-center rounded-md bg-primary-500 px-8 text-body font-semibold text-white shadow-xs transition-all duration-150 ease-out hover:bg-primary-600 hover:shadow-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-500"
+        >
+          Booking Sekarang
+        </a>
+        <a
+          href="/tracking"
+          class="inline-flex h-12 min-w-[200px] items-center justify-center rounded-md border border-border-default bg-bg-surface px-8 text-body font-medium text-text-primary shadow-xs transition-all duration-150 ease-out hover:bg-bg-section hover:shadow-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-500"
+        >
+          Lacak Booking
+        </a>
+      </div>
+
+      <!-- Trust markers -->
+      <div class="mt-16 grid grid-cols-3 gap-6 border-t border-border-default pt-10">
+        <div class="text-center">
+          <p class="text-h3 font-bold text-text-primary">{totalServices}+</p>
+          <p class="mt-1 text-body-sm text-text-secondary">Layanan</p>
+        </div>
+        <div class="text-center">
+          <p class="text-h3 font-bold text-text-primary">{totalPartners}+</p>
+          <p class="mt-1 text-body-sm text-text-secondary">Mitra Terverifikasi</p>
+        </div>
+        <div class="text-center">
+          <p class="text-h3 font-bold text-text-primary">{totalCities}</p>
+          <p class="mt-1 text-body-sm text-text-secondary">Kota</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

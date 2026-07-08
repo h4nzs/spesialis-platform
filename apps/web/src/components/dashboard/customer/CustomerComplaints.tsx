@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { createBrowserClient, formatDate } from '@specialist/shared';
-import { Badge, Card } from '@specialist/ui';
+import { Badge, Card, EmptyState } from '@specialist/ui';
 
 interface Complaint {
   id: string;
@@ -46,7 +46,7 @@ export function CustomerComplaints() {
         </a>
       </div>
 
-      {complaints.length === 0 && <p className="text-sm text-text-muted">Belum ada komplain</p>}
+      {complaints.length === 0 && <EmptyState title="Belum ada komplain" />}
 
       {complaints.map((c) => (
         <Card key={c.id}>

@@ -11,7 +11,7 @@ interface ServiceItem {
   thumbnail: string | null;
 }
 
-export function ServiceList() {
+export function ServiceList({ searchQuery }: { searchQuery?: string }) {
   const [services, setServices] = useState<ServiceItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -20,7 +20,9 @@ export function ServiceList() {
     const api = createBrowserClient();
 
     api
-      .get<ServiceItem[]>('/api/v1/services', { params: { limit: 50 } })
+      .get<ServiceItem[]>('/api/v1/services', {
+        params: { limit: 50, ...(searchQuery ? { q: searchQuery } : {}) },
+      })
       .then((items) => {
         setServices(items);
         setLoading(false);

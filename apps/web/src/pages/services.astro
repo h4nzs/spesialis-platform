@@ -61,7 +61,7 @@ try {
     <p class="mt-2 text-text-muted">Pilih layanan yang Anda butuhkan</p>
 
     <div class="mt-8">
-      <ServiceList client:load />
+      <ServiceList client:load searchQuery={Astro.url.searchParams.get('q') ?? undefined} />
     </div>
   </div>
 </BaseLayout>

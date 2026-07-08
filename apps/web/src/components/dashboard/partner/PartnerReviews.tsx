@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { createBrowserClient, formatDate, formatRating, downloadCSV } from '@specialist/shared';
-import { Table } from '@specialist/ui';
+import { Table, EmptyState } from '@specialist/ui';
 import type { Column } from '@specialist/ui';
 
 interface Review {
@@ -91,7 +91,7 @@ export function PartnerReviews() {
         columns={columns}
         data={reviews}
         keyExtractor={(r) => r.id}
-        emptyMessage="Belum ada ulasan"
+        emptyState={<EmptyState title="Belum ada ulasan" />}
       />
     </div>
   );

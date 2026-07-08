@@ -1,5 +1,68 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro'
+import Hero from '../components/homepage/Hero.astro'
+import FeaturedServices from '../components/homepage/FeaturedServices.astro'
+import ServiceGrid from '../components/homepage/ServiceGrid.astro'
+import Benefits from '../components/homepage/Benefits.astro'
+import Statistics from '../components/homepage/Statistics.astro'
+import Process from '../components/homepage/Process.astro'
+import Testimonials from '../components/homepage/Testimonials.astro'
+import Coverage from '../components/homepage/Coverage.astro'
+import PartnerCTA from '../components/homepage/PartnerCTA.astro'
+import CorporateCTA from '../components/homepage/CorporateCTA.astro'
+import LatestArticles from '../components/homepage/LatestArticles.astro'
+import FAQSection from '../components/homepage/FAQSection.astro'
+import FinalCTA from '../components/homepage/FinalCTA.astro'
+import Footer from '../components/homepage/Footer.astro'
+
+interface ServiceItem {
+  id: string;
+  name: string;
+  slug: string;
+  shortDescription: string | null;
+  basePrice: number;
+  estimatedDuration: number | null;
+  isFeatured: boolean | null;
+}
+
+interface ArticleItem {
+  title: string;
+  slug: string;
+  summary: string | null;
+  coverImage: string | null;
+  category: string | null;
+  publishedAt: string | null;
+}
+
+const apiUrl = import.meta.env.PUBLIC_API_URL ?? 'http://localhost:3000'
+
+// SSR: fetch services and articles
+let services: ServiceItem[] = []
+let articles: ArticleItem[] = []
+try {
+  const [servicesRes, articlesRes] = await Promise.all([
+    fetch(`${apiUrl}/api/v1/services?limit=12`),
+    fetch(`${apiUrl}/api/v1/cms/articles?limit=3`),
+  ])
+  if (servicesRes.ok) {
+    const json = await servicesRes.json()
+    services = json.data ?? []
+  }
+  if (articlesRes.ok) {
+    const json = await articlesRes.json()
+    const raw: Array<{ title: string; slug: string; summary: string | null; cover_image: string | null; category: string | null; published_at: string | null }> = json.data ?? []
+    articles = raw.map((a) => ({
+      title: a.title,
+      slug: a.slug,
+      summary: a.summary,
+      coverImage: a.cover_image,
+      category: a.category,
+      publishedAt: a.published_at,
+    }))
+  }
+} catch {
+  // silent — components handle empty state
+}
 ---
 
 <BaseLayout
@@ -17,80 +80,78 @@ import BaseLayout from '../layouts/BaseLayout.astro'
         description: 'Platform layanan jasa profesional on-demand di Indonesia.',
         potentialAction: {
           '@type': 'SearchAction',
-          target: { '@type': 'EntryPoint', urlTemplate: 'https://spesialis.id/services?q={search_term_string}' },
+          target: {
+            '@type': 'EntryPoint',
+            urlTemplate: 'https://spesialis.id/services?q={search_term_string}',
+          },
           'query-input': 'required name=search_term_string',
         },
       },
       {
         '@type': 'LocalBusiness',
-    '@id': 'https://spesialis.id',
-    name: 'Spesialis',
-    url: 'https://spesialis.id',
-    logo: 'https://spesialis.id/favicon.svg',
-    image: 'https://spesialis.id/og-default.png',
-    description: 'Platform layanan jasa profesional on-demand di Indonesia.',
-    areaServed: { '@type': 'Country', name: 'Indonesia' },
-    offers: { '@type': 'AggregateOffer', priceCurrency: 'IDR' },
-    priceRange: 'Rp50.000-Rp5.000.000',
-    telephone: '+62-',
-    contactPoint: {
-      '@type': 'ContactPoint',
-      contactType: 'customer service',
-      availableLanguage: ['Indonesian'],
-    },
-    sameAs: [
-      'https://instagram.com/spesialis.id',
-      'https://facebook.com/spesialis.id',
-    ],
-    address: { '@type': 'PostalAddress', addressCountry: 'ID' },
+        '@id': 'https://spesialis.id',
+        name: 'Spesialis',
+        url: 'https://spesialis.id',
+        logo: 'https://spesialis.id/favicon.svg',
+        image: 'https://spesialis.id/og-default.png',
+        description: 'Platform layanan jasa profesional on-demand di Indonesia.',
+        areaServed: { '@type': 'Country', name: 'Indonesia' },
+        offers: { '@type': 'AggregateOffer', priceCurrency: 'IDR' },
+        priceRange: 'Rp50.000-Rp5.000.000',
+        telephone: '+62-',
+        contactPoint: {
+          '@type': 'ContactPoint',
+          contactType: 'customer service',
+          availableLanguage: ['Indonesian'],
+        },
+        sameAs: [
+          'https://instagram.com/spesialis.id',
+          'https://facebook.com/spesialis.id',
+        ],
+        address: { '@type': 'PostalAddress', addressCountry: 'ID' },
       },
     ],
   }}
 >
-  <section class="py-20 text-center animate-fade-in">
-    <h1 class="mx-auto max-w-3xl text-4xl font-bold tracking-tight text-text sm:text-5xl">
-      Layanan Profesional
-      <span class="text-primary"> Tanpa Ribet</span>
-    </h1>
-    <p class="mx-auto mt-4 max-w-xl text-lg text-text-muted">
-      Temukan teknisi dan profesional terpercaya untuk kebutuhan rumah, kantor, dan bisnis Anda.
-    </p>
-    <div class="mt-8 flex flex-col items-center justify-center gap-4 sm:flex-row">
-      <a
-        href="/services"
-        class="inline-flex w-full max-w-xs items-center justify-center gap-2 rounded-md bg-primary px-6 py-3 text-base font-medium text-white transition-colors hover:bg-primary-hover sm:w-auto"
-      >
-        Lihat Layanan
-      </a>
-      <a
-        href="/tracking"
-        class="inline-flex w-full max-w-xs items-center justify-center gap-2 rounded-md border border-border bg-surface px-6 py-3 text-base font-medium text-text transition-colors hover:bg-background sm:w-auto"
-      >
-        Lacak Booking
-      </a>
-    </div>
-  </section>
+  <!-- 1. Hero + HeroSearch -->
+  <Hero totalServices={services.length} />
 
-  <section class="py-16">
-    <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-      <h2 class="text-center text-2xl font-semibold text-text">Kenapa Spesialis?</h2>
-      <div class="mt-10 grid gap-6 sm:grid-cols-3">
-        <div class="rounded-lg border border-border bg-surface p-6 text-center">
-          <div class="text-3xl mb-3">🔧</div>
-          <h3 class="font-semibold text-text">Teknisi Berpengalaman</h3>
-          <p class="mt-2 text-sm text-text-muted">Semua mitra telah diverifikasi dan berpengalaman di bidangnya.</p>
-        </div>
-        <div class="rounded-lg border border-border bg-surface p-6 text-center">
-          <div class="text-3xl mb-3">⚡</div>
-          <h3 class="font-semibold text-text">Cepat & Mudah</h3>
-          <p class="mt-2 text-sm text-text-muted">Booking dalam hitungan menit, tanpa perlu antre atau telepon.</p>
-        </div>
-        <div class="rounded-lg border border-border bg-surface p-6 text-center">
-          <div class="text-3xl mb-3">🛡️</div>
-          <h3 class="font-semibold text-text">Garansi Layanan</h3>
-          <p class="mt-2 text-sm text-text-muted">Setiap layanan dilindungi garansi untuk ketenangan Anda.</p>
-        </div>
-      </div>
-    </div>
-  </section>
+  <!-- 2. Featured Services (curated) -->
+  <FeaturedServices services={services} />
+
+  <!-- 3. All Services Grid -->
+  <ServiceGrid services={services} />
+
+  <!-- 4. Why Choose Us -->
+  <Benefits />
+
+  <!-- 5. Statistics (trust evidence after benefits) -->
+  <Statistics />
+
+  <!-- 6. How It Works -->
+  <Process />
+
+  <!-- 7. Testimonials -->
+  <Testimonials />
+
+  <!-- 8. Coverage Area -->
+  <Coverage />
+
+  <!-- 9. Partner CTA -->
+  <PartnerCTA />
+
+  <!-- 10. Corporate CTA -->
+  <CorporateCTA />
+
+  <!-- 11. Latest Articles -->
+  <LatestArticles articles={articles} />
+
+  <!-- 12. FAQ -->
+  <FAQSection />
+
+  <!-- 13. Final CTA -->
+  <FinalCTA />
+
+  <!-- 14. Footer -->
+  <Footer />
 </BaseLayout>

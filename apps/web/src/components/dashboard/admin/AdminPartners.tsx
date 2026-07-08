@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { createBrowserClient, downloadCSV } from '@specialist/shared';
-import { Table, Button } from '@specialist/ui';
+import { Table, Button, EmptyState } from '@specialist/ui';
 import type { Column } from '@specialist/ui';
 
 interface PartnerItem {
@@ -127,7 +127,7 @@ export function AdminPartners() {
         columns={columns}
         data={partners}
         keyExtractor={(p) => p.id}
-        emptyMessage="Belum ada partner"
+        emptyState={<EmptyState title="Belum ada partner" />}
       />
     </div>
   );

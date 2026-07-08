@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { createBrowserClient, downloadCSV } from '@specialist/shared';
-import { Table, Badge, Button } from '@specialist/ui';
+import { Table, Badge, Button, EmptyState } from '@specialist/ui';
 import type { Column } from '@specialist/ui';
 
 interface CustomerItem {
@@ -137,7 +137,7 @@ export function AdminCustomers() {
         columns={columns}
         data={customers}
         keyExtractor={(c) => c.id}
-        emptyMessage="Belum ada customer"
+        emptyState={<EmptyState title="Belum ada customer" />}
       />
     </div>
   );

@@ -7,7 +7,7 @@ import {
   getStatusColor,
   downloadCSV,
 } from '@specialist/shared';
-import { Badge, Table, Pagination } from '@specialist/ui';
+import { Badge, Table, Pagination, EmptyState } from '@specialist/ui';
 import type { Column } from '@specialist/ui';
 import type { OrderStatus } from '@specialist/types';
 
@@ -129,7 +129,7 @@ export function CustomerOrders() {
         columns={columns}
         data={orders}
         keyExtractor={(o) => o.id}
-        emptyMessage="Belum ada pesanan"
+        emptyState={<EmptyState title="Belum ada pesanan" />}
       />
       <Pagination page={page} totalPages={hasMore ? page + 1 : page} onPageChange={setPage} />
     </div>

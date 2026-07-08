@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { createBrowserClient, formatDate, getStatusLabel, downloadCSV } from '@specialist/shared';
-import { Card, Table, Badge } from '@specialist/ui';
+import { Card, Table, Badge, EmptyState } from '@specialist/ui';
 import type { OrderStatus } from '@specialist/types';
 
 interface JobItem {
@@ -125,7 +125,7 @@ export function PartnerEarnings() {
               ]}
               data={completedJobs}
               keyExtractor={(j) => j.id}
-              emptyMessage="Belum ada riwayat pekerjaan"
+              emptyState={<EmptyState title="Belum ada riwayat pekerjaan" />}
             />
           </div>
         </div>

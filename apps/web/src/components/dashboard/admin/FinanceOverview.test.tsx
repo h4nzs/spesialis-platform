@@ -22,6 +22,9 @@ vi.mock('@specialist/ui', () => ({
   Card: ({ children, padding: _padding }: { children: React.ReactNode; padding?: string }) => (
     <div>{children}</div>
   ),
+  EmptyState: ({ title, children }: { title?: string; children?: React.ReactNode }) => (
+    <div>{title ?? children}</div>
+  ),
 }));
 
 beforeEach(() => {
@@ -30,7 +33,10 @@ beforeEach(() => {
 
 describe('FinanceOverview', () => {
   it('shows loading state initially', () => {
-    mockGet.mockImplementation(() => new Promise(() => {}));
+    EmptyState: (({ title, children }: { title?: string; children?: React.ReactNode }) => (
+      <div>{title ?? children}</div>
+    ),
+      mockGet.mockImplementation(() => new Promise(() => {})));
     render(<FinanceOverview />);
     expect(screen.getByText('Memuat...')).toBeInTheDocument();
   });

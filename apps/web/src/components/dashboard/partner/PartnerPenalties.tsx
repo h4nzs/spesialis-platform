@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { createBrowserClient, formatCurrency, formatDate, downloadCSV } from '@specialist/shared';
-import { Card, Table, Badge } from '@specialist/ui';
+import { Card, Table, Badge, EmptyState } from '@specialist/ui';
 import type { Column } from '@specialist/ui';
 
 interface PenaltyItem {
@@ -168,7 +168,7 @@ export function PartnerPenalties() {
         columns={columns}
         data={penalties}
         keyExtractor={(p) => p.id}
-        emptyMessage="Belum ada penalty"
+        emptyState={<EmptyState title="Belum ada penalty" />}
       />
     </div>
   );

@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { createBrowserClient, formatDate, formatRating, downloadCSV } from '@specialist/shared';
-import { Button, Textarea, Select, Modal, Table } from '@specialist/ui';
+import { Button, Textarea, Select, Modal, Table, EmptyState } from '@specialist/ui';
 import type { Column } from '@specialist/ui';
 
 interface ReviewItem {
@@ -155,7 +155,7 @@ export function CustomerReviews() {
         columns={columns}
         data={reviews}
         keyExtractor={(r) => r.id}
-        emptyMessage="Belum ada ulasan"
+        emptyState={<EmptyState title="Belum ada ulasan" />}
       />
 
       <Modal open={showModal} onClose={() => setShowModal(false)} title="Tulis Ulasan">

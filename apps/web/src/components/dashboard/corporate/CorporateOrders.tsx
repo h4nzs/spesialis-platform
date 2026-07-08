@@ -7,7 +7,7 @@ import {
   getStatusColor,
   downloadCSV,
 } from '@specialist/shared';
-import { Badge, Table } from '@specialist/ui';
+import { Badge, Table, EmptyState } from '@specialist/ui';
 import type { Column } from '@specialist/ui';
 import type { OrderStatus } from '@specialist/types';
 
@@ -121,7 +121,7 @@ export function CorporateOrders() {
         data={orders}
         columns={columns}
         keyExtractor={(item) => item.id}
-        emptyMessage="Belum ada pesanan"
+        emptyState={<EmptyState title="Belum ada pesanan" />}
       />
       {hasMore && (
         <div className="flex justify-center pt-2">

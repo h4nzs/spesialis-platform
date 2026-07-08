@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { createBrowserClient, formatCurrency } from '@specialist/shared';
-import { Card } from '@specialist/ui';
+import { Card, Skeleton, Grid } from '@specialist/ui';
 
 interface DashboardResponse {
   users?: { total: number; customers: number; partners: number };
@@ -14,6 +14,46 @@ interface DashboardResponse {
   revenue?: { total: number };
   complaints?: { total: number; open: number };
   companies?: { verified: number };
+}
+
+const statCards = [
+  { label: 'Pesanan Hari Ini', key: 'orders.today' as const, color: 'text-text-primary' },
+  { label: 'Sedang Berjalan', key: 'orders.active' as const, color: 'text-primary-600' },
+  {
+    label: 'Menunggu Assignment',
+    key: 'orders.waitingAssignment' as const,
+    color: 'text-warning-600',
+  },
+  { label: 'Total Pesanan', key: 'orders.total' as const, color: 'text-text-primary' },
+  { label: 'Pendapatan', key: 'revenue' as const, color: 'text-success-600', isCurrency: true },
+  { label: 'Partner Tersedia', key: 'partners.available' as const, color: 'text-success-600' },
+  {
+    label: 'Verifikasi Tertunda',
+    key: 'partners.pendingVerification' as const,
+    color: 'text-warning-600',
+  },
+  { label: 'Komplain Terbuka', key: 'complaints.open' as const, color: 'text-danger-600' },
+];
+
+const quickActions = [
+  { href: '/dashboard/admin/bookings', label: 'Kelola Booking', variant: 'primary' as const },
+  { href: '/dashboard/admin/partners', label: 'Verifikasi Partner', variant: 'secondary' as const },
+  { href: '/dashboard/admin/services', label: 'Tambah Layanan', variant: 'secondary' as const },
+  { href: '/dashboard/admin/articles', label: 'Tulis Artikel', variant: 'secondary' as const },
+  { href: '/dashboard/admin/users', label: 'Kelola User', variant: 'secondary' as const },
+];
+
+function getStatValue(stats: DashboardResponse | null, key: string): string | number {
+  if (!stats) return 0;
+  if (key === 'revenue') return formatCurrency(stats.revenue?.total ?? 0);
+  if (key === 'orders.today') return stats.orders?.today ?? 0;
+  if (key === 'orders.active') return stats.orders?.active ?? 0;
+  if (key === 'orders.waitingAssignment') return stats.orders?.waitingAssignment ?? 0;
+  if (key === 'orders.total') return stats.orders?.total ?? 0;
+  if (key === 'partners.available') return stats.partners?.available ?? 0;
+  if (key === 'partners.pendingVerification') return stats.partners?.pendingVerification ?? 0;
+  if (key === 'complaints.open') return stats.complaints?.open ?? 0;
+  return 0;
 }
 
 export function AdminOverview() {
@@ -36,80 +76,54 @@ export function AdminOverview() {
   }, [api]);
 
   if (loading) {
-    return <div className="text-sm text-text-muted py-8 text-center">Memuat...</div>;
+    return (
+      <div className="space-y-6">
+        <Grid cols={4} gap={4}>
+          {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
+            <Card key={i} padding="lg">
+              <Skeleton variant="text" className="w-1/2" />
+              <div className="mt-2">
+                <Skeleton variant="heading" className="w-1/3 h-8" />
+              </div>
+            </Card>
+          ))}
+        </Grid>
+      </div>
+    );
   }
-
-  const cards = [
-    { label: 'Pesanan Hari Ini', value: stats?.orders?.today ?? 0, color: 'text-text' },
-    { label: 'Sedang Berjalan', value: stats?.orders?.active ?? 0, color: 'text-primary' },
-    {
-      label: 'Menunggu Assignment',
-      value: stats?.orders?.waitingAssignment ?? 0,
-      color: 'text-accent',
-    },
-    { label: 'Total Pesanan', value: stats?.orders?.total ?? 0, color: 'text-text' },
-    {
-      label: 'Pendapatan',
-      value: formatCurrency(stats?.revenue?.total ?? 0),
-      color: 'text-success',
-    },
-    { label: 'Partner Tersedia', value: stats?.partners?.available ?? 0, color: 'text-success' },
-    {
-      label: 'Verifikasi Tertunda',
-      value: stats?.partners?.pendingVerification ?? 0,
-      color: 'text-warning',
-    },
-    { label: 'Komplain Terbuka', value: stats?.complaints?.open ?? 0, color: 'text-danger' },
-  ];
 
   return (
     <div className="space-y-6">
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {cards.map((card) => (
-          <Card key={card.label} padding="lg">
-            <p className="text-sm text-text-muted">{card.label}</p>
-            <p className={`mt-1 text-2xl font-bold ${card.color}`}>{card.value}</p>
+      <Grid cols={4} gap={4}>
+        {statCards.map((card) => (
+          <Card key={card.key} padding="lg" className="space-y-2">
+            <p className="text-body-sm text-text-secondary">{card.label}</p>
+            <p className={`text-h3 font-bold ${card.color}`}>{getStatValue(stats, card.key)}</p>
           </Card>
         ))}
-      </div>
+      </Grid>
 
-      <div className="rounded-xl border border-border bg-surface p-6">
-        <h3 className="text-sm font-semibold text-text-muted uppercase tracking-wide">
+      {/* Quick Actions */}
+      <Card padding="lg">
+        <h3 className="text-caption font-semibold uppercase tracking-wider text-text-muted">
           Aksi Cepat
         </h3>
         <div className="mt-4 flex flex-wrap gap-3">
-          <a
-            href="/dashboard/admin/bookings"
-            className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-primary-hover"
-          >
-            Kelola Booking
-          </a>
-          <a
-            href="/dashboard/admin/partners"
-            className="rounded-md border border-border bg-background px-4 py-2 text-sm font-medium text-text transition-colors hover:bg-surface"
-          >
-            Verifikasi Partner
-          </a>
-          <a
-            href="/dashboard/admin/services"
-            className="rounded-md border border-border bg-background px-4 py-2 text-sm font-medium text-text transition-colors hover:bg-surface"
-          >
-            Tambah Layanan
-          </a>
-          <a
-            href="/dashboard/admin/articles"
-            className="rounded-md border border-border bg-background px-4 py-2 text-sm font-medium text-text transition-colors hover:bg-surface"
-          >
-            Tulis Artikel
-          </a>
-          <a
-            href="/dashboard/admin/users"
-            className="rounded-md border border-border bg-background px-4 py-2 text-sm font-medium text-text transition-colors hover:bg-surface"
-          >
-            Kelola User
-          </a>
+          {quickActions.map((action) => (
+            <a
+              key={action.href}
+              href={action.href}
+              className={`inline-flex h-10 items-center justify-center rounded-lg px-4 text-body-sm font-semibold transition-all duration-150 ease-out ${
+                action.variant === 'primary'
+                  ? 'bg-primary-500 text-white shadow-xs hover:bg-primary-600 hover:shadow-sm'
+                  : 'border border-border-default bg-bg-surface text-text-primary shadow-xs hover:bg-neutral-100 hover:shadow-sm'
+              }`}
+            >
+              {action.label}
+            </a>
+          ))}
         </div>
-      </div>
+      </Card>
     </div>
   );
 }

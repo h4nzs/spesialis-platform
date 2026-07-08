@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
+import { EmptyState } from '@specialist/ui';
 import { createBrowserClient, formatDate } from '@specialist/shared';
 
 interface NotificationItem {
@@ -134,7 +135,7 @@ export function NotificationBell() {
             {loading ? (
               <p className="px-4 py-6 text-center text-sm text-text-muted">Memuat...</p>
             ) : notifications.length === 0 ? (
-              <p className="px-4 py-6 text-center text-sm text-text-muted">Belum ada notifikasi</p>
+              <EmptyState title="Belum ada notifikasi" className="px-4 py-6" />
             ) : (
               notifications.map((n) => (
                 <button

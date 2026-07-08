@@ -27,14 +27,16 @@ vi.mock('@specialist/ui', () => ({
   Table: ({
     data,
     emptyMessage,
+    emptyState,
     columns,
   }: {
     data: unknown[];
-    emptyMessage: string;
+    emptyMessage?: string;
+    emptyState?: React.ReactNode;
     columns: { key: string; header: string; render?: (item: unknown) => React.ReactNode }[];
   }) => (
     <div>
-      {data.length === 0 && <p>{emptyMessage}</p>}
+      {data.length === 0 && (emptyState ?? <p>{emptyMessage ?? ''}</p>)}
       {data.map((item, i) => (
         <div key={i} data-testid="order-row">
           {columns.map((col) => (
@@ -47,6 +49,9 @@ vi.mock('@specialist/ui', () => ({
         </div>
       ))}
     </div>
+  ),
+  EmptyState: ({ title, children }: { title?: string; children?: React.ReactNode }) => (
+    <div>{title ?? children}</div>
   ),
 }));
 
@@ -88,6 +93,9 @@ describe('CorporateOrders', () => {
       basePrice: '100000',
       finalPrice: null,
       createdAt: '2026-07-15T10:00:00Z',
+      EmptyState: ({ title, children }: { title?: string; children?: React.ReactNode }) => (
+        <div>{title ?? children}</div>
+      ),
     }));
     mockGet.mockResolvedValue(items);
     render(<CorporateOrders />);

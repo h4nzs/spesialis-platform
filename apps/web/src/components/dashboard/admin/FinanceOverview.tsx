@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { createBrowserClient, formatCurrency, downloadCSV } from '@specialist/shared';
-import { Card } from '@specialist/ui';
+import { Card, EmptyState } from '@specialist/ui';
 
 interface MonthRevenue {
   month: string;
@@ -187,7 +187,7 @@ export function FinanceOverview() {
             </table>
           </div>
         ) : (
-          <p className="text-sm text-text-muted py-4 text-center">Belum ada data pendapatan</p>
+          <EmptyState title="Belum ada data pendapatan" />
         )}
       </div>
 

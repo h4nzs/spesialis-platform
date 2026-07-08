@@ -8,7 +8,16 @@ import {
   downloadCSV,
   downloadBlob,
 } from '@specialist/shared';
-import { Badge, Table, Pagination, Button, Modal, Input, Textarea } from '@specialist/ui';
+import {
+  Badge,
+  Table,
+  Pagination,
+  Button,
+  Modal,
+  Input,
+  Textarea,
+  EmptyState,
+} from '@specialist/ui';
 import type { Column } from '@specialist/ui';
 import type { OrderStatus } from '@specialist/types';
 
@@ -223,7 +232,7 @@ export function AdminBookings() {
         columns={columns}
         data={bookings}
         keyExtractor={(b) => b.id}
-        emptyMessage="Belum ada booking"
+        emptyState={<EmptyState title="Belum ada booking" />}
       />
       <Pagination page={page} totalPages={hasMore ? page + 1 : page} onPageChange={setPage} />
 

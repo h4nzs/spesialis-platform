@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { createBrowserClient } from '@specialist/shared';
-import { Card } from '@specialist/ui';
+import { Card, Skeleton, Grid } from '@specialist/ui';
 
 interface CompanyProfile {
   id: string;
@@ -48,29 +48,48 @@ export function CorporateOverview() {
   }, [loadData]);
 
   if (loading) {
-    return <div className="text-sm text-text-muted">Memuat...</div>;
+    return (
+      <div className="space-y-6">
+        <Card padding="lg">
+          <Skeleton variant="text" className="w-1/3" />
+          <div className="mt-2">
+            <Skeleton variant="text" className="w-1/4" />
+          </div>
+        </Card>
+        <Grid cols={3} gap={4}>
+          {[1, 2, 3].map((i) => (
+            <Card key={i} padding="lg">
+              <Skeleton variant="text" className="w-1/2" />
+              <div className="mt-2">
+                <Skeleton variant="heading" className="w-1/3 h-8" />
+              </div>
+            </Card>
+          ))}
+        </Grid>
+      </div>
+    );
   }
 
   return (
     <div className="space-y-6">
       <Card padding="lg">
-        <h2 className="text-lg font-semibold text-text">{profile?.companyName ?? 'Perusahaan'}</h2>
-        <p className="mt-1 text-sm text-text-muted">Status: {profile?.status ?? '-'}</p>
+        <h2 className="text-h5 text-text-primary">{profile?.companyName ?? 'Perusahaan'}</h2>
+        <p className="mt-1 text-body-sm text-text-secondary">Status: {profile?.status ?? '-'}</p>
       </Card>
-      <div className="grid gap-4 sm:grid-cols-3">
-        <Card padding="lg">
-          <p className="text-sm text-text-muted">Karyawan</p>
-          <p className="mt-1 text-2xl font-bold text-text">{profile?.employeeCount ?? '-'}</p>
+      <Grid cols={3} gap={4}>
+        <Card padding="lg" className="space-y-2">
+          <p className="text-body-sm text-text-secondary">Karyawan</p>
+          <p className="text-h3 font-bold text-text-primary">{profile?.employeeCount ?? '-'}</p>
         </Card>
-        <Card padding="lg">
-          <p className="text-sm text-text-muted">Pesanan Aktif</p>
-          <p className="mt-1 text-2xl font-bold text-text">{activeOrders}</p>
+        <Card padding="lg" className="space-y-2">
+          <p className="text-body-sm text-text-secondary">Pesanan Aktif</p>
+          <p className="text-h3 font-bold text-text-primary">{activeOrders}</p>
         </Card>
-        <Card padding="lg">
-          <p className="text-sm text-text-muted">Cabang</p>
-          <p className="mt-1 text-2xl font-bold text-text">{branchCount}</p>
+        <Card padding="lg" className="space-y-2">
+          <p className="text-body-sm text-text-secondary">Cabang</p>
+          <p className="text-h3 font-bold text-text-primary">{branchCount}</p>
         </Card>
-      </div>
+      </Grid>
     </div>
   );
 }

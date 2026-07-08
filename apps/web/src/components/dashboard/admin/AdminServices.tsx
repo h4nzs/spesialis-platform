@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { createBrowserClient, formatCurrency, downloadCSV } from '@specialist/shared';
-import { Button, Input, Select, Textarea, Modal, Table, Badge } from '@specialist/ui';
+import { Button, Input, Select, Textarea, Modal, Table, Badge, EmptyState } from '@specialist/ui';
 import type { Column } from '@specialist/ui';
 
 interface ServiceItem {
@@ -252,7 +252,7 @@ export function AdminServices() {
         data={services}
         columns={columns}
         keyExtractor={(item) => item.id}
-        emptyMessage="Belum ada layanan"
+        emptyState={<EmptyState title="Belum ada layanan" />}
       />
 
       <Modal

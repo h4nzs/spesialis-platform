@@ -1,0 +1,77 @@
+---
+/**
+ * Testimonials Section — "Apa Kata Pelanggan"
+ *
+ * User problem: "Is this service actually good? What do other people say?"
+ * Goal: Social proof through authentic-looking testimonials.
+ * Visual: Clean quote cards. No carousel (anti-pattern for important content).
+ *   Static for MVP — will be dynamic from API in production.
+ */
+
+const testimonials = [
+  {
+    quote: 'Teknisinya datang tepat waktu, pekerjaan rapi, dan harga sesuai estimasi. Sangat puas dengan layanan AC cleaning-nya.',
+    name: 'Rina Wijaya',
+    location: 'Jakarta Selatan',
+    rating: 5,
+  },
+  {
+    quote: 'Langganan maintenance rutin untuk kantor. Timnya profesional, cepat tanggap, dan selalu komunikatif. Highly recommended!',
+    name: 'Bambang Sutrisno',
+    location: 'Bandung',
+    rating: 5,
+  },
+  {
+    quote: 'Pipa bocor tengah malam, tapi admin respon cepat dan teknisi datang dalam 2 jam. Thank you Spesialis!',
+    name: 'Dewi Lestari',
+    location: 'Tangerang',
+    rating: 5,
+  },
+];
+
+function starSVG(filled: boolean): string {
+  return filled
+    ? '<svg class="inline-block h-4 w-4 text-warning-500" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>'
+    : '<svg class="inline-block h-4 w-4 text-neutral-200" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>';
+}
+---
+
+<section class="bg-bg-page">
+  <div class="container-page py-16 md:py-24">
+    <div class="mx-auto max-w-2xl text-center">
+      <p class="text-overline text-primary-500 tracking-widest">TESTIMONI</p>
+      <h2 class="mt-3 text-h2 text-text-primary">Apa Kata Pelanggan</h2>
+      <p class="mt-3 text-body-lg text-text-secondary text-pretty">
+        Ribuan pelanggan telah menggunakan layanan kami. Ini cerita mereka.
+      </p>
+    </div>
+
+    <div class="mt-12 grid gap-6 md:grid-cols-3">
+      {
+        testimonials.map((t) => (
+          <div class="flex flex-col rounded-xl border border-border-default bg-bg-surface p-6 md:p-8">
+            <!-- Star rating -->
+            <div class="flex gap-0.5" aria-label={`${t.rating} dari 5 bintang`}>
+              {
+                [1, 2, 3, 4, 5].map((star) => (
+                  <span set:html={starSVG(star <= t.rating)} />
+                ))
+              }
+            </div>
+
+            <!-- Quote -->
+            <blockquote class="mt-4 flex-1 text-body text-text-secondary leading-relaxed">
+              &ldquo;{t.quote}&rdquo;
+            </blockquote>
+
+            <!-- Author -->
+            <div class="mt-6 border-t border-border-default pt-4">
+              <p class="text-body-sm font-semibold text-text-primary">{t.name}</p>
+              <p class="text-caption text-text-muted">{t.location}</p>
+            </div>
+          </div>
+        ))
+      }
+    </div>
+  </div>
+</section>

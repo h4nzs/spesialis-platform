@@ -14,6 +14,9 @@ vi.mock('@specialist/ui', () => ({
   Badge: ({ children, variant: _variant }: { children: React.ReactNode; variant?: string }) => (
     <span>{children}</span>
   ),
+  EmptyState: ({ title, children }: { title?: string; children?: React.ReactNode }) => (
+    <div>{title ?? children}</div>
+  ),
 }));
 
 beforeEach(() => {
@@ -22,7 +25,10 @@ beforeEach(() => {
 
 describe('CustomerComplaints', () => {
   it('shows loading state initially', () => {
-    mockGet.mockImplementation(() => new Promise(() => {}));
+    EmptyState: (({ title, children }: { title?: string; children?: React.ReactNode }) => (
+      <div>{title ?? children}</div>
+    ),
+      mockGet.mockImplementation(() => new Promise(() => {})));
     render(<CustomerComplaints />);
     expect(screen.getByText('Memuat...')).toBeInTheDocument();
   });

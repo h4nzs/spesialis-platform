@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { createBrowserClient, downloadCSV } from '@specialist/shared';
-import { Button, Input, Select, Textarea, Modal, Table, Badge } from '@specialist/ui';
+import { Button, Input, Select, Textarea, Modal, Table, Badge, EmptyState } from '@specialist/ui';
 import type { Column } from '@specialist/ui';
 
 interface ArticleItem {
@@ -263,7 +263,7 @@ export function AdminArticles() {
         data={articles}
         columns={columns}
         keyExtractor={(item) => item.id}
-        emptyMessage="Belum ada artikel"
+        emptyState={<EmptyState title="Belum ada artikel" />}
       />
 
       <Modal

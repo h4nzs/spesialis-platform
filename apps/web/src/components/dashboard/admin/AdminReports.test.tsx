@@ -101,11 +101,11 @@ describe('AdminReports', () => {
       topServices: [],
     });
     render(<AdminReports />);
-    expect(await screen.findByText('Belum ada data pendapatan.')).toBeInTheDocument();
+    expect(await screen.findByText('Belum ada data pendapatan')).toBeInTheDocument();
     await user.click(screen.getByText('Pesanan'));
     expect(await screen.findByText('Status Pesanan')).toBeInTheDocument();
-    expect(screen.getAllByText('Belum ada pesanan.').length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText('Belum ada data pesanan').length).toBeGreaterThanOrEqual(1);
     await user.click(screen.getByText('Layanan'));
-    expect(await screen.findByText('Belum ada data layanan.')).toBeInTheDocument();
+    expect(await screen.findByText('Belum ada data layanan')).toBeInTheDocument();
   });
 });

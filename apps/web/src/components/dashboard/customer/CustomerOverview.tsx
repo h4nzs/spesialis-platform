@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { createBrowserClient } from '@specialist/shared';
-import { Card } from '@specialist/ui';
+import { Card, Skeleton, Grid } from '@specialist/ui';
 
 interface DashboardStats {
   activeOrders: number;
@@ -8,6 +8,13 @@ interface DashboardStats {
   pendingPayment: number;
   savedAddresses: number;
 }
+
+const statCards = [
+  { label: 'Pesanan Aktif', key: 'activeOrders' as const, color: 'text-primary-600' },
+  { label: 'Selesai', key: 'completedOrders' as const, color: 'text-success-600' },
+  { label: 'Menunggu Pembayaran', key: 'pendingPayment' as const, color: 'text-warning-600' },
+  { label: 'Alamat Tersimpan', key: 'savedAddresses' as const, color: 'text-text-primary' },
+];
 
 export function CustomerOverview() {
   const api = useMemo(() => createBrowserClient(), []);
@@ -32,7 +39,6 @@ export function CustomerOverview() {
           ['Completed', 'Paid', 'Closed'].includes(o.status),
         ).length;
         const pendingPayment = orders.filter((o) => ['Waiting Payment'].includes(o.status)).length;
-
         const addresses = await api.get<unknown[]>('/api/v1/addresses');
 
         setStats({
@@ -51,24 +57,28 @@ export function CustomerOverview() {
   }, [api]);
 
   if (loading) {
-    return <div className="text-sm text-text-muted">Memuat...</div>;
+    return (
+      <Grid cols={4} gap={4}>
+        {[1, 2, 3, 4].map((i) => (
+          <Card key={i} padding="lg">
+            <Skeleton variant="text" className="w-1/2" />
+            <div className="mt-2">
+              <Skeleton variant="heading" className="w-1/3 h-8" />
+            </div>
+          </Card>
+        ))}
+      </Grid>
+    );
   }
 
-  const cards = [
-    { label: 'Pesanan Aktif', value: stats?.activeOrders ?? 0, color: 'text-primary' },
-    { label: 'Selesai', value: stats?.completedOrders ?? 0, color: 'text-success' },
-    { label: 'Menunggu Pembayaran', value: stats?.pendingPayment ?? 0, color: 'text-accent' },
-    { label: 'Alamat Tersimpan', value: stats?.savedAddresses ?? 0, color: 'text-text' },
-  ];
-
   return (
-    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-      {cards.map((card) => (
-        <Card key={card.label} padding="lg">
-          <p className="text-sm text-text-muted">{card.label}</p>
-          <p className={`mt-1 text-3xl font-bold ${card.color}`}>{card.value}</p>
+    <Grid cols={4} gap={4}>
+      {statCards.map((card) => (
+        <Card key={card.key} padding="lg" className="space-y-2">
+          <p className="text-body-sm text-text-secondary">{card.label}</p>
+          <p className={`text-display font-bold ${card.color}`}>{stats?.[card.key] ?? 0}</p>
         </Card>
       ))}
-    </div>
+    </Grid>
   );
 }

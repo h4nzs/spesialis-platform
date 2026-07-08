@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { createBrowserClient, formatDate, downloadCSV } from '@specialist/shared';
-import { Table, Pagination, Input, Badge } from '@specialist/ui';
+import { Table, Pagination, Input, Badge, EmptyState } from '@specialist/ui';
 import type { Column } from '@specialist/ui';
 import type { PaginationMeta, AuditAction } from '@specialist/types';
 
@@ -246,7 +246,7 @@ export function AdminAuditLogs() {
             columns={columns}
             data={logs}
             keyExtractor={(l) => l.id}
-            emptyMessage="Belum ada audit log"
+            emptyState={<EmptyState title="Belum ada audit log" />}
           />
         </>
       )}

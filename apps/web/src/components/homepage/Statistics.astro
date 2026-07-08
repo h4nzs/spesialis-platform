@@ -1,0 +1,35 @@
+---
+/**
+ * Statistics Section
+ *
+ * User problem: "Can I trust this platform? Are they legitimate?"
+ * Goal: Provide social proof through hard numbers.
+ * Visual: 4 metrics in a clean grid. Typography-driven hierarchy.
+ *   Counter animation would be nice but is JS-dependent — static first.
+ */
+
+const stats = [
+  { value: '1.000+', label: 'Pesanan Selesai', color: 'text-primary-500' },
+  { value: '4.8', label: 'Rating Rata-rata', suffix: '/5.0', color: 'text-warning-500' },
+  { value: '100+', label: 'Mitra Terverifikasi', color: 'text-success-500' },
+  { value: '5', label: 'Kota Tersedia', color: 'text-secondary-500' },
+];
+---
+
+<section class="bg-bg-page">
+  <div class="container-page py-16 md:py-20">
+    <div class="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
+      {
+        stats.map((s) => (
+          <div class="text-center">
+            <p class="text-display font-bold text-balance">
+              <span class={s.color}>{s.value}</span>
+              {s.suffix && <span class="text-h3 text-text-muted">{s.suffix}</span>}
+            </p>
+            <p class="mt-2 text-body-sm text-text-secondary">{s.label}</p>
+          </div>
+        ))
+      }
+    </div>
+  </div>
+</section>

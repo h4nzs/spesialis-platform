@@ -1,0 +1,63 @@
+---
+/**
+ * Process Section — "Cara Kerja"
+ *
+ * User problem: "I don't understand how this platform works."
+ * Goal: Reduce anxiety by explaining the process in 4 clear steps.
+ * Visual: Numbered steps. Vertical on mobile, 4-column on desktop.
+ *   Connector lines removed — numbered circles already communicate sequence.
+ */
+
+const steps = [
+  {
+    number: 1,
+    title: 'Pilih Layanan',
+    description: 'Tentukan layanan yang Anda butuhkan dari daftar layanan profesional kami.',
+  },
+  {
+    number: 2,
+    title: 'Isi Data Booking',
+    description: 'Lengkapi informasi lokasi, jadwal, dan detail pekerjaan yang diperlukan.',
+  },
+  {
+    number: 3,
+    title: 'Konfirmasi',
+    description: 'Admin kami akan menghubungi Anda melalui WhatsApp untuk konfirmasi dan harga final.',
+  },
+  {
+    number: 4,
+    title: 'Pekerjaan Selesai',
+    description: 'Teknisi kami datang sesuai jadwal. Pekerjaan selesai, Anda tinggal menikmati hasilnya.',
+  },
+];
+---
+
+<section class="bg-bg-section">
+  <div class="container-page py-16 md:py-24">
+    <div class="mx-auto max-w-2xl text-center">
+      <p class="text-overline text-primary-500 tracking-widest">CARA KERJA</p>
+      <h2 class="mt-3 text-h2 text-text-primary">Bagaimana Cara Kerjanya?</h2>
+      <p class="mt-3 text-body-lg text-text-secondary text-pretty">
+        Hanya 4 langkah mudah untuk mendapatkan layanan profesional terpercaya.
+      </p>
+    </div>
+
+    <!-- Process steps -->
+    <div class="mt-14 grid gap-10 sm:grid-cols-2 lg:grid-cols-4">
+      {
+        steps.map((step) => (
+          <div class="flex flex-col items-center text-center">
+            <!-- Step number -->
+            <div class="flex h-12 w-12 items-center justify-center rounded-full bg-primary-500 text-h5 font-bold text-white">
+              {step.number}
+            </div>
+
+            <!-- Content -->
+            <h3 class="mt-5 text-h5 text-text-primary">{step.title}</h3>
+            <p class="mt-2 max-w-xs text-body text-text-secondary leading-relaxed">{step.description}</p>
+          </div>
+        ))
+      }
+    </div>
+  </div>
+</section>

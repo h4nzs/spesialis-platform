@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { createBrowserClient, downloadCSV } from '@specialist/shared';
-import { Button, Input, Select, Table, Badge, Modal } from '@specialist/ui';
+import { Button, Input, Select, Table, Badge, Modal, EmptyState } from '@specialist/ui';
 import type { Column } from '@specialist/ui';
 
 interface UserItem {
@@ -254,7 +254,7 @@ export function AdminUsers() {
             data={users}
             columns={columns}
             keyExtractor={(item) => item.id}
-            emptyMessage="Tidak ada user ditemukan"
+            emptyState={<EmptyState title="Tidak ada user ditemukan" />}
           />
         </>
       )}

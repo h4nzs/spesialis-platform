@@ -38,14 +38,16 @@ vi.mock('@specialist/ui', () => ({
   Table: ({
     data,
     emptyMessage,
+    emptyState,
     columns,
   }: {
     data: unknown[];
-    emptyMessage: string;
+    emptyMessage?: string;
+    emptyState?: React.ReactNode;
     columns: { key: string; header: string; render?: (item: unknown) => React.ReactNode }[];
   }) => (
     <div>
-      {data.length === 0 && <p>{emptyMessage}</p>}
+      {data.length === 0 && (emptyState ?? <p>{emptyMessage ?? ''}</p>)}
       {data.map((item, i) => (
         <div key={i} data-testid="service-row">
           {columns.map((col) => (
@@ -143,6 +145,9 @@ vi.mock('@specialist/ui', () => ({
   Badge: ({ children, variant: _variant }: { children: React.ReactNode; variant?: string }) => (
     <span>{children}</span>
   ),
+  EmptyState: ({ title, children }: { title?: string; children?: React.ReactNode }) => (
+    <div>{title ?? children}</div>
+  ),
 }));
 
 beforeEach(() => {
@@ -151,7 +156,10 @@ beforeEach(() => {
 
 describe('AdminServices', () => {
   it('shows loading state initially', () => {
-    mockGet.mockImplementation(() => new Promise(() => {}));
+    EmptyState: (({ title, children }: { title?: string; children?: React.ReactNode }) => (
+      <div>{title ?? children}</div>
+    ),
+      mockGet.mockImplementation(() => new Promise(() => {})));
     render(<AdminServices />);
     expect(screen.getByText('Memuat...')).toBeInTheDocument();
   });

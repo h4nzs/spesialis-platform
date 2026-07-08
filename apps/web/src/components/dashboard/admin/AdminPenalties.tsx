@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { createBrowserClient, formatCurrency, downloadCSV } from '@specialist/shared';
-import { Button, Input, Select, Textarea, Modal, Table, Badge } from '@specialist/ui';
+import { Button, Input, Select, Textarea, Modal, Table, Badge, EmptyState } from '@specialist/ui';
 import type { Column } from '@specialist/ui';
 
 interface PenaltyItem {
@@ -441,7 +441,7 @@ export function AdminPenalties() {
         columns={columns}
         data={penalties}
         keyExtractor={(p) => p.id}
-        emptyMessage="Belum ada penalty"
+        emptyState={<EmptyState title="Belum ada penalty" />}
       />
 
       {/* Impose Penalty Modal */}

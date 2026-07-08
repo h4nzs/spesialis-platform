@@ -19,13 +19,15 @@ vi.mock('@specialist/ui', () => ({
     columns,
     data,
     emptyMessage,
+    emptyState,
   }: {
     columns: Array<{ key: string; header: string; render?: (item: unknown) => React.ReactNode }>;
     data: unknown[];
-    emptyMessage: string;
+    emptyMessage?: string;
+    emptyState?: React.ReactNode;
   }) => (
     <div>
-      {data.length === 0 && <p>{emptyMessage}</p>}
+      {data.length === 0 && (emptyState ?? <p>{emptyMessage ?? ''}</p>)}
       {data.map((_item: unknown, i: number) => (
         <div key={i} data-testid="audit-row">
           {columns.map(
@@ -83,6 +85,9 @@ vi.mock('@specialist/ui', () => ({
   Badge: ({ children, variant: _variant }: { children: React.ReactNode; variant?: string }) => (
     <span>{children}</span>
   ),
+  EmptyState: ({ title, children }: { title?: string; children?: React.ReactNode }) => (
+    <div>{title ?? children}</div>
+  ),
 }));
 
 beforeEach(() => {
@@ -96,7 +101,10 @@ const mockPaginated = (data: unknown[], pagination: { page: number; totalPages: 
 
 describe('AdminAuditLogs', () => {
   it('shows loading state initially', () => {
-    mockGet.mockImplementation(() => new Promise(() => {}));
+    EmptyState: (({ title, children }: { title?: string; children?: React.ReactNode }) => (
+      <div>{title ?? children}</div>
+    ),
+      mockGet.mockImplementation(() => new Promise(() => {})));
     render(<AdminAuditLogs />);
     expect(screen.getByText('Memuat data audit log...')).toBeInTheDocument();
   });

@@ -13,14 +13,16 @@ vi.mock('@specialist/ui', () => ({
   Table: ({
     data,
     emptyMessage,
+    emptyState,
     columns,
   }: {
     data: unknown[];
-    emptyMessage: string;
+    emptyMessage?: string;
+    emptyState?: React.ReactNode;
     columns: { key: string; header: string; render?: (item: unknown) => React.ReactNode }[];
   }) => (
     <div>
-      {data.length === 0 && <p>{emptyMessage}</p>}
+      {data.length === 0 && (emptyState ?? <p>{emptyMessage ?? ''}</p>)}
       {data.map((item, i) => (
         <div key={i} data-testid="partner-row">
           {columns.map((col) => (
@@ -45,6 +47,9 @@ vi.mock('@specialist/ui', () => ({
     size?: string;
     variant?: string;
   }) => <button onClick={onClick}>{children}</button>,
+  EmptyState: ({ title, children }: { title?: string; children?: React.ReactNode }) => (
+    <div>{title ?? children}</div>
+  ),
 }));
 
 beforeEach(() => {
@@ -53,7 +58,10 @@ beforeEach(() => {
 
 describe('AdminPartners', () => {
   it('shows loading state initially', () => {
-    mockGet.mockImplementation(() => new Promise(() => {}));
+    EmptyState: (({ title, children }: { title?: string; children?: React.ReactNode }) => (
+      <div>{title ?? children}</div>
+    ),
+      mockGet.mockImplementation(() => new Promise(() => {})));
     render(<AdminPartners />);
     expect(screen.getByText('Memuat...')).toBeInTheDocument();
   });

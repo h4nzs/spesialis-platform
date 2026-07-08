@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { createBrowserClient } from '@specialist/shared';
 import { createAddressSchema } from '@specialist/validation';
-import { Card, Button, Input, Modal } from '@specialist/ui';
+import { Card, Button, Input, Modal, EmptyState } from '@specialist/ui';
 
 interface Address {
   id: string;
@@ -92,9 +92,7 @@ export function CustomerAddresses() {
         <Button onClick={() => setShowForm(true)}>Tambah Alamat</Button>
       </div>
 
-      {addresses.length === 0 && (
-        <p className="text-sm text-text-muted">Belum ada alamat tersimpan</p>
-      )}
+      {addresses.length === 0 && <EmptyState title="Belum ada alamat tersimpan" />}
 
       <div className="grid gap-4 sm:grid-cols-2">
         {addresses.map((addr) => (
