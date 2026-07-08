@@ -5,6 +5,7 @@ import {
   formatDate,
   getStatusLabel,
   getStatusColor,
+  downloadCSV,
 } from '@specialist/shared';
 import { Badge, Table } from '@specialist/ui';
 import type { Column } from '@specialist/ui';
@@ -70,6 +71,18 @@ export function CorporateInvoices() {
     },
   ];
 
+  function handleExportCSV() {
+    const headers = ['No. Invoice', 'Status', 'Tanggal', 'Jumlah', 'Selesai'];
+    const rows = invoices.map((inv) => [
+      inv.bookingNumber,
+      getStatusLabel(inv.status as OrderStatus),
+      formatDate(inv.bookingDate),
+      inv.finalPrice ? formatCurrency(inv.finalPrice) : '-',
+      inv.completedAt ? formatDate(inv.completedAt) : '-',
+    ]);
+    downloadCSV(headers, rows, 'invoice-export.csv');
+  }
+
   if (loading) return <div className="text-sm text-text-muted py-8 text-center">Memuat...</div>;
 
   return (
@@ -90,6 +103,34 @@ export function CorporateInvoices() {
           </p>
         </div>
       </div>
+
+      {invoices.length > 0 && (
+        <div className="flex items-center justify-end">
+          <button
+            type="button"
+            onClick={handleExportCSV}
+            className="inline-flex items-center gap-1.5 rounded-md border border-border bg-background px-3 py-1.5 text-sm font-medium text-text transition-colors hover:bg-surface"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="shrink-0"
+            >
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+              <polyline points="7 10 12 15 17 10" />
+              <line x1="12" y1="15" x2="12" y2="3" />
+            </svg>
+            Export CSV
+          </button>
+        </div>
+      )}
 
       <Table
         data={invoices}

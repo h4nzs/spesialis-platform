@@ -1,0 +1,28 @@
+export interface ServiceData {
+  id: string;
+  categoryId: string | null;
+  name: string;
+  slug: string;
+  shortDescription: string | null;
+  description: string | null;
+  basePrice: number;
+  estimatedDuration: number | null;
+  warrantyDays: number | null;
+  thumbnail: string | null;
+  isFeatured: boolean | null;
+}
+
+export interface ReviewItem {
+  id: string;
+  rating: string;
+  review: string | null;
+  createdAt: string;
+}
+
+export interface ReviewData {
+  items: ReviewItem[];
+  aggregate: {
+    averageRating: number;
+    totalReviews: number;
+  };
+}

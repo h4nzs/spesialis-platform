@@ -458,10 +458,74 @@ describe('Guest Booking Flow', () => {
     expect(res.status).toBe(422);
   });
 
-  // Full guest booking creation is not tested here because the DB schema
-  // has order_status_history.changed_by as NOT NULL, but recordStatusHistory()
-  // passes null for guest bookings (known schema issue).
-  // The customer booking flow below covers the full create lifecycle.
+  it('Creates booking as guest (POST /bookings) → 201', async () => {
+    const res = await app.request('/api/v1/bookings', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        fullName: 'Guest Customer',
+        phone: '6289999999999',
+        address: {
+          receiverName: 'Guest Customer',
+          receiverPhone: '6289999999999',
+          province: 'DKI Jakarta',
+          city: 'Jakarta Selatan',
+          district: 'Kebayoran Lama',
+          postalCode: '12220',
+          address: 'Jl. Guest Test No. 1',
+        },
+        bookingDate: '2026-08-01',
+        bookingTime: '09:00',
+        items: [{ serviceId, quantity: 1 }],
+        notes: 'Guest booking test',
+      }),
+    });
+    const body = (await res.json()) as {
+      success: boolean;
+      data: { id: string; bookingNumber: string; trackingUrl: string };
+    };
+    expect(res.status).toBe(201);
+    expect(body.success).toBe(true);
+    expect(body.data.id).toBeDefined();
+    expect(body.data.bookingNumber).toMatch(/^SP-2026-/);
+    expect(body.data.trackingUrl).toContain('/api/v1/bookings/tracking/');
+
+    // Verify tracking endpoint works for guest booking
+    const trackRes = await app.request(`/api/v1/bookings/tracking/${body.data.bookingNumber}`);
+    expect(trackRes.status).toBe(200);
+
+    const trackBody = (await trackRes.json()) as {
+      success: boolean;
+      data: { bookingNumber: string; status: string; timeline: unknown[] };
+    };
+    expect(trackBody.success).toBe(true);
+    expect(trackBody.data.status).toBe('Pending Confirmation');
+    expect(trackBody.data.timeline.length).toBe(1);
+  });
+
+  it('Rejects guest booking with empty phone (422)', async () => {
+    const res = await app.request('/api/v1/bookings', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        fullName: 'Guest',
+        phone: '',
+        address: {
+          receiverName: 'Guest',
+          receiverPhone: '',
+          province: 'DKI Jakarta',
+          city: 'Jakarta',
+          district: 'Test',
+          postalCode: '10110',
+          address: 'Test address',
+        },
+        bookingDate: '2026-08-01',
+        bookingTime: '10:00',
+        items: [{ serviceId, quantity: 1 }],
+      }),
+    });
+    expect(res.status).toBe(422);
+  });
 });
 
 describe('Cancel Booking Flow', () => {
@@ -819,5 +883,203 @@ describe('Validation & Error Cases', () => {
       headers: headers(adminToken),
     });
     expect(res.status).toBe(404);
+  });
+
+  it('Returns 404 when assigning non-existent partner', async () => {
+    const tempRes = await app.request('/api/v1/bookings', {
+      method: 'POST',
+      headers: headers(customerToken),
+      body: JSON.stringify({
+        addressId,
+        bookingDate: '2026-07-25',
+        bookingTime: '14:00',
+        items: [{ serviceId, quantity: 1 }],
+      }),
+    });
+    const tempBody = (await tempRes.json()) as { success: boolean; data: { id: string } };
+    expect(tempRes.status).toBe(201);
+
+    // Confirm it
+    await app.request(`/api/v1/bookings/${tempBody.data.id}/confirm`, {
+      method: 'POST',
+      headers: headers(adminToken),
+      body: JSON.stringify({}),
+    });
+
+    // Try to assign a non-existent partner UUID
+    const assignRes = await app.request(`/api/v1/bookings/${tempBody.data.id}/assign`, {
+      method: 'POST',
+      headers: headers(adminToken),
+      body: JSON.stringify({
+        partnerId: '00000000-0000-0000-0000-000000000000',
+      }),
+    });
+    expect(assignRes.status).toBe(404);
+  });
+
+  it('Admin can cancel any booking (200)', async () => {
+    // Create a new booking to cancel
+    const tempRes = await app.request('/api/v1/bookings', {
+      method: 'POST',
+      headers: headers(customerToken),
+      body: JSON.stringify({
+        addressId,
+        bookingDate: '2026-07-26',
+        bookingTime: '15:00',
+        items: [{ serviceId, quantity: 1 }],
+      }),
+    });
+    const tempBody = (await tempRes.json()) as { success: boolean; data: { id: string } };
+    expect(tempRes.status).toBe(201);
+
+    // Admin cancels it
+    const cancelRes = await app.request(`/api/v1/bookings/${tempBody.data.id}/cancel`, {
+      method: 'POST',
+      headers: headers(adminToken),
+      body: JSON.stringify({ reason: 'Admin override' }),
+    });
+    const cancelBody = (await cancelRes.json()) as { success: boolean; data: { status: string } };
+    expect(cancelRes.status).toBe(200);
+    expect(cancelBody.success).toBe(true);
+    expect(cancelBody.data.status).toBe('Cancelled');
+  });
+});
+
+describe('Payment Failed Verification Flow', () => {
+  let failedBookingId: string;
+  let failedPaymentId: string;
+
+  it('Creates booking as customer (setup) → 201', async () => {
+    const res = await app.request('/api/v1/bookings', {
+      method: 'POST',
+      headers: headers(customerToken),
+      body: JSON.stringify({
+        addressId,
+        bookingDate: '2026-07-27',
+        bookingTime: '08:00',
+        items: [{ serviceId, quantity: 1 }],
+      }),
+    });
+    const body = (await res.json()) as {
+      success: boolean;
+      data: { id: string };
+    };
+    expect(res.status).toBe(201);
+    failedBookingId = body.data.id;
+  });
+
+  it('Completes booking through the workflow → 200', async () => {
+    // Confirm
+    await app.request(`/api/v1/bookings/${failedBookingId}/confirm`, {
+      method: 'POST',
+      headers: headers(adminToken),
+      body: JSON.stringify({ finalPrice: 200000 }),
+    });
+    // Assign
+    await app.request(`/api/v1/bookings/${failedBookingId}/assign`, {
+      method: 'POST',
+      headers: headers(adminToken),
+      body: JSON.stringify({ partnerId: partnerUserId }),
+    });
+    // Accept
+    await app.request(`/api/v1/bookings/${failedBookingId}/accept`, {
+      method: 'POST',
+      headers: headers(partnerToken),
+    });
+    // On-the-way
+    await app.request(`/api/v1/bookings/${failedBookingId}/on-the-way`, {
+      method: 'POST',
+      headers: headers(partnerToken),
+    });
+    // Start
+    await app.request(`/api/v1/bookings/${failedBookingId}/start`, {
+      method: 'POST',
+      headers: headers(partnerToken),
+    });
+    // Complete
+    await app.request(`/api/v1/bookings/${failedBookingId}/complete`, {
+      method: 'POST',
+      headers: headers(partnerToken),
+    });
+
+    const [order] = await db
+      .select({ status: orders.status })
+      .from(orders)
+      .where(eq(orders.id, failedBookingId))
+      .limit(1);
+    expect(order!.status).toBe('Completed');
+  });
+
+  it('Submits payment → 201', async () => {
+    const res = await app.request('/api/v1/payments', {
+      method: 'POST',
+      headers: headers(customerToken),
+      body: JSON.stringify({
+        orderId: failedBookingId,
+        method: 'Transfer',
+        amount: 200000,
+      }),
+    });
+    const body = (await res.json()) as { success: boolean; data: { id: string; status: string } };
+    expect(res.status).toBe(201);
+    expect(body.data.status).toBe('Waiting');
+    failedPaymentId = body.data.id;
+  });
+
+  it('Verifies payment as Failed → 200', async () => {
+    const res = await app.request(`/api/v1/payments/${failedPaymentId}/verify`, {
+      method: 'POST',
+      headers: headers(adminToken),
+      body: JSON.stringify({
+        status: 'Failed',
+        notes: 'Saldo tidak mencukupi',
+      }),
+    });
+    const body = (await res.json()) as { success: boolean; data: { status: string } };
+    expect(res.status).toBe(200);
+    expect(body.success).toBe(true);
+    expect(body.data.status).toBe('Failed');
+
+    // Verify payment record status
+    const [payment] = await db
+      .select({ status: payments.status, verifiedBy: payments.verifiedBy })
+      .from(payments)
+      .where(eq(payments.id, failedPaymentId))
+      .limit(1);
+    expect(payment!.status).toBe('Failed');
+    expect(payment!.verifiedBy).toBe(adminUserId);
+
+    // Verify order status did NOT change to Paid (stays at Completed)
+    const [orderCheck] = await db
+      .select({ status: orders.status })
+      .from(orders)
+      .where(eq(orders.id, failedBookingId))
+      .limit(1);
+    expect(orderCheck!.status).not.toBe('Paid');
+
+    // Verify status history includes the failure note
+    const history = await db
+      .select({ toStatus: orderStatusHistory.toStatus, note: orderStatusHistory.note })
+      .from(orderStatusHistory)
+      .where(eq(orderStatusHistory.orderId, failedBookingId))
+      .orderBy(orderStatusHistory.createdAt);
+    const statuses = history.map((h) => h.toStatus);
+    const completedIdx = statuses.indexOf('Completed');
+    expect(completedIdx).toBeGreaterThanOrEqual(0);
+
+    // Verify the failure note is recorded in status history
+    const failureEntry = history.find(
+      (h) => h.toStatus === 'Completed' && h.note?.includes('Saldo tidak mencukupi'),
+    );
+    expect(failureEntry).toBeDefined();
+  });
+
+  it('Rejects duplicate verification (409)', async () => {
+    const res = await app.request(`/api/v1/payments/${failedPaymentId}/verify`, {
+      method: 'POST',
+      headers: headers(adminToken),
+      body: JSON.stringify({ status: 'Paid' }),
+    });
+    expect(res.status).toBe(409);
   });
 });

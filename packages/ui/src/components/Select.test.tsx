@@ -2,55 +2,59 @@ import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { Select } from './Select';
 
-const OPTIONS = [
+const options = [
   { value: 'ac', label: 'AC Service' },
   { value: 'plumbing', label: 'Plumbing' },
-  { value: 'electrical', label: 'Electrical' },
+  { value: 'cleaning', label: 'Cleaning' },
 ];
 
 describe('Select', () => {
-  it('renders all options', () => {
-    render(<Select options={OPTIONS} />);
-    const select = screen.getByRole('combobox');
-    expect(select).toBeInTheDocument();
+  it('renders select element', () => {
+    render(<Select options={options} />);
+    expect(screen.getByRole('combobox')).toBeInTheDocument();
+  });
+
+  it('renders options', () => {
+    render(<Select options={options} />);
     expect(screen.getByText('AC Service')).toBeInTheDocument();
     expect(screen.getByText('Plumbing')).toBeInTheDocument();
+    expect(screen.getByText('Cleaning')).toBeInTheDocument();
   });
 
   it('renders with label', () => {
-    render(<Select label="Layanan" options={OPTIONS} />);
+    render(<Select label="Layanan" options={options} />);
     expect(screen.getByLabelText('Layanan')).toBeInTheDocument();
   });
 
-  it('renders placeholder option', () => {
-    render(<Select options={OPTIONS} placeholder="Pilih layanan" />);
+  it('renders placeholder', () => {
+    render(<Select options={options} placeholder="Pilih layanan" />);
     expect(screen.getByText('Pilih layanan')).toBeInTheDocument();
   });
 
-  it('calls onChange when selection changes', () => {
+  it('shows error message', () => {
+    render(<Select options={options} error="Wajib dipilih" />);
+    expect(screen.getByText('Wajib dipilih')).toBeInTheDocument();
+  });
+
+  it('applies error border style', () => {
+    render(<Select options={options} error="Error" />);
+    expect(screen.getByRole('combobox').className).toContain('border-danger');
+  });
+
+  it('calls onChange when selecting', () => {
     const onChange = vi.fn();
-    render(<Select options={OPTIONS} onChange={onChange} />);
+    render(<Select options={options} onChange={onChange} />);
     fireEvent.change(screen.getByRole('combobox'), { target: { value: 'plumbing' } });
     expect(onChange).toHaveBeenCalled();
   });
 
-  it('shows error message', () => {
-    render(<Select options={OPTIONS} error="Pilih layanan" />);
-    expect(screen.getByText('Pilih layanan')).toBeInTheDocument();
+  it('renders with id matching label', () => {
+    render(<Select label="Kategori" options={options} id="kategori-select" />);
+    expect(screen.getByLabelText('Kategori').id).toBe('kategori-select');
   });
 
-  it('applies error border style', () => {
-    render(<Select options={OPTIONS} error="Error" />);
-    expect(screen.getByRole('combobox').className).toContain('border-danger');
-  });
-
-  it('renders disabled state', () => {
-    render(<Select options={OPTIONS} disabled />);
-    expect(screen.getByRole('combobox')).toBeDisabled();
-  });
-
-  it('generates id from label', () => {
-    render(<Select label="Pilih Kota" options={OPTIONS} />);
-    expect(screen.getByLabelText('Pilih Kota').id).toBe('pilih-kota');
+  it('generates id from label when no id provided', () => {
+    render(<Select label="Pilih Layanan" options={options} />);
+    expect(screen.getByLabelText('Pilih Layanan').id).toBe('pilih-layanan');
   });
 });

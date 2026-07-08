@@ -67,6 +67,8 @@ describe('GET /articles', () => {
         tags: null,
         author: null,
         published_at: null,
+        date_created: null,
+        date_updated: null,
         status: 'published',
       },
     ];
@@ -100,6 +102,8 @@ describe('GET /articles/:slug', () => {
         tags: null,
         author: null,
         published_at: null,
+        date_created: null,
+        date_updated: null,
         status: 'published',
       },
     ];

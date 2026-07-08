@@ -370,6 +370,7 @@ router.get('/', authMiddleware, async (c) => {
   const page = Number(c.req.query('page') ?? 1);
   const limit = Number(c.req.query('limit') ?? 20);
   const statusFilter = c.req.query('status');
+  const searchQuery = c.req.query('search');
 
   const query = db
     .select({
@@ -414,6 +415,10 @@ router.get('/', authMiddleware, async (c) => {
   }
 
   if (statusFilter) conditions.push(eq(orders.status, statusFilter as OrderStatus));
+
+  if (searchQuery) {
+    conditions.push(sql`${orders.bookingNumber} ILIKE ${'%' + searchQuery + '%'}`);
+  }
 
   const items = await query
     .where(conditions.length > 0 ? and(...conditions) : undefined)

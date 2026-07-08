@@ -1,14 +1,23 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 const mockSendMail = vi.fn().mockResolvedValue(undefined);
+
 vi.mock('nodemailer', () => ({
   default: {
     createTransport: vi.fn(() => ({ sendMail: mockSendMail })),
   },
 }));
 
+vi.mock('../lib/resend.ts', () => ({
+  getResend: vi.fn(),
+  FROM_ADDRESS: 'Spesialis <noreply@spesialis.id>',
+  USE_RESEND: false,
+}));
+
 beforeEach(() => {
   vi.clearAllMocks();
+  vi.spyOn(console, 'error').mockImplementation(() => {});
+  vi.spyOn(console, 'info').mockImplementation(() => {});
 });
 
 describe('sendPasswordResetEmail', () => {

@@ -4,6 +4,6 @@ import DashboardLayout from '../../../layouts/DashboardLayout.astro'
 import { AdminPartners } from '../../../components/dashboard/admin/AdminPartners.tsx'
 ---
 
-<DashboardLayout title="Manajemen Partner" role="admin">
+<DashboardLayout title="Manajemen Partner" role={['admin', 'super_admin', 'dispatcher']}>
   <AdminPartners client:load />
 </DashboardLayout>

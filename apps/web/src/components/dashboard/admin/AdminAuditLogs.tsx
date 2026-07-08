@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { createBrowserClient, formatDate } from '@specialist/shared';
+import { createBrowserClient, formatDate, downloadCSV } from '@specialist/shared';
 import { Table, Pagination, Input, Badge } from '@specialist/ui';
 import type { Column } from '@specialist/ui';
 import type { PaginationMeta, AuditAction } from '@specialist/types';
@@ -85,6 +85,19 @@ export function AdminAuditLogs() {
     setDateTo('');
     setPage(1);
     setExpandedId(null);
+  }
+
+  function handleExportCSV() {
+    const headers = ['Waktu', 'User', 'Aksi', 'Entitas', 'ID Entitas', 'IP'];
+    const rows = logs.map((l) => [
+      formatDate(l.createdAt, 'short'),
+      l.userEmail ?? '-',
+      l.action,
+      l.entity,
+      l.entityId.slice(0, 8) + '...',
+      l.ipAddress ?? '-',
+    ]);
+    downloadCSV(headers, rows, 'audit-log-export.csv');
   }
 
   const columns: Column<AuditLogItem>[] = [
@@ -201,12 +214,41 @@ export function AdminAuditLogs() {
 
       {/* Table */}
       {!loading && !error && (
-        <Table
-          columns={columns}
-          data={logs}
-          keyExtractor={(l) => l.id}
-          emptyMessage="Belum ada audit log"
-        />
+        <>
+          {logs.length > 0 && (
+            <div className="flex items-center justify-end">
+              <button
+                type="button"
+                onClick={handleExportCSV}
+                className="inline-flex items-center gap-1.5 rounded-md border border-border bg-background px-3 py-1.5 text-sm font-medium text-text transition-colors hover:bg-surface"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="shrink-0"
+                >
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                  <polyline points="7 10 12 15 17 10" />
+                  <line x1="12" y1="15" x2="12" y2="3" />
+                </svg>
+                Export CSV
+              </button>
+            </div>
+          )}
+          <Table
+            columns={columns}
+            data={logs}
+            keyExtractor={(l) => l.id}
+            emptyMessage="Belum ada audit log"
+          />
+        </>
       )}
 
       {/* Expanded detail */}

@@ -1,6 +1,6 @@
 import { Hono } from 'hono';
-import { eq, and, asc, sql } from 'drizzle-orm';
-import { db, services } from '../lib/db.ts';
+import { eq, and, asc, desc, inArray, sql } from 'drizzle-orm';
+import { db, services, reviews, orderItems } from '../lib/db.ts';
 import { success, successPaginated, notFound } from '../lib/response.ts';
 import { validateQuery } from '../middleware/validation.ts';
 import { buildPaginationMeta } from '../lib/pagination.ts';
@@ -74,6 +74,58 @@ router.get('/:identifier', async (c) => {
   if (!service) return notFound(c, 'Service tidak ditemukan');
 
   return success(c, service);
+});
+
+router.get('/:identifier/reviews', async (c) => {
+  const identifier = c.req.param('identifier')!;
+  const lookup = UUID_PATTERN.test(identifier)
+    ? eq(services.id, identifier)
+    : eq(services.slug, identifier);
+
+  const [svc] = await db.select({ id: services.id }).from(services).where(lookup).limit(1);
+  if (!svc) return notFound(c, 'Service tidak ditemukan');
+
+  // Get order IDs that include this service, then fetch their reviews
+  // Using subquery avoids duplicate reviews when an order has multiple items
+  const ordersWithService = await db
+    .select({ id: orderItems.orderId })
+    .from(orderItems)
+    .where(eq(orderItems.serviceId, svc.id));
+
+  const orderIds = ordersWithService.map((o) => o.id);
+  if (orderIds.length === 0) {
+    return success(c, {
+      items: [],
+      aggregate: { averageRating: 0, totalReviews: 0 },
+    });
+  }
+
+  const items = await db
+    .select({
+      id: reviews.id,
+      rating: reviews.rating,
+      review: reviews.review,
+      createdAt: reviews.createdAt,
+    })
+    .from(reviews)
+    .where(inArray(reviews.orderId, orderIds))
+    .orderBy(desc(reviews.createdAt));
+
+  const [aggregate] = await db
+    .select({
+      averageRating: sql<string>`COALESCE(ROUND(AVG(CAST(${reviews.rating} AS DECIMAL)), 1), '0')::text`,
+      totalReviews: sql<number>`COUNT(*)::int`,
+    })
+    .from(reviews)
+    .where(inArray(reviews.orderId, orderIds));
+
+  return success(c, {
+    items,
+    aggregate: {
+      averageRating: Number(aggregate?.averageRating ?? 0),
+      totalReviews: Number(aggregate?.totalReviews ?? 0),
+    },
+  });
 });
 
 export { router as servicesRouter };

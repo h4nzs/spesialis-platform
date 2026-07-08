@@ -81,6 +81,140 @@ Jika dokumentasi vs code bertentangan, **dokumentasi dianggap benar**.
 - `.ai/prompts/review.md` — template code review
 - `.ai/CLAUDE.md`, `.ai/CURSOR.md`, `.ai/CODEX.md`, `.ai/CHATGPT.md` — role-specific
 
+## Frontend (UI/UX) Note
+
+- Never reproduce another company's layout.
+- Never imitate Dribbble shots.
+- Never imitate popular SaaS landing pages.
+- Never create "AI generated" layouts.
+- Every screen should solve the user's problem first.
+- Visual uniqueness is mandatory.
+
+Before designing any page ask:
+
+- Who is using this page?
+- What is their primary goal?
+- What is the fastest path to complete that goal?
+- What information creates trust?
+- What information is unnecessary?
+- Design around those answers.
+
+Never generate sections because they are common.
+
+Every section must have a business purpose.
+
+If a section does not improve:
+
+- conversion
+- trust
+- navigation
+- SEO
+- usability
+
+it should not exist.
+
+Premium ≠ Fancy
+
+Premium means:
+
+excellent spacing
+
+excellent hierarchy
+
+excellent typography
+
+excellent interactions
+
+excellent responsiveness
+
+excellent accessibility
+
+excellent consistency
+
+Floating Glass Navbar
+
+Huge Gradient Background
+
+Blob Background
+
+Mesh Gradient
+
+Random Dashboard Cards
+
+Animated Counters Everywhere
+
+Overuse of Glassmorphism
+
+Overuse of Blur
+
+Overuse of Floating Elements
+
+Overuse of Gradients
+
+Whitespace is a feature.
+
+Never try to fill empty space.
+
+Empty space improves trust.
+
+Empty space improves readability.
+
+Empty space improves perceived quality.
+
+Before designing any page:
+
+Create a visual direction.
+
+Describe:
+
+Mood
+
+Visual weight
+
+Hierarchy
+
+Contrast
+
+Density
+
+Interaction style
+
+Photography style
+
+Illustration style
+
+Motion style
+
+Only then design.
+
+Avoid layouts that look like:
+
+Tailwind UI
+
+Flowbite
+
+Preline
+
+DaisyUI
+
+Bootstrap
+
+Shadcn examples
+
+Random Dribbble clones
+
+Instead create layouts based on business requirements.
+
+After designing every page ask:
+
+Would an experienced designer immediately know this was AI generated?
+
+If yes,
+
+redesign.
+
+Repeat until it feels intentionally designed by humans.
+
 ## Status Proyek
 
 **Active development.** API (`apps/api/`) dan Web (`apps/web/`) sudah memiliki implementasi penuh — ~80 endpoint, ~30 halaman dashboard, full booking lifecycle state machine. `packages/*/src/` sudah terisi (types, database 26 tabel, validation 17 skema, shared utilities, ui 13 komponen). **Kesenjangan utama:** CMS (`apps/cms/`) belum dikonfigurasi — Directus container siap tetapi collections/roles/permissions perlu setup manual. SEO (structured data, sitemap, OpenGraph) belum terpasang. Testing masih minimal — Vitest terinstall di `api`, `shared`, `validation` tapi coverage rendah.

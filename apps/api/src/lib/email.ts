@@ -1,4 +1,5 @@
 import nodemailer from 'nodemailer';
+import { getResend, FROM_ADDRESS, USE_RESEND } from './resend.ts';
 import {
   passwordResetHtml,
   bookingConfirmationHtml,
@@ -10,11 +11,12 @@ import {
 } from './email-templates.ts';
 
 export const APP_URL = process.env.APP_URL ?? 'http://localhost:4321';
+
+// Nodemailer (Mailpit) fallback — used in local dev without RESEND_API_KEY
 const SMTP_HOST = process.env.SMTP_HOST ?? 'mailpit';
 const SMTP_PORT = Number(process.env.SMTP_PORT ?? 1025);
 const SMTP_USER = process.env.SMTP_USER ?? '';
 const SMTP_PASS = process.env.SMTP_PASS ?? '';
-const FROM_ADDRESS = process.env.SMTP_FROM ?? 'noreply@spesialis.id';
 
 let transporter: nodemailer.Transporter | null = null;
 
@@ -30,38 +32,82 @@ function getTransporter(): nodemailer.Transporter {
   return transporter;
 }
 
+async function sendViaResend(
+  to: string,
+  subject: string,
+  text: string,
+  html: string,
+): Promise<void> {
+  await getResend().emails.send({
+    from: FROM_ADDRESS,
+    to,
+    subject,
+    text,
+    html,
+  });
+}
+
+async function sendViaNodemailer(
+  to: string,
+  subject: string,
+  text: string,
+  html: string,
+): Promise<void> {
+  await getTransporter().sendMail({
+    from: process.env.SMTP_FROM ?? 'noreply@spesialis.id',
+    to,
+    subject,
+    text,
+    html,
+  });
+}
+
+function emailProviderLabel(): string {
+  return USE_RESEND ? 'Resend' : 'Mailpit';
+}
+
+// ─── Shared dispatch helper ───────────────────────────────────────
+
+async function sendEmail(
+  to: string,
+  subject: string,
+  text: string,
+  html: string,
+  label: string,
+  ...extraLogArgs: unknown[]
+): Promise<void> {
+  try {
+    if (USE_RESEND) {
+      await sendViaResend(to, subject, text, html);
+    } else {
+      await sendViaNodemailer(to, subject, text, html);
+    }
+    console.info(`[Email/${emailProviderLabel()}] ${label}:`, to, ...extraLogArgs);
+  } catch (err) {
+    console.error(
+      `[Email/${emailProviderLabel()}] Failed to send ${label}:`,
+      to,
+      ...extraLogArgs,
+      err,
+    );
+  }
+}
+
+// ─── Public email functions ──────────────────────────────────────────
+
 export async function sendPasswordResetEmail(
   email: string,
   fullName: string,
   resetToken: string,
 ): Promise<void> {
   const resetUrl = `${APP_URL}/reset-password?token=${resetToken}`;
-
-  const text = `Halo ${fullName},
-
-Kami menerima permintaan reset password untuk akun Spesialis Anda.
-
-Klik link berikut untuk mereset password Anda:
-${resetUrl}
-
-Link ini berlaku selama 7 hari.
-
-Jika Anda tidak meminta reset password, abaikan email ini.
-
-— Tim Spesialis`;
-
-  try {
-    await getTransporter().sendMail({
-      from: FROM_ADDRESS,
-      to: email,
-      subject: 'Reset Password — Spesialis',
-      text,
-      html: passwordResetHtml(fullName, resetUrl),
-    });
-    console.info('[Email] Password reset email sent:', email);
-  } catch (err) {
-    console.error('[Email] Failed to send password reset email:', email, err);
-  }
+  await sendEmail(
+    email,
+    'Reset Password — Spesialis',
+    `Halo ${fullName},\n\nKami menerima permintaan reset password untuk akun Spesialis Anda.\n\nKlik link berikut untuk mereset password Anda:\n${resetUrl}\n\nLink ini berlaku selama 7 hari.\n\nJika Anda tidak meminta reset password, abaikan email ini.\n\n— Tim Spesialis`,
+    passwordResetHtml(fullName, resetUrl),
+    'Password reset',
+  );
 }
 
 export async function sendBookingConfirmationEmail(
@@ -70,29 +116,14 @@ export async function sendBookingConfirmationEmail(
   bookingNumber: string,
   trackingUrl: string,
 ): Promise<void> {
-  const text = `Halo ${fullName},
-
-Booking Anda dengan nomor ${bookingNumber} telah dikonfirmasi.
-
-Tim kami akan segera menugaskan teknisi terbaik untuk membantu Anda.
-
-Lacak status booking:
-${trackingUrl}
-
-— Tim Spesialis`;
-
-  try {
-    await getTransporter().sendMail({
-      from: FROM_ADDRESS,
-      to: email,
-      subject: `Booking Dikonfirmasi — #${bookingNumber}`,
-      text,
-      html: bookingConfirmationHtml(fullName, bookingNumber, trackingUrl),
-    });
-    console.info('[Email] Booking confirmation sent:', email, bookingNumber);
-  } catch (err) {
-    console.error('[Email] Failed to send booking confirmation:', email, bookingNumber, err);
-  }
+  await sendEmail(
+    email,
+    `Booking Dikonfirmasi — #${bookingNumber}`,
+    `Halo ${fullName},\n\nBooking Anda dengan nomor ${bookingNumber} telah dikonfirmasi.\n\nTim kami akan segera menugaskan teknisi terbaik untuk membantu Anda.\n\nLacak status booking:\n${trackingUrl}\n\n— Tim Spesialis`,
+    bookingConfirmationHtml(fullName, bookingNumber, trackingUrl),
+    'Booking confirmation',
+    bookingNumber,
+  );
 }
 
 export async function sendPartnerAssignedEmail(
@@ -101,29 +132,14 @@ export async function sendPartnerAssignedEmail(
   bookingNumber: string,
   dashboardUrl: string,
 ): Promise<void> {
-  const text = `Halo ${fullName},
-
-Anda ditugaskan untuk pekerjaan baru:
-
-Nomor Booking: ${bookingNumber}
-
-Silakan login ke dashboard untuk melihat detail dan mengonfirmasi:
-${dashboardUrl}
-
-— Tim Spesialis`;
-
-  try {
-    await getTransporter().sendMail({
-      from: FROM_ADDRESS,
-      to: email,
-      subject: `Pekerjaan Baru — #${bookingNumber}`,
-      text,
-      html: partnerAssignedHtml(fullName, bookingNumber, dashboardUrl),
-    });
-    console.info('[Email] Partner assigned email sent:', email, bookingNumber);
-  } catch (err) {
-    console.error('[Email] Failed to send partner assigned email:', email, bookingNumber, err);
-  }
+  await sendEmail(
+    email,
+    `Pekerjaan Baru — #${bookingNumber}`,
+    `Halo ${fullName},\n\nAnda ditugaskan untuk pekerjaan baru:\n\nNomor Booking: ${bookingNumber}\n\nSilakan login ke dashboard untuk melihat detail dan mengonfirmasi:\n${dashboardUrl}\n\n— Tim Spesialis`,
+    partnerAssignedHtml(fullName, bookingNumber, dashboardUrl),
+    'Partner assigned',
+    bookingNumber,
+  );
 }
 
 export async function sendPartnerVerifiedEmail(
@@ -137,32 +153,18 @@ export async function sendPartnerVerifiedEmail(
     ? 'Verifikasi Partner Disetujui — Spesialis'
     : 'Verifikasi Partner Ditolak — Spesialis';
 
-  const text = `Halo ${fullName},
-
-${
-  isApproved
-    ? 'Selamat! Akun mitra Anda telah diverifikasi dan disetujui. Anda sekarang dapat mulai menerima pekerjaan.'
-    : 'Mohon maaf, verifikasi akun mitra Anda ditolak.'
-}
-${note ? `\nCatatan: ${note}` : ''}
-
-${isApproved ? '\nSilakan login untuk mulai menerima pekerjaan:' : '\nSilakan hubungi admin untuk informasi lebih lanjut:'}
-${APP_URL}/login
-
-— Tim Spesialis`;
-
-  try {
-    await getTransporter().sendMail({
-      from: FROM_ADDRESS,
-      to: email,
-      subject,
-      text,
-      html: partnerVerifiedHtml(fullName, status, note),
-    });
-    console.info('[Email] Partner verification email sent:', email, status);
-  } catch (err) {
-    console.error('[Email] Failed to send partner verification email:', email, err);
-  }
+  await sendEmail(
+    email,
+    subject,
+    `Halo ${fullName},\n\n${
+      isApproved
+        ? 'Selamat! Akun mitra Anda telah diverifikasi dan disetujui. Anda sekarang dapat mulai menerima pekerjaan.'
+        : 'Mohon maaf, verifikasi akun mitra Anda ditolak.'
+    }\n${note ? `\nCatatan: ${note}` : ''}\n\n${isApproved ? '\nSilakan login untuk mulai menerima pekerjaan:' : '\nSilakan hubungi admin untuk informasi lebih lanjut:'}\n${APP_URL}/login\n\n— Tim Spesialis`,
+    partnerVerifiedHtml(fullName, status, note),
+    'Partner verification',
+    status,
+  );
 }
 
 export async function sendVerificationEmail(
@@ -171,30 +173,13 @@ export async function sendVerificationEmail(
   verificationToken: string,
 ): Promise<void> {
   const verifyUrl = `${APP_URL}/verify-email?token=${verificationToken}`;
-
-  const text = `Halo ${fullName},
-
-Terima kasih telah mendaftar di Spesialis.
-
-Silakan verifikasi alamat email Anda dengan mengklik link berikut:
-${verifyUrl}
-
-Link ini berlaku selama 7 hari.
-
-— Tim Spesialis`;
-
-  try {
-    await getTransporter().sendMail({
-      from: FROM_ADDRESS,
-      to: email,
-      subject: 'Verifikasi Email — Spesialis',
-      text,
-      html: verificationHtml(fullName, verifyUrl),
-    });
-    console.info('[Email] Verification email sent:', email);
-  } catch (err) {
-    console.error('[Email] Failed to send verification email:', email, err);
-  }
+  await sendEmail(
+    email,
+    'Verifikasi Email — Spesialis',
+    `Halo ${fullName},\n\nTerima kasih telah mendaftar di Spesialis.\n\nSilakan verifikasi alamat email Anda dengan mengklik link berikut:\n${verifyUrl}\n\nLink ini berlaku selama 7 hari.\n\n— Tim Spesialis`,
+    verificationHtml(fullName, verifyUrl),
+    'Verification',
+  );
 }
 
 export async function sendPaymentVerifiedEmail(
@@ -209,37 +194,19 @@ export async function sendPaymentVerifiedEmail(
   const isPaid = status === 'Paid';
   const subject = isPaid ? 'Pembayaran Dikonfirmasi — Spesialis' : 'Pembayaran Ditolak — Spesialis';
 
-  const text = `Halo ${fullName},
-
-${
-  isPaid
-    ? 'Pembayaran Anda telah dikonfirmasi.'
-    : 'Mohon maaf, pembayaran Anda tidak dapat diverifikasi.'
-}
-
-Detail Pembayaran:
-  Booking: ${bookingNumber}
-  Jumlah: ${amount}
-  Metode: ${paymentMethod}
-  Status: ${status}
-${note ? `\nCatatan: ${note}` : ''}
-
-${isPaid ? '\nTerima kasih telah menggunakan layanan Spesialis.' : '\nSilakan hubungi admin untuk informasi lebih lanjut.'}
-
-— Tim Spesialis`;
-
-  try {
-    await getTransporter().sendMail({
-      from: FROM_ADDRESS,
-      to: email,
-      subject,
-      text,
-      html: paymentVerifiedHtml(fullName, bookingNumber, amount, paymentMethod, status, note),
-    });
-    console.info('[Email] Payment verification email sent:', email, bookingNumber, status);
-  } catch (err) {
-    console.error('[Email] Failed to send payment verification email:', email, err);
-  }
+  await sendEmail(
+    email,
+    subject,
+    `Halo ${fullName},\n\n${
+      isPaid
+        ? 'Pembayaran Anda telah dikonfirmasi.'
+        : 'Mohon maaf, pembayaran Anda tidak dapat diverifikasi.'
+    }\n\nDetail Pembayaran:\n  Booking: ${bookingNumber}\n  Jumlah: ${amount}\n  Metode: ${paymentMethod}\n  Status: ${status}\n${note ? `\nCatatan: ${note}` : ''}\n\n${isPaid ? '\nTerima kasih telah menggunakan layanan Spesialis.' : '\nSilakan hubungi admin untuk informasi lebih lanjut.'}\n\n— Tim Spesialis`,
+    paymentVerifiedHtml(fullName, bookingNumber, amount, paymentMethod, status, note),
+    'Payment verification',
+    bookingNumber,
+    status,
+  );
 }
 
 export async function sendNotificationEmail(
@@ -248,18 +215,12 @@ export async function sendNotificationEmail(
   title: string,
   message: string,
 ): Promise<void> {
-  const text = `Halo ${fullName},\n\n${message}\n\n— Tim Spesialis`;
-
-  try {
-    await getTransporter().sendMail({
-      from: FROM_ADDRESS,
-      to: email,
-      subject: `${title} — Spesialis`,
-      text,
-      html: notificationEmailHtml(fullName, title, message),
-    });
-    console.info('[Email] Notification email sent:', email, title);
-  } catch (err) {
-    console.error('[Email] Failed to send notification email:', email, err);
-  }
+  await sendEmail(
+    email,
+    `${title} — Spesialis`,
+    `Halo ${fullName},\n\n${message}\n\n— Tim Spesialis`,
+    notificationEmailHtml(fullName, title, message),
+    'Notification',
+    title,
+  );
 }

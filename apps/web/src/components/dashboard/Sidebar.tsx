@@ -27,6 +27,7 @@ const NAV_MAP: Record<string, NavItem[]> = {
     { href: '/dashboard/partner/jobs', label: 'Pekerjaan' },
     { href: '/dashboard/partner/availability', label: 'Ketersediaan' },
     { href: '/dashboard/partner/earnings', label: 'Pendapatan' },
+    { href: '/dashboard/partner/penalties', label: 'Penalty' },
     { href: '/dashboard/partner/reviews', label: 'Ulasan' },
     { href: '/dashboard/partner/settings', label: 'Pengaturan' },
   ],
@@ -39,8 +40,19 @@ const NAV_MAP: Record<string, NavItem[]> = {
     { href: '/dashboard/admin/services', label: 'Layanan' },
     { href: '/dashboard/admin/articles', label: 'Artikel' },
     { href: '/dashboard/admin/audit-logs', label: 'Audit Log' },
+    { href: '/dashboard/admin/penalties', label: 'Penalty' },
     { href: '/dashboard/admin/reports', label: 'Laporan' },
     { href: '/dashboard/admin/settings', label: 'Pengaturan' },
+  ],
+  dispatcher: [
+    { href: '/dashboard/dispatcher', label: 'Ringkasan' },
+    { href: '/dashboard/admin/bookings', label: 'Booking' },
+    { href: '/dashboard/admin/partners', label: 'Partner' },
+  ],
+  finance: [
+    { href: '/dashboard/finance', label: 'Ringkasan' },
+    { href: '/dashboard/admin/bookings', label: 'Booking' },
+    { href: '/dashboard/admin/reports', label: 'Laporan' },
   ],
   corporate: [
     { href: '/dashboard/corporate', label: 'Ringkasan' },

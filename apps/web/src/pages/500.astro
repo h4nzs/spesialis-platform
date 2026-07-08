@@ -2,7 +2,16 @@
 import BaseLayout from '../layouts/BaseLayout.astro'
 ---
 
-<BaseLayout title="500 - Kesalahan Server - Spesialis" description="Terjadi kesalahan pada server. Silakan coba lagi.">
+<BaseLayout
+  title="500 - Kesalahan Server - Spesialis"
+  description="Terjadi kesalahan pada server. Silakan coba lagi."
+  jsonLd={{
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Beranda', item: 'https://spesialis.id' },
+    ],
+  }}>
   <div class="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
     <div class="mx-auto max-w-lg text-center">
       <h1 class="text-6xl font-bold text-danger">500</h1>

@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { createBrowserClient, formatDate, getStatusLabel } from '@specialist/shared';
+import { createBrowserClient, formatDate, getStatusLabel, downloadCSV } from '@specialist/shared';
 import { Card, Table, Badge } from '@specialist/ui';
 import type { OrderStatus } from '@specialist/types';
 
@@ -41,6 +41,16 @@ export function PartnerEarnings() {
     return <div className="text-sm text-text-muted">Memuat...</div>;
   }
 
+  function handleExportCSV() {
+    const headers = ['No. Booking', 'Status', 'Tgl Selesai'];
+    const rows = completedJobs.map((j) => [
+      j.bookingNumber,
+      getStatusLabel(j.orderStatus as OrderStatus),
+      j.completedAt ? formatDate(j.completedAt) : '-',
+    ]);
+    downloadCSV(headers, rows, 'riwayat-pekerjaan.csv');
+  }
+
   return (
     <div className="space-y-6">
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -68,7 +78,32 @@ export function PartnerEarnings() {
 
       {completedJobs.length > 0 && (
         <div>
-          <h3 className="mb-3 text-lg font-semibold text-text">Riwayat Pekerjaan</h3>
+          <div className="mb-3 flex items-center justify-between">
+            <h3 className="text-lg font-semibold text-text">Riwayat Pekerjaan</h3>
+            <button
+              type="button"
+              onClick={handleExportCSV}
+              className="inline-flex items-center gap-1.5 rounded-md border border-border bg-background px-3 py-1.5 text-sm font-medium text-text transition-colors hover:bg-surface"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="shrink-0"
+              >
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                <polyline points="7 10 12 15 17 10" />
+                <line x1="12" y1="15" x2="12" y2="3" />
+              </svg>
+              Export CSV
+            </button>
+          </div>
           <div className="overflow-x-auto">
             <Table
               columns={[

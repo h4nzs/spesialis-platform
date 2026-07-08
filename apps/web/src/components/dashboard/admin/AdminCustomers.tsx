@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { createBrowserClient } from '@specialist/shared';
+import { createBrowserClient, downloadCSV } from '@specialist/shared';
 import { Table, Badge, Button } from '@specialist/ui';
 import type { Column } from '@specialist/ui';
 
@@ -94,16 +94,51 @@ export function AdminCustomers() {
     },
   ];
 
+  function handleExportCSV() {
+    const headers = ['Nama', 'Email', 'No. HP', 'Status', 'Dibuat'];
+    const rows = customers.map((c) => [c.fullName, c.email, c.phone, c.status, c.createdAt]);
+    downloadCSV(headers, rows, 'customer-export.csv');
+  }
+
   if (loading) {
     return <div className="text-sm text-text-muted">Memuat...</div>;
   }
 
   return (
-    <Table
-      columns={columns}
-      data={customers}
-      keyExtractor={(c) => c.id}
-      emptyMessage="Belum ada customer"
-    />
+    <div className="space-y-4">
+      <div className="flex items-center justify-end">
+        {customers.length > 0 && (
+          <button
+            type="button"
+            onClick={handleExportCSV}
+            className="inline-flex items-center gap-1.5 rounded-md border border-border bg-background px-3 py-1.5 text-sm font-medium text-text transition-colors hover:bg-surface"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="shrink-0"
+            >
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+              <polyline points="7 10 12 15 17 10" />
+              <line x1="12" y1="15" x2="12" y2="3" />
+            </svg>
+            Export CSV
+          </button>
+        )}
+      </div>
+      <Table
+        columns={columns}
+        data={customers}
+        keyExtractor={(c) => c.id}
+        emptyMessage="Belum ada customer"
+      />
+    </div>
   );
 }

@@ -1,13 +1,17 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { AdminUsers } from './AdminUsers';
 
-const mockGet = vi.fn();
-const mockPatch = vi.fn();
+const { mockGet, mockPatch, mockDownloadCSV } = vi.hoisted(() => ({
+  mockGet: vi.fn(),
+  mockPatch: vi.fn(),
+  mockDownloadCSV: vi.fn(),
+}));
 
 vi.mock('@specialist/shared', () => ({
   createBrowserClient: () => ({ get: mockGet, patch: mockPatch }),
+  downloadCSV: mockDownloadCSV,
 }));
 
 vi.mock('@specialist/ui', () => ({
@@ -190,5 +194,175 @@ describe('AdminUsers', () => {
     await user.click(btn);
     expect(await screen.findByTestId('modal')).toBeInTheDocument();
     expect(screen.getByText(/Status saat ini/)).toBeInTheDocument();
+  });
+
+  // --- Interaction Tests ---
+
+  it('calls get API with search term on form submit', async () => {
+    const user = userEvent.setup();
+    mockGet.mockResolvedValueOnce({ data: [] });
+    render(<AdminUsers />);
+    expect(await screen.findByPlaceholderText('Cari email atau nomor HP...')).toBeInTheDocument();
+
+    const searchInput = screen.getByTestId('search-input');
+    await user.type(searchInput, 'test@email.com');
+    await user.click(screen.getByText('Cari'));
+
+    await waitFor(() => {
+      expect(mockGet).toHaveBeenCalledWith('/api/v1/admin/users', {
+        params: expect.objectContaining({
+          search: 'test@email.com',
+          limit: 100,
+        }),
+      });
+    });
+  });
+
+  it('calls patch API when status is updated and Simpan is clicked', async () => {
+    const user = userEvent.setup();
+    mockGet.mockResolvedValueOnce({
+      data: [
+        {
+          id: 'u1',
+          email: 'user@test.com',
+          phone: '081',
+          role: 'customer',
+          status: 'active',
+          emailVerifiedAt: null,
+          lastLoginAt: null,
+          createdAt: '2026-01-01',
+        },
+      ],
+    });
+    mockPatch.mockResolvedValue(undefined);
+    render(<AdminUsers />);
+    const btn = await screen.findByText('Ubah Status');
+    await user.click(btn);
+    await waitFor(() => {
+      expect(screen.getByTestId('modal')).toBeInTheDocument();
+    });
+
+    const modal = screen.getByTestId('modal');
+    const select = within(modal).getByRole('combobox');
+    await user.selectOptions(select, 'suspended');
+
+    await user.click(screen.getByText('Simpan'));
+
+    await waitFor(() => {
+      expect(mockPatch).toHaveBeenCalledWith('/api/v1/admin/users/u1/status', {
+        body: { status: 'suspended' },
+      });
+    });
+  });
+
+  it('does not call patch API when status is unchanged', async () => {
+    const user = userEvent.setup();
+    mockGet.mockResolvedValueOnce({
+      data: [
+        {
+          id: 'u1',
+          email: 'user@test.com',
+          phone: '',
+          role: 'customer',
+          status: 'active',
+          emailVerifiedAt: null,
+          lastLoginAt: null,
+          createdAt: '2026-01-01',
+        },
+      ],
+    });
+    mockPatch.mockResolvedValue(undefined);
+    render(<AdminUsers />);
+    const btn = await screen.findByText('Ubah Status');
+    await user.click(btn);
+    await waitFor(() => {
+      expect(screen.getByTestId('modal')).toBeInTheDocument();
+    });
+
+    await user.click(screen.getByText('Simpan'));
+
+    await waitFor(() => {
+      expect(mockPatch).not.toHaveBeenCalled();
+    });
+  });
+
+  it('closes modal on Batal and does not call API', async () => {
+    const user = userEvent.setup();
+    mockGet.mockResolvedValueOnce({
+      data: [
+        {
+          id: 'u1',
+          email: 'user@test.com',
+          phone: '',
+          role: 'customer',
+          status: 'active',
+          emailVerifiedAt: null,
+          lastLoginAt: null,
+          createdAt: '2026-01-01',
+        },
+      ],
+    });
+    render(<AdminUsers />);
+    const btn = await screen.findByText('Ubah Status');
+    await user.click(btn);
+    await waitFor(() => {
+      expect(screen.getByTestId('modal')).toBeInTheDocument();
+    });
+
+    await user.click(screen.getByText('Batal'));
+
+    await waitFor(() => {
+      expect(screen.queryByTestId('modal')).not.toBeInTheDocument();
+    });
+    expect(mockPatch).not.toHaveBeenCalled();
+  });
+
+  // ─── CSV Export Tests ───────────────────────────────────────────
+
+  describe('CSV export', () => {
+    beforeEach(() => {
+      mockGet.mockResolvedValue({
+        data: [
+          {
+            id: 'u1',
+            email: 'user@test.com',
+            phone: '08123456789',
+            role: 'customer',
+            status: 'active',
+            emailVerifiedAt: '2026-01-01',
+            lastLoginAt: null,
+            createdAt: '2026-01-01',
+          },
+        ],
+      });
+    });
+
+    it('renders Export CSV button when data loaded', async () => {
+      render(<AdminUsers />);
+      expect(await screen.findByText('Export CSV')).toBeInTheDocument();
+    });
+
+    it('does not render Export CSV button when no users', async () => {
+      mockGet.mockReset();
+      mockGet.mockResolvedValue({ data: [] });
+      render(<AdminUsers />);
+      expect(await screen.findByText('Tidak ada user ditemukan')).toBeInTheDocument();
+      expect(screen.queryByText('Export CSV')).not.toBeInTheDocument();
+    });
+
+    it('calls downloadCSV with correct data on click', async () => {
+      const user = userEvent.setup();
+      render(<AdminUsers />);
+      expect(await screen.findByText('Export CSV')).toBeInTheDocument();
+
+      await user.click(screen.getByText('Export CSV'));
+
+      expect(mockDownloadCSV).toHaveBeenCalledTimes(1);
+      expect(mockDownloadCSV).toHaveBeenCalledWith(
+        ['Email', 'No. HP', 'Role', 'Status', 'Email Terverifikasi', 'Terakhir Login', 'Dibuat'],
+        [['user@test.com', '08123456789', 'Customer', 'active', 'Ya', 'Tidak pernah', '1/1/2026']],
+        'user-export.csv',
+      );
+    });
   });
 });

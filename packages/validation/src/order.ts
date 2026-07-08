@@ -40,7 +40,17 @@ export const discountOrderSchema = z
     message: 'Setidaknya satu diskon (percent atau amount) harus diisi',
   });
 
+export const updateInternalNotesSchema = z.object({
+  internalNotes: z.string().min(1).max(2000),
+});
+
+export const updateOrderTagsSchema = z.object({
+  tags: z.string().max(500),
+});
+
 export type CreateOrderInput = z.infer<typeof createOrderSchema>;
 export type UpdateOrderStatusInput = z.infer<typeof updateOrderStatusSchema>;
 export type UpdatePriceInput = z.infer<typeof updatePriceSchema>;
 export type CancelOrderInput = z.infer<typeof cancelOrderSchema>;
+export type UpdateInternalNotesInput = z.infer<typeof updateInternalNotesSchema>;
+export type UpdateOrderTagsInput = z.infer<typeof updateOrderTagsSchema>;

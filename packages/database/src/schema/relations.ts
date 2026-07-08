@@ -27,6 +27,7 @@ import { articleCategories } from './article-categories.ts';
 import { articles } from './articles.ts';
 import { contracts } from './contracts.ts';
 import { invoices } from './invoices.ts';
+import { partnerPenalties } from './partner-penalties.ts';
 
 export const usersRelations = relations(users, ({ one, many }) => ({
   customerProfile: one(customerProfiles),
@@ -194,4 +195,16 @@ export const contractsRelations = relations(contracts, ({ one }) => ({
 export const invoicesRelations = relations(invoices, ({ one }) => ({
   company: one(companies, { fields: [invoices.companyId], references: [companies.id] }),
   order: one(orders, { fields: [invoices.orderId], references: [orders.id] }),
+}));
+
+export const partnerPenaltiesRelations = relations(partnerPenalties, ({ one }) => ({
+  partner: one(partnerProfiles, {
+    fields: [partnerPenalties.partnerId],
+    references: [partnerProfiles.id],
+  }),
+  order: one(orders, { fields: [partnerPenalties.orderId], references: [orders.id] }),
+  imposedByUser: one(users, {
+    fields: [partnerPenalties.imposedBy],
+    references: [users.id],
+  }),
 }));

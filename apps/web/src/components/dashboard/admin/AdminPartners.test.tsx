@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import { AdminPartners } from './AdminPartners';
 
 const mockGet = vi.fn();
@@ -99,5 +99,49 @@ describe('AdminPartners', () => {
     mockGet.mockRejectedValue(new Error('Gagal'));
     render(<AdminPartners />);
     expect(await screen.findByText('Belum ada partner')).toBeInTheDocument();
+  });
+
+  it('calls post API when Setujui is clicked', async () => {
+    mockGet.mockResolvedValue([
+      {
+        id: 'p1',
+        fullName: 'Pending Partner',
+        availability: 'Available',
+        verificationStatus: 'Pending',
+        completedJobs: 0,
+        ratingAverage: null,
+      },
+    ]);
+    mockPost.mockResolvedValue(undefined);
+    render(<AdminPartners />);
+    expect(await screen.findByText('Setujui')).toBeInTheDocument();
+    screen.getByText('Setujui').click();
+    await waitFor(() => {
+      expect(mockPost).toHaveBeenCalledWith('/api/v1/partners/p1/verify', {
+        body: { verificationStatus: 'Approved' },
+      });
+    });
+  });
+
+  it('calls post API when Tolak is clicked', async () => {
+    mockGet.mockResolvedValue([
+      {
+        id: 'p2',
+        fullName: 'Pending Partner 2',
+        availability: 'Available',
+        verificationStatus: 'Pending',
+        completedJobs: 0,
+        ratingAverage: null,
+      },
+    ]);
+    mockPost.mockResolvedValue(undefined);
+    render(<AdminPartners />);
+    expect(await screen.findByText('Tolak')).toBeInTheDocument();
+    screen.getByText('Tolak').click();
+    await waitFor(() => {
+      expect(mockPost).toHaveBeenCalledWith('/api/v1/partners/p2/verify', {
+        body: { verificationStatus: 'Rejected' },
+      });
+    });
   });
 });

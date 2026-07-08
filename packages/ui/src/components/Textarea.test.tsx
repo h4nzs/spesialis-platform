@@ -9,18 +9,18 @@ describe('Textarea', () => {
   });
 
   it('renders with label', () => {
-    render(<Textarea label="Catatan" />);
-    expect(screen.getByLabelText('Catatan')).toBeInTheDocument();
+    render(<Textarea label="Deskripsi" />);
+    expect(screen.getByLabelText('Deskripsi')).toBeInTheDocument();
   });
 
-  it('displays placeholder', () => {
-    render(<Textarea placeholder="Tulis catatan..." />);
-    expect(screen.getByPlaceholderText('Tulis catatan...')).toBeInTheDocument();
+  it('renders placeholder text', () => {
+    render(<Textarea placeholder="Tulis deskripsi..." />);
+    expect(screen.getByPlaceholderText('Tulis deskripsi...')).toBeInTheDocument();
   });
 
   it('displays value', () => {
-    render(<Textarea value="Some text" onChange={() => {}} />);
-    expect(screen.getByDisplayValue('Some text')).toBeInTheDocument();
+    render(<Textarea value="Test content" onChange={() => {}} />);
+    expect(screen.getByDisplayValue('Test content')).toBeInTheDocument();
   });
 
   it('calls onChange when typing', () => {
@@ -31,11 +31,11 @@ describe('Textarea', () => {
   });
 
   it('shows error message', () => {
-    render(<Textarea error="Catatan terlalu pendek" />);
-    expect(screen.getByText('Catatan terlalu pendek')).toBeInTheDocument();
+    render(<Textarea error="Field wajib diisi" />);
+    expect(screen.getByText('Field wajib diisi')).toBeInTheDocument();
   });
 
-  it('applies error border', () => {
+  it('applies error border style', () => {
     render(<Textarea error="Error" />);
     expect(screen.getByRole('textbox').className).toContain('border-danger');
   });
@@ -45,8 +45,13 @@ describe('Textarea', () => {
     expect(screen.getByRole('textbox')).toBeDisabled();
   });
 
-  it('generates id from label', () => {
-    render(<Textarea label="Deskripsi" />);
-    expect(screen.getByLabelText('Deskripsi').id).toBe('deskripsi');
+  it('renders with id matching label', () => {
+    render(<Textarea label="Catatan" id="catatan-field" />);
+    expect(screen.getByLabelText('Catatan').id).toBe('catatan-field');
+  });
+
+  it('has minimum height', () => {
+    render(<Textarea />);
+    expect(screen.getByRole('textbox').className).toContain('min-h');
   });
 });

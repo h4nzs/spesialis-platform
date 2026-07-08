@@ -10,6 +10,7 @@ import {
   assignments,
   orders,
   reviews,
+  partnerPenalties,
 } from '../lib/db.ts';
 import { authMiddleware, requireRole } from '../middleware/auth.ts';
 import { validateBody, validateQuery } from '../middleware/validation.ts';
@@ -304,6 +305,67 @@ router.get('/me/jobs', authMiddleware, async (c) => {
   if (!profile) return notFound(c, 'Profil partner tidak ditemukan');
 
   const items = await listPartnerJobs(profile.id);
+  return success(c, items);
+});
+
+router.get('/me/earnings', authMiddleware, async (c) => {
+  const userId = c.get('userId');
+
+  const [profile] = await db
+    .select({ id: partnerProfiles.id })
+    .from(partnerProfiles)
+    .where(eq(partnerProfiles.userId, userId))
+    .limit(1);
+  if (!profile) return notFound(c, 'Profil partner tidak ditemukan');
+
+  // Orders this partner completed with their final prices
+  const earningsData = await db
+    .select({
+      id: orders.id,
+      bookingNumber: orders.bookingNumber,
+      status: orders.status,
+      finalPrice: orders.finalPrice,
+      completedAt: orders.completedAt,
+    })
+    .from(orders)
+    .where(and(eq(orders.partnerId, profile.id), eq(orders.status, 'Paid')))
+    .orderBy(desc(orders.completedAt));
+
+  const totalEarnings = earningsData.reduce((sum, o) => sum + Number(o.finalPrice ?? 0), 0);
+
+  return success(c, {
+    totalEarnings,
+    paidCount: earningsData.length,
+    recentEarnings: earningsData.slice(0, 20),
+  });
+});
+
+router.get('/me/penalties', authMiddleware, async (c) => {
+  const userId = c.get('userId');
+
+  const [profile] = await db
+    .select({ id: partnerProfiles.id })
+    .from(partnerProfiles)
+    .where(eq(partnerProfiles.userId, userId))
+    .limit(1);
+  if (!profile) return notFound(c, 'Profil partner tidak ditemukan');
+
+  const items = await db
+    .select({
+      id: partnerPenalties.id,
+      orderId: partnerPenalties.orderId,
+      type: partnerPenalties.type,
+      amount: partnerPenalties.amount,
+      reason: partnerPenalties.reason,
+      status: partnerPenalties.status,
+      imposedAt: partnerPenalties.imposedAt,
+      resolvedAt: partnerPenalties.resolvedAt,
+      notes: partnerPenalties.notes,
+    })
+    .from(partnerPenalties)
+    .where(eq(partnerPenalties.partnerId, profile.id))
+    .orderBy(desc(partnerPenalties.imposedAt));
+
   return success(c, items);
 });
 

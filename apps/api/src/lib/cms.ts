@@ -34,6 +34,8 @@ export interface CmsArticle {
   tags: string[] | null;
   author: string | null;
   published_at: string | null;
+  date_created: string | null;
+  date_updated: string | null;
   status: string;
 }
 

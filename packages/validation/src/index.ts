@@ -68,12 +68,16 @@ export {
   updatePriceSchema,
   cancelOrderSchema,
   discountOrderSchema,
+  updateInternalNotesSchema,
+  updateOrderTagsSchema,
 } from './order.ts';
 export type {
   CreateOrderInput,
   UpdateOrderStatusInput,
   UpdatePriceInput,
   CancelOrderInput,
+  UpdateInternalNotesInput,
+  UpdateOrderTagsInput,
 } from './order.ts';
 
 export {
@@ -154,3 +158,6 @@ export type {
   CreateCorporateInquiryInput,
   UpdateCorporateInquiryInput,
 } from './corporate-inquiry.ts';
+
+export { imposePenaltySchema, updatePenaltyStatusSchema } from './penalty.ts';
+export type { ImposePenaltyInput, UpdatePenaltyStatusInput } from './penalty.ts';

@@ -114,6 +114,45 @@ router.get(
   },
 );
 
+router.get(
+  '/revenue',
+  authMiddleware,
+  requireRole('admin', 'super_admin', 'finance'),
+  async (c) => {
+    const monthsBack = Number(c.req.query('months') ?? 12);
+    const startDate = new Date();
+    startDate.setMonth(startDate.getMonth() - monthsBack);
+
+    const revenueByMonth = (await db.execute(sql`
+    SELECT
+      TO_CHAR(created_at, 'YYYY-MM') AS month,
+      COUNT(*)::int AS order_count,
+      COALESCE(SUM(CAST(final_price AS DECIMAL)), 0) AS revenue
+    FROM orders
+    WHERE status = 'Paid'
+      AND created_at >= ${startDate.toISOString()}
+    GROUP BY month
+    ORDER BY month ASC
+  `)) as unknown as Array<{ month: string; order_count: number; revenue: number }>;
+
+    // Calculate month-over-month growth
+    const months = revenueByMonth as Array<{ month: string; order_count: number; revenue: number }>;
+    let growthPercent: number | null = null;
+    if (months.length >= 2) {
+      const prev = months[months.length - 2]!.revenue;
+      const curr = months[months.length - 1]!.revenue;
+      growthPercent = prev > 0 ? Math.round(((curr - prev) / prev) * 100) : null;
+    }
+
+    return success(c, {
+      revenueByMonth: months,
+      totalRevenue: months.reduce((sum, m) => sum + Number(m.revenue), 0),
+      growthPercent,
+      monthsCount: months.length,
+    });
+  },
+);
+
 router.get('/activity', authMiddleware, requireRole('admin', 'super_admin'), async (c) => {
   const limit = Number(c.req.query('limit') ?? 20);
 

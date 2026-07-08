@@ -8,15 +8,35 @@ describe('Container', () => {
     expect(screen.getByText('Content')).toBeInTheDocument();
   });
 
-  it('has max-width and padding classes', () => {
+  it('applies max width class', () => {
     render(<Container>Content</Container>);
-    const el = screen.getByText('Content');
-    expect(el.className).toContain('max-w-7xl');
-    expect(el.className).toContain('px-4');
+    expect(screen.getByText('Content').className).toContain('max-w-7xl');
   });
 
-  it('accepts additional className', () => {
-    render(<Container className="my-class">Content</Container>);
-    expect(screen.getByText('Content').className).toContain('my-class');
+  it('applies responsive padding', () => {
+    render(<Container>Content</Container>);
+    const el = screen.getByText('Content');
+    expect(el.className).toContain('px-4');
+    expect(el.className).toContain('sm:px-6');
+    expect(el.className).toContain('lg:px-8');
+  });
+
+  it('accepts custom className', () => {
+    render(<Container className="custom-container">Content</Container>);
+    expect(screen.getByText('Content').className).toContain('custom-container');
+  });
+
+  it('passes additional HTML attributes', () => {
+    render(<Container data-testid="container-1">Content</Container>);
+    expect(screen.getByTestId('container-1')).toBeInTheDocument();
+  });
+
+  it('renders nested elements', () => {
+    render(
+      <Container>
+        <div data-testid="nested">Nested</div>
+      </Container>,
+    );
+    expect(screen.getByTestId('nested')).toBeInTheDocument();
   });
 });

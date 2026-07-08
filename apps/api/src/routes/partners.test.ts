@@ -298,3 +298,107 @@ describe('POST /:id/verify', () => {
     expect(res.status).toBe(422);
   });
 });
+
+describe('GET /me/penalties', () => {
+  it('200 returns penalties list', async () => {
+    mockDb.select.mockReturnValueOnce(makeChain([{ id: 'pp' }]));
+    mockDb.select.mockReturnValueOnce(
+      makeChain([
+        {
+          id: 'pen1',
+          orderId: null,
+          type: 'Late',
+          amount: '50000',
+          reason: 'Terlambat',
+          status: 'Pending',
+          imposedAt: new Date(),
+          resolvedAt: null,
+          notes: null,
+        },
+      ]),
+    );
+    const res = await mkApp().request('/api/v1/partners/me/penalties', { headers: a() });
+    expect(res.status).toBe(200);
+    const body = (await res.json()) as { success: boolean; data: unknown[] };
+    expect(body.success).toBe(true);
+    expect(body.data).toHaveLength(1);
+  });
+
+  it('200 empty when no penalties', async () => {
+    mockDb.select.mockReturnValueOnce(makeChain([{ id: 'pp' }]));
+    mockDb.select.mockReturnValueOnce(makeChain([]));
+    const res = await mkApp().request('/api/v1/partners/me/penalties', { headers: a() });
+    expect(res.status).toBe(200);
+    const body = (await res.json()) as { success: boolean; data: unknown[] };
+    expect(body.data).toHaveLength(0);
+  });
+
+  it('404 no profile', async () => {
+    mockDb.select.mockReturnValue(makeChain([]));
+    const res = await mkApp().request('/api/v1/partners/me/penalties', { headers: a() });
+    expect(res.status).toBe(404);
+  });
+
+  it('401 no auth', async () => {
+    const res = await mkApp().request('/api/v1/partners/me/penalties');
+    expect(res.status).toBe(401);
+  });
+});
+
+describe('GET /me/earnings', () => {
+  it('200 with earnings data', async () => {
+    mockDb.select.mockReturnValueOnce(makeChain([{ id: 'pp' }]));
+    mockDb.select.mockReturnValueOnce(
+      makeChain([
+        {
+          id: 'o1',
+          bookingNumber: 'SP-2026-0001',
+          status: 'Paid',
+          finalPrice: '200000',
+          completedAt: new Date(),
+        },
+        {
+          id: 'o2',
+          bookingNumber: 'SP-2026-0002',
+          status: 'Paid',
+          finalPrice: '150000',
+          completedAt: new Date(),
+        },
+      ]),
+    );
+    const res = await mkApp().request('/api/v1/partners/me/earnings', { headers: a() });
+    const body = (await res.json()) as {
+      success: boolean;
+      data: { totalEarnings: number; paidCount: number; recentEarnings: unknown[] };
+    };
+    expect(res.status).toBe(200);
+    expect(body.success).toBe(true);
+    expect(body.data.totalEarnings).toBe(350000);
+    expect(body.data.paidCount).toBe(2);
+    expect(body.data.recentEarnings).toHaveLength(2);
+  });
+
+  it('200 zero earnings when no paid orders', async () => {
+    mockDb.select.mockReturnValueOnce(makeChain([{ id: 'pp' }]));
+    mockDb.select.mockReturnValueOnce(makeChain([]));
+    const res = await mkApp().request('/api/v1/partners/me/earnings', { headers: a() });
+    const body = (await res.json()) as {
+      success: boolean;
+      data: { totalEarnings: number; paidCount: number };
+    };
+    expect(res.status).toBe(200);
+    expect(body.data.totalEarnings).toBe(0);
+    expect(body.data.paidCount).toBe(0);
+  });
+
+  it('404 no profile', async () => {
+    mockDb.select.mockReturnValue(makeChain([]));
+    const res = await mkApp().request('/api/v1/partners/me/earnings', { headers: a() });
+    expect(res.status).toBe(404);
+  });
+
+  it('401 no auth', async () => {
+    const res = await mkApp().request('/api/v1/partners/me/earnings');
+    expect(res.status).toBe(401);
+  });
+});

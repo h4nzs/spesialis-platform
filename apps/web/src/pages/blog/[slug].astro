@@ -2,6 +2,8 @@
 export const prerender = false;
 
 import BaseLayout from '../../layouts/BaseLayout.astro'
+import { RelatedArticles } from '../../components/blog/RelatedArticles'
+import type { CmsArticle } from '../../components/blog/utils'
 
 const { slug } = Astro.params
 
@@ -25,10 +27,26 @@ let error: string | null = null
 
 try {
   const apiUrl = import.meta.env.PUBLIC_API_URL ?? 'http://localhost:3000'
-  const res = await fetch(`${apiUrl}/api/v1/articles/${slug}`)
+  const res = await fetch(`${apiUrl}/api/v1/cms/articles/${slug}`)
   if (!res.ok) throw new Error('Artikel tidak ditemukan')
   const json = await res.json()
-  article = json.data
+  const raw: CmsArticle | null = json.data
+  if (raw) {
+    article = {
+      id: raw.id,
+      title: raw.title,
+      slug: raw.slug,
+      summary: raw.summary,
+      content: raw.content,
+      coverImage: raw.cover_image,
+      authorName: raw.author,
+      categoryName: raw.category,
+      categorySlug: raw.category?.toLowerCase().replace(/\s+/g, '-') ?? null,
+      publishedAt: raw.published_at,
+      createdAt: raw.date_created ?? raw.published_at ?? '',
+      updatedAt: raw.date_updated ?? raw.published_at ?? '',
+    }
+  }
 } catch (e) {
   error = e instanceof Error ? e.message : 'Gagal memuat artikel'
 }
@@ -81,6 +99,10 @@ try {
           <img
             src={article.coverImage}
             alt={article.title}
+            loading="lazy"
+            decoding="async"
+            width="800"
+            height="450"
             class="mb-8 w-full rounded-xl object-cover"
           />
         )}
@@ -121,6 +143,8 @@ try {
             &larr; Kembali ke Blog
           </a>
         </div>
+
+        <RelatedArticles currentSlug={slug!} categorySlug={article.categorySlug} client:load />
       </div>
     </BaseLayout>
   ) : (

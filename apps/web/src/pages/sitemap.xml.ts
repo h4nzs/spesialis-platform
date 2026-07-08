@@ -13,6 +13,8 @@ const staticPages = [
   { loc: '/book', changefreq: 'monthly', priority: '0.8' },
   { loc: '/tracking', changefreq: 'monthly', priority: '0.5' },
   { loc: '/corporate', changefreq: 'monthly', priority: '0.5' },
+  { loc: '/kebijakan-privasi', changefreq: 'monthly', priority: '0.3' },
+  { loc: '/syarat-ketentuan', changefreq: 'monthly', priority: '0.3' },
 ];
 
 export const GET: APIRoute = async () => {
@@ -21,7 +23,7 @@ export const GET: APIRoute = async () => {
   try {
     const [servicesRes, articlesRes] = await Promise.all([
       fetch(`${API_BASE}/api/v1/services?limit=100`).catch(() => null),
-      fetch(`${API_BASE}/api/v1/articles?limit=100`).catch(() => null),
+      fetch(`${API_BASE}/api/v1/cms/articles?limit=100`).catch(() => null),
     ]);
 
     if (servicesRes?.ok) {

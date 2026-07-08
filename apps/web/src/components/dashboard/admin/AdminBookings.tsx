@@ -5,6 +5,8 @@ import {
   formatDate,
   getStatusLabel,
   getStatusColor,
+  downloadCSV,
+  downloadBlob,
 } from '@specialist/shared';
 import { Badge, Table, Pagination, Button, Modal, Input, Textarea } from '@specialist/ui';
 import type { Column } from '@specialist/ui';
@@ -33,6 +35,48 @@ export function AdminBookings() {
   const [finalPrice, setFinalPrice] = useState('');
   const [partnerId, setPartnerId] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const [exporting, setExporting] = useState(false);
+
+  function fallbackExport() {
+    const headers = ['No. Booking', 'Status', 'Tanggal', 'Harga Dasar', 'Harga Final'];
+    const rows = bookings.map((b) => [
+      b.bookingNumber,
+      getStatusLabel(b.status),
+      formatDate(b.bookingDate),
+      formatCurrency(Number(b.basePrice)),
+      b.finalPrice ? formatCurrency(Number(b.finalPrice)) : '-',
+    ]);
+    downloadCSV(headers, rows, 'orders-export.csv');
+  }
+
+  async function handleExportCSV() {
+    if (exporting) return;
+    setExporting(true);
+    try {
+      const token = api.getTokenStore().getAccessToken();
+      const response = await fetch('/api/v1/admin/orders/export', {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          Accept: 'text/csv,application/json',
+        },
+      });
+      if (!response.ok) throw new Error('Gagal mengexport data');
+
+      // Jika server mengembalikan CSV langsung, download sebagai blob
+      const contentType = response.headers.get('Content-Type');
+      if (contentType?.startsWith('text/csv')) {
+        const blob = await response.blob();
+        downloadBlob(blob, 'orders-export.csv');
+      } else {
+        // Fallback: export data yang sudah dimuat di halaman
+        fallbackExport();
+      }
+    } catch {
+      fallbackExport();
+    } finally {
+      setExporting(false);
+    }
+  }
 
   const loadBookings = useCallback(async () => {
     setLoading(true);
@@ -147,6 +191,34 @@ export function AdminBookings() {
 
   return (
     <div className="space-y-4">
+      {/* Toolbar */}
+      <div className="flex items-center justify-end">
+        <button
+          type="button"
+          onClick={handleExportCSV}
+          disabled={exporting}
+          className="inline-flex items-center gap-1.5 rounded-md border border-border bg-background px-3 py-1.5 text-sm font-medium text-text transition-colors hover:bg-surface disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className="shrink-0"
+          >
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+            <polyline points="7 10 12 15 17 10" />
+            <line x1="12" y1="15" x2="12" y2="3" />
+          </svg>
+          {exporting ? 'Mengexport...' : 'Export CSV'}
+        </button>
+      </div>
+
       <Table
         columns={columns}
         data={bookings}

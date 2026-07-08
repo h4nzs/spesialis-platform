@@ -4,61 +4,58 @@ import { Heading, Text } from './Typography';
 
 describe('Heading', () => {
   it('renders h2 by default', () => {
-    render(<Heading>Title</Heading>);
-    const el = screen.getByText('Title');
-    expect(el.tagName).toBe('H2');
+    render(<Heading>Section Title</Heading>);
+    const heading = screen.getByText('Section Title');
+    expect(heading.tagName).toBe('H2');
   });
 
-  it('renders h1 level', () => {
-    render(<Heading level="h1">H1 Title</Heading>);
-    const el = screen.getByText('H1 Title');
-    expect(el.tagName).toBe('H1');
+  it('renders h1 with level prop', () => {
+    render(<Heading level="h1">Page Title</Heading>);
+    const heading = screen.getByText('Page Title');
+    expect(heading.tagName).toBe('H1');
   });
 
-  it('renders h2 level', () => {
-    render(<Heading level="h2">H2 Title</Heading>);
-    expect(screen.getByText('H2 Title').tagName).toBe('H2');
+  it('renders h3 with level prop', () => {
+    render(<Heading level="h3">Sub Section</Heading>);
+    const heading = screen.getByText('Sub Section');
+    expect(heading.tagName).toBe('H3');
   });
 
-  it('renders h3 level', () => {
-    render(<Heading level="h3">H3 Title</Heading>);
-    expect(screen.getByText('H3 Title').tagName).toBe('H3');
+  it('renders h4 with level prop', () => {
+    render(<Heading level="h4">Card Title</Heading>);
+    const heading = screen.getByText('Card Title');
+    expect(heading.tagName).toBe('H4');
   });
 
-  it('renders h4 level', () => {
-    render(<Heading level="h4">H4 Title</Heading>);
-    expect(screen.getByText('H4 Title').tagName).toBe('H4');
+  it('applies heading text color', () => {
+    render(<Heading>Colored</Heading>);
+    expect(screen.getByText('Colored').className).toContain('text-text');
   });
 
-  it('has font-bold for h1', () => {
-    render(<Heading level="h1">Bold</Heading>);
-    expect(screen.getByText('Bold').className).toContain('font-bold');
-  });
-
-  it('has font-semibold for h2', () => {
-    render(<Heading level="h2">Semi</Heading>);
-    expect(screen.getByText('Semi').className).toContain('font-semibold');
-  });
-
-  it('accepts additional className', () => {
-    render(<Heading className="custom-h">Custom</Heading>);
-    expect(screen.getByText('Custom').className).toContain('custom-h');
+  it('accepts custom className', () => {
+    render(<Heading className="custom-heading">Custom</Heading>);
+    expect(screen.getByText('Custom').className).toContain('custom-heading');
   });
 });
 
 describe('Text', () => {
-  it('renders paragraph by default', () => {
-    render(<Text>Paragraph</Text>);
-    const el = screen.getByText('Paragraph');
-    expect(el.tagName).toBe('P');
+  it('renders paragraph text', () => {
+    render(<Text>Body text content</Text>);
+    const text = screen.getByText('Body text content');
+    expect(text.tagName).toBe('P');
   });
 
-  it('has text-muted color', () => {
+  it('applies muted text color', () => {
     render(<Text>Muted</Text>);
     expect(screen.getByText('Muted').className).toContain('text-text-muted');
   });
 
-  it('accepts additional className', () => {
+  it('applies leading class', () => {
+    render(<Text>Leading</Text>);
+    expect(screen.getByText('Leading').className).toContain('leading-relaxed');
+  });
+
+  it('accepts custom className', () => {
     render(<Text className="custom-text">Custom</Text>);
     expect(screen.getByText('Custom').className).toContain('custom-text');
   });

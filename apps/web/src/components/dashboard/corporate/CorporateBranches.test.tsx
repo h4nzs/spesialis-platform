@@ -3,12 +3,16 @@ import { render, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { CorporateBranches } from './CorporateBranches';
 
-const mockGet = vi.fn();
-const mockPost = vi.fn();
-const mockDelete = vi.fn();
+const { mockGet, mockPost, mockDelete, mockDownloadCSV } = vi.hoisted(() => ({
+  mockGet: vi.fn(),
+  mockPost: vi.fn(),
+  mockDelete: vi.fn(),
+  mockDownloadCSV: vi.fn(),
+}));
 
 vi.mock('@specialist/shared', () => ({
   createBrowserClient: () => ({ get: mockGet, post: mockPost, delete: mockDelete }),
+  downloadCSV: mockDownloadCSV,
 }));
 
 vi.mock('@specialist/ui', () => ({
@@ -136,5 +140,51 @@ describe('CorporateBranches', () => {
     ]);
     render(<CorporateBranches />);
     expect(await screen.findByText('Hapus')).toBeInTheDocument();
+  });
+
+  // ─── CSV Export Tests ───────────────────────────────────────────
+
+  describe('CSV export', () => {
+    beforeEach(() => {
+      mockGet.mockResolvedValueOnce({ id: 'company1' });
+      mockGet.mockResolvedValueOnce([
+        {
+          id: 'b1',
+          name: 'Branch 1',
+          address: 'Jl. Merdeka',
+          city: 'Jakarta',
+          phone: '08123456789',
+        },
+      ]);
+    });
+
+    it('renders Export CSV button when data loaded', async () => {
+      render(<CorporateBranches />);
+      expect(await screen.findByText('Export CSV')).toBeInTheDocument();
+    });
+
+    it('does not render Export CSV button when no branches', async () => {
+      mockGet.mockReset();
+      mockGet.mockResolvedValueOnce({ id: 'company1' });
+      mockGet.mockResolvedValueOnce([]);
+      render(<CorporateBranches />);
+      expect(await screen.findByText('Belum ada cabang')).toBeInTheDocument();
+      expect(screen.queryByText('Export CSV')).not.toBeInTheDocument();
+    });
+
+    it('calls downloadCSV with correct data on click', async () => {
+      const user = userEvent.setup();
+      render(<CorporateBranches />);
+      expect(await screen.findByText('Export CSV')).toBeInTheDocument();
+
+      await user.click(screen.getByText('Export CSV'));
+
+      expect(mockDownloadCSV).toHaveBeenCalledTimes(1);
+      expect(mockDownloadCSV).toHaveBeenCalledWith(
+        ['Nama', 'Alamat', 'Kota', 'Telepon'],
+        [['Branch 1', 'Jl. Merdeka', 'Jakarta', '08123456789']],
+        'cabang-export.csv',
+      );
+    });
   });
 });

@@ -27,9 +27,11 @@ export interface Order {
   bookingTime: string;
   basePrice: number;
   finalPrice: number | null;
+  discountPercent: number | null;
   discountAmount: number;
   notes: string | null;
   internalNotes: string | null;
+  tags: string | null;
   completedAt: string | null;
   closedAt: string | null;
   createdAt: string;

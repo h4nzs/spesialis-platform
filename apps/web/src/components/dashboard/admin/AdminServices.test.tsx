@@ -1,11 +1,14 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor, fireEvent } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { AdminServices } from './AdminServices';
 
-const mockGet = vi.fn();
-const mockPost = vi.fn();
-const mockPatch = vi.fn();
+const { mockGet, mockPost, mockPatch, mockDownloadCSV } = vi.hoisted(() => ({
+  mockGet: vi.fn(),
+  mockPost: vi.fn(),
+  mockPatch: vi.fn(),
+  mockDownloadCSV: vi.fn(),
+}));
 
 vi.mock('@specialist/shared', () => ({
   createBrowserClient: () => ({ get: mockGet, post: mockPost, patch: mockPatch }),
@@ -13,6 +16,7 @@ vi.mock('@specialist/shared', () => ({
     const num = typeof n === 'string' ? Number(n) : n;
     return `Rp${num.toLocaleString('id-ID')}`;
   },
+  downloadCSV: mockDownloadCSV,
 }));
 
 vi.mock('@specialist/ui', () => ({
@@ -231,5 +235,171 @@ describe('AdminServices', () => {
     mockGet.mockResolvedValueOnce([]);
     render(<AdminServices />);
     expect(await screen.findByText('Aktifkan')).toBeInTheDocument();
+  });
+
+  // --- Interaction Tests ---
+
+  it('calls patch API when Nonaktifkan is clicked', async () => {
+    mockGet.mockResolvedValueOnce({
+      data: [
+        {
+          id: 's1',
+          name: 'Service 1',
+          slug: 'service-1',
+          basePrice: '150000',
+          isActive: true,
+          isFeatured: false,
+          categoryName: 'Cat 1',
+          displayOrder: 0,
+          estimatedDuration: null,
+        },
+      ],
+    });
+    mockGet.mockResolvedValueOnce([]);
+    mockPatch.mockResolvedValue(undefined);
+    render(<AdminServices />);
+    expect(await screen.findByText('Nonaktifkan')).toBeInTheDocument();
+    screen.getByText('Nonaktifkan').click();
+    await waitFor(() => {
+      expect(mockPatch).toHaveBeenCalledWith('/api/v1/admin/services/s1', {
+        body: { isActive: false },
+      });
+    });
+  });
+
+  it('calls patch API when Aktifkan is clicked', async () => {
+    mockGet.mockResolvedValueOnce({
+      data: [
+        {
+          id: 's2',
+          name: 'Service 2',
+          slug: 'service-2',
+          basePrice: '200000',
+          isActive: false,
+          isFeatured: false,
+          categoryName: null,
+          displayOrder: 0,
+          estimatedDuration: null,
+        },
+      ],
+    });
+    mockGet.mockResolvedValueOnce([]);
+    mockPatch.mockResolvedValue(undefined);
+    render(<AdminServices />);
+    expect(await screen.findByText('Aktifkan')).toBeInTheDocument();
+    screen.getByText('Aktifkan').click();
+    await waitFor(() => {
+      expect(mockPatch).toHaveBeenCalledWith('/api/v1/admin/services/s2', {
+        body: { isActive: true },
+      });
+    });
+  });
+
+  it('shows validation error when submitting empty form', async () => {
+    const user = userEvent.setup();
+    mockGet.mockResolvedValueOnce({ data: [] });
+    mockGet.mockResolvedValueOnce([]);
+    render(<AdminServices />);
+    expect(await screen.findByText('Tambah Layanan')).toBeInTheDocument();
+    await user.click(screen.getByText('Tambah Layanan'));
+    await waitFor(() => {
+      expect(screen.getByTestId('modal')).toBeInTheDocument();
+    });
+
+    // Fire submit event on the form directly (click on submit button doesn't trigger form submit in JSDOM)
+    const form = screen.getByTestId('modal').querySelector('form');
+    fireEvent.submit(form!);
+
+    await waitFor(() => {
+      expect(screen.getByText('Nama, slug, kategori, dan harga wajib diisi')).toBeInTheDocument();
+    });
+  });
+
+  it('submits form and calls post API', async () => {
+    const user = userEvent.setup();
+    mockGet.mockResolvedValueOnce({ data: [] });
+    mockGet.mockResolvedValueOnce([{ id: 'c1', name: 'Cat 1', slug: 'cat-1' }]);
+    mockPost.mockResolvedValue(undefined);
+    render(<AdminServices />);
+    expect(await screen.findByText('Tambah Layanan')).toBeInTheDocument();
+    await user.click(screen.getByText('Tambah Layanan'));
+    await waitFor(() => {
+      expect(screen.getByTestId('modal')).toBeInTheDocument();
+    });
+
+    const nameInput = screen.getByTestId('input-Nama Layanan');
+    const slugInput = screen.getByTestId('input-Slug');
+    const priceInput = screen.getByTestId('input-Harga');
+    const categorySelect = screen.getByTestId('select-Kategori');
+
+    await user.type(nameInput, 'New Service');
+    await user.type(slugInput, 'new-service');
+    await user.type(priceInput, '250000');
+    await user.selectOptions(categorySelect, 'c1');
+
+    await user.click(screen.getByText('Buat'));
+
+    await waitFor(() => {
+      expect(mockPost).toHaveBeenCalledWith('/api/v1/admin/services', {
+        body: expect.objectContaining({
+          name: 'New Service',
+          slug: 'new-service',
+          basePrice: 250000,
+          categoryId: 'c1',
+        }),
+      });
+    });
+  });
+
+  // ─── CSV Export Tests ───────────────────────────────────────────
+
+  describe('CSV export', () => {
+    beforeEach(() => {
+      mockGet.mockResolvedValueOnce({
+        data: [
+          {
+            id: 's1',
+            name: 'Service 1',
+            slug: 'service-1',
+            basePrice: '150000',
+            isActive: true,
+            isFeatured: false,
+            categoryName: 'Cat 1',
+            displayOrder: 0,
+            estimatedDuration: null,
+          },
+        ],
+      });
+      mockGet.mockResolvedValueOnce([{ id: 'c1', name: 'Cat 1', slug: 'cat-1' }]);
+    });
+
+    it('renders Export CSV button when data loaded', async () => {
+      render(<AdminServices />);
+      expect(await screen.findByText('Export CSV')).toBeInTheDocument();
+    });
+
+    it('does not render Export CSV button when no services', async () => {
+      mockGet.mockReset();
+      mockGet.mockResolvedValueOnce({ data: [] });
+      mockGet.mockResolvedValueOnce([]);
+      render(<AdminServices />);
+      expect(await screen.findByText('Tambah Layanan')).toBeInTheDocument();
+      expect(screen.queryByText('Export CSV')).not.toBeInTheDocument();
+    });
+
+    it('calls downloadCSV with correct data on click', async () => {
+      const user = userEvent.setup();
+      render(<AdminServices />);
+      expect(await screen.findByText('Export CSV')).toBeInTheDocument();
+
+      await user.click(screen.getByText('Export CSV'));
+
+      expect(mockDownloadCSV).toHaveBeenCalledTimes(1);
+      expect(mockDownloadCSV).toHaveBeenCalledWith(
+        ['Nama', 'Slug', 'Kategori', 'Harga', 'Status', 'Featured'],
+        [['Service 1', 'service-1', 'Cat 1', 'Rp150.000', 'Aktif', 'Tidak']],
+        'layanan-export.csv',
+      );
+    });
   });
 });

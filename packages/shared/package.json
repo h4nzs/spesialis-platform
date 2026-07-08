@@ -11,7 +11,8 @@
     "./helpers": "./src/helpers/index.ts",
     "./utils/permission": "./src/utils/permission.ts",
     "./utils/booking": "./src/utils/booking.ts",
-    "./utils/logger": "./src/utils/logger.ts"
+    "./utils/logger": "./src/utils/logger.ts",
+    "./utils/csv": "./src/utils/csv.ts"
   },
   "scripts": {
     "typecheck": "tsc --noEmit",

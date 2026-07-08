@@ -1,8 +1,12 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
+import { userEvent } from '@testing-library/user-event';
 import { CorporateOrders } from './CorporateOrders';
 
-const mockGet = vi.fn();
+const { mockGet, mockDownloadCSV } = vi.hoisted(() => ({
+  mockGet: vi.fn(),
+  mockDownloadCSV: vi.fn(),
+}));
 
 vi.mock('@specialist/shared', () => ({
   createBrowserClient: () => ({ get: mockGet }),
@@ -13,6 +17,7 @@ vi.mock('@specialist/shared', () => ({
   formatDate: (d: string) => d,
   getStatusLabel: (s: string) => s,
   getStatusColor: () => 'default' as const,
+  downloadCSV: mockDownloadCSV,
 }));
 
 vi.mock('@specialist/ui', () => ({
@@ -100,5 +105,51 @@ describe('CorporateOrders', () => {
     mockGet.mockRejectedValue(new Error('Gagal'));
     render(<CorporateOrders />);
     expect(await screen.findByText('Belum ada pesanan')).toBeInTheDocument();
+  });
+
+  // ─── CSV Export Tests ───────────────────────────────────────────
+
+  describe('CSV export', () => {
+    beforeEach(() => {
+      mockGet.mockResolvedValue([
+        {
+          id: 'o1',
+          bookingNumber: 'SP-001',
+          status: 'Confirmed',
+          bookingDate: '2026-07-15',
+          basePrice: '150000',
+          finalPrice: '180000',
+          createdAt: '2026-07-15T10:00:00Z',
+        },
+      ]);
+    });
+
+    it('renders Export CSV button when data loaded', async () => {
+      render(<CorporateOrders />);
+      expect(await screen.findByText('Export CSV')).toBeInTheDocument();
+    });
+
+    it('does not render Export CSV button when no orders', async () => {
+      mockGet.mockReset();
+      mockGet.mockResolvedValue([]);
+      render(<CorporateOrders />);
+      expect(await screen.findByText('Belum ada pesanan')).toBeInTheDocument();
+      expect(screen.queryByText('Export CSV')).not.toBeInTheDocument();
+    });
+
+    it('calls downloadCSV with correct data on click', async () => {
+      const user = userEvent.setup();
+      render(<CorporateOrders />);
+      expect(await screen.findByText('Export CSV')).toBeInTheDocument();
+
+      await user.click(screen.getByText('Export CSV'));
+
+      expect(mockDownloadCSV).toHaveBeenCalledTimes(1);
+      expect(mockDownloadCSV).toHaveBeenCalledWith(
+        ['No. Booking', 'Status', 'Tanggal', 'Estimasi', 'Harga Final'],
+        [['SP-001', 'Confirmed', '2026-07-15', 'Rp150.000', 'Rp180.000']],
+        'pesanan-korporat-export.csv',
+      );
+    });
   });
 });

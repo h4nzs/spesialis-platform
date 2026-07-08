@@ -31,6 +31,7 @@ import { invoicesRouter } from './invoices.ts';
 import { corporateInquiriesRouter } from './corporate-inquiries.ts';
 import { adminAuditLogsRouter } from './admin/audit-logs.ts';
 import { adminReportsRouter } from './admin/reports.ts';
+import { adminPenaltiesRouter } from './admin/penalties.ts';
 
 const router = new Hono();
 
@@ -69,5 +70,6 @@ router.route('/invoices', invoicesRouter);
 router.route('/corporate-inquiries', corporateInquiriesRouter);
 router.route('/admin/audit-logs', adminAuditLogsRouter);
 router.route('/admin/reports', adminReportsRouter);
+router.route('/admin/penalties', adminPenaltiesRouter);
 
 export { router as apiRouter };

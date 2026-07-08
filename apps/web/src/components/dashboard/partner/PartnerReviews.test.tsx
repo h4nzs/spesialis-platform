@@ -1,13 +1,18 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
+import { userEvent } from '@testing-library/user-event';
 import { PartnerReviews } from './PartnerReviews';
 
-const mockGet = vi.fn();
+const { mockGet, mockDownloadCSV } = vi.hoisted(() => ({
+  mockGet: vi.fn(),
+  mockDownloadCSV: vi.fn(),
+}));
 
 vi.mock('@specialist/shared', () => ({
   createBrowserClient: () => ({ get: mockGet }),
   formatDate: (d: string) => d,
   formatRating: (r: number) => `${r}/5`,
+  downloadCSV: mockDownloadCSV,
 }));
 
 vi.mock('@specialist/ui', () => ({
@@ -69,5 +74,45 @@ describe('PartnerReviews', () => {
     mockGet.mockRejectedValue(new Error('Gagal'));
     render(<PartnerReviews />);
     expect(await screen.findByText('Belum ada ulasan')).toBeInTheDocument();
+  });
+
+  // ─── CSV Export Tests ───────────────────────────────────────────
+
+  describe('CSV export', () => {
+    beforeEach(() => {
+      mockGet.mockResolvedValueOnce({ id: 'partner1' });
+      mockGet.mockResolvedValueOnce([
+        { id: 'r1', rating: 5, comment: 'Great service!', createdAt: '2026-07-15' },
+      ]);
+    });
+
+    it('renders Export CSV button when data loaded', async () => {
+      render(<PartnerReviews />);
+      expect(await screen.findByText('Export CSV')).toBeInTheDocument();
+    });
+
+    it('does not render Export CSV button when no reviews', async () => {
+      mockGet.mockReset();
+      mockGet.mockResolvedValueOnce({ id: 'partner1' });
+      mockGet.mockResolvedValueOnce([]);
+      render(<PartnerReviews />);
+      expect(await screen.findByText('Belum ada ulasan')).toBeInTheDocument();
+      expect(screen.queryByText('Export CSV')).not.toBeInTheDocument();
+    });
+
+    it('calls downloadCSV with correct data on click', async () => {
+      const user = userEvent.setup();
+      render(<PartnerReviews />);
+      expect(await screen.findByText('Export CSV')).toBeInTheDocument();
+
+      await user.click(screen.getByText('Export CSV'));
+
+      expect(mockDownloadCSV).toHaveBeenCalledTimes(1);
+      expect(mockDownloadCSV).toHaveBeenCalledWith(
+        ['Rating', 'Komentar', 'Tanggal'],
+        [['5', 'Great service!', '2026-07-15']],
+        'ulasan-partner-export.csv',
+      );
+    });
   });
 });

@@ -1,0 +1,216 @@
+import { useState, useEffect, useMemo, useCallback } from 'react';
+import { createBrowserClient, formatCurrency, downloadCSV } from '@specialist/shared';
+import { Card } from '@specialist/ui';
+
+interface MonthRevenue {
+  month: string;
+  order_count: number;
+  revenue: number;
+}
+
+interface RevenueResponse {
+  revenueByMonth: MonthRevenue[];
+  totalRevenue: number;
+  growthPercent: number | null;
+  monthsCount: number;
+}
+
+function formatMonth(monthStr: string): string {
+  const [y, m] = monthStr.split('-');
+  const months = [
+    'Jan',
+    'Feb',
+    'Mar',
+    'Apr',
+    'Mei',
+    'Jun',
+    'Jul',
+    'Agu',
+    'Sep',
+    'Okt',
+    'Nov',
+    'Des',
+  ];
+  return `${months[Number(m) - 1] ?? ''} ${y}`;
+}
+
+export function FinanceOverview() {
+  const api = useMemo(() => createBrowserClient(), []);
+  const [revenueData, setRevenueData] = useState<RevenueResponse | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [months, setMonths] = useState(12);
+
+  const load = useCallback(async () => {
+    setLoading(true);
+    try {
+      const data = await api.get<RevenueResponse>(
+        `/api/v1/admin/dashboard/revenue?months=${months}`,
+      );
+      setRevenueData(data);
+    } catch {
+      setRevenueData(null);
+    } finally {
+      setLoading(false);
+    }
+  }, [api, months]);
+
+  useEffect(() => {
+    load();
+  }, [load]);
+
+  // Monthly stats from the API
+  const totalRevenue = revenueData?.totalRevenue ?? 0;
+  const growthPercent: number | null = revenueData?.growthPercent ?? null;
+  const monthlyData = revenueData?.revenueByMonth ?? [];
+  const latestMonth = monthlyData.length > 0 ? monthlyData[monthlyData.length - 1] : null;
+  const latestRevenue = latestMonth?.revenue ?? 0;
+  const latestOrders = latestMonth?.order_count ?? 0;
+
+  function handlePeriodChange(e: React.ChangeEvent<HTMLSelectElement>) {
+    setMonths(Number(e.target.value));
+  }
+
+  if (loading && !revenueData) {
+    return <div className="text-sm text-text-muted py-8 text-center">Memuat...</div>;
+  }
+
+  return (
+    <div className="space-y-6">
+      {/* Summary cards */}
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <Card padding="lg">
+          <p className="text-sm text-text-muted">Total Pendapatan</p>
+          <p className="mt-1 text-3xl font-bold text-success">{formatCurrency(totalRevenue)}</p>
+        </Card>
+        <Card padding="lg">
+          <p className="text-sm text-text-muted">
+            {latestMonth ? formatMonth(latestMonth.month) : 'Bulan Ini'}
+          </p>
+          <p className="mt-1 text-3xl font-bold text-primary">{formatCurrency(latestRevenue)}</p>
+        </Card>
+        <Card padding="lg">
+          <p className="text-sm text-text-muted">Pesanan Dibayar</p>
+          <p className="mt-1 text-3xl font-bold text-text">{latestOrders}</p>
+        </Card>
+        <Card padding="lg">
+          <p className="text-sm text-text-muted">Pertumbuhan</p>
+          <p
+            className={`mt-1 text-3xl font-bold ${growthPercent !== null && growthPercent >= 0 ? 'text-success' : 'text-danger'}`}
+          >
+            {growthPercent !== null ? `${growthPercent >= 0 ? '+' : ''}${growthPercent}%` : '-'}
+          </p>
+        </Card>
+      </div>
+
+      {/* Period selector + export */}
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="flex items-center gap-3">
+          <label htmlFor="period-select" className="text-sm font-medium text-text">
+            Periode:
+          </label>
+          <select
+            id="period-select"
+            value={months}
+            onChange={handlePeriodChange}
+            className="rounded-md border border-border bg-surface px-3 py-1.5 text-sm text-text outline-none focus:border-primary focus:ring-1 focus:ring-primary"
+          >
+            <option value="3">3 bulan terakhir</option>
+            <option value="6">6 bulan terakhir</option>
+            <option value="12">12 bulan terakhir</option>
+            <option value="24">24 bulan terakhir</option>
+          </select>
+        </div>
+
+        {monthlyData.length > 0 && (
+          <button
+            type="button"
+            onClick={() =>
+              downloadCSV(
+                ['Bulan', 'Pesanan', 'Pendapatan'],
+                monthlyData.map((m) => [
+                  formatMonth(m.month),
+                  String(m.order_count),
+                  Number(m.revenue).toFixed(2),
+                ]),
+                `pendapatan-${months}bln.csv`,
+              )
+            }
+            className="inline-flex items-center gap-1.5 rounded-md border border-border bg-background px-3 py-1.5 text-sm font-medium text-text transition-colors hover:bg-surface"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="shrink-0"
+            >
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+              <polyline points="7 10 12 15 17 10" />
+              <line x1="12" y1="15" x2="12" y2="3" />
+            </svg>
+            Export CSV
+          </button>
+        )}
+      </div>
+
+      {/* Monthly breakdown table */}
+      <div className="rounded-xl border border-border bg-surface p-6">
+        <h3 className="mb-4 text-sm font-semibold text-text-muted uppercase tracking-wide">
+          Rincian Bulanan
+        </h3>
+        {monthlyData.length > 0 ? (
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-border">
+                  <th className="py-2 pr-4 text-left font-medium text-text-muted">Bulan</th>
+                  <th className="py-2 pr-4 text-right font-medium text-text-muted">Pesanan</th>
+                  <th className="py-2 text-right font-medium text-text-muted">Pendapatan</th>
+                </tr>
+              </thead>
+              <tbody>
+                {monthlyData.map((m) => (
+                  <tr key={m.month} className="border-b border-border/50 last:border-0">
+                    <td className="py-2.5 pr-4 text-text">{formatMonth(m.month)}</td>
+                    <td className="py-2.5 pr-4 text-right text-text">{m.order_count}</td>
+                    <td className="py-2.5 text-right font-medium text-success">
+                      {formatCurrency(Number(m.revenue))}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        ) : (
+          <p className="text-sm text-text-muted py-4 text-center">Belum ada data pendapatan</p>
+        )}
+      </div>
+
+      {/* Quick actions */}
+      <div className="rounded-xl border border-border bg-surface p-6">
+        <h3 className="text-sm font-semibold text-text-muted uppercase tracking-wide">
+          Aksi Cepat
+        </h3>
+        <div className="mt-4 flex flex-wrap gap-3">
+          <a
+            href="/dashboard/admin/bookings"
+            className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-primary-hover"
+          >
+            Verifikasi Pembayaran
+          </a>
+          <a
+            href="/dashboard/admin/reports"
+            className="rounded-md border border-border bg-background px-4 py-2 text-sm font-medium text-text transition-colors hover:bg-surface"
+          >
+            Lihat Laporan
+          </a>
+        </div>
+      </div>
+    </div>
+  );
+}

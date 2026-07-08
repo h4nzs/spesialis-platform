@@ -28,6 +28,7 @@ export { articleCategories } from './article-categories.ts';
 export { articles } from './articles.ts';
 export { contracts } from './contracts.ts';
 export { invoices } from './invoices.ts';
+export { partnerPenalties } from './partner-penalties.ts';
 export { faq } from './faq.ts';
 export { corporateInquiries } from './corporate-inquiries.ts';
 
@@ -56,4 +57,5 @@ export {
   articlesRelations,
   contractsRelations,
   invoicesRelations,
+  partnerPenaltiesRelations,
 } from './relations.ts';

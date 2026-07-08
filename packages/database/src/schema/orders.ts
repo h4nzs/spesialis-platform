@@ -27,6 +27,7 @@ export const orders = pgTable(
     discountAmount: numeric('discount_amount', { precision: 12, scale: 2 }).notNull().default('0'),
     notes: text('notes'),
     internalNotes: text('internal_notes'),
+    tags: text('tags'),
     completedAt: timestamp('completed_at'),
     closedAt: timestamp('closed_at'),
     createdAt: timestamp('created_at').defaultNow().notNull(),

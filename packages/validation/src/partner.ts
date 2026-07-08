@@ -19,6 +19,7 @@ export const updatePartnerSchema = z.object({
     .max(30)
     .regex(/^\+?[0-9]+$/)
     .optional(),
+  avatar: z.string().url().optional(),
   bio: z.string().max(1000).optional(),
   experienceYear: z.coerce.number().int().min(0).optional(),
 });

@@ -1,12 +1,17 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
+import { userEvent } from '@testing-library/user-event';
 import { AdminCustomers } from './AdminCustomers';
 
-const mockGet = vi.fn();
-const mockPatch = vi.fn();
+const { mockGet, mockPatch, mockDownloadCSV } = vi.hoisted(() => ({
+  mockGet: vi.fn(),
+  mockPatch: vi.fn(),
+  mockDownloadCSV: vi.fn(),
+}));
 
 vi.mock('@specialist/shared', () => ({
   createBrowserClient: () => ({ get: mockGet, patch: mockPatch }),
+  downloadCSV: mockDownloadCSV,
 }));
 
 beforeEach(() => {
@@ -96,5 +101,116 @@ describe('AdminCustomers', () => {
     mockGet.mockRejectedValue(new Error('Gagal'));
     render(<AdminCustomers />);
     expect(await screen.findByText('Belum ada customer')).toBeInTheDocument();
+  });
+
+  it('calls patch API when Suspends is clicked', async () => {
+    mockGet.mockResolvedValue([
+      {
+        id: 'c1',
+        email: 'a@b.com',
+        phone: '081',
+        fullName: 'A',
+        status: 'active',
+        createdAt: '2026-01-01',
+      },
+    ]);
+    mockPatch.mockResolvedValue(undefined);
+    render(<AdminCustomers />);
+    expect(await screen.findByText('Suspends')).toBeInTheDocument();
+    screen.getByText('Suspends').click();
+    await waitFor(() => {
+      expect(mockPatch).toHaveBeenCalledWith('/api/v1/customers/c1/status', {
+        body: { status: 'suspended' },
+      });
+    });
+  });
+
+  it('calls patch API when Aktifkan is clicked', async () => {
+    mockGet.mockResolvedValue([
+      {
+        id: 'c2',
+        email: 'b@b.com',
+        phone: '082',
+        fullName: 'B',
+        status: 'suspended',
+        createdAt: '2026-01-01',
+      },
+    ]);
+    mockPatch.mockResolvedValue(undefined);
+    render(<AdminCustomers />);
+    expect(await screen.findByText('Aktifkan')).toBeInTheDocument();
+    screen.getByText('Aktifkan').click();
+    await waitFor(() => {
+      expect(mockPatch).toHaveBeenCalledWith('/api/v1/customers/c2/status', {
+        body: { status: 'active' },
+      });
+    });
+  });
+
+  it('calls patch API when Blokir is clicked (active customer)', async () => {
+    mockGet.mockResolvedValue([
+      {
+        id: 'c3',
+        email: 'c@c.com',
+        phone: '083',
+        fullName: 'C',
+        status: 'active',
+        createdAt: '2026-01-01',
+      },
+    ]);
+    mockPatch.mockResolvedValue(undefined);
+    render(<AdminCustomers />);
+    expect(await screen.findByText('Blokir')).toBeInTheDocument();
+    screen.getByText('Blokir').click();
+    await waitFor(() => {
+      expect(mockPatch).toHaveBeenCalledWith('/api/v1/customers/c3/status', {
+        body: { status: 'blocked' },
+      });
+    });
+  });
+
+  // ─── CSV Export Tests ───────────────────────────────────────────
+
+  describe('CSV export', () => {
+    beforeEach(() => {
+      mockGet.mockResolvedValue([
+        {
+          id: 'c1',
+          email: 'user@test.com',
+          phone: '08123456789',
+          fullName: 'John Doe',
+          status: 'active',
+          createdAt: '2026-01-01',
+        },
+      ]);
+    });
+
+    it('renders Export CSV button when data loaded', async () => {
+      render(<AdminCustomers />);
+      expect(await screen.findByText('Export CSV')).toBeInTheDocument();
+    });
+
+    it('does not render Export CSV button when no customers', async () => {
+      mockGet.mockReset();
+      mockGet.mockResolvedValue([]);
+      render(<AdminCustomers />);
+      expect(await screen.findByText('Belum ada customer')).toBeInTheDocument();
+      expect(screen.queryByText('Export CSV')).not.toBeInTheDocument();
+    });
+
+    it('calls downloadCSV with correct data on click', async () => {
+      const user = userEvent.setup();
+      render(<AdminCustomers />);
+      expect(await screen.findByText('Export CSV')).toBeInTheDocument();
+
+      await user.click(screen.getByText('Export CSV'));
+
+      expect(mockDownloadCSV).toHaveBeenCalledTimes(1);
+      expect(mockDownloadCSV).toHaveBeenCalledWith(
+        ['Nama', 'Email', 'No. HP', 'Status', 'Dibuat'],
+        [['John Doe', 'user@test.com', '08123456789', 'active', '2026-01-01']],
+        'customer-export.csv',
+      );
+    });
   });
 });

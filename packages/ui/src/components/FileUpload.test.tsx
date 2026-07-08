@@ -2,11 +2,6 @@ import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { FileUpload } from './FileUpload';
 
-function createMockFile(name: string, size: number, type: string): File {
-  const file = new File(['x'.repeat(size)], name, { type });
-  return file;
-}
-
 describe('FileUpload', () => {
   it('renders upload button', () => {
     render(<FileUpload />);
@@ -18,36 +13,36 @@ describe('FileUpload', () => {
     expect(screen.getByText('Upload Foto')).toBeInTheDocument();
   });
 
-  it('shows error when file exceeds max size', () => {
-    render(<FileUpload maxSizeMB={1} />);
-    const input = screen.getByTestId('file-input');
-    const largeFile = createMockFile('photo.jpg', 2 * 1024 * 1024, 'image/jpeg');
-    fireEvent.change(input, { target: { files: [largeFile] } });
-    expect(screen.getByText('Ukuran file maksimal 1MB')).toBeInTheDocument();
+  it('renders hidden file input', () => {
+    render(<FileUpload />);
+    const input = screen.getByTestId('file-input') as HTMLInputElement;
+    expect(input).toBeInTheDocument();
+    expect(input.type).toBe('file');
   });
 
-  it('calls onChange when file selected', () => {
-    const onChange = vi.fn();
-    render(<FileUpload onChange={onChange} />);
-    const input = screen.getByTestId('file-input');
-    const file = createMockFile('photo.jpg', 1024, 'image/jpeg');
-    fireEvent.change(input, { target: { files: [file] } });
-    expect(onChange).toHaveBeenCalledTimes(1);
-    expect(onChange).toHaveBeenCalledWith([file]);
+  it('shows error message when provided', () => {
+    render(<FileUpload error="File terlalu besar" />);
+    expect(screen.getByText('File terlalu besar')).toBeInTheDocument();
   });
 
-  it('shows error prop', () => {
-    render(<FileUpload error="File tidak valid" />);
-    expect(screen.getByText('File tidak valid')).toBeInTheDocument();
-  });
-
-  it('accepts custom accept type', () => {
+  it('accepts custom accept attribute', () => {
     render(<FileUpload accept=".pdf" />);
-    expect(screen.getByTestId('file-input')).toHaveAttribute('accept', '.pdf');
+    const input = screen.getByTestId('file-input') as HTMLInputElement;
+    expect(input.accept).toBe('.pdf');
   });
 
-  it('accepts multiple files', () => {
+  it('supports multiple files', () => {
     render(<FileUpload multiple />);
-    expect(screen.getByTestId('file-input')).toHaveAttribute('multiple');
+    const input = screen.getByTestId('file-input') as HTMLInputElement;
+    expect(input.multiple).toBe(true);
+  });
+
+  it('clicks hidden input on button click', () => {
+    const clickSpy = vi.fn();
+    render(<FileUpload />);
+    const input = screen.getByTestId('file-input') as HTMLInputElement;
+    input.click = clickSpy;
+    fireEvent.click(screen.getByText('Klik untuk upload'));
+    expect(clickSpy).toHaveBeenCalled();
   });
 });

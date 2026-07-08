@@ -1,56 +1,65 @@
 ---
 export const prerender = false;
 import BaseLayout from '../layouts/BaseLayout.astro'
+import { ClientRouter } from 'astro:transitions'
+import { ArticleGrid } from '../components/blog/ArticleGrid'
 
-interface ArticleItem {
-  id: string
+interface ArticleFeedItem {
   title: string
   slug: string
-  summary: string | null
-  coverImage: string | null
-  authorName: string | null
-  categoryName: string | null
-  categorySlug: string | null
   publishedAt: string | null
+  authorName: string | null
+  category: string | null
 }
 
 interface CategoryItem {
-  id: string
-  name: string
   slug: string
+  name: string
 }
 
-const apiUrl = import.meta.env.PUBLIC_API_URL ?? 'http://localhost:3000'
+const activeCategory = Astro.url.searchParams.get('kategori')
 
-const categorySlug = Astro.url.searchParams.get('kategori')
-
-let articles: ArticleItem[] = []
+// SSR: fetch articles for JSON-LD structured data + category extraction
+// ArticleGrid client component handles the visual rendering with skeleton loading
+let articlesForSeo: ArticleFeedItem[] = []
 let categories: CategoryItem[] = []
-let activeCategory: string | null = categorySlug
-
 try {
-  const catRes = await fetch(`${apiUrl}/api/v1/articles/categories`)
-  if (catRes.ok) {
-    const catJson = await catRes.json()
-    categories = catJson.data ?? []
-  }
-
-  const params = new URLSearchParams({ limit: '50' })
-  if (categorySlug) params.set('category', categorySlug)
-  const res = await fetch(`${apiUrl}/api/v1/articles?${params}`)
+  const apiUrl = import.meta.env.PUBLIC_API_URL ?? 'http://localhost:3000'
+  const res = await fetch(`${apiUrl}/api/v1/cms/articles?limit=20`)
   if (res.ok) {
     const json = await res.json()
-    articles = json.data ?? []
+    const raw: Array<{ title: string; slug: string; published_at: string | null; author: string | null; category: string | null }> = json.data ?? []
+    articlesForSeo = raw.map((a) => ({
+      title: a.title,
+      slug: a.slug,
+      publishedAt: a.published_at,
+      authorName: a.author,
+      category: a.category,
+    }))
+    const catMap = new Map<string, string>()
+    for (const a of raw) {
+      if (a.category) {
+        const slug = a.category.toLowerCase().replace(/\s+/g, '-')
+        catMap.set(slug, a.category)
+      }
+    }
+    categories = Array.from(catMap.entries()).map(([slug, name]) => ({ slug, name }))
   }
 } catch {
   // silent
 }
+
+const activeCategoryName = activeCategory
+  ? categories.find((c) => c.slug === activeCategory)?.name ?? null
+  : null
 ---
 
+<ClientRouter />
+
 <BaseLayout
-  title="Blog - Spesialis"
-  description="Artikel dan tips seputar layanan profesional, perawatan rumah, dan solusi bisnis dari Spesialis."
-  canonicalUrl="/blog"
+  title={activeCategoryName ? `${activeCategoryName} - Blog Spesialis` : 'Blog - Spesialis'}
+  description={activeCategoryName ? `Artikel kategori ${activeCategoryName} — tips seputar layanan profesional, perawatan rumah, dan solusi bisnis dari Spesialis.` : 'Artikel dan tips seputar layanan profesional, perawatan rumah, dan solusi bisnis dari Spesialis.'}
+  canonicalUrl={activeCategory ? `/blog?kategori=${activeCategory}` : '/blog'}
   jsonLd={{
     '@context': 'https://schema.org',
     '@graph': [
@@ -66,7 +75,7 @@ try {
         name: 'Blog Spesialis',
         description: 'Artikel dan tips seputar layanan profesional, perawatan rumah, dan solusi bisnis.',
         url: 'https://spesialis.id/blog',
-        blogPost: articles.map((a) => ({
+        blogPost: articlesForSeo.map((a) => ({
           '@type': 'BlogPosting',
           headline: a.title,
           url: `https://spesialis.id/blog/${a.slug}`,
@@ -77,15 +86,30 @@ try {
     ],
   }}
 >
-  <div class="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
+  <div class="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8 motion-safe:animate-fade-in">
     <nav class="mb-8 text-sm text-text-muted">
       <a href="/" class="hover:text-text transition-colors">Beranda</a>
       <span class="mx-2">/</span>
-      <span class="text-text">Blog</span>
+      <a href="/blog" class="hover:text-text transition-colors">Blog</a>
+      {activeCategoryName && (
+        <>
+          <span class="mx-2">/</span>
+          <span class="text-text">{activeCategoryName}</span>
+        </>
+      )}
     </nav>
 
-    <h1 class="text-3xl font-bold text-text">Blog</h1>
-    <p class="mt-2 text-text-muted">Artikel dan tips seputar layanan profesional</p>
+    <div class="flex items-baseline gap-3">
+      <h1 class="text-3xl font-bold text-text">
+        {activeCategoryName || 'Blog'}
+      </h1>
+      {activeCategoryName && (
+        <span class="text-sm text-text-muted">Blog</span>
+      )}
+    </div>
+    <p class="mt-2 text-text-muted">
+      {activeCategoryName ? `Artikel seputar ${activeCategoryName.toLowerCase()}` : 'Artikel dan tips seputar layanan profesional'}
+    </p>
 
     {categories.length > 0 && (
       <div class="mt-6 flex flex-wrap gap-2">
@@ -114,46 +138,6 @@ try {
       </div>
     )}
 
-    <div class="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-      {articles.length > 0 ? (
-        articles.map((article) => (
-          <a
-            href={`/blog/${article.slug}`}
-            class="group rounded-xl border border-border bg-surface p-5 transition-shadow hover:shadow-md"
-          >
-            {article.coverImage && (
-              <div class="mb-4 overflow-hidden rounded-lg">
-                <img
-                  src={article.coverImage}
-                  alt={article.title}
-                  class="h-48 w-full object-cover transition-transform group-hover:scale-105"
-                />
-              </div>
-            )}
-            {article.categoryName && (
-              <span class="inline-block rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
-                {article.categoryName}
-              </span>
-            )}
-            <h2 class="mt-3 text-lg font-semibold text-text group-hover:text-primary transition-colors">
-              {article.title}
-            </h2>
-            {article.summary && (
-              <p class="mt-2 text-sm text-text-muted line-clamp-2">{article.summary}</p>
-            )}
-            <div class="mt-4 flex items-center gap-3 text-xs text-text-muted">
-              {article.authorName && <span>{article.authorName}</span>}
-              {article.publishedAt && (
-                <span>{new Date(article.publishedAt).toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' })}</span>
-              )}
-            </div>
-          </a>
-        ))
-      ) : (
-        <div class="col-span-full py-16 text-center">
-          <p class="text-text-muted">Belum ada artikel</p>
-        </div>
-      )}
-    </div>
+    <ArticleGrid activeCategory={activeCategory} client:load />
   </div>
 </BaseLayout>

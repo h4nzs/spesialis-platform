@@ -124,3 +124,53 @@ describe('GET /:slug', () => {
     expect(body.success).toBe(false);
   });
 });
+
+describe('GET /:identifier/reviews', () => {
+  it('200 with reviews and aggregate', async () => {
+    mockDb.select
+      .mockReturnValueOnce(makeChain([{ id: 's1' }])) // service lookup
+      .mockReturnValueOnce(makeChain([{ id: 'order-1' }])) // order items lookup
+      .mockReturnValueOnce(
+        makeChain([
+          { id: 'r1', rating: '5.0', review: 'Bagus!', createdAt: '2026-01-01' },
+          { id: 'r2', rating: '4.0', review: 'Baik', createdAt: '2026-01-02' },
+        ]),
+      ) // reviews items
+      .mockReturnValueOnce(makeChain([{ averageRating: '4.5', totalReviews: 2 }])); // aggregate
+
+    const res = await mkApp().request('/api/v1/services/s1/reviews');
+    const body = (await res.json()) as {
+      success: boolean;
+      data: { items: unknown[]; aggregate: { averageRating: number; totalReviews: number } };
+    };
+    expect(res.status).toBe(200);
+    expect(body.success).toBe(true);
+    expect(body.data.items).toHaveLength(2);
+    expect(body.data.aggregate.averageRating).toBe(4.5);
+    expect(body.data.aggregate.totalReviews).toBe(2);
+  });
+
+  it('200 with empty reviews (no orders)', async () => {
+    mockDb.select
+      .mockReturnValueOnce(makeChain([{ id: 's1' }])) // service lookup
+      .mockReturnValueOnce(makeChain([])); // no orders for this service
+
+    const res = await mkApp().request('/api/v1/services/ac/reviews');
+    const body = (await res.json()) as {
+      success: boolean;
+      data: { items: unknown[]; aggregate: { averageRating: number; totalReviews: number } };
+    };
+    expect(res.status).toBe(200);
+    expect(body.data.items).toHaveLength(0);
+    expect(body.data.aggregate.totalReviews).toBe(0);
+    expect(body.data.aggregate.averageRating).toBe(0);
+  });
+
+  it('404 service not found', async () => {
+    mockDb.select.mockReturnValueOnce(makeChain([]));
+    const res = await mkApp().request('/api/v1/services/nope/reviews');
+    const body = (await res.json()) as ApiTestResponse;
+    expect(res.status).toBe(404);
+    expect(body.success).toBe(false);
+  });
+});

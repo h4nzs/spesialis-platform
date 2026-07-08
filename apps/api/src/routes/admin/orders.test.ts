@@ -172,3 +172,174 @@ describe('PATCH /api/v1/admin/orders/:id/discount', () => {
     expect(res.status).toBe(401);
   });
 });
+
+describe('GET /export', () => {
+  it('200 returns CSV with BOM and header', async () => {
+    mockDb.select.mockReturnValue(
+      makeChain([
+        {
+          bookingNumber: 'SP-2026-0001',
+          status: 'Paid',
+          basePrice: '150000',
+          finalPrice: '150000',
+          discountAmount: '0',
+          bookingDate: '2026-07-01',
+          bookingTime: '10:00',
+          createdAt: new Date('2026-07-01T10:00:00Z'),
+          completedAt: new Date('2026-07-01T15:00:00Z'),
+          customerName: 'John Doe',
+          customerEmail: 'john@test.com',
+        },
+      ]),
+    );
+    const res = await mkApp().request('/api/v1/admin/orders/export', { headers: a() });
+    expect(res.status).toBe(200);
+    expect(res.headers.get('Content-Type')).toBe('text/csv; charset=utf-8');
+    expect(res.headers.get('Content-Disposition')).toBe('attachment; filename="orders-export.csv"');
+    const text = await res.text();
+    expect(text).toContain('No.Booking');
+    expect(text).toContain('SP-2026-0001');
+    expect(text).toContain('John Doe');
+    expect(text).toContain('john@test.com');
+  });
+
+  it('200 empty CSV when no orders', async () => {
+    mockDb.select.mockReturnValue(makeChain([]));
+    const res = await mkApp().request('/api/v1/admin/orders/export', { headers: a() });
+    expect(res.status).toBe(200);
+    const text = await res.text();
+    expect(text).toContain('No.Booking');
+    // Only header, no data rows
+    expect(text.split('\n')).toHaveLength(2);
+  });
+
+  it('403 customer role', async () => {
+    const res = await mkApp('customer').request('/api/v1/admin/orders/export', { headers: a() });
+    expect(res.status).toBe(403);
+  });
+
+  it('401 no auth', async () => {
+    const res = await mkApp().request('/api/v1/admin/orders/export');
+    expect(res.status).toBe(401);
+  });
+});
+
+describe('PATCH /:id/tags', () => {
+  it('200 updates tags', async () => {
+    mockDb.select.mockReturnValueOnce(makeChain([{ id: orderId }]));
+    mockDb.update.mockReturnValue(updateChain([{ id: orderId }]));
+    const res = await mkApp().request(`/api/v1/admin/orders/${orderId}/tags`, {
+      method: 'PATCH',
+      headers: a(),
+      body: JSON.stringify({ tags: 'urgent,vip' }),
+    });
+    expect(res.status).toBe(200);
+    expect(mockAudit.createAuditLog).toHaveBeenCalledTimes(1);
+  });
+
+  it('404 order not found', async () => {
+    mockDb.select.mockReturnValue(makeChain([]));
+    const res = await mkApp().request(`/api/v1/admin/orders/${orderId}/tags`, {
+      method: 'PATCH',
+      headers: a(),
+      body: JSON.stringify({ tags: 'urgent' }),
+    });
+    expect(res.status).toBe(404);
+  });
+
+  it('422 too long', async () => {
+    const res = await mkApp().request(`/api/v1/admin/orders/${orderId}/tags`, {
+      method: 'PATCH',
+      headers: a(),
+      body: JSON.stringify({ tags: 'x'.repeat(501) }),
+    });
+    expect(res.status).toBe(422);
+  });
+
+  it('422 missing field', async () => {
+    const res = await mkApp().request(`/api/v1/admin/orders/${orderId}/tags`, {
+      method: 'PATCH',
+      headers: a(),
+      body: JSON.stringify({}),
+    });
+    expect(res.status).toBe(422);
+  });
+
+  it('403 customer role', async () => {
+    const res = await mkApp('customer').request(`/api/v1/admin/orders/${orderId}/tags`, {
+      method: 'PATCH',
+      headers: a(),
+      body: JSON.stringify({ tags: 'urgent' }),
+    });
+    expect(res.status).toBe(403);
+  });
+
+  it('401 no auth', async () => {
+    const res = await mkApp().request(`/api/v1/admin/orders/${orderId}/tags`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ tags: 'urgent' }),
+    });
+    expect(res.status).toBe(401);
+  });
+});
+
+describe('PATCH /:id/internal-notes', () => {
+  it('200 updates internal notes', async () => {
+    mockDb.select.mockReturnValueOnce(makeChain([{ id: orderId }]));
+    mockDb.update.mockReturnValue(updateChain([{ id: orderId }]));
+    const res = await mkApp().request(`/api/v1/admin/orders/${orderId}/internal-notes`, {
+      method: 'PATCH',
+      headers: a(),
+      body: JSON.stringify({ internalNotes: 'Customer request: datang setelah maghrib' }),
+    });
+    expect(res.status).toBe(200);
+    expect(mockAudit.createAuditLog).toHaveBeenCalledTimes(1);
+  });
+
+  it('404 order not found', async () => {
+    mockDb.select.mockReturnValue(makeChain([]));
+    const res = await mkApp().request(`/api/v1/admin/orders/${orderId}/internal-notes`, {
+      method: 'PATCH',
+      headers: a(),
+      body: JSON.stringify({ internalNotes: 'Test' }),
+    });
+    expect(res.status).toBe(404);
+  });
+
+  it('422 empty string', async () => {
+    const res = await mkApp().request(`/api/v1/admin/orders/${orderId}/internal-notes`, {
+      method: 'PATCH',
+      headers: a(),
+      body: JSON.stringify({ internalNotes: '' }),
+    });
+    expect(res.status).toBe(422);
+  });
+
+  it('422 missing field', async () => {
+    const res = await mkApp().request(`/api/v1/admin/orders/${orderId}/internal-notes`, {
+      method: 'PATCH',
+      headers: a(),
+      body: JSON.stringify({}),
+    });
+    expect(res.status).toBe(422);
+  });
+
+  it('403 customer role', async () => {
+    const res = await mkApp('customer').request(`/api/v1/admin/orders/${orderId}/internal-notes`, {
+      method: 'PATCH',
+      headers: a(),
+      body: JSON.stringify({ internalNotes: 'Test' }),
+    });
+    expect(res.status).toBe(403);
+  });
+
+  it('401 no auth', async () => {
+    const res = await mkApp().request(`/api/v1/admin/orders/${orderId}/internal-notes`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ internalNotes: 'Test' }),
+    });
+    expect(res.status).toBe(401);
+  });
+});

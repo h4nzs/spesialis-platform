@@ -71,3 +71,5 @@ export type {
 
 export type { ContractStatus, Contract, CreateContractInput } from './contract.ts';
 export type { InvoiceStatus, Invoice, CreateInvoiceInput } from './invoice.ts';
+
+export type { PenaltyType, PenaltyStatus, PartnerPenalty } from './penalty.ts';

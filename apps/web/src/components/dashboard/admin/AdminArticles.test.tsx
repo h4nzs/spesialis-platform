@@ -1,12 +1,15 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor, fireEvent } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { AdminArticles } from './AdminArticles';
 
-const mockGet = vi.fn();
-const mockPost = vi.fn();
-const mockPatch = vi.fn();
-const mockDelete = vi.fn();
+const { mockGet, mockPost, mockPatch, mockDelete, mockDownloadCSV } = vi.hoisted(() => ({
+  mockGet: vi.fn(),
+  mockPost: vi.fn(),
+  mockPatch: vi.fn(),
+  mockDelete: vi.fn(),
+  mockDownloadCSV: vi.fn(),
+}));
 
 vi.mock('@specialist/shared', () => ({
   createBrowserClient: () => ({
@@ -15,6 +18,7 @@ vi.mock('@specialist/shared', () => ({
     patch: mockPatch,
     delete: mockDelete,
   }),
+  downloadCSV: mockDownloadCSV,
 }));
 
 vi.mock('@specialist/ui', () => ({
@@ -189,5 +193,157 @@ describe('AdminArticles', () => {
     render(<AdminArticles />);
     expect(await screen.findByText('Edit')).toBeInTheDocument();
     expect(screen.getByText('Hapus')).toBeInTheDocument();
+  });
+
+  // --- Interaction Tests ---
+
+  it('shows validation error when submitting empty form', async () => {
+    const user = userEvent.setup();
+    mockGet.mockResolvedValueOnce({ data: [] });
+    mockGet.mockResolvedValueOnce({ data: [] });
+    render(<AdminArticles />);
+    expect(await screen.findByText('Tulis Artikel')).toBeInTheDocument();
+    await user.click(screen.getByText('Tulis Artikel'));
+    await waitFor(() => {
+      expect(screen.getByTestId('modal')).toBeInTheDocument();
+    });
+
+    // Fire submit event on the form directly (click on submit button doesn't trigger form submit in JSDOM)
+    const form = screen.getByTestId('modal').querySelector('form');
+    fireEvent.submit(form!);
+
+    await waitFor(() => {
+      expect(screen.getByText('Judul dan slug wajib diisi')).toBeInTheDocument();
+    });
+  });
+
+  it('submits form and calls post API', async () => {
+    const user = userEvent.setup();
+    mockGet.mockResolvedValueOnce({ data: [] });
+    mockGet.mockResolvedValueOnce({ data: [{ id: 'c1', name: 'News', slug: 'news' }] });
+    mockPost.mockResolvedValue(undefined);
+    render(<AdminArticles />);
+    expect(await screen.findByText('Tulis Artikel')).toBeInTheDocument();
+    await user.click(screen.getByText('Tulis Artikel'));
+    await waitFor(() => {
+      expect(screen.getByTestId('modal')).toBeInTheDocument();
+    });
+
+    const titleInput = screen.getByTestId('input-Judul');
+    const slugInput = screen.getByTestId('input-Slug');
+
+    await user.type(titleInput, 'New Article');
+    await user.type(slugInput, 'new-article');
+
+    await user.click(screen.getByText('Buat'));
+
+    await waitFor(() => {
+      expect(mockPost).toHaveBeenCalledWith('/api/v1/admin/articles', {
+        body: expect.objectContaining({
+          title: 'New Article',
+          slug: 'new-article',
+          status: 'Draft',
+          isFeatured: false,
+        }),
+      });
+    });
+  });
+
+  it('calls delete API when Hapus is confirmed', async () => {
+    const user = userEvent.setup();
+    mockGet.mockResolvedValueOnce({
+      data: [
+        { id: 'a1', title: 'Article 1', slug: 'article-1', status: 'Draft', isFeatured: false },
+      ],
+    });
+    mockGet.mockResolvedValueOnce({ data: [] });
+    mockDelete.mockResolvedValue(undefined);
+
+    // Mock window.confirm
+    const originalConfirm = window.confirm;
+    window.confirm = vi.fn(() => true);
+
+    render(<AdminArticles />);
+    expect(await screen.findByText('Hapus')).toBeInTheDocument();
+    await user.click(screen.getByText('Hapus'));
+
+    await waitFor(() => {
+      expect(mockDelete).toHaveBeenCalledWith('/api/v1/admin/articles/a1');
+    });
+
+    window.confirm = originalConfirm;
+  });
+
+  it('does not call delete API when confirm is cancelled', async () => {
+    const user = userEvent.setup();
+    mockGet.mockResolvedValueOnce({
+      data: [
+        { id: 'a1', title: 'Article 1', slug: 'article-1', status: 'Draft', isFeatured: false },
+      ],
+    });
+    mockGet.mockResolvedValueOnce({ data: [] });
+
+    const originalConfirm = window.confirm;
+    window.confirm = vi.fn(() => false);
+
+    render(<AdminArticles />);
+    expect(await screen.findByText('Hapus')).toBeInTheDocument();
+    await user.click(screen.getByText('Hapus'));
+
+    await waitFor(() => {
+      expect(mockDelete).not.toHaveBeenCalled();
+    });
+
+    window.confirm = originalConfirm;
+  });
+
+  // ─── CSV Export Tests ───────────────────────────────────────────
+
+  describe('CSV export', () => {
+    beforeEach(() => {
+      mockGet.mockResolvedValue({
+        data: [
+          {
+            id: 'a1',
+            title: 'Article 1',
+            slug: 'article-1',
+            categoryName: 'News',
+            authorName: 'Admin',
+            status: 'Published',
+            isFeatured: true,
+            publishedAt: '2026-01-15',
+          },
+        ],
+      });
+    });
+
+    it('renders Export CSV button when data loaded', async () => {
+      render(<AdminArticles />);
+      expect(await screen.findByText('Export CSV')).toBeInTheDocument();
+    });
+
+    it('does not render Export CSV button when no articles', async () => {
+      mockGet.mockReset();
+      mockGet.mockResolvedValue({ data: [] });
+      mockGet.mockResolvedValue({ data: [] });
+      render(<AdminArticles />);
+      expect(await screen.findByText('Belum ada artikel')).toBeInTheDocument();
+      expect(screen.queryByText('Export CSV')).not.toBeInTheDocument();
+    });
+
+    it('calls downloadCSV with correct data on click', async () => {
+      const user = userEvent.setup();
+      render(<AdminArticles />);
+      expect(await screen.findByText('Export CSV')).toBeInTheDocument();
+
+      await user.click(screen.getByText('Export CSV'));
+
+      expect(mockDownloadCSV).toHaveBeenCalledTimes(1);
+      expect(mockDownloadCSV).toHaveBeenCalledWith(
+        ['Judul', 'Slug', 'Kategori', 'Penulis', 'Status', 'Featured', 'Terbit'],
+        [['Article 1', 'article-1', 'News', 'Admin', 'Published', 'Ya', '15/1/2026']],
+        'artikel-export.csv',
+      );
+    });
   });
 });

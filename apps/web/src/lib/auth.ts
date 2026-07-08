@@ -15,8 +15,8 @@ const ROLE_DASHBOARD: Record<string, string> = {
   corporate: '/dashboard/corporate',
   admin: '/dashboard/admin',
   super_admin: '/dashboard/admin',
-  dispatcher: '/dashboard/admin',
-  finance: '/dashboard/admin',
+  dispatcher: '/dashboard/dispatcher',
+  finance: '/dashboard/finance',
   content_manager: '/dashboard/admin',
 };
 

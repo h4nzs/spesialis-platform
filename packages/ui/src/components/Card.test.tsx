@@ -4,34 +4,39 @@ import { Card } from './Card';
 
 describe('Card', () => {
   it('renders children', () => {
-    render(<Card>Card Content</Card>);
-    expect(screen.getByText('Card Content')).toBeInTheDocument();
+    render(<Card>Card content</Card>);
+    expect(screen.getByText('Card content')).toBeInTheDocument();
   });
 
-  it('renders with default padding', () => {
+  it('renders with default padding (md)', () => {
     render(<Card>Content</Card>);
     expect(screen.getByText('Content').className).toContain('p-4');
   });
 
   it('renders with sm padding', () => {
-    render(<Card padding="sm">Small</Card>);
-    expect(screen.getByText('Small').className).toContain('p-3');
+    render(<Card padding="sm">Content</Card>);
+    expect(screen.getByText('Content').className).toContain('p-3');
   });
 
   it('renders with lg padding', () => {
-    render(<Card padding="lg">Large</Card>);
-    expect(screen.getByText('Large').className).toContain('p-6');
+    render(<Card padding="lg">Content</Card>);
+    expect(screen.getByText('Content').className).toContain('p-6');
   });
 
-  it('has border and shadow classes', () => {
-    render(<Card>Styled</Card>);
-    const el = screen.getByText('Styled');
+  it('renders with custom className', () => {
+    render(<Card className="custom-class">Content</Card>);
+    expect(screen.getByText('Content').className).toContain('custom-class');
+  });
+
+  it('passes additional HTML attributes', () => {
+    render(<Card data-testid="card-1">Content</Card>);
+    expect(screen.getByTestId('card-1')).toBeInTheDocument();
+  });
+
+  it('renders with border and surface classes', () => {
+    render(<Card>Content</Card>);
+    const el = screen.getByText('Content');
     expect(el.className).toContain('border-border');
-    expect(el.className).toContain('shadow-xs');
-  });
-
-  it('accepts additional className', () => {
-    render(<Card className="extra">Extra</Card>);
-    expect(screen.getByText('Extra').className).toContain('extra');
+    expect(el.className).toContain('bg-surface');
   });
 });

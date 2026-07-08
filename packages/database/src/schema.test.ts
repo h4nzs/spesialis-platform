@@ -43,6 +43,7 @@ const TABLE_NAMES = [
   'passwordResets',
   'partnerSkills',
   'partnerDocuments',
+  'partnerPenalties',
   'articleCategories',
   'articles',
   'contracts',
@@ -76,6 +77,7 @@ const RELATION_NAMES = [
   'articlesRelations',
   'contractsRelations',
   'invoicesRelations',
+  'partnerPenaltiesRelations',
 ] as const;
 
 // Tables that support soft-delete (have deletedAt timestamp column)
@@ -90,6 +92,7 @@ const SOFT_DELETE_TABLES = new Set([
   'articles',
   'contracts',
   'invoices',
+  'partnerPenalties',
   'faq',
   'corporateInquiries',
 ]);
@@ -106,19 +109,20 @@ const TYPED_TABLES: Record<string, Record<string, string>> = {
   payments: { method: 'PaymentMethod', status: 'PaymentStatus' },
   complaints: { status: 'ComplaintStatus' },
   notifications: { channel: 'NotificationChannel' },
+  partnerPenalties: { type: 'PenaltyType', status: 'PenaltyStatus' },
 };
 
 // ── Tests ────────────────────────────────────────────────────────────────────
 
 describe('schema exports', () => {
-  it('exports all 32 tables', () => {
+  it('exports all 33 tables', () => {
     for (const name of TABLE_NAMES) {
       expect(schema).toHaveProperty(name);
       expect(schema[name as keyof typeof schema]).toBeDefined();
     }
   });
 
-  it('exports only the expected 32 tables (no extra)', () => {
+  it('exports only the expected 33 tables (no extra)', () => {
     const allKeys = Object.keys(schema).filter((k) => !k.endsWith('Relations') && k !== 'default');
     expect(allKeys.length).toBe(TABLE_NAMES.length);
     for (const key of allKeys) {
@@ -126,7 +130,7 @@ describe('schema exports', () => {
     }
   });
 
-  it('exports all 24 relations', () => {
+  it('exports all 25 relations', () => {
     for (const name of RELATION_NAMES) {
       expect(schema).toHaveProperty(name);
       expect(schema[name as keyof typeof schema]).toBeDefined();
@@ -186,7 +190,7 @@ describe('typed columns ($type)', () => {
 });
 
 describe('relation exports', () => {
-  it('all 24 relation exports are defined', () => {
+  it('all 25 relation exports are defined', () => {
     for (const name of RELATION_NAMES) {
       expect(schema).toHaveProperty(name);
       expect(schema[name as keyof typeof schema]).toBeDefined();

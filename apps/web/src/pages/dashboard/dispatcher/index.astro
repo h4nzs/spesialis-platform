@@ -1,0 +1,9 @@
+---
+export const prerender = false
+import DashboardLayout from '../../../layouts/DashboardLayout.astro'
+import { DispatcherOverview } from '../../../components/dashboard/admin/DispatcherOverview.tsx'
+---
+
+<DashboardLayout title="Dashboard Dispatcher" role="dispatcher">
+  <DispatcherOverview client:load />
+</DashboardLayout>

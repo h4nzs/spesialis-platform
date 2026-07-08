@@ -20,6 +20,7 @@ import type {
 } from '@specialist/validation';
 import { success, created, notFound, forbidden, conflict, serverError } from '../lib/response.ts';
 import { omitUndefined } from '../lib/update.ts';
+import { createAuditLog } from '../lib/audit.ts';
 import { rateLimit } from '../middleware/rate-limiter.ts';
 
 const router = new Hono();
@@ -56,6 +57,8 @@ router.post('/', rateLimit(5, 60_000), validateBody(createCompanySchema), async 
       legalName: data.legalName,
       email: data.email,
       phone: data.phone,
+      taxNumber: data.taxNumber ?? null,
+      logoMediaId: data.logoMediaId ?? null,
       website: data.website ?? null,
       industry: data.industry ?? null,
       employeeCount: data.employeeCount ?? null,
@@ -204,7 +207,8 @@ router.post(
   validateBody(verifyCompanySchema),
   async (c) => {
     const companyId = c.req.param('id')!;
-    const { status: newStatus } = c.get('validated') as VerifyCompanyInput;
+    const data = c.get('validated') as VerifyCompanyInput;
+    const newStatus = data.status;
 
     const [company] = await db
       .select({ id: companies.id, status: companies.status })
@@ -213,6 +217,15 @@ router.post(
       .limit(1);
     if (!company) return notFound(c, 'Perusahaan tidak ditemukan');
     await db.update(companies).set({ status: newStatus }).where(eq(companies.id, companyId));
+
+    await createAuditLog(c, {
+      userId: c.get('userId'),
+      action: 'company.verify',
+      entity: 'company',
+      entityId: companyId,
+      newValue: { status: newStatus, ...(data.note !== undefined ? { note: data.note } : {}) },
+      oldValue: { status: company.status },
+    });
 
     if (newStatus === 'Verified') {
       const companyUsersList = await db

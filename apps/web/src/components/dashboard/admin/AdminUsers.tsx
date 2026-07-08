@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { createBrowserClient } from '@specialist/shared';
+import { createBrowserClient, downloadCSV } from '@specialist/shared';
 import { Button, Input, Select, Table, Badge, Modal } from '@specialist/ui';
 import type { Column } from '@specialist/ui';
 
@@ -112,6 +112,28 @@ export function AdminUsers() {
     }
   }
 
+  function handleExportCSV() {
+    const headers = [
+      'Email',
+      'No. HP',
+      'Role',
+      'Status',
+      'Email Terverifikasi',
+      'Terakhir Login',
+      'Dibuat',
+    ];
+    const rows = users.map((u) => [
+      u.email,
+      u.phone,
+      ROLE_LABELS[u.role] ?? u.role,
+      u.status,
+      u.emailVerifiedAt ? 'Ya' : 'Tidak',
+      u.lastLoginAt ? new Date(u.lastLoginAt).toLocaleDateString('id-ID') : 'Tidak pernah',
+      new Date(u.createdAt).toLocaleDateString('id-ID'),
+    ]);
+    downloadCSV(headers, rows, 'user-export.csv');
+  }
+
   const columns: Column<UserItem>[] = [
     {
       key: 'email',
@@ -200,12 +222,41 @@ export function AdminUsers() {
       {loading ? (
         <div className="text-sm text-text-muted py-8 text-center">Memuat...</div>
       ) : (
-        <Table
-          data={users}
-          columns={columns}
-          keyExtractor={(item) => item.id}
-          emptyMessage="Tidak ada user ditemukan"
-        />
+        <>
+          {users.length > 0 && (
+            <div className="flex items-center justify-end">
+              <button
+                type="button"
+                onClick={handleExportCSV}
+                className="inline-flex items-center gap-1.5 rounded-md border border-border bg-background px-3 py-1.5 text-sm font-medium text-text transition-colors hover:bg-surface"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="shrink-0"
+                >
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                  <polyline points="7 10 12 15 17 10" />
+                  <line x1="12" y1="15" x2="12" y2="3" />
+                </svg>
+                Export CSV
+              </button>
+            </div>
+          )}
+          <Table
+            data={users}
+            columns={columns}
+            keyExtractor={(item) => item.id}
+            emptyMessage="Tidak ada user ditemukan"
+          />
+        </>
       )}
 
       <Modal

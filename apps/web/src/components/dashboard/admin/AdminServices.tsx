@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { createBrowserClient, formatCurrency } from '@specialist/shared';
+import { createBrowserClient, formatCurrency, downloadCSV } from '@specialist/shared';
 import { Button, Input, Select, Textarea, Modal, Table, Badge } from '@specialist/ui';
 import type { Column } from '@specialist/ui';
 
@@ -202,11 +202,49 @@ export function AdminServices() {
     },
   ];
 
+  function handleExportCSV() {
+    const headers = ['Nama', 'Slug', 'Kategori', 'Harga', 'Status', 'Featured'];
+    const rows = services.map((s) => [
+      s.name,
+      s.slug,
+      s.categoryName ?? '-',
+      formatCurrency(s.basePrice),
+      s.isActive ? 'Aktif' : 'Nonaktif',
+      s.isFeatured ? 'Ya' : 'Tidak',
+    ]);
+    downloadCSV(headers, rows, 'layanan-export.csv');
+  }
+
   if (loading) return <div className="text-sm text-text-muted py-8 text-center">Memuat...</div>;
 
   return (
     <div className="space-y-4">
-      <div className="flex justify-end">
+      <div className="flex items-center justify-end gap-2">
+        {services.length > 0 && (
+          <button
+            type="button"
+            onClick={handleExportCSV}
+            className="inline-flex items-center gap-1.5 rounded-md border border-border bg-background px-3 py-1.5 text-sm font-medium text-text transition-colors hover:bg-surface"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="shrink-0"
+            >
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+              <polyline points="7 10 12 15 17 10" />
+              <line x1="12" y1="15" x2="12" y2="3" />
+            </svg>
+            Export CSV
+          </button>
+        )}
         <Button onClick={openCreate}>Tambah Layanan</Button>
       </div>
 

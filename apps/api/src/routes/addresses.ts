@@ -60,6 +60,9 @@ router.post('/', validateBody(createAddressSchema), async (c) => {
       district: data.district,
       postalCode: data.postalCode,
       address: data.address,
+      latitude: data.latitude !== undefined ? String(data.latitude) : null,
+      longitude: data.longitude !== undefined ? String(data.longitude) : null,
+      notes: data.notes ?? null,
       isDefault: data.isDefault ?? false,
     })
     .returning();

@@ -10,6 +10,8 @@ export const createCompanySchema = z.object({
     .max(30)
     .regex(/^\+?[0-9]+$/),
   password: z.string().min(8).max(128),
+  taxNumber: z.string().max(30).optional(),
+  logoMediaId: z.string().uuid().optional(),
   website: z.string().url().max(255).optional(),
   industry: z.string().max(255).optional(),
   employeeCount: z.coerce.number().int().min(1).optional(),
@@ -25,6 +27,8 @@ export const updateCompanySchema = z.object({
     .max(30)
     .regex(/^\+?[0-9]+$/)
     .optional(),
+  taxNumber: z.string().max(30).optional().nullable(),
+  logoMediaId: z.string().uuid().optional().nullable(),
   website: z.string().url().max(255).optional().nullable(),
   industry: z.string().max(255).optional(),
   employeeCount: z.coerce.number().int().min(1).optional(),

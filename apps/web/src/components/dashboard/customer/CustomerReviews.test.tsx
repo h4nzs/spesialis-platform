@@ -3,13 +3,17 @@ import { render, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { CustomerReviews } from './CustomerReviews';
 
-const mockGet = vi.fn();
-const mockPost = vi.fn();
+const { mockGet, mockPost, mockDownloadCSV } = vi.hoisted(() => ({
+  mockGet: vi.fn(),
+  mockPost: vi.fn(),
+  mockDownloadCSV: vi.fn(),
+}));
 
 vi.mock('@specialist/shared', () => ({
   createBrowserClient: () => ({ get: mockGet, post: mockPost }),
   formatDate: (d: string) => d,
   formatRating: (r: number) => `${r}/5`,
+  downloadCSV: mockDownloadCSV,
 }));
 
 vi.mock('@specialist/ui', () => ({
@@ -159,5 +163,43 @@ describe('CustomerReviews', () => {
     const btn = await screen.findByText('Tulis Ulasan');
     await user.click(btn);
     expect(await screen.findByText('Kirim Ulasan')).toBeInTheDocument();
+  });
+
+  // ─── CSV Export Tests ───────────────────────────────────────────
+
+  describe('CSV export', () => {
+    beforeEach(() => {
+      mockGet.mockResolvedValue([
+        { id: 'r1', rating: 5, review: 'Excellent!', createdAt: '2026-07-15' },
+      ]);
+    });
+
+    it('renders Export CSV button when data loaded', async () => {
+      render(<CustomerReviews />);
+      expect(await screen.findByText('Export CSV')).toBeInTheDocument();
+    });
+
+    it('does not render Export CSV button when no reviews', async () => {
+      mockGet.mockReset();
+      mockGet.mockResolvedValue([]);
+      render(<CustomerReviews />);
+      expect(await screen.findByText('Belum ada ulasan')).toBeInTheDocument();
+      expect(screen.queryByText('Export CSV')).not.toBeInTheDocument();
+    });
+
+    it('calls downloadCSV with correct data on click', async () => {
+      const user = userEvent.setup();
+      render(<CustomerReviews />);
+      expect(await screen.findByText('Export CSV')).toBeInTheDocument();
+
+      await user.click(screen.getByText('Export CSV'));
+
+      expect(mockDownloadCSV).toHaveBeenCalledTimes(1);
+      expect(mockDownloadCSV).toHaveBeenCalledWith(
+        ['Rating', 'Komentar', 'Tanggal'],
+        [['5', 'Excellent!', '2026-07-15']],
+        'ulasan-saya-export.csv',
+      );
+    });
   });
 });

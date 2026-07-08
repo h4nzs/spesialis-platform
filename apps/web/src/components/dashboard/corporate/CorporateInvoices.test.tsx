@@ -1,8 +1,12 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
+import { userEvent } from '@testing-library/user-event';
 import { CorporateInvoices } from './CorporateInvoices';
 
-const mockGet = vi.fn();
+const { mockGet, mockDownloadCSV } = vi.hoisted(() => ({
+  mockGet: vi.fn(),
+  mockDownloadCSV: vi.fn(),
+}));
 
 vi.mock('@specialist/shared', () => ({
   createBrowserClient: () => ({ get: mockGet }),
@@ -13,6 +17,7 @@ vi.mock('@specialist/shared', () => ({
   formatDate: (d: string) => d,
   getStatusLabel: (s: string) => s,
   getStatusColor: () => 'default' as const,
+  downloadCSV: mockDownloadCSV,
 }));
 
 vi.mock('@specialist/ui', () => ({
@@ -137,5 +142,50 @@ describe('CorporateInvoices', () => {
     mockGet.mockRejectedValue(new Error('Gagal'));
     render(<CorporateInvoices />);
     expect(await screen.findByText('Belum ada invoice')).toBeInTheDocument();
+  });
+
+  // ─── CSV Export Tests ───────────────────────────────────────────
+
+  describe('CSV export', () => {
+    beforeEach(() => {
+      mockGet.mockResolvedValue([
+        {
+          id: 'i1',
+          bookingNumber: 'INV-001',
+          status: 'Paid',
+          bookingDate: '2026-07-15',
+          finalPrice: '150000',
+          completedAt: '2026-07-16',
+        },
+      ]);
+    });
+
+    it('renders Export CSV button when data loaded', async () => {
+      render(<CorporateInvoices />);
+      expect(await screen.findByText('Export CSV')).toBeInTheDocument();
+    });
+
+    it('does not render Export CSV button when no invoices', async () => {
+      mockGet.mockReset();
+      mockGet.mockResolvedValue([]);
+      render(<CorporateInvoices />);
+      expect(await screen.findByText('Belum ada invoice')).toBeInTheDocument();
+      expect(screen.queryByText('Export CSV')).not.toBeInTheDocument();
+    });
+
+    it('calls downloadCSV with correct data on click', async () => {
+      const user = userEvent.setup();
+      render(<CorporateInvoices />);
+      expect(await screen.findByText('Export CSV')).toBeInTheDocument();
+
+      await user.click(screen.getByText('Export CSV'));
+
+      expect(mockDownloadCSV).toHaveBeenCalledTimes(1);
+      expect(mockDownloadCSV).toHaveBeenCalledWith(
+        ['No. Invoice', 'Status', 'Tanggal', 'Jumlah', 'Selesai'],
+        [['INV-001', 'Paid', '2026-07-15', 'Rp150.000', '2026-07-16']],
+        'invoice-export.csv',
+      );
+    });
   });
 });
