@@ -1,6 +1,17 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { createBrowserClient, downloadCSV } from '@specialist/shared';
-import { Button, Input, Select, Textarea, Modal, Table, Badge, EmptyState } from '@specialist/ui';
+import { createBrowserClient } from '@specialist/shared';
+import {
+  Button,
+  Input,
+  Select,
+  Textarea,
+  Modal,
+  Table,
+  Badge,
+  EmptyState,
+  TableSkeleton,
+  CSVExportButton,
+} from '@specialist/ui';
 import type { Column } from '@specialist/ui';
 
 interface ArticleItem {
@@ -166,7 +177,7 @@ export function AdminArticles() {
       render: (item) => (
         <div>
           <span className="font-medium text-text-primary">{item.title}</span>
-          <span className="ml-2 text-xs text-text-primary-secondary">({item.slug})</span>
+          <span className="ml-2 text-xs text-text-secondary">({item.slug})</span>
         </div>
       ),
     },
@@ -212,72 +223,33 @@ export function AdminArticles() {
     },
   ];
 
-  function handleExportCSV() {
-    const headers = ['Judul', 'Slug', 'Kategori', 'Penulis', 'Status', 'Featured', 'Terbit'];
-    const rows = articles.map((a) => [
-      a.title,
-      a.slug,
-      a.categoryName ?? '-',
-      a.authorName ?? '-',
-      a.status,
-      a.isFeatured ? 'Ya' : 'Tidak',
-      a.publishedAt ? new Date(a.publishedAt).toLocaleDateString('id-ID') : '-',
-    ]);
-    downloadCSV(headers, rows, 'artikel-export.csv');
-  }
-
-  if (loading) {
-    return (
-      <div className="space-y-4">
-        <div className="flex justify-end">
-          <div
-            className="animate-skeleton h-10 w-32 rounded-lg bg-neutral-200"
-            aria-hidden="true"
-          />
-        </div>
-        <div
-          className="animate-skeleton h-12 w-full rounded-lg bg-neutral-200"
-          aria-hidden="true"
-        />
-        <div
-          className="animate-skeleton h-12 w-full rounded-lg bg-neutral-200"
-          aria-hidden="true"
-        />
-        <div
-          className="animate-skeleton h-12 w-full rounded-lg bg-neutral-200"
-          aria-hidden="true"
-        />
-      </div>
-    );
-  }
+  if (loading) return <TableSkeleton />;
 
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-end gap-2">
         {articles.length > 0 && (
-          <button
-            type="button"
-            onClick={handleExportCSV}
-            className="inline-flex items-center gap-1.5 rounded-lg border border-border-default bg-bg-surface px-3 py-1.5 text-body-sm font-medium text-text-primary shadow-xs transition-all duration-150 ease-out hover:bg-neutral-100 hover:shadow-sm"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="16"
-              height="16"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              className="shrink-0"
-            >
-              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-              <polyline points="7 10 12 15 17 10" />
-              <line x1="12" y1="15" x2="12" y2="3" />
-            </svg>
-            Export CSV
-          </button>
+          <CSVExportButton
+            data={articles as unknown as Record<string, unknown>[]}
+            columns={[
+              { key: 'title', label: 'Judul' },
+              { key: 'slug', label: 'Slug' },
+              { key: 'categoryName', label: 'Kategori', format: (v) => (v as string) ?? '-' },
+              { key: 'authorName', label: 'Penulis', format: (v) => (v as string) ?? '-' },
+              { key: 'status', label: 'Status' },
+              {
+                key: 'isFeatured',
+                label: 'Featured',
+                format: (v) => (v ? 'Ya' : 'Tidak'),
+              },
+              {
+                key: 'publishedAt',
+                label: 'Terbit',
+                format: (v) => (v ? new Date(v as string).toLocaleDateString('id-ID') : '-'),
+              },
+            ]}
+            filename="artikel-export.csv"
+          />
         )}
         <Button onClick={openCreate}>Tulis Artikel</Button>
       </div>

@@ -65,7 +65,7 @@ function statusBadgeStyle(status: string): string {
     Cancelled: 'bg-danger-500/10 text-danger-500',
     Closed: 'bg-secondary/10 text-secondary',
   };
-  return map[status] ?? 'bg-bg-page text-text-primary-secondary';
+  return map[status] ?? 'bg-bg-page text-text-secondary';
 }
 
 export function AdminReports() {
@@ -93,10 +93,7 @@ export function AdminReports() {
       <div className="space-y-6">
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {[1, 2, 3, 4].map((i) => (
-            <div
-              key={i}
-              className="rounded-xl border border-border-default-default bg-bg-surface p-6"
-            >
+            <div key={i} className="rounded-xl border border-border-default bg-bg-surface p-6">
               <div
                 className="animate-skeleton h-4 w-1/2 rounded-sm bg-neutral-200"
                 aria-hidden="true"
@@ -130,25 +127,21 @@ export function AdminReports() {
       {/* Summary Cards */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <Card padding="lg">
-          <p className="text-body-sm text-text-primary-secondary">Total Pesanan</p>
-          <p className="mt-1 text-h3 font-bold text-text-primary-primary">
-            {data.summary.totalOrders}
-          </p>
+          <p className="text-body-sm text-text-secondary">Total Pesanan</p>
+          <p className="mt-1 text-h3 font-bold text-text-primary">{data.summary.totalOrders}</p>
         </Card>
         <Card padding="lg">
-          <p className="text-body-sm text-text-primary-secondary">Partner Terverifikasi</p>
-          <p className="mt-1 text-h3 font-bold text-text-primary-primary">
-            {data.summary.totalPartners}
-          </p>
+          <p className="text-body-sm text-text-secondary">Partner Terverifikasi</p>
+          <p className="mt-1 text-h3 font-bold text-text-primary">{data.summary.totalPartners}</p>
         </Card>
         <Card padding="lg">
-          <p className="text-body-sm text-text-primary-secondary">Rating Rata-rata</p>
+          <p className="text-body-sm text-text-secondary">Rating Rata-rata</p>
           <p className="mt-1 text-h3 font-bold text-accent-500">
             {Number(data.summary.avgRating).toFixed(1)}
           </p>
         </Card>
         <Card padding="lg">
-          <p className="text-body-sm text-text-primary-secondary">Pekerjaan Selesai</p>
+          <p className="text-body-sm text-text-secondary">Pekerjaan Selesai</p>
           <p className="mt-1 text-h3 font-bold text-success-500">
             {data.summary.totalCompletedJobs}
           </p>
@@ -165,7 +158,7 @@ export function AdminReports() {
             className={`cursor-pointer px-4 py-2 text-sm font-medium transition-colors ${
               tab === t.key
                 ? 'border-b-2 border-primary text-primary'
-                : 'text-text-primary-secondary hover:text-text-primary'
+                : 'text-text-secondary hover:text-text-primary'
             }`}
           >
             {t.label}
@@ -176,7 +169,7 @@ export function AdminReports() {
       {/* Revenue Tab */}
       {tab === 'revenue' && (
         <div className="space-y-4">
-          <h3 className="text-sm font-semibold text-text-primary-secondary uppercase tracking-wide">
+          <h3 className="text-sm font-semibold text-text-secondary uppercase tracking-wide">
             Pendapatan per Bulan (12 Bulan Terakhir)
           </h3>
           {data.revenueByMonth.length === 0 ? (
@@ -188,7 +181,7 @@ export function AdminReports() {
             <div className="space-y-2">
               {data.revenueByMonth.map((r) => (
                 <div key={r.month} className="flex items-center gap-3">
-                  <span className="w-24 text-right text-xs text-text-primary-secondary">
+                  <span className="w-24 text-right text-xs text-text-secondary">
                     {monthLabel(r.month)}
                   </span>
                   <div className="flex-1">
@@ -204,7 +197,7 @@ export function AdminReports() {
                   <span className="w-32 text-right text-xs font-medium text-text-primary">
                     {formatCurrency(Number(r.revenue))}
                   </span>
-                  <span className="w-16 text-right text-xs text-text-primary-secondary">
+                  <span className="w-16 text-right text-xs text-text-secondary">
                     {r.order_count} pesanan
                   </span>
                 </div>
@@ -218,7 +211,7 @@ export function AdminReports() {
       {tab === 'orders' && (
         <div className="grid gap-6 md:grid-cols-2">
           <div className="space-y-3">
-            <h3 className="text-sm font-semibold text-text-primary-secondary uppercase tracking-wide">
+            <h3 className="text-sm font-semibold text-text-secondary uppercase tracking-wide">
               Status Pesanan
             </h3>
             {data.ordersByStatus.length === 0 ? (
@@ -243,7 +236,7 @@ export function AdminReports() {
           </div>
 
           <div className="space-y-3">
-            <h3 className="text-sm font-semibold text-text-primary-secondary uppercase tracking-wide">
+            <h3 className="text-sm font-semibold text-text-secondary uppercase tracking-wide">
               Pesanan per Hari (30 Hari Terakhir)
             </h3>
             {data.ordersByDay.length === 0 ? (
@@ -269,7 +262,7 @@ export function AdminReports() {
       {/* Services Tab */}
       {tab === 'services' && (
         <div className="space-y-3">
-          <h3 className="text-sm font-semibold text-text-primary-secondary uppercase tracking-wide">
+          <h3 className="text-sm font-semibold text-text-secondary uppercase tracking-wide">
             10 Layanan Terpopuler
           </h3>
           {data.topServices.length === 0 ? (
@@ -279,13 +272,11 @@ export function AdminReports() {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-border-default bg-bg-page">
-                    <th className="px-4 py-3 text-left font-medium text-text-primary-secondary">
-                      Layanan
-                    </th>
-                    <th className="px-4 py-3 text-left font-medium text-text-primary-secondary">
+                    <th className="px-4 py-3 text-left font-medium text-text-secondary">Layanan</th>
+                    <th className="px-4 py-3 text-left font-medium text-text-secondary">
                       Kategori
                     </th>
-                    <th className="px-4 py-3 text-right font-medium text-text-primary-secondary">
+                    <th className="px-4 py-3 text-right font-medium text-text-secondary">
                       Pesanan
                     </th>
                   </tr>
@@ -297,9 +288,7 @@ export function AdminReports() {
                       className="border-b border-border-default last:border-b-0 hover:bg-neutral-100/50"
                     >
                       <td className="px-4 py-3 font-medium text-text-primary">{svc.name}</td>
-                      <td className="px-4 py-3 text-text-primary-secondary">
-                        {svc.category ?? '-'}
-                      </td>
+                      <td className="px-4 py-3 text-text-secondary">{svc.category ?? '-'}</td>
                       <td className="px-4 py-3 text-right font-bold text-text-primary">
                         {svc.order_count}
                       </td>

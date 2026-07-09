@@ -105,9 +105,9 @@ export function ArticleGrid({ activeCategory }: ArticleGridProps) {
               {article.categoryName}
             </span>
           )}
-          <h2 className="mt-3 text-h5 font-semibold text-text-primary group-hover:text-primary-500 transition-colors">
+          <h3 className="mt-3 text-h5 font-semibold text-text-primary group-hover:text-primary-500 transition-colors">
             {article.title}
-          </h2>
+          </h3>
           {article.summary && (
             <p className="mt-2 text-body-sm text-text-muted line-clamp-2">{article.summary}</p>
           )}

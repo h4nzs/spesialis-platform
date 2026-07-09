@@ -96,21 +96,21 @@ export function FinanceOverview() {
       {/* Summary cards */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <Card padding="lg">
-          <p className="text-body-sm text-text-primary-secondary">Total Pendapatan</p>
+          <p className="text-body-sm text-text-secondary">Total Pendapatan</p>
           <p className="mt-1 text-h3 font-bold text-success">{formatCurrency(totalRevenue)}</p>
         </Card>
         <Card padding="lg">
-          <p className="text-body-sm text-text-primary-secondary">
+          <p className="text-body-sm text-text-secondary">
             {latestMonth ? formatMonth(latestMonth.month) : 'Bulan Ini'}
           </p>
           <p className="mt-1 text-h3 font-bold text-primary">{formatCurrency(latestRevenue)}</p>
         </Card>
         <Card padding="lg">
-          <p className="text-body-sm text-text-primary-secondary">Pesanan Dibayar</p>
+          <p className="text-body-sm text-text-secondary">Pesanan Dibayar</p>
           <p className="mt-1 text-h3 font-bold text-text-primary">{latestOrders}</p>
         </Card>
         <Card padding="lg">
-          <p className="text-body-sm text-text-primary-secondary">Pertumbuhan</p>
+          <p className="text-body-sm text-text-secondary">Pertumbuhan</p>
           <p
             className={`mt-1 text-h3 font-bold ${growthPercent !== null && growthPercent >= 0 ? 'text-success' : 'text-danger'}`}
           >
@@ -177,7 +177,7 @@ export function FinanceOverview() {
 
       {/* Monthly breakdown table */}
       <div className="rounded-xl border border-border-default bg-bg-surface p-6">
-        <h3 className="mb-4 text-caption font-semibold uppercase tracking-wider text-text-primary-secondary">
+        <h3 className="mb-4 text-caption font-semibold uppercase tracking-wider text-text-secondary">
           Rincian Bulanan
         </h3>
         {monthlyData.length > 0 ? (
@@ -185,15 +185,9 @@ export function FinanceOverview() {
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-border-default">
-                  <th className="py-2 pr-4 text-left font-medium text-text-primary-secondary">
-                    Bulan
-                  </th>
-                  <th className="py-2 pr-4 text-right font-medium text-text-primary-secondary">
-                    Pesanan
-                  </th>
-                  <th className="py-2 text-right font-medium text-text-primary-secondary">
-                    Pendapatan
-                  </th>
+                  <th className="py-2 pr-4 text-left font-medium text-text-secondary">Bulan</th>
+                  <th className="py-2 pr-4 text-right font-medium text-text-secondary">Pesanan</th>
+                  <th className="py-2 text-right font-medium text-text-secondary">Pendapatan</th>
                 </tr>
               </thead>
               <tbody>
@@ -216,7 +210,7 @@ export function FinanceOverview() {
 
       {/* Quick actions */}
       <div className="rounded-xl border border-border-default bg-bg-surface p-6">
-        <h3 className="text-sm font-semibold text-text-primary-secondary uppercase tracking-wide">
+        <h3 className="text-sm font-semibold text-text-secondary uppercase tracking-wide">
           Aksi Cepat
         </h3>
         <div className="mt-4 flex flex-wrap gap-3">

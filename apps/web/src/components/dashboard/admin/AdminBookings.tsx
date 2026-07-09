@@ -17,6 +17,8 @@ import {
   Input,
   Textarea,
   EmptyState,
+  CSVExportButton,
+  TableSkeleton,
 } from '@specialist/ui';
 import type { Column } from '@specialist/ui';
 import type { OrderStatus } from '@specialist/types';
@@ -194,60 +196,46 @@ export function AdminBookings() {
     },
   ];
 
-  if (loading && bookings.length === 0) {
-    return (
-      <div className="space-y-4">
-        <div className="flex justify-end">
-          <div
-            className="animate-skeleton h-10 w-32 rounded-lg bg-neutral-200"
-            aria-hidden="true"
-          />
-        </div>
-        <div
-          className="animate-skeleton h-12 w-full rounded-lg bg-neutral-200"
-          aria-hidden="true"
-        />
-        <div
-          className="animate-skeleton h-12 w-full rounded-lg bg-neutral-200"
-          aria-hidden="true"
-        />
-        <div
-          className="animate-skeleton h-12 w-full rounded-lg bg-neutral-200"
-          aria-hidden="true"
-        />
-      </div>
-    );
-  }
+  if (loading && bookings.length === 0) return <TableSkeleton />;
 
   return (
     <div className="space-y-4">
       {/* Toolbar */}
-      <div className="flex items-center justify-end">
-        <button
-          type="button"
-          onClick={handleExportCSV}
-          disabled={exporting}
-          className="inline-flex items-center gap-1.5 rounded-lg border border-border-default bg-bg-surface px-3 py-1.5 text-body-sm font-medium text-text-primary shadow-xs transition-all duration-150 ease-out hover:bg-neutral-100 hover:shadow-sm disabled:cursor-not-allowed disabled:opacity-50"
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="16"
-            height="16"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            className="shrink-0"
-          >
-            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-            <polyline points="7 10 12 15 17 10" />
-            <line x1="12" y1="15" x2="12" y2="3" />
-          </svg>
-          {exporting ? 'Mengexport...' : 'Export CSV'}
-        </button>
-      </div>
+      {bookings.length > 0 && (
+        <div className="flex items-center justify-end">
+          <CSVExportButton
+            data={bookings as unknown as Record<string, unknown>[]}
+            columns={[
+              { key: 'bookingNumber', label: 'No. Booking' },
+              {
+                key: 'status',
+                label: 'Status',
+                format: (v) => getStatusLabel(v as OrderStatus),
+              },
+              {
+                key: 'bookingDate',
+                label: 'Tanggal',
+                format: (v) => formatDate(v as string),
+              },
+              {
+                key: 'basePrice',
+                label: 'Harga Dasar',
+                format: (v) => formatCurrency(Number(v)),
+              },
+              {
+                key: 'finalPrice',
+                label: 'Harga Final',
+                format: (v) => (v ? formatCurrency(Number(v)) : '-'),
+              },
+            ]}
+            filename="orders-export.csv"
+            loading={exporting}
+            loadingLabel="Mengexport..."
+            disabled={exporting}
+            onClick={handleExportCSV}
+          />
+        </div>
+      )}
 
       <Table
         columns={columns}

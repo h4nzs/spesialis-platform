@@ -89,7 +89,7 @@ export function ProfileSettings() {
   }
 
   if (loading) {
-    return <p className="text-sm text-text-primary-secondary">Memuat profil...</p>;
+    return <p className="text-sm text-text-secondary">Memuat profil...</p>;
   }
 
   if (!profile) {

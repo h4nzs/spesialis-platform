@@ -93,10 +93,7 @@ export function CustomerAddresses() {
         </div>
         <div className="grid gap-4 sm:grid-cols-2">
           {[1, 2].map((i) => (
-            <div
-              key={i}
-              className="rounded-xl border border-border-default-default bg-bg-surface p-4"
-            >
+            <div key={i} className="rounded-xl border border-border-default bg-bg-surface p-4">
               <div
                 className="animate-skeleton h-4 w-1/3 rounded-sm bg-neutral-200"
                 aria-hidden="true"
@@ -133,7 +130,7 @@ export function CustomerAddresses() {
           <Card key={addr.id}>
             <div className="flex items-start justify-between">
               <div>
-                <p className="font-medium text-text-primary-primary">
+                <p className="font-medium text-text-primary">
                   {addr.label ?? 'Alamat'}
                   {addr.isDefault && (
                     <span className="ml-2 rounded bg-primary-50 px-2 py-0.5 text-caption text-primary-700">
@@ -141,9 +138,9 @@ export function CustomerAddresses() {
                     </span>
                   )}
                 </p>
-                <p className="mt-1 text-body-sm text-text-primary-secondary">{addr.receiverName}</p>
-                <p className="text-body-sm text-text-primary-secondary">{addr.receiverPhone}</p>
-                <p className="mt-1 text-caption text-text-primary-secondary">
+                <p className="mt-1 text-body-sm text-text-secondary">{addr.receiverName}</p>
+                <p className="text-body-sm text-text-secondary">{addr.receiverPhone}</p>
+                <p className="mt-1 text-caption text-text-secondary">
                   {addr.address}, {addr.city}, {addr.province} {addr.postalCode}
                 </p>
               </div>

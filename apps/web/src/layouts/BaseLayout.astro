@@ -2,6 +2,7 @@
 import '@fontsource-variable/inter';
 import '../styles/global.css'
 import { AuthNav } from '../components/AuthNav.tsx'
+import Footer from '../components/homepage/Footer.astro'
 
 export interface Props {
   title?: string
@@ -96,20 +97,6 @@ const canonical = canonicalUrl ? `${siteUrl}${canonicalUrl}` : undefined
     <main id="main-content">
       <slot />
     </main>
-    <footer class="border-t border-border-default bg-bg-footer py-8">
-      <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div class="flex flex-col items-center justify-between gap-4 sm:flex-row">
-          <div class="flex flex-wrap gap-4 text-sm text-text-muted">
-            <a href="/tentang-kami" class="hover:text-text-primary transition-colors">Tentang</a>
-            <a href="/blog" class="hover:text-text-primary transition-colors">Blog</a>
-            <a href="/faq" class="hover:text-text-primary transition-colors">FAQ</a>
-            <a href="/kontak" class="hover:text-text-primary transition-colors">Kontak</a>
-            <a href="/syarat-ketentuan" class="hover:text-text-primary transition-colors">Syarat & Ketentuan</a>
-            <a href="/kebijakan-privasi" class="hover:text-text-primary transition-colors">Kebijakan Privasi</a>
-          </div>
-          <p class="text-sm text-text-muted">&copy; {new Date().getFullYear()} Spesialis</p>
-        </div>
-      </div>
-    </footer>
+    <Footer />
   </body>
 </html>

@@ -29,6 +29,7 @@ export function Button({
 }: ButtonProps) {
   return (
     <button
+      type="button"
       className={`inline-flex items-center justify-center gap-2 rounded-md font-medium transition-colors disabled:opacity-50 disabled:pointer-events-none cursor-pointer ${variants[variant]} ${sizes[size]} ${className}`}
       {...props}
     >

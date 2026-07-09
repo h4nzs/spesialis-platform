@@ -67,6 +67,7 @@ export function FileUpload({
         accept={accept}
         multiple={multiple}
         className="hidden"
+        aria-label={label ?? 'Upload file'}
         data-testid="file-input"
         onChange={handleChange}
       />

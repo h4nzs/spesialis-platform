@@ -77,7 +77,7 @@ export function ConfirmDialog({
             type="button"
             onClick={onCancel}
             disabled={loading}
-            className="inline-flex h-10 items-center justify-center rounded-lg border border-border-default bg-bg-surface px-4 text-body-sm font-medium text-text-primary transition-colors hover:bg-neutral-100 disabled:opacity-50"
+            className="inline-flex h-10 items-center justify-center rounded-md border border-border-default bg-bg-surface px-4 text-body-sm font-medium text-text-primary transition-colors hover:bg-neutral-100 disabled:opacity-50"
           >
             {cancelLabel}
           </button>
@@ -86,7 +86,7 @@ export function ConfirmDialog({
             onClick={onConfirm}
             disabled={loading}
             className={cn(
-              'inline-flex h-10 items-center justify-center rounded-lg px-4 text-body-sm font-semibold text-white shadow-xs transition-colors disabled:opacity-50',
+              'inline-flex h-10 items-center justify-center rounded-md px-4 text-body-sm font-semibold text-white shadow-xs transition-colors disabled:opacity-50',
               confirmVariant === 'danger'
                 ? 'bg-danger-500 hover:bg-danger-600'
                 : 'bg-primary-500 hover:bg-primary-600',

@@ -5,9 +5,8 @@ import {
   formatDate,
   getStatusLabel,
   getStatusColor,
-  downloadCSV,
 } from '@specialist/shared';
-import { Badge, Table, EmptyState } from '@specialist/ui';
+import { Badge, Table, EmptyState, CSVExportButton, TableSkeleton } from '@specialist/ui';
 import type { Column } from '@specialist/ui';
 import type { OrderStatus } from '@specialist/types';
 
@@ -71,43 +70,7 @@ export function CorporateInvoices() {
     },
   ];
 
-  function handleExportCSV() {
-    const headers = ['No. Invoice', 'Status', 'Tanggal', 'Jumlah', 'Selesai'];
-    const rows = invoices.map((inv) => [
-      inv.bookingNumber,
-      getStatusLabel(inv.status as OrderStatus),
-      formatDate(inv.bookingDate),
-      inv.finalPrice ? formatCurrency(inv.finalPrice) : '-',
-      inv.completedAt ? formatDate(inv.completedAt) : '-',
-    ]);
-    downloadCSV(headers, rows, 'invoice-export.csv');
-  }
-
-  if (loading) {
-    return (
-      <div className="space-y-4">
-        <div className="grid gap-4 sm:grid-cols-3">
-          {[1, 2, 3].map((i) => (
-            <div
-              key={i}
-              className="rounded-lg border border-border-default bg-bg-surface p-4 space-y-2"
-            >
-              <div className="h-4 w-16 animate-skeleton rounded" />
-              <div className="h-8 w-12 animate-skeleton rounded" />
-            </div>
-          ))}
-        </div>
-        <div className="flex items-center justify-end">
-          <div className="h-9 w-28 animate-skeleton rounded-lg" />
-        </div>
-        <div className="space-y-2">
-          {[1, 2, 3].map((i) => (
-            <div key={i} className="h-12 animate-skeleton rounded-lg" />
-          ))}
-        </div>
-      </div>
-    );
-  }
+  if (loading) return <TableSkeleton toolbarWidth="w-28" />;
 
   return (
     <div className="space-y-4">
@@ -128,29 +91,33 @@ export function CorporateInvoices() {
 
       {invoices.length > 0 && (
         <div className="flex items-center justify-end">
-          <button
-            type="button"
-            onClick={handleExportCSV}
-            className="inline-flex items-center gap-1.5 rounded-lg border border-border-default bg-bg-surface px-3 py-1.5 text-body-sm font-medium text-text-primary shadow-xs transition-all duration-150 ease-out hover:bg-neutral-100 hover:shadow-sm"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="16"
-              height="16"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              className="shrink-0"
-            >
-              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-              <polyline points="7 10 12 15 17 10" />
-              <line x1="12" y1="15" x2="12" y2="3" />
-            </svg>
-            Export CSV
-          </button>
+          <CSVExportButton
+            data={invoices as unknown as Record<string, unknown>[]}
+            columns={[
+              { key: 'bookingNumber', label: 'No. Invoice' },
+              {
+                key: 'status',
+                label: 'Status',
+                format: (v) => getStatusLabel(v as OrderStatus),
+              },
+              {
+                key: 'bookingDate',
+                label: 'Tanggal',
+                format: (v) => formatDate(v as string),
+              },
+              {
+                key: 'finalPrice',
+                label: 'Jumlah',
+                format: (v) => (v ? formatCurrency(v as string) : '-'),
+              },
+              {
+                key: 'completedAt',
+                label: 'Selesai',
+                format: (v) => (v ? formatDate(v as string) : '-'),
+              },
+            ]}
+            filename="invoice-export.csv"
+          />
         </div>
       )}
 

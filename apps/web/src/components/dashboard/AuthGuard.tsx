@@ -26,9 +26,7 @@ export function AuthGuard({ children, requiredRole, initialUser }: AuthGuardProp
       return (
         <div className="flex min-h-[60vh] flex-col items-center justify-center gap-4">
           <h2 className="text-xl font-semibold text-text-primary">Akses Ditolak</h2>
-          <p className="text-sm text-text-primary-secondary">
-            Anda tidak memiliki akses ke halaman ini
-          </p>
+          <p className="text-sm text-text-secondary">Anda tidak memiliki akses ke halaman ini</p>
           <a href="/" className="text-sm text-primary hover:underline">
             Kembali ke Beranda
           </a>

@@ -26,7 +26,7 @@ export function TimePicker({ label, error, className, id: externalId, ...props }
         id={inputId}
         type="time"
         className={cn(
-          'h-10 w-full rounded-lg border bg-bg-surface px-3 text-body text-text-primary outline-none transition-colors duration-150 focus:border-primary-500 focus:ring-1 focus:ring-primary-500',
+          'h-10 w-full rounded-md border bg-bg-surface px-3 text-body text-text-primary outline-none transition-colors duration-150 focus:border-primary-500 focus:ring-1 focus:ring-primary-500',
           error ? 'border-danger-500' : 'border-border-default',
           className,
         )}

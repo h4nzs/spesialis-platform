@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
-import { createBrowserClient, formatCurrency, formatDate, downloadCSV } from '@specialist/shared';
-import { Card, Table, Badge, EmptyState, Skeleton } from '@specialist/ui';
+import { createBrowserClient, formatCurrency, formatDate } from '@specialist/shared';
+import { Card, Table, Badge, EmptyState, Skeleton, CSVExportButton } from '@specialist/ui';
 import type { Column } from '@specialist/ui';
 
 interface PenaltyItem {
@@ -100,19 +100,6 @@ export function PartnerPenalties() {
     },
   ];
 
-  function handleExportCSV() {
-    const headers = ['Tipe', 'Jumlah', 'Alasan', 'Status', 'Tanggal', 'Selesai'];
-    const rows = penalties.map((p) => [
-      TYPE_LABELS[p.type] ?? p.type,
-      formatCurrency(p.amount),
-      p.reason,
-      STATUS_LABELS[p.status] ?? p.status,
-      formatDate(p.imposedAt),
-      p.resolvedAt ? formatDate(p.resolvedAt) : '-',
-    ]);
-    downloadCSV(headers, rows, 'penalty-partner-export.csv');
-  }
-
   if (loading) {
     return (
       <div className="space-y-6">
@@ -154,29 +141,38 @@ export function PartnerPenalties() {
 
       {penalties.length > 0 && (
         <div className="flex items-center justify-end">
-          <button
-            type="button"
-            onClick={handleExportCSV}
-            className="inline-flex items-center gap-1.5 rounded-lg border border-border-default bg-bg-surface px-3 py-1.5 text-body-sm font-medium text-text-primary shadow-xs transition-all duration-150 ease-out hover:bg-neutral-100 hover:shadow-sm"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="16"
-              height="16"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              className="shrink-0"
-            >
-              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-              <polyline points="7 10 12 15 17 10" />
-              <line x1="12" y1="15" x2="12" y2="3" />
-            </svg>
-            Export CSV
-          </button>
+          <CSVExportButton
+            data={penalties as unknown as Record<string, unknown>[]}
+            columns={[
+              {
+                key: 'type',
+                label: 'Tipe',
+                format: (v) => TYPE_LABELS[v as string] ?? String(v),
+              },
+              {
+                key: 'amount',
+                label: 'Jumlah',
+                format: (v) => formatCurrency(v as string),
+              },
+              { key: 'reason', label: 'Alasan' },
+              {
+                key: 'status',
+                label: 'Status',
+                format: (v) => STATUS_LABELS[v as string] ?? String(v),
+              },
+              {
+                key: 'imposedAt',
+                label: 'Tanggal',
+                format: (v) => formatDate(v as string),
+              },
+              {
+                key: 'resolvedAt',
+                label: 'Selesai',
+                format: (v) => (v ? formatDate(v as string) : '-'),
+              },
+            ]}
+            filename="penalty-partner-export.csv"
+          />
         </div>
       )}
 

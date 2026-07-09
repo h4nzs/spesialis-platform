@@ -1,26 +1,125 @@
-import type { ReactNode } from 'react';
+import { type ReactNode, useRef, useEffect, useId, useCallback } from 'react';
 
 export interface ModalProps {
+  /** Whether the modal is visible. */
   open: boolean;
+  /** Called when the modal should close (backdrop click, Escape, close button). */
   onClose: () => void;
+  /** Modal title. When provided, aria-labelledby is set on the dialog. */
   title?: string;
+  /** Modal body content. Referenced via aria-describedby for screen readers. */
   children: ReactNode;
+  /** Optional footer area, typically action buttons. */
   footer?: ReactNode;
 }
 
+/** CSS selector for focusable elements inside the modal. */
+const FOCUSABLE_SELECTOR =
+  'a[href], button:not([disabled]), textarea:not([disabled]), input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])';
+
+/**
+ * Accessible modal dialog with focus trap, ARIA attributes, and keyboard support.
+ *
+ * - Traps focus within the modal while open (Tab / Shift+Tab cycle).
+ * - Restores focus to the previously focused element on close.
+ * - Closes on Escape key, backdrop click, or close button.
+ * - Associates title via aria-labelledby and content via aria-describedby.
+ *
+ * @example
+ * <Modal open={show} onClose={() => setShow(false)} title="Edit Item">
+ *   <p>Modal body content here.</p>
+ *   <button>Simpan</button>
+ * </Modal>
+ */
 export function Modal({ open, onClose, title, children, footer }: ModalProps) {
+  const dialogRef = useRef<HTMLDivElement>(null);
+  const previousFocusRef = useRef<HTMLElement | null>(null);
+  const titleId = useId();
+  const descriptionId = useId();
+
+  /** Trap Tab and Shift+Tab within the modal and close on Escape. */
+  const handleKeyDown = useCallback(
+    (e: React.KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        onClose();
+        return;
+      }
+
+      if (e.key === 'Tab' && dialogRef.current) {
+        const focusable = dialogRef.current.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR);
+        if (focusable.length === 0) return;
+
+        const first = focusable[0]!;
+        const last = focusable[focusable.length - 1]!;
+
+        if (e.shiftKey) {
+          if (document.activeElement === first) {
+            e.preventDefault();
+            last.focus();
+          }
+        } else {
+          if (document.activeElement === last) {
+            e.preventDefault();
+            first.focus();
+          }
+        }
+      }
+    },
+    [onClose],
+  );
+
+  useEffect(() => {
+    if (open) {
+      // Remember the previously focused element so we can restore it on close
+      previousFocusRef.current = document.activeElement as HTMLElement;
+
+      // Move focus into the modal (first focusable element)
+      if (dialogRef.current) {
+        const focusable = dialogRef.current.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR);
+        if (focusable.length > 0) {
+          focusable[0]!.focus();
+        }
+      }
+
+      // Prevent body scroll while modal is open
+      document.body.style.overflow = 'hidden';
+    }
+
+    return () => {
+      // Restore focus when the modal closes
+      previousFocusRef.current?.focus();
+      previousFocusRef.current = null;
+
+      // Restore body scroll
+      document.body.style.overflow = '';
+    };
+  }, [open]);
+
   if (!open) return null;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
-      <div className="absolute inset-0 bg-black/50" onClick={onClose} />
-      <div className="relative z-10 mx-auto max-w-lg w-full rounded-lg border border-border-default bg-bg-surface p-6 shadow-lg">
+      {/* Backdrop */}
+      <div className="absolute inset-0 bg-black/50" onClick={onClose} aria-hidden="true" />
+
+      {/* Dialog */}
+      <div
+        ref={dialogRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={title ? titleId : undefined}
+        aria-describedby={descriptionId}
+        className="relative z-10 mx-auto max-w-lg w-full rounded-2xl border border-border-default bg-bg-surface p-6 shadow-lg"
+        onKeyDown={handleKeyDown}
+      >
         {title && (
           <div className="mb-4 flex items-center justify-between">
-            <h2 className="text-lg font-semibold text-text-primary">{title}</h2>
+            <h2 id={titleId} className="text-lg font-semibold text-text-primary">
+              {title}
+            </h2>
             <button
               onClick={onClose}
-              className="text-text-muted hover:text-text-primary cursor-pointer"
+              className="cursor-pointer text-text-muted hover:text-text-primary"
               aria-label="Tutup"
             >
               <svg
@@ -38,7 +137,7 @@ export function Modal({ open, onClose, title, children, footer }: ModalProps) {
             </button>
           </div>
         )}
-        <div>{children}</div>
+        <div id={descriptionId}>{children}</div>
         {footer && <div className="mt-6 flex justify-end gap-3">{footer}</div>}
       </div>
     </div>

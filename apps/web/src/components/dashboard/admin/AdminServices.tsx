@@ -1,6 +1,17 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { createBrowserClient, formatCurrency, downloadCSV } from '@specialist/shared';
-import { Button, Input, Select, Textarea, Modal, Table, Badge, EmptyState } from '@specialist/ui';
+import { createBrowserClient, formatCurrency } from '@specialist/shared';
+import {
+  Button,
+  Input,
+  Select,
+  Textarea,
+  Modal,
+  Table,
+  Badge,
+  EmptyState,
+  CSVExportButton,
+  TableSkeleton,
+} from '@specialist/ui';
 import type { Column } from '@specialist/ui';
 
 interface ServiceItem {
@@ -162,7 +173,7 @@ export function AdminServices() {
       render: (item) => (
         <div>
           <span className="font-medium text-text-primary">{item.name}</span>
-          <span className="ml-2 text-xs text-text-primary-secondary">({item.slug})</span>
+          <span className="ml-2 text-xs text-text-secondary">({item.slug})</span>
         </div>
       ),
     },
@@ -202,75 +213,40 @@ export function AdminServices() {
     },
   ];
 
-  function handleExportCSV() {
-    const headers = ['Nama', 'Slug', 'Kategori', 'Harga', 'Status', 'Featured'];
-    const rows = services.map((s) => [
-      s.name,
-      s.slug,
-      s.categoryName ?? '-',
-      formatCurrency(s.basePrice),
-      s.isActive ? 'Aktif' : 'Nonaktif',
-      s.isFeatured ? 'Ya' : 'Tidak',
-    ]);
-    downloadCSV(headers, rows, 'layanan-export.csv');
-  }
-
-  if (loading) {
-    return (
-      <div className="space-y-4">
-        <div className="flex justify-end">
-          <div
-            className="animate-skeleton h-10 w-32 rounded-lg bg-neutral-200"
-            aria-hidden="true"
-          />
-          <div
-            className="ml-2 animate-skeleton h-10 w-36 rounded-lg bg-neutral-200"
-            aria-hidden="true"
-          />
-        </div>
-        <div
-          className="animate-skeleton h-12 w-full rounded-lg bg-neutral-200"
-          aria-hidden="true"
-        />
-        <div
-          className="animate-skeleton h-12 w-full rounded-lg bg-neutral-200"
-          aria-hidden="true"
-        />
-        <div
-          className="animate-skeleton h-12 w-full rounded-lg bg-neutral-200"
-          aria-hidden="true"
-        />
-      </div>
-    );
-  }
+  if (loading) return <TableSkeleton toolbarWidth="w-40" />;
 
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-end gap-2">
         {services.length > 0 && (
-          <button
-            type="button"
-            onClick={handleExportCSV}
-            className="inline-flex items-center gap-1.5 rounded-lg border border-border-default bg-bg-surface px-3 py-1.5 text-body-sm font-medium text-text-primary shadow-xs transition-all duration-150 ease-out hover:bg-neutral-100 hover:shadow-sm"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="16"
-              height="16"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              className="shrink-0"
-            >
-              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-              <polyline points="7 10 12 15 17 10" />
-              <line x1="12" y1="15" x2="12" y2="3" />
-            </svg>
-            Export CSV
-          </button>
+          <CSVExportButton
+            data={services as unknown as Record<string, unknown>[]}
+            columns={[
+              { key: 'name', label: 'Nama' },
+              { key: 'slug', label: 'Slug' },
+              {
+                key: 'categoryName',
+                label: 'Kategori',
+                format: (v) => (v as string) ?? '-',
+              },
+              {
+                key: 'basePrice',
+                label: 'Harga',
+                format: (v) => formatCurrency(v as string),
+              },
+              {
+                key: 'isActive',
+                label: 'Status',
+                format: (v) => (v ? 'Aktif' : 'Nonaktif'),
+              },
+              {
+                key: 'isFeatured',
+                label: 'Featured',
+                format: (v) => (v ? 'Ya' : 'Tidak'),
+              },
+            ]}
+            filename="layanan-export.csv"
+          />
         )}
         <Button onClick={openCreate}>Tambah Layanan</Button>
       </div>

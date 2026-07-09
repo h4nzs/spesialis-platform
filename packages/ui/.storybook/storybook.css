@@ -1,0 +1,17 @@
+/* ==========================================================================
+   Specialist Platform — Design System (Storybook)
+   Theme tokens sourced from apps/web/src/styles/global.css (single source of truth)
+   ========================================================================== */
+
+/* Import the web app's global CSS to get all Tailwind v4 theme tokens.
+   This eliminates duplication — if tokens change in global.css, Storybook
+   automatically picks them up. Vite resolves the relative path and the
+   @tailwindcss/vite plugin processes the @import 'tailwindcss' chain. */
+@import '../../../apps/web/src/styles/global.css';
+
+/* ── Storybook-specific base styles ────────────────────────────────────── */
+/* These complement the global.css base styles for the Storybook iframe. */
+
+body {
+  padding: 1rem;
+}

@@ -20,6 +20,7 @@ export function NumberInput({
   ...props
 }: NumberInputProps) {
   const inputId = externalId ?? label?.toLowerCase().replace(/\s+/g, '-');
+  const errorId = error ? `${inputId}-error` : undefined;
 
   return (
     <div className="flex flex-col gap-1.5">
@@ -31,14 +32,21 @@ export function NumberInput({
       <input
         id={inputId}
         type="number"
+        aria-label={!label ? props.placeholder || undefined : undefined}
+        aria-invalid={error ? true : undefined}
+        aria-describedby={errorId}
         className={cn(
-          'h-10 w-full rounded-lg border bg-bg-surface px-3 text-body text-text-primary outline-none transition-colors duration-150 placeholder:text-text-muted focus:border-primary-500 focus:ring-1 focus:ring-primary-500 [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none',
+          'h-10 w-full rounded-md border bg-bg-surface px-3 text-body text-text-primary outline-none transition-colors duration-150 placeholder:text-text-muted focus:border-primary-500 focus:ring-1 focus:ring-primary-500 [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none',
           error ? 'border-danger-500' : 'border-border-default',
           className,
         )}
         {...props}
       />
-      {error && <span className="text-caption text-danger-500">{error}</span>}
+      {error && (
+        <span id={errorId} className="text-caption text-danger-500" role="alert">
+          {error}
+        </span>
+      )}
     </div>
   );
 }

@@ -30,6 +30,7 @@ export function SearchInput({
   ...props
 }: SearchInputProps) {
   const inputId = externalId ?? label?.toLowerCase().replace(/\s+/g, '-');
+  const errorId = error ? `${inputId}-error` : undefined;
   const hasValue = typeof value === 'string' && value.length > 0;
 
   return (
@@ -65,8 +66,11 @@ export function SearchInput({
           id={inputId}
           type="search"
           value={value}
+          aria-label={!label ? props.placeholder || 'Cari' : undefined}
+          aria-invalid={error ? true : undefined}
+          aria-describedby={errorId}
           className={cn(
-            'h-10 w-full rounded-lg border bg-bg-surface pl-10 pr-9 text-body text-text-primary outline-none transition-colors duration-150 placeholder:text-text-muted focus:border-primary-500 focus:ring-1 focus:ring-primary-500 [&::-webkit-search-cancel-button]:hidden',
+            'h-10 w-full rounded-md border bg-bg-surface pl-10 pr-9 text-body text-text-primary outline-none transition-colors duration-150 placeholder:text-text-muted focus:border-primary-500 focus:ring-1 focus:ring-primary-500 [&::-webkit-search-cancel-button]:hidden',
             error ? 'border-danger-500' : 'border-border-default',
             className,
           )}
@@ -99,7 +103,11 @@ export function SearchInput({
           </button>
         )}
       </div>
-      {error && <span className="text-caption text-danger-500">{error}</span>}
+      {error && (
+        <span id={errorId} className="text-caption text-danger-500" role="alert">
+          {error}
+        </span>
+      )}
     </div>
   );
 }

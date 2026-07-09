@@ -66,7 +66,7 @@ export function TrackingForm() {
           value={bookingNumber}
           onChange={(e) => setBookingNumber(e.target.value)}
           placeholder="Contoh: SP-2026-000001"
-          className="flex-1 rounded-md border border-border-default bg-bg-surface px-4 py-2.5 text-sm text-text-primary outline-none transition-colors focus:border-primary focus:ring-1 focus:ring-primary placeholder:text-text-primary-secondary"
+          className="flex-1 rounded-md border border-border-default bg-bg-surface px-4 py-2.5 text-sm text-text-primary outline-none transition-colors focus:border-primary focus:ring-1 focus:ring-primary placeholder:text-text-secondary"
         />
         <Button type="submit" variant="primary" disabled={loading || !bookingNumber.trim()}>
           {loading ? 'Mencari...' : 'Lacak'}
@@ -84,7 +84,7 @@ export function TrackingForm() {
           <div className="rounded-lg border border-border-default bg-bg-surface p-6">
             <div className="flex flex-wrap items-center justify-between gap-4">
               <div>
-                <p className="text-xs text-text-primary-secondary">No. Booking</p>
+                <p className="text-xs text-text-secondary">No. Booking</p>
                 <p className="text-xl font-bold tracking-wider text-text-primary">
                   {result.bookingNumber}
                 </p>
@@ -101,20 +101,20 @@ export function TrackingForm() {
 
             <div className="mt-6 grid gap-4 sm:grid-cols-2">
               <div>
-                <p className="text-xs text-text-primary-secondary">Tanggal</p>
+                <p className="text-xs text-text-secondary">Tanggal</p>
                 <p className="font-medium text-text-primary">{result.bookingDate}</p>
               </div>
               <div>
-                <p className="text-xs text-text-primary-secondary">Jam</p>
+                <p className="text-xs text-text-secondary">Jam</p>
                 <p className="font-medium text-text-primary">{result.bookingTime}</p>
               </div>
               <div>
-                <p className="text-xs text-text-primary-secondary">Estimasi Harga</p>
+                <p className="text-xs text-text-secondary">Estimasi Harga</p>
                 <p className="font-medium text-text-primary">{formatCurrency(result.basePrice)}</p>
               </div>
               {result.finalPrice && (
                 <div>
-                  <p className="text-xs text-text-primary-secondary">Harga Final</p>
+                  <p className="text-xs text-text-secondary">Harga Final</p>
                   <p className="font-medium text-text-primary">
                     {formatCurrency(result.finalPrice)}
                   </p>
@@ -124,7 +124,7 @@ export function TrackingForm() {
 
             {result.notes && (
               <div className="mt-4">
-                <p className="text-xs text-text-primary-secondary">Catatan</p>
+                <p className="text-xs text-text-secondary">Catatan</p>
                 <p className="mt-1 text-sm text-text-primary">{result.notes}</p>
               </div>
             )}
@@ -147,7 +147,7 @@ export function TrackingForm() {
                       <p className="text-sm font-medium text-text-primary">
                         {getStatusLabel(entry.toStatus)}
                       </p>
-                      <p className="text-xs text-text-primary-secondary">
+                      <p className="text-xs text-text-secondary">
                         {new Date(entry.createdAt).toLocaleString('id-ID', {
                           day: 'numeric',
                           month: 'long',

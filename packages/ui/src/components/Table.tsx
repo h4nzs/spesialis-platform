@@ -32,7 +32,7 @@ export function Table<T>({
   if (data.length === 0) {
     if (emptyState) return <>{emptyState}</>;
     return (
-      <div className="flex flex-col items-center justify-center rounded-lg border border-border-default bg-bg-surface px-6 py-12 text-center">
+      <div className="flex flex-col items-center justify-center rounded-xl border border-border-default bg-bg-surface px-6 py-12 text-center">
         <div
           className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-neutral-100 text-text-muted"
           aria-hidden="true"
@@ -44,7 +44,7 @@ export function Table<T>({
   }
 
   return (
-    <div className="overflow-x-auto rounded-lg border border-border-default">
+    <div className="overflow-x-auto rounded-xl border border-border-default">
       <table className="w-full text-sm">
         <thead>
           <tr className="border-b border-border-default bg-bg-page">

@@ -14,6 +14,7 @@ export interface PhoneInputProps extends Omit<InputHTMLAttributes<HTMLInputEleme
  */
 export function PhoneInput({ label, error, className, id: externalId, ...props }: PhoneInputProps) {
   const inputId = externalId ?? label?.toLowerCase().replace(/\s+/g, '-');
+  const errorId = error ? `${inputId}-error` : undefined;
 
   return (
     <div className="flex flex-col gap-1.5">
@@ -24,15 +25,21 @@ export function PhoneInput({ label, error, className, id: externalId, ...props }
       )}
       <div className="relative">
         {/* Prefix */}
-        <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+        <div
+          className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3"
+          aria-hidden="true"
+        >
           <span className="text-body text-text-muted select-none">+62</span>
         </div>
         <input
           id={inputId}
           type="tel"
           inputMode="numeric"
+          aria-label={!label ? 'Nomor Telepon' : undefined}
+          aria-invalid={error ? true : undefined}
+          aria-describedby={errorId}
           className={cn(
-            'h-10 w-full rounded-lg border bg-bg-surface pl-12 pr-3 text-body text-text-primary outline-none transition-colors duration-150 placeholder:text-text-muted focus:border-primary-500 focus:ring-1 focus:ring-primary-500',
+            'h-10 w-full rounded-md border bg-bg-surface pl-12 pr-3 text-body text-text-primary outline-none transition-colors duration-150 placeholder:text-text-muted focus:border-primary-500 focus:ring-1 focus:ring-primary-500',
             error ? 'border-danger-500' : 'border-border-default',
             className,
           )}
@@ -41,7 +48,11 @@ export function PhoneInput({ label, error, className, id: externalId, ...props }
           {...props}
         />
       </div>
-      {error && <span className="text-caption text-danger-500">{error}</span>}
+      {error && (
+        <span id={errorId} className="text-caption text-danger-500" role="alert">
+          {error}
+        </span>
+      )}
     </div>
   );
 }

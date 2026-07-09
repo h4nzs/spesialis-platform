@@ -74,7 +74,7 @@ export function ServiceList({ searchQuery }: { searchQuery?: string }) {
           href={`/services/${service.slug}`}
           className="block rounded-lg border border-border-default bg-bg-surface p-6 transition-shadow hover:shadow-md"
         >
-          <h2 className="text-h5 font-semibold text-text-primary">{service.name}</h2>
+          <h3 className="text-h5 font-semibold text-text-primary">{service.name}</h3>
           <p className="mt-2 text-sm text-text-muted">
             {service.shortDescription ?? 'Tidak ada deskripsi'}
           </p>

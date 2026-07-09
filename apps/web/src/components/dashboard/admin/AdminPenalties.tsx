@@ -1,6 +1,17 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
-import { createBrowserClient, formatCurrency, downloadCSV } from '@specialist/shared';
-import { Button, Input, Select, Textarea, Modal, Table, Badge, EmptyState } from '@specialist/ui';
+import { createBrowserClient, formatCurrency } from '@specialist/shared';
+import {
+  Button,
+  Input,
+  Select,
+  Textarea,
+  Modal,
+  Table,
+  Badge,
+  EmptyState,
+  TableSkeleton,
+  CSVExportButton,
+} from '@specialist/ui';
 import type { Column } from '@specialist/ui';
 
 interface PenaltyItem {
@@ -381,79 +392,59 @@ export function AdminPenalties() {
     },
   ];
 
-  function handleExportCSV() {
-    const typeLabels: Record<string, string> = {
-      Late: 'Terlambat',
-      NoShow: 'Tidak Hadir',
-      Cancellation: 'Pembatalan',
-      Complaint: 'Komplain',
-      Other: 'Lainnya',
-    };
-    const headers = ['Partner', 'Booking', 'Tipe', 'Jumlah', 'Alasan', 'Status', 'Tanggal'];
-    const rows = penalties.map((p) => [
-      p.partnerName ?? p.partnerId.slice(0, 8) + '…',
-      p.bookingNumber ?? '-',
-      typeLabels[p.type] ?? p.type,
-      formatCurrency(p.amount),
-      p.reason,
-      STATUS_LABELS[p.status] ?? p.status,
-      formatDate(p.imposedAt),
-    ]);
-    downloadCSV(headers, rows, 'penalty-export.csv');
-  }
+  const TYPE_LABELS_EXPORT: Record<string, string> = {
+    Late: 'Terlambat',
+    NoShow: 'Tidak Hadir',
+    Cancellation: 'Pembatalan',
+    Complaint: 'Komplain',
+    Other: 'Lainnya',
+  };
 
-  if (loading) {
-    return (
-      <div className="space-y-4">
-        <div className="flex justify-end">
-          <div
-            className="animate-skeleton h-10 w-32 rounded-lg bg-neutral-200"
-            aria-hidden="true"
-          />
-        </div>
-        <div
-          className="animate-skeleton h-12 w-full rounded-lg bg-neutral-200"
-          aria-hidden="true"
-        />
-        <div
-          className="animate-skeleton h-12 w-full rounded-lg bg-neutral-200"
-          aria-hidden="true"
-        />
-        <div
-          className="animate-skeleton h-12 w-full rounded-lg bg-neutral-200"
-          aria-hidden="true"
-        />
-      </div>
-    );
-  }
+  if (loading) return <TableSkeleton />;
 
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-end gap-2">
         {penalties.length > 0 && (
-          <button
-            type="button"
-            onClick={handleExportCSV}
-            className="inline-flex items-center gap-1.5 rounded-lg border border-border-default bg-bg-surface px-3 py-1.5 text-body-sm font-medium text-text-primary shadow-xs transition-all duration-150 ease-out hover:bg-neutral-100 hover:shadow-sm"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="16"
-              height="16"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              className="shrink-0"
-            >
-              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-              <polyline points="7 10 12 15 17 10" />
-              <line x1="12" y1="15" x2="12" y2="3" />
-            </svg>
-            Export CSV
-          </button>
+          <CSVExportButton
+            data={penalties as unknown as Record<string, unknown>[]}
+            columns={[
+              {
+                key: 'partnerName',
+                label: 'Partner',
+                format: (v, item) =>
+                  (v as string) ??
+                  (item as unknown as PenaltyItem).partnerId.slice(0, 8) + '\u2026',
+              },
+              {
+                key: 'bookingNumber',
+                label: 'Booking',
+                format: (v) => (v as string) ?? '-',
+              },
+              {
+                key: 'type',
+                label: 'Tipe',
+                format: (v) => TYPE_LABELS_EXPORT[v as string] ?? String(v),
+              },
+              {
+                key: 'amount',
+                label: 'Jumlah',
+                format: (v) => formatCurrency(v as string),
+              },
+              { key: 'reason', label: 'Alasan' },
+              {
+                key: 'status',
+                label: 'Status',
+                format: (v) => STATUS_LABELS[v as string] ?? String(v),
+              },
+              {
+                key: 'imposedAt',
+                label: 'Tanggal',
+                format: (v) => formatDate(v as string),
+              },
+            ]}
+            filename="penalty-export.csv"
+          />
         )}
         <Button onClick={openImpose}>Tambah Penalty</Button>
       </div>
@@ -479,7 +470,7 @@ export function AdminPenalties() {
                 <button
                   type="button"
                   onClick={clearPartner}
-                  className="text-xs text-text-primary-secondary hover:text-danger-500 cursor-pointer"
+                  className="text-xs text-text-secondary hover:text-danger-500 cursor-pointer"
                 >
                   Ganti
                 </button>
@@ -491,10 +482,10 @@ export function AdminPenalties() {
                   value={partnerSearch}
                   onChange={(e) => handlePartnerSearchChange(e.target.value)}
                   placeholder="Cari nama partner..."
-                  className="w-full rounded-md border border-border-default bg-bg-surface px-3 py-2 text-sm text-text-primary placeholder:text-text-primary-secondary outline-none transition-colors focus:border-primary focus:ring-1 focus:ring-primary"
+                  className="w-full rounded-md border border-border-default bg-bg-surface px-3 py-2 text-sm text-text-primary placeholder:text-text-secondary outline-none transition-colors focus:border-primary focus:ring-1 focus:ring-primary"
                 />
                 {partnerSearching && (
-                  <span className="absolute right-3 top-9 text-xs text-text-primary-secondary">
+                  <span className="absolute right-3 top-9 text-xs text-text-secondary">
                     Mencari...
                   </span>
                 )}
@@ -508,7 +499,7 @@ export function AdminPenalties() {
                         className="w-full px-3 py-2 text-left text-sm text-text-primary hover:bg-neutral-100 transition-colors cursor-pointer"
                       >
                         {p.fullName}
-                        <span className="ml-2 text-xs text-text-primary-secondary">
+                        <span className="ml-2 text-xs text-text-secondary">
                           {p.id.slice(0, 8)}…
                         </span>
                       </button>
@@ -519,7 +510,7 @@ export function AdminPenalties() {
                   partnerResults.length === 0 &&
                   partnerSearch.trim() &&
                   !partnerSearching && (
-                    <div className="absolute left-0 right-0 top-full z-50 mt-1 rounded-md border border-border-default bg-bg-surface p-3 text-sm text-text-primary-secondary shadow-lg">
+                    <div className="absolute left-0 right-0 top-full z-50 mt-1 rounded-md border border-border-default bg-bg-surface p-3 text-sm text-text-secondary shadow-lg">
                       Partner tidak ditemukan
                     </div>
                   )}
@@ -538,7 +529,7 @@ export function AdminPenalties() {
                 <button
                   type="button"
                   onClick={clearOrder}
-                  className="text-xs text-text-primary-secondary hover:text-danger-500 cursor-pointer"
+                  className="text-xs text-text-secondary hover:text-danger-500 cursor-pointer"
                 >
                   Ganti
                 </button>
@@ -550,10 +541,10 @@ export function AdminPenalties() {
                   value={orderSearch}
                   onChange={(e) => handleOrderSearchChange(e.target.value)}
                   placeholder="Cari nomor booking..."
-                  className="w-full rounded-md border border-border-default bg-bg-surface px-3 py-2 text-sm text-text-primary placeholder:text-text-primary-secondary outline-none transition-colors focus:border-primary focus:ring-1 focus:ring-primary"
+                  className="w-full rounded-md border border-border-default bg-bg-surface px-3 py-2 text-sm text-text-primary placeholder:text-text-secondary outline-none transition-colors focus:border-primary focus:ring-1 focus:ring-primary"
                 />
                 {orderSearching && (
-                  <span className="absolute right-3 top-9 text-xs text-text-primary-secondary">
+                  <span className="absolute right-3 top-9 text-xs text-text-secondary">
                     Mencari...
                   </span>
                 )}
@@ -567,7 +558,7 @@ export function AdminPenalties() {
                         className="w-full px-3 py-2 text-left text-sm text-text-primary hover:bg-neutral-100 transition-colors cursor-pointer"
                       >
                         <span className="font-medium">{o.bookingNumber}</span>
-                        <span className="ml-2 text-xs text-text-primary-secondary">{o.status}</span>
+                        <span className="ml-2 text-xs text-text-secondary">{o.status}</span>
                       </button>
                     ))}
                   </div>
@@ -576,7 +567,7 @@ export function AdminPenalties() {
                   orderResults.length === 0 &&
                   orderSearch.trim() &&
                   !orderSearching && (
-                    <div className="absolute left-0 right-0 top-full z-50 mt-1 rounded-md border border-border-default bg-bg-surface p-3 text-sm text-text-primary-secondary shadow-lg">
+                    <div className="absolute left-0 right-0 top-full z-50 mt-1 rounded-md border border-border-default bg-bg-surface p-3 text-sm text-text-secondary shadow-lg">
                       Order tidak ditemukan
                     </div>
                   )}
@@ -633,7 +624,7 @@ export function AdminPenalties() {
         title={statusAction === 'Applied' ? 'Terapkan Penalty' : 'Hapuskan Penalty'}
       >
         <div className="space-y-4">
-          <p className="text-sm text-text-primary-secondary">
+          <p className="text-sm text-text-secondary">
             {statusAction === 'Applied'
               ? `Penalty akan ditandai sebagai "${selectedPenalty?.type}" sebesar ${formatCurrency(selectedPenalty?.amount ?? '0')} untuk ${selectedPenalty?.partnerName ?? 'partner'}`
               : `Penalty sebesar ${formatCurrency(selectedPenalty?.amount ?? '0')} untuk ${selectedPenalty?.partnerName ?? 'partner'} akan dihapuskan`}

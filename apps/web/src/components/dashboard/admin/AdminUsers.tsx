@@ -1,6 +1,16 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { createBrowserClient, downloadCSV } from '@specialist/shared';
-import { Button, Input, Select, Table, Badge, Modal, EmptyState } from '@specialist/ui';
+import { createBrowserClient } from '@specialist/shared';
+import {
+  Button,
+  Input,
+  Select,
+  Table,
+  Badge,
+  Modal,
+  EmptyState,
+  CSVExportButton,
+  TableSkeleton,
+} from '@specialist/ui';
 import type { Column } from '@specialist/ui';
 
 interface UserItem {
@@ -112,28 +122,6 @@ export function AdminUsers() {
     }
   }
 
-  function handleExportCSV() {
-    const headers = [
-      'Email',
-      'No. HP',
-      'Role',
-      'Status',
-      'Email Terverifikasi',
-      'Terakhir Login',
-      'Dibuat',
-    ];
-    const rows = users.map((u) => [
-      u.email,
-      u.phone,
-      ROLE_LABELS[u.role] ?? u.role,
-      u.status,
-      u.emailVerifiedAt ? 'Ya' : 'Tidak',
-      u.lastLoginAt ? new Date(u.lastLoginAt).toLocaleDateString('id-ID') : 'Tidak pernah',
-      new Date(u.createdAt).toLocaleDateString('id-ID'),
-    ]);
-    downloadCSV(headers, rows, 'user-export.csv');
-  }
-
   const columns: Column<UserItem>[] = [
     {
       key: 'email',
@@ -220,51 +208,41 @@ export function AdminUsers() {
       </form>
 
       {loading ? (
-        <div className="space-y-3">
-          <div
-            className="animate-skeleton h-10 w-64 rounded-lg bg-neutral-200"
-            aria-hidden="true"
-          />
-          <div
-            className="animate-skeleton h-12 w-full rounded-lg bg-neutral-200"
-            aria-hidden="true"
-          />
-          <div
-            className="animate-skeleton h-12 w-full rounded-lg bg-neutral-200"
-            aria-hidden="true"
-          />
-          <div
-            className="animate-skeleton h-12 w-full rounded-lg bg-neutral-200"
-            aria-hidden="true"
-          />
-        </div>
+        <TableSkeleton toolbarWidth="w-64" />
       ) : (
         <>
           {users.length > 0 && (
             <div className="flex items-center justify-end">
-              <button
-                type="button"
-                onClick={handleExportCSV}
-                className="inline-flex items-center gap-1.5 rounded-lg border border-border-default bg-bg-surface px-3 py-1.5 text-body-sm font-medium text-text-primary shadow-xs transition-all duration-150 ease-out hover:bg-neutral-100 hover:shadow-sm"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="16"
-                  height="16"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  className="shrink-0"
-                >
-                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                  <polyline points="7 10 12 15 17 10" />
-                  <line x1="12" y1="15" x2="12" y2="3" />
-                </svg>
-                Export CSV
-              </button>
+              <CSVExportButton
+                data={users as unknown as Record<string, unknown>[]}
+                columns={[
+                  { key: 'email', label: 'Email' },
+                  { key: 'phone', label: 'No. HP' },
+                  {
+                    key: 'role',
+                    label: 'Role',
+                    format: (v) => ROLE_LABELS[v as string] ?? String(v),
+                  },
+                  { key: 'status', label: 'Status' },
+                  {
+                    key: 'emailVerifiedAt',
+                    label: 'Email Terverifikasi',
+                    format: (v) => (v ? 'Ya' : 'Tidak'),
+                  },
+                  {
+                    key: 'lastLoginAt',
+                    label: 'Terakhir Login',
+                    format: (v) =>
+                      v ? new Date(v as string).toLocaleDateString('id-ID') : 'Tidak pernah',
+                  },
+                  {
+                    key: 'createdAt',
+                    label: 'Dibuat',
+                    format: (v) => new Date(v as string).toLocaleDateString('id-ID'),
+                  },
+                ]}
+                filename="user-export.csv"
+              />
             </div>
           )}
           <Table

@@ -1,6 +1,14 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { createBrowserClient, formatDate, downloadCSV } from '@specialist/shared';
-import { Table, Pagination, Input, Badge, EmptyState } from '@specialist/ui';
+import { createBrowserClient, formatDate } from '@specialist/shared';
+import {
+  Table,
+  Pagination,
+  Input,
+  Badge,
+  EmptyState,
+  TableSkeleton,
+  CSVExportButton,
+} from '@specialist/ui';
 import type { Column } from '@specialist/ui';
 import type { PaginationMeta, AuditAction } from '@specialist/types';
 
@@ -87,19 +95,6 @@ export function AdminAuditLogs() {
     setExpandedId(null);
   }
 
-  function handleExportCSV() {
-    const headers = ['Waktu', 'User', 'Aksi', 'Entitas', 'ID Entitas', 'IP'];
-    const rows = logs.map((l) => [
-      formatDate(l.createdAt, 'short'),
-      l.userEmail ?? '-',
-      l.action,
-      l.entity,
-      l.entityId.slice(0, 8) + '...',
-      l.ipAddress ?? '-',
-    ]);
-    downloadCSV(headers, rows, 'audit-log-export.csv');
-  }
-
   const columns: Column<AuditLogItem>[] = [
     {
       key: 'createdAt',
@@ -132,7 +127,7 @@ export function AdminAuditLogs() {
       key: 'ipAddress',
       header: 'IP',
       render: (item) => (
-        <span className="text-xs text-text-primary-secondary">{item.ipAddress ?? '-'}</span>
+        <span className="text-xs text-text-secondary">{item.ipAddress ?? '-'}</span>
       ),
     },
     {
@@ -199,7 +194,7 @@ export function AdminAuditLogs() {
           <button
             type="button"
             onClick={handleReset}
-            className="rounded-md border border-border-default px-4 py-2 text-sm font-medium text-text-primary-secondary hover:text-text-primary cursor-pointer"
+            className="rounded-md border border-border-default px-4 py-2 text-sm font-medium text-text-secondary hover:text-text-primary cursor-pointer"
           >
             Reset
           </button>
@@ -210,51 +205,41 @@ export function AdminAuditLogs() {
       {error && <p className="text-sm text-danger">{error}</p>}
 
       {/* Loading */}
-      {loading && (
-        <div className="space-y-3">
-          <div
-            className="animate-skeleton h-12 w-full rounded-lg bg-neutral-200"
-            aria-hidden="true"
-          />
-          <div
-            className="animate-skeleton h-12 w-full rounded-lg bg-neutral-200"
-            aria-hidden="true"
-          />
-          <div
-            className="animate-skeleton h-12 w-full rounded-lg bg-neutral-200"
-            aria-hidden="true"
-          />
-        </div>
-      )}
+      {loading && <TableSkeleton showToolbar={false} rows={3} />}
 
       {/* Table */}
       {!loading && !error && (
         <>
           {logs.length > 0 && (
             <div className="flex items-center justify-end">
-              <button
-                type="button"
-                onClick={handleExportCSV}
-                className="inline-flex items-center gap-1.5 rounded-lg border border-border-default bg-bg-surface px-3 py-1.5 text-body-sm font-medium text-text-primary shadow-xs transition-all duration-150 ease-out hover:bg-neutral-100 hover:shadow-sm"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="16"
-                  height="16"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  className="shrink-0"
-                >
-                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                  <polyline points="7 10 12 15 17 10" />
-                  <line x1="12" y1="15" x2="12" y2="3" />
-                </svg>
-                Export CSV
-              </button>
+              <CSVExportButton
+                data={logs as unknown as Record<string, unknown>[]}
+                columns={[
+                  {
+                    key: 'createdAt',
+                    label: 'Waktu',
+                    format: (v) => formatDate(v as string, 'short'),
+                  },
+                  {
+                    key: 'userEmail',
+                    label: 'User',
+                    format: (v) => (v as string) ?? '-',
+                  },
+                  { key: 'action', label: 'Aksi' },
+                  { key: 'entity', label: 'Entitas' },
+                  {
+                    key: 'entityId',
+                    label: 'ID Entitas',
+                    format: (v) => (v as string).slice(0, 8) + '...',
+                  },
+                  {
+                    key: 'ipAddress',
+                    label: 'IP',
+                    format: (v) => (v as string) ?? '-',
+                  },
+                ]}
+                filename="audit-log-export.csv"
+              />
             </div>
           )}
           <Table
@@ -272,23 +257,23 @@ export function AdminAuditLogs() {
           <h4 className="font-medium text-text-primary">Detail Audit Log</h4>
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <span className="text-text-primary-secondary">User Agent:</span>
+              <span className="text-text-secondary">User Agent:</span>
               <p className="mt-0.5 break-words text-text-primary">{expandedLog.userAgent ?? '-'}</p>
             </div>
             <div>
-              <span className="text-text-primary-secondary">IP Address:</span>
+              <span className="text-text-secondary">IP Address:</span>
               <p className="mt-0.5 text-text-primary">{expandedLog.ipAddress ?? '-'}</p>
             </div>
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <span className="text-text-primary-secondary">Nilai Lama:</span>
+              <span className="text-text-secondary">Nilai Lama:</span>
               <pre className="mt-0.5 max-h-40 overflow-auto rounded bg-bg-page p-2 text-xs text-text-primary">
                 {expandedLog.oldValue ? JSON.stringify(expandedLog.oldValue, null, 2) : '-'}
               </pre>
             </div>
             <div>
-              <span className="text-text-primary-secondary">Nilai Baru:</span>
+              <span className="text-text-secondary">Nilai Baru:</span>
               <pre className="mt-0.5 max-h-40 overflow-auto rounded bg-bg-page p-2 text-xs text-text-primary">
                 {expandedLog.newValue ? JSON.stringify(expandedLog.newValue, null, 2) : '-'}
               </pre>
