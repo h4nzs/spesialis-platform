@@ -62,7 +62,7 @@ router.get('/', requireRole('admin', 'super_admin'), async (c) => {
   return successPaginated(c, items, pagination);
 });
 
-router.get('/:id', async (c) => {
+router.get('/:id', requireRole('admin', 'super_admin', 'corporate'), async (c) => {
   const contractId = c.req.param('id')!;
   const userId = c.get('userId');
   const userRole = c.get('userRole');

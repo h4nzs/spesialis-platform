@@ -50,14 +50,11 @@ services:
       - uploads_data:/app/uploads
     ports:
       - '3000:3000'
+    env_file:
+      - .env
     environment:
       APP_ENV: development
       DATABASE_URL: postgres://specialist:specialist@postgres:5432/specialist
-      JWT_SECRET: change-me
-      UPLOAD_DIR: /app/uploads
-      CMS_URL: http://cms:8055
-      CMS_TOKEN: specialist-setup-token
-      REVALIDATION_TOKEN: specialist-revalidation-token
     depends_on:
       postgres:
         condition: service_healthy
@@ -90,10 +87,9 @@ services:
     restart: unless-stopped
     ports:
       - '8055:8055'
+    env_file:
+      - .env
     environment:
-      SECRET: change-me
-      ADMIN_EMAIL: admin@example.com
-      ADMIN_PASSWORD: admin123
       DB_CLIENT: pg
       DB_HOST: postgres
       DB_PORT: 5432
@@ -101,7 +97,6 @@ services:
       DB_USER: specialist
       DB_PASSWORD: specialist
       API_URL: http://api:3000
-      REVALIDATION_TOKEN: specialist-revalidation-token
     volumes:
       - ./apps/cms/src/extensions:/directus/extensions
     depends_on:

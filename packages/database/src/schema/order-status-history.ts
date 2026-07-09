@@ -8,11 +8,13 @@ export const orderStatusHistory = pgTable(
   {
     id: uuid('id').defaultRandom().primaryKey(),
     orderId: uuid('order_id')
-      .references(() => orders.id)
+      .references(() => orders.id, { onDelete: 'cascade' })
       .notNull(),
     fromStatus: varchar('from_status', { length: 40 }).$type<OrderStatus>(),
     toStatus: varchar('to_status', { length: 40 }).notNull().$type<OrderStatus>(),
-    changedBy: uuid('changed_by').references(() => users.id),
+    changedBy: uuid('changed_by').references(() => users.id, {
+      onDelete: 'set null',
+    }),
     note: text('note'),
     createdAt: timestamp('created_at').defaultNow().notNull(),
   },

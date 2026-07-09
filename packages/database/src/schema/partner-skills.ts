@@ -7,10 +7,10 @@ export const partnerSkills = pgTable(
   {
     id: uuid('id').defaultRandom().primaryKey(),
     partnerId: uuid('partner_id')
-      .references(() => partnerProfiles.id)
+      .references(() => partnerProfiles.id, { onDelete: 'cascade' })
       .notNull(),
     categoryId: uuid('category_id')
-      .references(() => serviceCategories.id)
+      .references(() => serviceCategories.id, { onDelete: 'restrict' })
       .notNull(),
     proficiency: varchar('proficiency', { length: 30 }).notNull().default('Intermediate'),
     createdAt: timestamp('created_at').defaultNow().notNull(),

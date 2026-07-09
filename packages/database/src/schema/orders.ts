@@ -11,13 +11,17 @@ export const orders = pgTable(
     id: uuid('id').defaultRandom().primaryKey(),
     bookingNumber: varchar('booking_number', { length: 30 }).notNull().unique(),
     customerId: uuid('customer_id')
-      .references(() => customerProfiles.id)
+      .references(() => customerProfiles.id, { onDelete: 'restrict' })
       .notNull(),
-    companyId: uuid('company_id').references(() => companies.id),
+    companyId: uuid('company_id').references(() => companies.id, {
+      onDelete: 'set null',
+    }),
     addressId: uuid('address_id')
-      .references(() => addresses.id)
+      .references(() => addresses.id, { onDelete: 'restrict' })
       .notNull(),
-    partnerId: uuid('partner_id').references(() => partnerProfiles.id),
+    partnerId: uuid('partner_id').references(() => partnerProfiles.id, {
+      onDelete: 'set null',
+    }),
     status: varchar('status', { length: 40 }).notNull().$type<OrderStatus>(),
     bookingDate: date('booking_date').notNull(),
     bookingTime: varchar('booking_time', { length: 20 }).notNull(),

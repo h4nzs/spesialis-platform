@@ -6,7 +6,7 @@ export const partnerDocuments = pgTable(
   {
     id: uuid('id').defaultRandom().primaryKey(),
     partnerId: uuid('partner_id')
-      .references(() => partnerProfiles.id)
+      .references(() => partnerProfiles.id, { onDelete: 'cascade' })
       .notNull(),
     type: varchar('type', { length: 50 }).notNull(),
     mediaId: uuid('media_id'),

@@ -16,7 +16,7 @@ export const services = pgTable(
   {
     id: uuid('id').defaultRandom().primaryKey(),
     categoryId: uuid('category_id')
-      .references(() => serviceCategories.id)
+      .references(() => serviceCategories.id, { onDelete: 'restrict' })
       .notNull(),
     name: varchar('name', { length: 255 }).notNull(),
     slug: varchar('slug', { length: 255 }).notNull().unique(),

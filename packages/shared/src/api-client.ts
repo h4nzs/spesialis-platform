@@ -64,29 +64,29 @@ export class MemoryTokenStore implements TokenStore {
 }
 
 /**
- * Browser localStorage-based token store.
+ * No-op token store for browser clients.
+ *
+ * Authentication is handled exclusively via httpOnly cookies set by the server.
+ * The browser automatically includes these cookies on every request via
+ * `credentials: 'include'`, so no client-side token management is needed.
+ *
+ * This eliminates the XSS vulnerability of storing tokens in localStorage.
+ *
+ * SSR clients (Astro server-side) should use `createServerClient()` which
+ * accepts tokens as constructor arguments via `MemoryTokenStore`.
  */
-export class LocalStorageTokenStore implements TokenStore {
-  private readonly accessKey = 'spesialis_access_token';
-  private readonly refreshKey = 'spesialis_refresh_token';
-
+export class NoopTokenStore implements TokenStore {
   getAccessToken(): string | null {
-    if (typeof localStorage === 'undefined') return null;
-    return localStorage.getItem(this.accessKey);
+    return null;
   }
   getRefreshToken(): string | null {
-    if (typeof localStorage === 'undefined') return null;
-    return localStorage.getItem(this.refreshKey);
+    return null;
   }
-  setTokens(access: string, refresh: string): void {
-    if (typeof localStorage === 'undefined') return;
-    localStorage.setItem(this.accessKey, access);
-    localStorage.setItem(this.refreshKey, refresh);
+  setTokens(_access: string, _refresh: string): void {
+    // Tokens are managed via httpOnly cookies — nothing to store client-side.
   }
   clearTokens(): void {
-    if (typeof localStorage === 'undefined') return;
-    localStorage.removeItem(this.accessKey);
-    localStorage.removeItem(this.refreshKey);
+    // No client-side tokens to clear.
   }
 }
 
@@ -352,20 +352,20 @@ export class ApiClient {
  * localStorage digunakan sebagai fallback untuk development (cross-origin) dan
  * agar token bertahan setelah page reload.
  */
+/**
+ * Buat instance ApiClient untuk browser.
+ *
+ * Authentication menggunakan httpOnly cookies — token tidak pernah disimpan
+ * di JavaScript (localStorage). Server mengelola token via cookie.
+ *
+ * Untuk SSR (Astro server-side), gunakan `createServerClient()` dengan
+ * token explicit dari request context.
+ */
 export function createBrowserClient(baseUrl?: string): ApiClient {
-  const tokenStore = canUseLocalStorage() ? new LocalStorageTokenStore() : new MemoryTokenStore();
   return new ApiClient({
     baseUrl: baseUrl ?? getDefaultApiUrl(),
-    tokenStore,
+    tokenStore: new NoopTokenStore(),
   });
-}
-
-function canUseLocalStorage(): boolean {
-  try {
-    return typeof localStorage !== 'undefined';
-  } catch {
-    return false;
-  }
 }
 
 /**

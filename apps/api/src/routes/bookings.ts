@@ -27,6 +27,7 @@ import {
   rejectAssignmentSchema,
   cancelBookingSchema,
 } from '@specialist/validation';
+import { canTransition } from '@specialist/shared';
 import {
   success,
   successPaginated,
@@ -43,45 +44,13 @@ import { recordStatusHistory } from '../lib/order-status.ts';
 import { buildPaginationMeta } from '../lib/pagination.ts';
 import { createNotification, notifyAdmins } from '../lib/notification.ts';
 import { APP_URL, sendBookingConfirmationEmail, sendPartnerAssignedEmail } from '../lib/email.ts';
+import { sendWhatsApp } from '../lib/whatsapp.ts';
 import { parseBody } from '../lib/parse-body.ts';
 import { omitUndefined } from '../lib/update.ts';
 import { validateBody } from '../middleware/validation.ts';
 import { rateLimit } from '../middleware/rate-limiter.ts';
 
 const router = new Hono();
-
-async function getNextBookingNumber(): Promise<string> {
-  const year = new Date().getFullYear();
-  const prefix = `SP-${year}-`;
-  const result = await db.execute(sql`
-    SELECT COALESCE(MAX(CAST(SUBSTRING(booking_number, 9) AS INTEGER)), 0) + 1 AS next
-    FROM orders WHERE booking_number LIKE ${prefix + '%'}
-  `);
-  const row = result[0] as { next: number } | undefined;
-  const next = Number(row?.next ?? 1);
-  return `${prefix}${String(next).padStart(6, '0')}`;
-}
-
-function validTransitions(current: OrderStatus): OrderStatus[] {
-  const map: Record<OrderStatus, OrderStatus[]> = {
-    Draft: ['Pending Confirmation'],
-    'Pending Confirmation': ['Confirmed', 'Cancelled'],
-    Confirmed: ['Waiting Assignment', 'Partner Assigned', 'Cancelled'],
-    'Waiting Assignment': ['Partner Assigned', 'Cancelled'],
-    'Partner Assigned': ['Partner Accepted', 'Waiting Assignment', 'Cancelled'],
-    'Partner Accepted': ['On The Way', 'Cancelled'],
-    'On The Way': ['Working', 'Cancelled'],
-    Working: ['Completed'],
-    Completed: ['Waiting Payment'],
-    'Waiting Payment': ['Paid'],
-    Paid: ['Closed'],
-    Closed: [],
-    Cancelled: [],
-    Rejected: [],
-    Expired: [],
-  };
-  return map[current] ?? [];
-}
 
 router.post('/', rateLimit(5, 60_000), async (c) => {
   const authHeader = c.req.header('Authorization');
@@ -92,27 +61,6 @@ router.post('/', rateLimit(5, 60_000), async (c) => {
   }
   return await createGuestBooking(c);
 });
-
-async function attachMediaToOrder(orderId: string, mediaIds: string[], uploadedBy?: string) {
-  if (!mediaIds?.length) return;
-
-  const existing = await db
-    .select({ id: media.id })
-    .from(media)
-    .where(
-      uploadedBy
-        ? and(inArray(media.id, mediaIds), eq(media.uploadedBy, uploadedBy))
-        : inArray(media.id, mediaIds),
-    );
-
-  const found = new Set(existing.map((m) => m.id));
-  const invalid = mediaIds.filter((id) => !found.has(id));
-  if (invalid.length > 0) {
-    throw new Error(`Media tidak ditemukan: ${invalid.join(', ')}`);
-  }
-
-  await db.insert(orderMedia).values(mediaIds.map((mediaId) => ({ orderId, mediaId })));
-}
 
 async function createGuestBooking(c: Context) {
   const parsed = await parseBody(c, createGuestBookingSchema);
@@ -130,108 +78,155 @@ async function createGuestBooking(c: Context) {
   } = parsed.data;
 
   try {
-    const bookingNumber = await getNextBookingNumber();
+    const result = await db.transaction(async (tx) => {
+      // Generate booking number inside transaction — prevents race condition
+      const year = new Date().getFullYear();
+      const prefix = `SP-${year}-`;
+      const [seq] = await tx.execute(sql`
+        SELECT COALESCE(MAX(CAST(SUBSTRING(booking_number, 9) AS INTEGER)), 0) + 1 AS next
+        FROM orders WHERE booking_number LIKE ${prefix + '%'}
+      `);
+      const row = seq as { next: number } | undefined;
+      const bookingNumber = `${prefix}${String(Number(row?.next ?? 1)).padStart(6, '0')}`;
 
-    const [profile] = await db
-      .insert(customerProfiles)
-      .values({
-        fullName,
-        guestPhone: phone,
-      })
-      .returning({ id: customerProfiles.id });
+      const [profile] = await tx
+        .insert(customerProfiles)
+        .values({
+          fullName,
+          guestPhone: phone,
+        })
+        .returning({ id: customerProfiles.id });
 
-    if (!profile) return serverError(c, 'Gagal membuat profil');
+      if (!profile) throw new Error('Gagal membuat profil');
 
-    const [address] = await db
-      .insert(addresses)
-      .values({
-        customerId: profile.id,
-        receiverName: addr.receiverName,
-        receiverPhone: addr.receiverPhone,
-        province: addr.province,
-        city: addr.city,
-        district: addr.district,
-        postalCode: addr.postalCode,
-        address: addr.address,
-      })
-      .returning({ id: addresses.id });
+      const [address] = await tx
+        .insert(addresses)
+        .values({
+          customerId: profile.id,
+          receiverName: addr.receiverName,
+          receiverPhone: addr.receiverPhone,
+          province: addr.province,
+          city: addr.city,
+          district: addr.district,
+          postalCode: addr.postalCode,
+          address: addr.address,
+        })
+        .returning({ id: addresses.id });
 
-    if (!address) return serverError(c, 'Gagal membuat alamat');
+      if (!address) throw new Error('Gagal membuat alamat');
 
-    const serviceIds = orderItemsData.map((i) => i.serviceId);
-    const prices = serviceIds.length
-      ? await db
-          .select({ id: services.id, price: services.basePrice })
+      const serviceIds = orderItemsData.map((i) => i.serviceId);
+      const prices = serviceIds.length
+        ? await tx
+            .select({ id: services.id, price: services.basePrice })
+            .from(services)
+            .where(inArray(services.id, serviceIds))
+        : [];
+      const priceMap = new Map(prices.map((s) => [s.id, Number(s.price ?? 0)]));
+      const basePrice = orderItemsData.reduce(
+        (sum, item) => sum + (priceMap.get(item.serviceId) ?? 0) * item.quantity,
+        0,
+      );
+
+      const [order] = await tx
+        .insert(orders)
+        .values({
+          bookingNumber,
+          customerId: profile.id,
+          addressId: address.id,
+          status: 'Pending Confirmation',
+          bookingDate,
+          bookingTime,
+          basePrice: String(basePrice),
+          discountAmount: '0',
+          notes: notes ?? null,
+        })
+        .returning({ id: orders.id });
+
+      if (!order) throw new Error('Gagal membuat booking');
+
+      for (const item of orderItemsData) {
+        const [svc] = await tx
+          .select({
+            name: services.name,
+            price: services.basePrice,
+          })
           .from(services)
-          .where(inArray(services.id, serviceIds))
-      : [];
-    const priceMap = new Map(prices.map((s) => [s.id, Number(s.price ?? 0)]));
-    const basePrice = orderItemsData.reduce(
-      (sum, item) => sum + (priceMap.get(item.serviceId) ?? 0) * item.quantity,
-      0,
+          .where(eq(services.id, item.serviceId))
+          .limit(1);
+
+        const snapName = svc?.name ?? '';
+        const unitPrice = item.quantity > 0 ? Number(svc?.price ?? 0) : 0;
+
+        await tx.insert(orderItems).values({
+          orderId: order.id,
+          serviceId: item.serviceId,
+          serviceNameSnapshot: snapName,
+          quantity: item.quantity,
+          unitPrice: String(unitPrice),
+          subtotal: String(unitPrice * item.quantity),
+        });
+      }
+
+      // Attach media inside transaction
+      if (mediaIds?.length) {
+        const existing = await tx
+          .select({ id: media.id })
+          .from(media)
+          .where(inArray(media.id, mediaIds));
+
+        const found = new Set(existing.map((m) => m.id));
+        const invalid = mediaIds.filter((id) => !found.has(id));
+        if (invalid.length > 0) {
+          throw new Error(`Media tidak ditemukan: ${invalid.join(', ')}`);
+        }
+
+        await tx
+          .insert(orderMedia)
+          .values(mediaIds.map((mediaId) => ({ orderId: order.id, mediaId })));
+      }
+
+      // Record status history inside transaction
+      await tx.insert(orderStatusHistory).values({
+        orderId: order.id,
+        fromStatus: null,
+        toStatus: 'Pending Confirmation',
+        changedBy: null,
+        note: null,
+      });
+
+      return { bookingNumber, orderId: order.id };
+    });
+
+    // Notifications — outside transaction, non-critical
+    notifyAdmins(
+      'booking.new',
+      'Booking Baru',
+      `Booking baru #${result.bookingNumber} dari ${fullName}`,
     );
 
-    const [order] = await db
-      .insert(orders)
-      .values({
-        bookingNumber,
-        customerId: profile.id,
-        addressId: address.id,
-        status: 'Pending Confirmation',
-        bookingDate,
-        bookingTime,
-        basePrice: String(basePrice),
-        discountAmount: '0',
-        notes: notes ?? null,
-      })
-      .returning({ id: orders.id });
-
-    if (!order) return serverError(c, 'Gagal membuat booking');
-
-    for (const item of orderItemsData) {
-      const svc = await db
-        .select({
-          name: services.name,
-          price: services.basePrice,
-        })
-        .from(services)
-        .where(eq(services.id, item.serviceId))
-        .limit(1);
-
-      const snapName = svc[0]?.name ?? '';
-      const unitPrice = item.quantity > 0 ? Number(svc[0]?.price ?? 0) : 0;
-
-      await db.insert(orderItems).values({
-        orderId: order.id,
-        serviceId: item.serviceId,
-        serviceNameSnapshot: snapName,
-        quantity: item.quantity,
-        unitPrice: String(unitPrice),
-        subtotal: String(unitPrice * item.quantity),
-      });
-    }
-
-    if (mediaIds?.length) {
-      await attachMediaToOrder(order.id, mediaIds);
-    }
-
-    await recordStatusHistory(order.id, null, 'Pending Confirmation', null);
-
-    notifyAdmins('booking.new', 'Booking Baru', `Booking baru #${bookingNumber} dari ${fullName}`);
+    // Send WhatsApp to guest with booking details (silent if API key not configured)
+    sendWhatsApp(
+      phone,
+      `Terima kasih ${fullName}! Booking Anda dengan nomor ${result.bookingNumber} telah dibuat. Lacak status: ${APP_URL}/tracking/${result.bookingNumber}`,
+    );
 
     return created(
       c,
       {
-        bookingNumber,
-        id: order.id,
-        trackingUrl: `/api/v1/bookings/tracking/${bookingNumber}`,
+        bookingNumber: result.bookingNumber,
+        id: result.orderId,
+        trackingUrl: `/api/v1/bookings/tracking/${result.bookingNumber}`,
       },
       'Booking berhasil dibuat',
     );
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Gagal membuat booking';
     console.error('Guest booking failed:', err);
-    return error(c, 'MEDIA_VALIDATION_ERROR', message, 422);
+    if (message.includes('Media tidak ditemukan')) {
+      return error(c, 'MEDIA_VALIDATION_ERROR', message, 422);
+    }
+    return serverError(c, 'Gagal membuat booking');
   }
 }
 
@@ -276,90 +271,136 @@ async function createCustomerBooking(c: Context) {
   if (!addr) return error(c, 'ADDRESS_NOT_FOUND', 'Alamat tidak ditemukan', 404);
 
   try {
-    const bookingNumber = await getNextBookingNumber();
+    const result = await db.transaction(async (tx) => {
+      // Generate booking number inside transaction — prevents race condition
+      const year = new Date().getFullYear();
+      const prefix = `SP-${year}-`;
+      const [seq] = await tx.execute(sql`
+        SELECT COALESCE(MAX(CAST(SUBSTRING(booking_number, 9) AS INTEGER)), 0) + 1 AS next
+        FROM orders WHERE booking_number LIKE ${prefix + '%'}
+      `);
+      const row = seq as { next: number } | undefined;
+      const bookingNumber = `${prefix}${String(Number(row?.next ?? 1)).padStart(6, '0')}`;
 
-    const serviceIds = orderItemsData.map((i) => i.serviceId);
-    const prices = serviceIds.length
-      ? await db
-          .select({ id: services.id, price: services.basePrice })
-          .from(services)
-          .where(inArray(services.id, serviceIds))
-      : [];
-    const priceMap = new Map(prices.map((s) => [s.id, Number(s.price ?? 0)]));
-    const basePrice = orderItemsData.reduce(
-      (sum, item) => sum + (priceMap.get(item.serviceId) ?? 0) * item.quantity,
-      0,
-    );
+      const serviceIds = orderItemsData.map((i) => i.serviceId);
+      const prices = serviceIds.length
+        ? await tx
+            .select({ id: services.id, price: services.basePrice })
+            .from(services)
+            .where(inArray(services.id, serviceIds))
+        : [];
+      const priceMap = new Map(prices.map((s) => [s.id, Number(s.price ?? 0)]));
+      const basePrice = orderItemsData.reduce(
+        (sum, item) => sum + (priceMap.get(item.serviceId) ?? 0) * item.quantity,
+        0,
+      );
 
-    const [order] = await db
-      .insert(orders)
-      .values({
-        bookingNumber,
-        customerId: profile.id,
-        addressId: addressId,
-        status: 'Pending Confirmation',
-        bookingDate,
-        bookingTime,
-        basePrice: String(basePrice),
-        discountAmount: '0',
-        notes: notes ?? null,
-      })
-      .returning({ id: orders.id });
-
-    if (!order) return serverError(c, 'Gagal membuat booking');
-
-    for (const item of orderItemsData) {
-      const svc = await db
-        .select({
-          name: services.name,
-          price: services.basePrice,
+      const [order] = await tx
+        .insert(orders)
+        .values({
+          bookingNumber,
+          customerId: profile.id,
+          addressId,
+          status: 'Pending Confirmation',
+          bookingDate,
+          bookingTime,
+          basePrice: String(basePrice),
+          discountAmount: '0',
+          notes: notes ?? null,
         })
-        .from(services)
-        .where(eq(services.id, item.serviceId))
-        .limit(1);
+        .returning({ id: orders.id });
 
-      const snapName = svc[0]?.name ?? '';
-      const unitPrice = Number(svc[0]?.price ?? 0) * item.quantity;
+      if (!order) throw new Error('Gagal membuat booking');
 
-      await db.insert(orderItems).values({
+      for (const item of orderItemsData) {
+        const [svc] = await tx
+          .select({
+            name: services.name,
+            price: services.basePrice,
+          })
+          .from(services)
+          .where(eq(services.id, item.serviceId))
+          .limit(1);
+
+        const snapName = svc?.name ?? '';
+        const unitPrice = Number(svc?.price ?? 0) * item.quantity;
+
+        await tx.insert(orderItems).values({
+          orderId: order.id,
+          serviceId: item.serviceId,
+          serviceNameSnapshot: snapName,
+          quantity: item.quantity,
+          unitPrice: String(unitPrice),
+          subtotal: String(unitPrice),
+        });
+      }
+
+      // Attach media inside transaction
+      if (mediaIds?.length) {
+        const [user] = await tx
+          .select({ id: users.id })
+          .from(users)
+          .where(eq(users.id, userId))
+          .limit(1);
+
+        const existing = await tx
+          .select({ id: media.id })
+          .from(media)
+          .where(
+            user
+              ? and(inArray(media.id, mediaIds), eq(media.uploadedBy, user.id))
+              : inArray(media.id, mediaIds),
+          );
+
+        const found = new Set(existing.map((m) => m.id));
+        const invalid = mediaIds.filter((id) => !found.has(id));
+        if (invalid.length > 0) {
+          throw new Error(`Media tidak ditemukan: ${invalid.join(', ')}`);
+        }
+
+        await tx
+          .insert(orderMedia)
+          .values(mediaIds.map((mediaId) => ({ orderId: order.id, mediaId })));
+      }
+
+      // Record status history inside transaction
+      await tx.insert(orderStatusHistory).values({
         orderId: order.id,
-        serviceId: item.serviceId,
-        serviceNameSnapshot: snapName,
-        quantity: item.quantity,
-        unitPrice: String(unitPrice),
-        subtotal: String(unitPrice),
+        fromStatus: null,
+        toStatus: 'Pending Confirmation',
+        changedBy: userId,
+        note: null,
       });
-    }
 
-    if (mediaIds?.length) {
-      const [user] = await db
-        .select({ id: users.id })
-        .from(users)
-        .where(eq(users.id, userId))
-        .limit(1);
-      await attachMediaToOrder(order.id, mediaIds, user?.id);
-    }
+      return { bookingNumber, orderId: order.id };
+    });
 
-    await recordStatusHistory(order.id, null, 'Pending Confirmation', userId);
-
-    notifyAdmins('booking.new', 'Booking Baru', `Booking baru #${bookingNumber} dari customer`);
+    // Notifications — outside transaction, non-critical
+    notifyAdmins(
+      'booking.new',
+      'Booking Baru',
+      `Booking baru #${result.bookingNumber} dari customer`,
+    );
 
     createNotification({
       userId,
       type: 'booking.created',
       title: 'Booking Berhasil',
-      message: `Booking #${bookingNumber} berhasil dibuat. Menunggu konfirmasi admin.`,
+      message: `Booking #${result.bookingNumber} berhasil dibuat. Menunggu konfirmasi admin.`,
     });
 
     return created(
       c,
-      { bookingNumber, id: order.id, status: 'Pending Confirmation' },
+      { bookingNumber: result.bookingNumber, id: result.orderId, status: 'Pending Confirmation' },
       'Booking berhasil dibuat',
     );
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Gagal membuat booking';
     console.error('Customer booking failed:', err);
-    return error(c, 'MEDIA_VALIDATION_ERROR', message, 422);
+    if (message.includes('Media tidak ditemukan')) {
+      return error(c, 'MEDIA_VALIDATION_ERROR', message, 422);
+    }
+    return serverError(c, 'Gagal membuat booking');
   }
 }
 
@@ -536,7 +577,10 @@ router.post(
       .limit(1);
     if (!order) return notFound(c, 'Booking tidak ditemukan');
 
-    if (!validTransitions(order.status).includes('Confirmed')) {
+    // Guard: verify the booking can be confirmed (state machine: Pending Confirmation → Confirmed)
+    // The transaction skips to 'Waiting Assignment' because there is no separate endpoint to
+    // move a confirmed booking into the assignment queue.
+    if (!canTransition(order.status, 'Confirmed')) {
       return conflict(c, `Tidak bisa konfirmasi dari status ${order.status}`);
     }
 
@@ -544,14 +588,14 @@ router.post(
       await tx
         .update(orders)
         .set({
-          status: 'Confirmed',
+          status: 'Waiting Assignment',
           ...omitUndefined({
             finalPrice: data.finalPrice !== undefined ? String(data.finalPrice) : undefined,
           }),
         })
         .where(eq(orders.id, orderId));
 
-      await recordStatusHistory(orderId, order.status, 'Confirmed', userId, data.note);
+      await recordStatusHistory(orderId, order.status, 'Waiting Assignment', userId, data.note, tx);
     });
 
     await createAuditLog(c, {
@@ -559,7 +603,7 @@ router.post(
       action: 'booking.confirm',
       entity: 'order',
       entityId: orderId,
-      newValue: { status: 'Confirmed', finalPrice: data.finalPrice },
+      newValue: { status: 'Waiting Assignment', finalPrice: data.finalPrice },
       oldValue: { status: order.status },
     });
 
@@ -598,7 +642,7 @@ router.post(
       // Email is non-critical — proceed
     }
 
-    return success(c, { id: orderId, status: 'Confirmed' }, 'Booking dikonfirmasi');
+    return success(c, { id: orderId, status: 'Waiting Assignment' }, 'Booking dikonfirmasi');
   },
 );
 
@@ -619,7 +663,7 @@ router.post(
       .limit(1);
     if (!order) return notFound(c, 'Booking tidak ditemukan');
 
-    if (!validTransitions(order.status).includes('Partner Assigned')) {
+    if (!canTransition(order.status, 'Partner Assigned')) {
       return conflict(c, `Tidak bisa assignment dari status ${order.status}`);
     }
 
@@ -642,7 +686,7 @@ router.post(
         status: 'Assigned',
       });
 
-      await recordStatusHistory(orderId, order.status, 'Partner Assigned', userId, data.note);
+      await recordStatusHistory(orderId, order.status, 'Partner Assigned', userId, data.note, tx);
     });
 
     await createAuditLog(c, {
@@ -708,7 +752,7 @@ router.post('/:id/accept', authMiddleware, async (c) => {
     .limit(1);
   if (!order) return notFound(c, 'Booking tidak ditemukan');
 
-  if (!validTransitions(order.status).includes('Partner Accepted')) {
+  if (!canTransition(order.status, 'Partner Accepted')) {
     return conflict(c, `Tidak bisa accept dari status ${order.status}`);
   }
 
@@ -719,7 +763,7 @@ router.post('/:id/accept', authMiddleware, async (c) => {
       .set({ status: 'Accepted', acceptedAt: new Date() })
       .where(and(eq(assignments.orderId, orderId), eq(assignments.partnerId, profile.id)));
 
-    await recordStatusHistory(orderId, order.status, 'Partner Accepted', userId);
+    await recordStatusHistory(orderId, order.status, 'Partner Accepted', userId, undefined, tx);
   });
 
   await createAuditLog(c, {
@@ -752,14 +796,14 @@ router.post('/:id/on-the-way', authMiddleware, async (c) => {
     .limit(1);
   if (!order) return notFound(c, 'Booking tidak ditemukan');
 
-  if (!validTransitions(order.status).includes('On The Way')) {
+  if (!canTransition(order.status, 'On The Way')) {
     return conflict(c, `Tidak bisa update dari status ${order.status}`);
   }
 
   await db.transaction(async (tx) => {
     await tx.update(orders).set({ status: 'On The Way' }).where(eq(orders.id, orderId));
 
-    await recordStatusHistory(orderId, order.status, 'On The Way', userId);
+    await recordStatusHistory(orderId, order.status, 'On The Way', userId, undefined, tx);
   });
 
   const [customerInfo] = await db
@@ -801,7 +845,7 @@ router.post('/:id/reject', authMiddleware, validateBody(rejectAssignmentSchema),
     .limit(1);
   if (!order) return notFound(c, 'Booking tidak ditemukan');
 
-  if (!validTransitions(order.status).includes('Waiting Assignment')) {
+  if (!canTransition(order.status, 'Waiting Assignment')) {
     return conflict(c, `Tidak bisa reject dari status ${order.status}`);
   }
 
@@ -815,7 +859,7 @@ router.post('/:id/reject', authMiddleware, validateBody(rejectAssignmentSchema),
       .set({ status: 'Rejected', rejectedAt: new Date(), rejectionReason: data.reason })
       .where(and(eq(assignments.orderId, orderId), eq(assignments.partnerId, profile.id)));
 
-    await recordStatusHistory(orderId, order.status, 'Waiting Assignment', userId, data.reason);
+    await recordStatusHistory(orderId, order.status, 'Waiting Assignment', userId, data.reason, tx);
   });
 
   await createAuditLog(c, {
@@ -854,7 +898,7 @@ router.post('/:id/start', authMiddleware, async (c) => {
     .limit(1);
   if (!order) return notFound(c, 'Booking tidak ditemukan');
 
-  if (!validTransitions(order.status).includes('Working')) {
+  if (!canTransition(order.status, 'Working')) {
     return conflict(c, `Tidak bisa mulai dari status ${order.status}`);
   }
 
@@ -865,7 +909,7 @@ router.post('/:id/start', authMiddleware, async (c) => {
       .set({ startedAt: new Date() })
       .where(and(eq(assignments.orderId, orderId), eq(assignments.partnerId, profile.id)));
 
-    await recordStatusHistory(orderId, order.status, 'Working', userId);
+    await recordStatusHistory(orderId, order.status, 'Working', userId, undefined, tx);
   });
 
   await createAuditLog(c, {
@@ -921,7 +965,7 @@ router.post('/:id/complete', authMiddleware, async (c) => {
     .limit(1);
   if (!order) return notFound(c, 'Booking tidak ditemukan');
 
-  if (!validTransitions(order.status).includes('Completed')) {
+  if (!canTransition(order.status, 'Completed')) {
     return conflict(c, `Tidak bisa selesaikan dari status ${order.status}`);
   }
 
@@ -935,7 +979,7 @@ router.post('/:id/complete', authMiddleware, async (c) => {
       .set({ status: 'Completed', completedAt: new Date() })
       .where(eq(assignments.orderId, orderId));
 
-    await recordStatusHistory(orderId, order.status, 'Completed', userId);
+    await recordStatusHistory(orderId, order.status, 'Completed', userId, undefined, tx);
   });
 
   await createAuditLog(c, {
@@ -996,13 +1040,13 @@ router.post('/:id/cancel', authMiddleware, validateBody(cancelBookingSchema), as
 
   if (!profile) return forbidden(c);
 
-  if (!validTransitions(order.status).includes('Cancelled')) {
+  if (!canTransition(order.status, 'Cancelled')) {
     return conflict(c, `Tidak bisa dibatalkan dari status ${order.status}`);
   }
 
   await db.transaction(async (tx) => {
     await tx.update(orders).set({ status: 'Cancelled' }).where(eq(orders.id, orderId));
-    await recordStatusHistory(orderId, order.status, 'Cancelled', userId, reason);
+    await recordStatusHistory(orderId, order.status, 'Cancelled', userId, reason, tx);
   });
 
   await createAuditLog(c, {

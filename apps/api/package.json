@@ -15,6 +15,7 @@
   "dependencies": {
     "@hono/node-server": "^2.0.6",
     "@specialist/database": "workspace:*",
+    "@specialist/shared": "workspace:*",
     "@specialist/types": "workspace:*",
     "@specialist/validation": "workspace:*",
     "dotenv": "^17.4.2",

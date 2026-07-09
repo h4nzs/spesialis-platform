@@ -327,6 +327,9 @@ importers:
       '@specialist/database':
         specifier: workspace:*
         version: link:../../packages/database
+      '@specialist/shared':
+        specifier: workspace:*
+        version: link:../../packages/shared
       '@specialist/types':
         specifier: workspace:*
         version: link:../../packages/types

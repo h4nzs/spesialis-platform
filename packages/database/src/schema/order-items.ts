@@ -16,10 +16,10 @@ export const orderItems = pgTable(
   {
     id: uuid('id').defaultRandom().primaryKey(),
     orderId: uuid('order_id')
-      .references(() => orders.id)
+      .references(() => orders.id, { onDelete: 'cascade' })
       .notNull(),
     serviceId: uuid('service_id')
-      .references(() => services.id)
+      .references(() => services.id, { onDelete: 'restrict' })
       .notNull(),
     serviceNameSnapshot: varchar('service_name_snapshot', { length: 255 }).notNull(),
     quantity: integer('quantity').notNull(),

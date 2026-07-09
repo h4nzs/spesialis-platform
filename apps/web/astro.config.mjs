@@ -21,6 +21,7 @@ export default defineConfig({
   server: {},
   vite: {
     plugins: [tailwindcss()],
+    envDir: '../..',
     server: {
       proxy: {
         '/api': { target: 'http://localhost:3000', changeOrigin: true },

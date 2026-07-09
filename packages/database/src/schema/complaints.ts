@@ -9,10 +9,10 @@ export const complaints = pgTable(
   {
     id: uuid('id').defaultRandom().primaryKey(),
     orderId: uuid('order_id')
-      .references(() => orders.id)
+      .references(() => orders.id, { onDelete: 'cascade' })
       .notNull(),
     customerId: uuid('customer_id')
-      .references(() => customerProfiles.id)
+      .references(() => customerProfiles.id, { onDelete: 'restrict' })
       .notNull(),
     status: varchar('status', { length: 30 }).notNull().$type<ComplaintStatus>().default('Open'),
     title: varchar('title', { length: 255 }).notNull(),

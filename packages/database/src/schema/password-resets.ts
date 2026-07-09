@@ -6,7 +6,7 @@ export const passwordResets = pgTable(
   {
     id: uuid('id').defaultRandom().primaryKey(),
     userId: uuid('user_id')
-      .references(() => users.id)
+      .references(() => users.id, { onDelete: 'cascade' })
       .notNull(),
     tokenHash: varchar('token_hash', { length: 255 }).notNull().unique(),
     expiresAt: timestamp('expires_at').notNull(),

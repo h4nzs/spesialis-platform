@@ -8,10 +8,10 @@ export const assignments = pgTable(
   {
     id: uuid('id').defaultRandom().primaryKey(),
     orderId: uuid('order_id')
-      .references(() => orders.id)
+      .references(() => orders.id, { onDelete: 'cascade' })
       .notNull(),
     partnerId: uuid('partner_id')
-      .references(() => partnerProfiles.id)
+      .references(() => partnerProfiles.id, { onDelete: 'restrict' })
       .notNull(),
     status: varchar('status', { length: 30 }).notNull().$type<AssignmentStatus>(),
     assignedAt: timestamp('assigned_at').defaultNow().notNull(),

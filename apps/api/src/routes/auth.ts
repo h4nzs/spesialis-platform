@@ -68,32 +68,35 @@ router.post('/register', rateLimit(10, 60_000), validateBody(registerSchema), as
 
   const passwordHash = await hashPassword(password);
 
-  const createdUsers = await db
-    .insert(users)
-    .values({
-      email,
-      phone,
-      passwordHash,
-      role: 'customer',
-      status: 'active',
-    })
-    .returning({ id: users.id, email: users.email, role: users.role });
+  const { user, token, verificationToken } = await db.transaction(async (tx) => {
+    const [createdUser] = await tx
+      .insert(users)
+      .values({
+        email,
+        phone,
+        passwordHash,
+        role: 'customer',
+        status: 'active',
+      })
+      .returning({ id: users.id, email: users.email, role: users.role });
 
-  const user = createdUsers[0];
-  if (!user) return serverError(c, 'Gagal membuat user');
+    if (!createdUser) throw new Error('Gagal membuat user');
 
-  await db.insert(customerProfiles).values({
-    userId: user.id,
-    fullName,
-  });
+    await tx.insert(customerProfiles).values({
+      userId: createdUser.id,
+      fullName,
+    });
 
-  const token = await signAccessToken(user.id, user.email, user.role);
+    const jwtToken = await signAccessToken(createdUser.id, createdUser.email, createdUser.role);
 
-  const verificationToken = generateRefreshToken();
-  await db.insert(passwordResets).values({
-    userId: user.id,
-    tokenHash: hashToken(verificationToken),
-    expiresAt: getRefreshTokenExpiry(),
+    const vt = generateRefreshToken();
+    await tx.insert(passwordResets).values({
+      userId: createdUser.id,
+      tokenHash: hashToken(vt),
+      expiresAt: getRefreshTokenExpiry(),
+    });
+
+    return { user: createdUser, token: jwtToken, verificationToken: vt };
   });
 
   sendVerificationEmail(email, fullName, verificationToken);
@@ -122,12 +125,7 @@ router.post(
     const [guestProfile] = await db
       .select({ id: customerProfiles.id })
       .from(customerProfiles)
-      .where(
-        and(
-          eq(customerProfiles.guestPhone, phone),
-          eq(customerProfiles.userId, null as unknown as string),
-        ),
-      )
+      .where(and(eq(customerProfiles.guestPhone, phone), isNull(customerProfiles.userId)))
       .limit(1);
 
     if (!guestProfile) {
@@ -296,35 +294,45 @@ router.post('/forgot-password', rateLimit(5, 60_000), async (c) => {
   return success(c, null, 'Jika email terdaftar, link reset password akan dikirim');
 });
 
-router.post('/reset-password', validateBody(resetPasswordSchema), async (c) => {
-  const { token, password } = c.get('validated') as ResetPasswordInput;
+router.post(
+  '/reset-password',
+  rateLimit(5, 60_000),
+  validateBody(resetPasswordSchema),
+  async (c) => {
+    const { token, password } = c.get('validated') as ResetPasswordInput;
 
-  const [stored] = await db
-    .select({
-      id: passwordResets.id,
-      userId: passwordResets.userId,
-      used: passwordResets.used,
-      expiresAt: passwordResets.expiresAt,
-    })
-    .from(passwordResets)
-    .where(and(eq(passwordResets.tokenHash, hashToken(token)), eq(passwordResets.used, false)))
-    .limit(1);
+    const [stored] = await db
+      .select({
+        id: passwordResets.id,
+        userId: passwordResets.userId,
+        used: passwordResets.used,
+        expiresAt: passwordResets.expiresAt,
+      })
+      .from(passwordResets)
+      .where(and(eq(passwordResets.tokenHash, hashToken(token)), eq(passwordResets.used, false)))
+      .limit(1);
 
-  if (!stored || stored.expiresAt < new Date()) {
-    return error(c, 'INVALID_RESET_TOKEN', 'Token reset password tidak valid atau kadaluarsa', 400);
-  }
+    if (!stored || stored.expiresAt < new Date()) {
+      return error(
+        c,
+        'INVALID_RESET_TOKEN',
+        'Token reset password tidak valid atau kadaluarsa',
+        400,
+      );
+    }
 
-  const passwordHash = await hashPassword(password);
+    const passwordHash = await hashPassword(password);
 
-  await db.transaction(async (tx) => {
-    await tx.update(users).set({ passwordHash }).where(eq(users.id, stored.userId));
-    await tx.update(passwordResets).set({ used: true }).where(eq(passwordResets.id, stored.id));
-  });
+    await db.transaction(async (tx) => {
+      await tx.update(users).set({ passwordHash }).where(eq(users.id, stored.userId));
+      await tx.update(passwordResets).set({ used: true }).where(eq(passwordResets.id, stored.id));
+    });
 
-  return success(c, null, 'Password berhasil direset');
-});
+    return success(c, null, 'Password berhasil direset');
+  },
+);
 
-router.post('/verify-email', validateBody(verifyEmailSchema), async (c) => {
+router.post('/verify-email', rateLimit(10, 60_000), validateBody(verifyEmailSchema), async (c) => {
   const { token } = c.get('validated') as VerifyEmailInput;
 
   const [stored] = await db
@@ -355,7 +363,7 @@ router.post('/verify-email', validateBody(verifyEmailSchema), async (c) => {
   return success(c, null, 'Email berhasil diverifikasi');
 });
 
-router.post('/resend-verification', authMiddleware, async (c) => {
+router.post('/resend-verification', authMiddleware, rateLimit(5, 60_000), async (c) => {
   const userId = c.get('userId');
 
   const [user] = await db

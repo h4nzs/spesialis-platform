@@ -11,6 +11,9 @@ import { db, orderStatusHistory } from './db.ts';
  * @param to - New status
  * @param changedBy - User UUID who performed the change (null for guest bookings)
  * @param note - Optional note describing the reason for the transition
+ * @param tx - Optional transaction client. When called inside db.transaction(),
+ *   pass the `tx` parameter to ensure the insert is part of the same transaction.
+ *   When omitted, uses the default `db` client.
  */
 export async function recordStatusHistory(
   orderId: string,
@@ -18,8 +21,10 @@ export async function recordStatusHistory(
   to: OrderStatus,
   changedBy: string | null,
   note?: string,
+  tx?: Pick<typeof db, 'insert'>,
 ) {
-  await db.insert(orderStatusHistory).values({
+  const client = tx ?? db;
+  await client.insert(orderStatusHistory).values({
     orderId,
     fromStatus: from,
     toStatus: to,

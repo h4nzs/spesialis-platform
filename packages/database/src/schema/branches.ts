@@ -6,7 +6,7 @@ export const branches = pgTable(
   {
     id: uuid('id').defaultRandom().primaryKey(),
     companyId: uuid('company_id')
-      .references(() => companies.id)
+      .references(() => companies.id, { onDelete: 'cascade' })
       .notNull(),
     name: varchar('name', { length: 255 }).notNull(),
     address: varchar('address', { length: 500 }).notNull(),

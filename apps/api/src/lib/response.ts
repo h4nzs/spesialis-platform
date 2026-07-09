@@ -6,7 +6,7 @@ import { setCookie, deleteCookie } from 'hono/cookie';
 const COOKIE_OPTIONS = {
   httpOnly: true,
   secure: process.env.APP_ENV === 'production',
-  sameSite: 'lax' as const,
+  sameSite: 'strict' as const,
   path: '/',
   maxAge: 15 * 60, // 15 menit — sesuai access token expiry
 };
@@ -14,7 +14,7 @@ const COOKIE_OPTIONS = {
 const REFRESH_COOKIE_OPTIONS = {
   httpOnly: true,
   secure: process.env.APP_ENV === 'production',
-  sameSite: 'lax' as const,
+  sameSite: 'strict' as const,
   path: '/api/v1/auth',
   maxAge: 7 * 24 * 60 * 60, // 7 hari — sesuai refresh token expiry
 };

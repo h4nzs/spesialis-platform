@@ -7,10 +7,10 @@ export const companyUsers = pgTable(
   {
     id: uuid('id').defaultRandom().primaryKey(),
     companyId: uuid('company_id')
-      .references(() => companies.id)
+      .references(() => companies.id, { onDelete: 'cascade' })
       .notNull(),
     userId: uuid('user_id')
-      .references(() => users.id)
+      .references(() => users.id, { onDelete: 'cascade' })
       .notNull(),
     role: varchar('role', { length: 50 }).notNull(),
   },

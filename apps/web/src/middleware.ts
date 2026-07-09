@@ -30,18 +30,28 @@ export const onRequest = defineMiddleware(async ({ locals, request }, next) => {
     return next();
   }
 
-  const jwtSecret = process.env.JWT_SECRET;
+  const jwtSecret =
+    ((import.meta as { env?: Record<string, string | undefined> }).env?.JWT_SECRET as
+      string | undefined) ?? process.env.JWT_SECRET;
+
   if (!jwtSecret) {
     console.error('[Middleware] JWT_SECRET is not configured');
     locals.auth = null;
-    return Response.redirect(new URL('/login', url), 302);
+    // Only redirect for dashboard routes — never redirect /login to itself
+    if (url.pathname.startsWith('/dashboard')) {
+      return Response.redirect(new URL('/login', url), 302);
+    }
+    return next();
   }
 
   const payload = verifyAccessToken(token, jwtSecret);
 
   if (!payload) {
     locals.auth = null;
-    return Response.redirect(new URL('/login', url), 302);
+    if (url.pathname.startsWith('/dashboard')) {
+      return Response.redirect(new URL('/login', url), 302);
+    }
+    return next();
   }
 
   locals.auth = {

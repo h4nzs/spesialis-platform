@@ -7,10 +7,10 @@ export const orderMedia = pgTable(
   {
     id: uuid('id').defaultRandom().primaryKey(),
     orderId: uuid('order_id')
-      .references(() => orders.id)
+      .references(() => orders.id, { onDelete: 'cascade' })
       .notNull(),
     mediaId: uuid('media_id')
-      .references(() => media.id)
+      .references(() => media.id, { onDelete: 'restrict' })
       .notNull(),
     createdAt: timestamp('created_at').defaultNow().notNull(),
   },

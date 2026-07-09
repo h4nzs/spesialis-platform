@@ -34,7 +34,7 @@ export {
 export {
   ApiClient,
   MemoryTokenStore,
-  LocalStorageTokenStore,
+  NoopTokenStore,
   createBrowserClient,
   createServerClient,
 } from './api-client.ts';

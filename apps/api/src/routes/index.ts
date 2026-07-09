@@ -1,5 +1,6 @@
 import { Hono } from 'hono';
 import { rateLimit } from '../middleware/rate-limiter.ts';
+import { csrfProtection } from '../middleware/csrf.ts';
 import { healthRouter } from './health.ts';
 import { authRouter } from './auth.ts';
 import { bookingsRouter } from './bookings.ts';
@@ -34,6 +35,9 @@ import { adminReportsRouter } from './admin/reports.ts';
 import { adminPenaltiesRouter } from './admin/penalties.ts';
 
 const router = new Hono();
+
+// Global CSRF protection for state-changing requests
+router.use('*', csrfProtection());
 
 // Global default rate limit — 100 requests per 60 detik per IP
 // Override dengan rate limit lebih ketat di masing-masing route

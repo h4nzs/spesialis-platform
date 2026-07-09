@@ -7,6 +7,7 @@ import { createPaymentSchema, verifyPaymentSchema } from '@specialist/validation
 import type { CreatePaymentInput, VerifyPaymentInput } from '@specialist/validation';
 import { success, created, notFound, forbidden, conflict } from '../lib/response.ts';
 import type { OrderStatus } from '@specialist/types';
+import { canTransition } from '@specialist/shared';
 import { createAuditLog } from '../lib/audit.ts';
 import { recordStatusHistory } from '../lib/order-status.ts';
 import { createNotification, notifyAdmins } from '../lib/notification.ts';
@@ -59,7 +60,7 @@ router.post('/', authMiddleware, validateBody(createPaymentSchema), async (c) =>
     })
     .returning();
 
-  if (order.status === 'Completed' || order.status === 'Waiting Payment') {
+  if (canTransition(order.status, 'Waiting Payment')) {
     await db.update(orders).set({ status: 'Waiting Payment' }).where(eq(orders.id, order.id));
     await recordStatusHistory(
       order.id,
@@ -174,6 +175,7 @@ router.post(
           'Paid',
           userId,
           data.notes,
+          tx,
         );
       } else {
         await tx
@@ -192,6 +194,7 @@ router.post(
           'Completed',
           userId,
           `Pembayaran ditolak: ${data.notes ?? ''}`,
+          tx,
         );
       }
     });
