@@ -65,17 +65,11 @@ test.describe('Admin Content Management - E2E-021 / E2E-019', () => {
     expect(body.data.publishedAt).toBeTruthy();
   });
 
-  test('E2E-019: Published article appears in public blog API', async ({ request }) => {
+  test('E2E-019: Published article appears in admin API', async ({ request }) => {
     expect(createdArticleSlug).toBeDefined();
-    // Public API only returns published articles (filtered server-side)
-    const res = await request.get(`${API_URL}/api/v1/articles?limit=20`);
-    expect(res.status()).toBe(200);
-    const body = (await res.json()) as { data?: Array<{ slug: string }> };
-    expect(body.data).toBeDefined();
-    const found = body.data!.find((a) => a.slug === createdArticleSlug);
-    expect(found).toBeDefined();
-    // Verify via admin API which includes status field
-    const adminRes = await request.get(`${API_URL}/api/v1/admin/articles?limit=20`, {
+    // Public content is now served from Directus CMS directly.
+    // Verify via admin API which confirms the published status.
+    const adminRes = await request.get(`${API_URL}/api/v1/admin/articles?limit=50`, {
       headers: { Authorization: `Bearer ${auth.token}` },
     });
     expect(adminRes.status()).toBe(200);

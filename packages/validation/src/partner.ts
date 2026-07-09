@@ -1,14 +1,14 @@
 import { z } from 'zod';
 
 export const registerPartnerSchema = z.object({
-  fullName: z.string().min(1).max(255),
+  fullName: z.string().min(1, 'Nama lengkap wajib diisi').max(255),
   phone: z
     .string()
-    .min(10)
+    .min(10, 'Nomor HP minimal 10 digit')
     .max(30)
-    .regex(/^\+?[0-9]+$/),
-  ktpNumber: z.string().min(1).max(30),
-  password: z.string().min(8).max(128),
+    .regex(/^\+?[0-9]+$/, 'Nomor HP hanya boleh angka dan +'),
+  ktpNumber: z.string().min(1, 'Nomor KTP wajib diisi').max(30),
+  password: z.string().min(8, 'Password minimal 8 karakter').max(128),
 });
 
 export const updatePartnerSchema = z.object({
@@ -39,27 +39,27 @@ export const addSkillSchema = z.object({
 });
 
 export const partnerRegistrationSchema = z.object({
-  email: z.string().email().max(255),
+  email: z.string().email('Format email tidak valid').max(255),
   phone: z
     .string()
-    .min(10)
+    .min(10, 'Nomor HP minimal 10 digit')
     .max(30)
-    .regex(/^\+?[0-9]+$/),
+    .regex(/^\+?[0-9]+$/, 'Nomor HP hanya boleh angka dan +'),
   password: z
     .string()
-    .min(8)
+    .min(8, 'Password minimal 8 karakter')
     .max(128)
-    .regex(/[A-Z]/, 'Must contain uppercase')
-    .regex(/[a-z]/, 'Must contain lowercase')
-    .regex(/[0-9]/, 'Must contain digit'),
-  fullName: z.string().min(1).max(255),
-  ktpNumber: z.string().min(1).max(30),
+    .regex(/[A-Z]/, 'Password harus mengandung huruf besar')
+    .regex(/[a-z]/, 'Password harus mengandung huruf kecil')
+    .regex(/[0-9]/, 'Password harus mengandung angka'),
+  fullName: z.string().min(1, 'Nama lengkap wajib diisi').max(255),
+  ktpNumber: z.string().min(1, 'Nomor KTP wajib diisi').max(30),
 });
 
 export const createPartnerDocumentSchema = z.object({
   type: z.enum(['KTP', 'Certificate', 'SIM', 'Photo', 'Other']),
   mediaId: z.string().uuid(),
-  fileName: z.string().min(1).max(255),
+  fileName: z.string().min(1, 'Nama file wajib diisi').max(255),
 });
 
 export type RegisterPartnerInput = z.infer<typeof registerPartnerSchema>;

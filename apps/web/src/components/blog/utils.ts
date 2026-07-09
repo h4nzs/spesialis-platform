@@ -10,21 +10,8 @@ export interface ArticleItem {
   publishedAt: string | null;
 }
 
-export interface CmsArticle {
-  id: string;
-  title: string;
-  slug: string;
-  summary: string | null;
-  content: string | null;
-  cover_image: string | null;
-  category: string | null;
-  tags: string[] | null;
-  author: string | null;
-  published_at: string | null;
-  date_created: string | null;
-  date_updated: string | null;
-  status: string;
-}
+import type { CmsArticle } from '../../lib/directus.ts';
+export type { CmsArticle };
 
 export function formatDate(iso: string): string {
   return new Date(iso).toLocaleDateString('id-ID', {

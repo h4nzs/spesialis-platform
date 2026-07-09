@@ -1,5 +1,6 @@
 import { Hono } from 'hono';
 import { success, unauthorized, error } from '../lib/response.ts';
+import { invalidateCollectionCache } from '../lib/cache.ts';
 
 const ASTRO_URL = process.env.ASTRO_URL ?? 'http://web:4321';
 const REVALIDATION_TOKEN = process.env.REVALIDATION_TOKEN ?? '';
@@ -22,6 +23,9 @@ router.post('/revalidate', async (c) => {
   };
 
   console.info('[CMS Revalidation] Received:', { collection, event });
+
+  // Invalidate in-memory cache before forwarding to Astro
+  invalidateCollectionCache(collection);
 
   try {
     const astroRes = await fetch(`${ASTRO_URL}/api/revalidate`, {

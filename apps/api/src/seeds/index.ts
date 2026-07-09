@@ -1274,7 +1274,15 @@ async function seed() {
       description: 'Durasi lockout (menit)',
     },
   ]);
-  console.log('  ✓ 11 system settings created');
+  await db.insert(systemSettings).values([
+    {
+      category: 'whatsapp',
+      key: 'whatsapp_phone_number',
+      value: '6281234567890',
+      description: 'Nomor WhatsApp untuk tombol WA di halaman publik',
+    },
+  ]);
+  console.log('  ✓ 12 system settings created');
 
   console.log('\n═══════════════════════════════════════════');
   console.log('  ✅ Seed complete!');
@@ -1295,7 +1303,7 @@ async function seed() {
   console.log('    10 orders across all lifecycle stages');
   console.log('    2 reviews, 2 complaints, 4 notifications');
   console.log('    4 categories, 4 articles, 7 FAQ entries');
-  console.log('    3 SEO entries, 11 system settings');
+  console.log('    3 SEO entries, 12 system settings');
 }
 
 seed()

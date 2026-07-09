@@ -5,17 +5,32 @@
  * User problem: "OK, I'm convinced. How do I start?"
  * Goal: Final conversion push before footer. Clear, single action.
  * Visual: Centered, minimal. Brand uses typography + spacing, not gradient.
+ *
+ * CMS: title → heading, content → subtitle
  */
+
+interface Props {
+  /** CMS section data — falls back to hardcoded defaults */
+  section?: {
+    title: string | null;
+    content: string | null;
+  };
+}
+
+const { section } = Astro.props as Props;
+
+const ctaTitle = section?.title ?? 'Siap Memesan Layanan Profesional?'
+const ctaContent = section?.content ?? 'Booking sekarang dan dapatkan teknisi terpercaya untuk kebutuhan Anda. Proses cepat, harga transparan.'
 ---
 
 <section class="bg-primary-900">
   <div class="container-page py-20 md:py-28">
     <div class="mx-auto max-w-2xl text-center">
       <h2 class="text-h2 text-white text-balance">
-        Siap Memesan Layanan Profesional?
+        {ctaTitle}
       </h2>
       <p class="mt-4 text-body-lg text-primary-200 text-pretty">
-        Booking sekarang dan dapatkan teknisi terpercaya untuk kebutuhan Anda. Proses cepat, harga transparan.
+        {ctaContent}
       </p>
       <div class="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
         <a

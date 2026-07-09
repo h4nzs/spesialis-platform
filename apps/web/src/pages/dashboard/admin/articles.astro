@@ -4,6 +4,6 @@ import DashboardLayout from '../../../layouts/DashboardLayout.astro'
 import { AdminArticles } from '../../../components/dashboard/admin/AdminArticles.tsx'
 ---
 
-<DashboardLayout title="Kelola Artikel" role="admin">
+<DashboardLayout title="Kelola Artikel" role={['admin', 'super_admin', 'content_manager']}>
   <AdminArticles client:load />
 </DashboardLayout>

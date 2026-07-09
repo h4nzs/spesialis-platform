@@ -64,4 +64,13 @@ router.patch('/read', authMiddleware, validateBody(markNotificationReadSchema), 
   return success(c, null, `${data.notificationIds.length} notifikasi ditandai dibaca`);
 });
 
+router.post('/read-all', authMiddleware, async (c) => {
+  const userId = c.get('userId');
+  await db
+    .update(notifications)
+    .set({ isRead: true })
+    .where(and(eq(notifications.userId, userId), eq(notifications.isRead, false)));
+  return success(c, null, 'Semua notifikasi ditandai dibaca');
+});
+
 export { router as notificationsRouter };

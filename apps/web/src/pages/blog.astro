@@ -3,7 +3,6 @@ export const prerender = false;
 import BaseLayout from '../layouts/BaseLayout.astro'
 import { ClientRouter } from 'astro:transitions'
 import { ArticleGrid } from '../components/blog/ArticleGrid'
-
 interface ArticleFeedItem {
   title: string
   slug: string
@@ -19,31 +18,34 @@ interface CategoryItem {
 
 const activeCategory = Astro.url.searchParams.get('kategori')
 
-// SSR: fetch articles for JSON-LD structured data + category extraction
+const apiUrl = import.meta.env.PUBLIC_API_URL ?? 'http://localhost:3000'
+
+// SSR: fetch articles from Hono CMS proxy for JSON-LD structured data + category extraction
 // ArticleGrid client component handles the visual rendering with skeleton loading
 let articlesForSeo: ArticleFeedItem[] = []
 let categories: CategoryItem[] = []
 try {
-  const apiUrl = import.meta.env.PUBLIC_API_URL ?? 'http://localhost:3000'
   const res = await fetch(`${apiUrl}/api/v1/cms/articles?limit=20`)
   if (res.ok) {
     const json = await res.json()
-    const raw: Array<{ title: string; slug: string; published_at: string | null; author: string | null; category: string | null }> = json.data ?? []
-    articlesForSeo = raw.map((a) => ({
-      title: a.title,
-      slug: a.slug,
-      publishedAt: a.published_at,
-      authorName: a.author,
-      category: a.category,
-    }))
-    const catMap = new Map<string, string>()
-    for (const a of raw) {
-      if (a.category) {
-        const slug = a.category.toLowerCase().replace(/\s+/g, '-')
-        catMap.set(slug, a.category)
+    const raw = json.data ?? []
+    if (Array.isArray(raw) && raw.length > 0) {
+      articlesForSeo = raw.map((a: { title: string; slug: string; published_at: string | null; author: string | null; category: string | null }) => ({
+        title: a.title,
+        slug: a.slug,
+        publishedAt: a.published_at,
+        authorName: a.author,
+        category: a.category,
+      }))
+      const catMap = new Map<string, string>()
+      for (const a of raw) {
+        if (a.category) {
+          const slug = a.category.toLowerCase().replace(/\s+/g, '-')
+          catMap.set(slug, a.category)
+        }
       }
+      categories = Array.from(catMap.entries()).map(([slug, name]) => ({ slug, name }))
     }
-    categories = Array.from(catMap.entries()).map(([slug, name]) => ({ slug, name }))
   }
 } catch {
   // silent

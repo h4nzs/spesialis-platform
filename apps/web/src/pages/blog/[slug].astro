@@ -3,7 +3,8 @@ export const prerender = false;
 
 import BaseLayout from '../../layouts/BaseLayout.astro'
 import { RelatedArticles } from '../../components/blog/RelatedArticles'
-import type { CmsArticle } from '../../components/blog/utils'
+import type { CmsArticle } from '../../lib/directus.ts'
+import { renderMarkdown } from '../../lib/markdown.ts'
 
 const { slug } = Astro.params
 
@@ -22,30 +23,36 @@ interface ArticleData {
   updatedAt: string
 }
 
+const apiUrl = import.meta.env.PUBLIC_API_URL ?? 'http://localhost:3000'
+
 let article: ArticleData | null = null
 let error: string | null = null
 
 try {
-  const apiUrl = import.meta.env.PUBLIC_API_URL ?? 'http://localhost:3000'
-  const res = await fetch(`${apiUrl}/api/v1/cms/articles/${slug}`)
-  if (!res.ok) throw new Error('Artikel tidak ditemukan')
-  const json = await res.json()
-  const raw: CmsArticle | null = json.data
-  if (raw) {
-    article = {
-      id: raw.id,
-      title: raw.title,
-      slug: raw.slug,
-      summary: raw.summary,
-      content: raw.content,
-      coverImage: raw.cover_image,
-      authorName: raw.author,
-      categoryName: raw.category,
-      categorySlug: raw.category?.toLowerCase().replace(/\s+/g, '-') ?? null,
-      publishedAt: raw.published_at,
-      createdAt: raw.date_created ?? raw.published_at ?? '',
-      updatedAt: raw.date_updated ?? raw.published_at ?? '',
+  const res = await fetch(`${apiUrl}/api/v1/cms/articles/${slug!}`)
+  if (res.ok) {
+    const json = await res.json()
+    const raw: CmsArticle | undefined = json.data ?? undefined
+    if (raw) {
+      article = {
+        id: raw.id,
+        title: raw.title,
+        slug: raw.slug,
+        summary: raw.summary,
+        content: raw.content,
+        coverImage: raw.cover_image,
+        authorName: raw.author,
+        categoryName: raw.category,
+        categorySlug: raw.category?.toLowerCase().replace(/\s+/g, '-') ?? null,
+        publishedAt: raw.published_at,
+        createdAt: raw.date_created ?? raw.published_at ?? '',
+        updatedAt: raw.date_updated ?? raw.published_at ?? '',
+      }
+    } else {
+      error = 'Artikel tidak ditemukan'
     }
+  } else {
+    error = 'Artikel tidak ditemukan'
   }
 } catch (e) {
   error = e instanceof Error ? e.message : 'Gagal memuat artikel'
@@ -130,11 +137,7 @@ try {
         <h1 class="mt-4 text-h2 font-bold text-text-primary">{article.title}</h1>
 
         {article.content && (
-          <div class="prose prose-gray mt-8 max-w-none">
-            {article.content.split('\n').map((paragraph) => (
-              paragraph.trim() ? <p>{paragraph}</p> : null
-            ))}
-          </div>
+          <div class="prose prose-gray mt-8 max-w-none" set:html={renderMarkdown(article.content)} />
         )}
 
         <div class="mt-12 border-t border-border-default pt-6">

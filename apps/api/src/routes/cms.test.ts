@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { Hono } from 'hono';
 import { cmsRouter } from './cms.ts';
 import { setTestEnv } from '../test-utils.ts';
+import { cmsCache } from '../lib/cache.ts';
 import type { CmsFaqItem, CmsArticle, CmsHomepageSection, CmsPage } from '../lib/cms.ts';
 
 const mockCms = vi.hoisted(() => ({
@@ -22,6 +23,7 @@ function mkApp() {
 beforeEach(() => {
   setTestEnv();
   vi.clearAllMocks();
+  cmsCache.clear();
 });
 
 describe('GET /faq', () => {

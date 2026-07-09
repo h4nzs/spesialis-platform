@@ -4,6 +4,6 @@ import DashboardLayout from '../../../layouts/DashboardLayout.astro'
 import { AdminOverview } from '../../../components/dashboard/admin/AdminOverview.tsx'
 ---
 
-<DashboardLayout title="Dashboard Admin" role="admin">
+<DashboardLayout title="Dashboard Admin" role={['admin', 'super_admin', 'content_manager']}>
   <AdminOverview client:load />
 </DashboardLayout>

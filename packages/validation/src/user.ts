@@ -9,37 +9,37 @@ const passwordSchema = z
   .regex(/[0-9]/, 'Password harus mengandung angka');
 
 export const registerSchema = z.object({
-  email: z.string().email().max(255),
+  email: z.string().email('Format email tidak valid').max(255),
   phone: z
     .string()
-    .min(10)
+    .min(10, 'Nomor HP minimal 10 digit')
     .max(30)
-    .regex(/^\+?[0-9]+$/),
+    .regex(/^\+?[0-9]+$/, 'Nomor HP hanya boleh angka dan +'),
   password: passwordSchema,
-  fullName: z.string().min(1).max(255),
+  fullName: z.string().min(1, 'Nama lengkap wajib diisi').max(255),
 });
 
 export const loginSchema = z.object({
-  email: z.string().email(),
-  password: z.string().min(1),
+  email: z.string().email('Format email tidak valid'),
+  password: z.string().min(1, 'Password wajib diisi'),
 });
 
 export const forgotPasswordSchema = z.object({
-  email: z.string().email(),
+  email: z.string().email('Format email tidak valid'),
 });
 
 export const resetPasswordSchema = z.object({
-  token: z.string().min(1),
+  token: z.string().min(1, 'Token reset password wajib diisi'),
   password: passwordSchema,
 });
 
 export const updateProfileSchema = z.object({
-  email: z.string().email().max(255).optional(),
+  email: z.string().email('Format email tidak valid').max(255).optional(),
   phone: z
     .string()
-    .min(10)
+    .min(10, 'Nomor HP minimal 10 digit')
     .max(30)
-    .regex(/^\+?[0-9]+$/)
+    .regex(/^\+?[0-9]+$/, 'Nomor HP hanya boleh angka dan +')
     .optional(),
 });
 
@@ -59,12 +59,12 @@ export const updateUserStatusSchema = z.object({
 export const convertGuestSchema = z.object({
   phone: z
     .string()
-    .min(10)
+    .min(10, 'Nomor HP minimal 10 digit')
     .max(30)
-    .regex(/^\+?[0-9]+$/),
-  email: z.string().email().max(255),
+    .regex(/^\+?[0-9]+$/, 'Nomor HP hanya boleh angka dan +'),
+  email: z.string().email('Format email tidak valid').max(255),
   password: passwordSchema,
-  fullName: z.string().min(1).max(255),
+  fullName: z.string().min(1, 'Nama lengkap wajib diisi').max(255),
 });
 
 export const refreshTokenSchema = z.object({

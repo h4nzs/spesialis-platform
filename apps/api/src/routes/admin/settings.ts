@@ -1,7 +1,7 @@
 import { Hono } from 'hono';
 import { eq, desc } from 'drizzle-orm';
 import { z } from 'zod';
-import { db, systemSettings } from '../../lib/db.ts';
+import { db, systemSettings, users } from '../../lib/db.ts';
 import { authMiddleware, requireRole } from '../../middleware/auth.ts';
 import { validateBody } from '../../middleware/validation.ts';
 import { success } from '../../lib/response.ts';
@@ -55,6 +55,12 @@ router.patch(
     };
 
     const userId = c.get('userId');
+    const [userExists] = await db
+      .select({ id: users.id })
+      .from(users)
+      .where(eq(users.id, userId))
+      .limit(1);
+    const updatedBy = userExists ? userId : undefined;
     const results: Array<{ key: string; updated: boolean }> = [];
 
     for (const setting of data.settings) {
@@ -69,7 +75,7 @@ router.patch(
           .update(systemSettings)
           .set({
             value: setting.value,
-            updatedBy: userId,
+            ...(updatedBy ? { updatedBy } : {}),
             updatedAt: new Date(),
           })
           .where(eq(systemSettings.id, existing.id));
@@ -80,7 +86,7 @@ router.patch(
           value: setting.value,
           category: setting.category ?? 'general',
           description: setting.description ?? null,
-          updatedBy: userId,
+          ...(updatedBy ? { updatedBy } : {}),
         });
         results.push({ key: setting.key, updated: true });
       }

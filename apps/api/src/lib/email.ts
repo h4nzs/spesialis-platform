@@ -8,6 +8,7 @@ import {
   verificationHtml,
   paymentVerifiedHtml,
   notificationEmailHtml,
+  newBookingAdminHtml,
 } from './email-templates.ts';
 
 export const APP_URL = process.env.APP_URL ?? 'http://localhost:4321';
@@ -206,6 +207,39 @@ export async function sendPaymentVerifiedEmail(
     'Payment verification',
     bookingNumber,
     status,
+  );
+}
+
+export async function sendNewBookingToAdmin(
+  email: string,
+  fullName: string,
+  bookingNumber: string,
+  customerName: string,
+  customerPhone: string,
+  address: string,
+  bookingDate: string,
+  bookingTime: string,
+  notes: string | null,
+  items: { name: string; qty: number }[],
+): Promise<void> {
+  const adminUrl = `${APP_URL}/dashboard/admin/bookings`;
+  await sendEmail(
+    email,
+    `Booking Baru — #${bookingNumber}`,
+    `Halo ${fullName},\n\nBooking baru telah dibuat dan menunggu konfirmasi.\n\nNomor Booking: ${bookingNumber}\nPelanggan: ${customerName}\nTelepon: ${customerPhone}\nTanggal: ${bookingDate}\nWaktu: ${bookingTime}\nAlamat: ${address}\n${notes ? `\nCatatan: ${notes}` : ''}\n\nSegera konfirmasi booking ini melalui dashboard admin.\n${adminUrl}\n\n— Tim Spesialis`,
+    newBookingAdminHtml(
+      bookingNumber,
+      customerName,
+      customerPhone,
+      address,
+      bookingDate,
+      bookingTime,
+      notes,
+      items,
+      adminUrl,
+    ),
+    'New booking notification',
+    bookingNumber,
   );
 }
 

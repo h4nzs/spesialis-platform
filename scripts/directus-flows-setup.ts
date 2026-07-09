@@ -15,9 +15,13 @@ const DIRECTUS_URL = process.env['DIRECTUS_URL'] ?? 'http://localhost:8055';
 const DIRECTUS_EMAIL = process.env['DIRECTUS_ADMIN_EMAIL'] ?? 'admin@example.com';
 const DIRECTUS_PASSWORD = process.env['DIRECTUS_ADMIN_PASSWORD'] ?? 'admin123';
 
-// Webhook URL — MUST use Docker-internal address (api:3000) for Flows running inside CMS container.
-// Do NOT use the API_URL env var which points to localhost from the host machine.
-const WEBHOOK_API_URL = 'http://api:3000';
+// Webhook URL — the address the Directus container uses to reach the Hono API.
+// In Docker: http://api:3000 (the internal Docker service name)
+// In dev mode (API outside Docker):
+//   - Docker Desktop (macOS/Windows): http://host.docker.internal:3000
+//   - Linux: http://172.17.0.1:3000
+// Set DIRECTUS_WEBHOOK_URL in .env to override for your environment.
+const WEBHOOK_API_URL = process.env['DIRECTUS_WEBHOOK_URL'] ?? 'http://api:3000';
 
 const REVALIDATION_TOKEN = process.env['REVALIDATION_TOKEN'] ?? 'specialist-revalidation-token';
 

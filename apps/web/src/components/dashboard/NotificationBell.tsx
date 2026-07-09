@@ -69,7 +69,7 @@ export function NotificationBell() {
         body: { notificationIds: [id] },
       });
       setNotifications((prev) => prev.map((n) => (n.id === id ? { ...n, isRead: true } : n)));
-      setUnread((prev) => Math.max(0, prev - 1));
+      await fetchUnread();
     } catch {
       // silent
     }
@@ -109,19 +109,16 @@ export function NotificationBell() {
         <div className="absolute right-0 z-50 mt-2 w-80 rounded-lg border border-border-default bg-bg-surface shadow-lg">
           <div className="flex items-center justify-between border-b border-border-default px-4 py-3">
             <span className="text-sm font-semibold text-text-primary">Notifikasi</span>
-            {unreadItems.length > 0 && (
+            {unread > 0 && (
               <button
                 type="button"
                 onClick={async () => {
-                  const ids = unreadItems.map((n) => n.id);
                   try {
-                    await api.patch('/api/v1/notifications/read', {
-                      body: { notificationIds: ids },
-                    });
+                    await api.post('/api/v1/notifications/read-all');
                     setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
                     setUnread(0);
                   } catch {
-                    // silent
+                    await fetchUnread();
                   }
                 }}
                 className="text-xs font-medium text-primary hover:underline"

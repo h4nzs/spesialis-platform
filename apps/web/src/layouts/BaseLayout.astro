@@ -2,6 +2,7 @@
 import '@fontsource-variable/inter';
 import '../styles/global.css'
 import { AuthNav } from '../components/AuthNav.tsx'
+import WhatsAppFloating from '../components/WhatsAppFloating.astro'
 import Footer from '../components/homepage/Footer.astro'
 
 export interface Props {
@@ -32,8 +33,28 @@ const {
   articleAuthor,
 } = Astro.props
 
+const auth = Astro.locals.auth
+
 const siteUrl = 'https://spesialis.id'
 const canonical = canonicalUrl ? `${siteUrl}${canonicalUrl}` : undefined
+
+// ── WhatsApp settings ─────────────────────────────────────────
+const apiUrl = import.meta.env.PUBLIC_API_URL ?? 'http://localhost:3000'
+let whatsappPhone = ''
+try {
+  const res = await fetch(`${apiUrl}/api/v1/public/settings`)
+  if (res.ok) {
+    const body = await res.json() as { data: Record<string, string> }
+    whatsappPhone = (body.data ?? body).whatsapp_phone_number ?? ''
+  }
+} catch {
+  // Non-critical — WA button will not render
+}
+
+const waPages = ['/', '/services', '/blog', '/tracking']
+const showWa = whatsappPhone && waPages.some(
+  (p) => Astro.url.pathname === p || (p !== '/' && Astro.url.pathname.startsWith(p + '/')),
+)
 ---
 
 <!DOCTYPE html>
@@ -90,7 +111,7 @@ const canonical = canonicalUrl ? `${siteUrl}${canonicalUrl}` : undefined
           <a href="/services" class="hover:text-text-primary transition-colors">Layanan</a>
           <a href="/blog" class="hidden hover:text-text-primary transition-colors sm:inline">Blog</a>
           <a href="/tracking" class="hidden hover:text-text-primary transition-colors sm:inline">Lacak</a>
-          <AuthNav client:load />
+          <AuthNav client:load initialAuth={auth} />
         </nav>
       </div>
     </header>
@@ -98,5 +119,7 @@ const canonical = canonicalUrl ? `${siteUrl}${canonicalUrl}` : undefined
       <slot />
     </main>
     <Footer />
+    {showWa && <WhatsAppFloating phoneNumber={whatsappPhone} />}
+    <div id="app-settings" data-whatsapp-phone={whatsappPhone || ''} style="display:none"></div>
   </body>
 </html>

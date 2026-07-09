@@ -6,15 +6,25 @@
  * Goal: Communicate identity + drive to CTA within 5 seconds.
  * Visual: Typography-driven. No gradient blobs, no floating elements.
  *   Trust markers build credibility immediately.
+ *
+ * CMS: title → headline, content → subtitle
  */
 
 interface Props {
   totalServices?: number;
   totalPartners?: number;
   totalCities?: number;
+  /** CMS section data — falls back to hardcoded defaults */
+  section?: {
+    title: string | null;
+    content: string | null;
+  };
 }
 
-const { totalServices = 50, totalPartners = 100, totalCities = 5 } = Astro.props as Props;
+const { totalServices = 50, totalPartners = 100, totalCities = 5, section } = Astro.props as Props;
+
+const headline = section?.title ?? 'Layanan Profesional\n        <span class="text-primary-500">Tanpa Ribet</span>'
+const subtitle = section?.content ?? 'Temukan teknisi dan profesional terpercaya untuk kebutuhan rumah, kantor, dan bisnis Anda. Booking dalam hitungan menit.'
 ---
 
 <section class="bg-bg-page">
@@ -26,15 +36,11 @@ const { totalServices = 50, totalPartners = 100, totalCities = 5 } = Astro.props
       </p>
 
       <!-- Headline -->
-      <h1 class="mt-6 text-display-xl text-balance text-text-primary">
-        Layanan Profesional
-        <span class="text-primary-500">Tanpa Ribet</span>
-      </h1>
+      <h1 class="mt-6 text-display-xl text-balance text-text-primary" set:html={headline} />
 
       <!-- Subtitle -->
       <p class="mt-4 text-body-lg text-text-secondary text-pretty max-w-xl mx-auto">
-        Temukan teknisi dan profesional terpercaya untuk kebutuhan rumah,
-        kantor, dan bisnis Anda. Booking dalam hitungan menit.
+        {subtitle}
       </p>
 
       <!-- Search bar -->

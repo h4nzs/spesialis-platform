@@ -1,12 +1,27 @@
 import { Hono } from 'hono';
 import { success } from '../lib/response.ts';
 import { cms, type CmsHomepageSection, type CmsPage } from '../lib/cms.ts';
+import { cmsCache } from '../lib/cache.ts';
 
 const cmsRouter = new Hono();
 
+// Set Cache-Control header on all successful CMS proxy responses
+// Browser/CDN can cache responses for up to 60 seconds to reduce load on Directus
+cmsRouter.use('*', async (c, next) => {
+  await next();
+  if (c.res.status >= 200 && c.res.status < 400) {
+    c.header('Cache-Control', 'public, max-age=60, stale-while-revalidate=30');
+  }
+});
+
 cmsRouter.get('/faq', async (c) => {
+  const cacheKey = 'cms:faq';
+  const cached = cmsCache.get(cacheKey);
+  if (cached.hit) return success(c, cached.data);
+
   try {
     const items = await cms.faq.list();
+    cmsCache.set(cacheKey, items);
     return success(c, items);
   } catch {
     return success(c, []);
@@ -14,9 +29,14 @@ cmsRouter.get('/faq', async (c) => {
 });
 
 cmsRouter.get('/articles', async (c) => {
+  const limit = Number(c.req.query('limit')) || 50;
+  const cacheKey = `cms:articles:limit:${limit}`;
+  const cached = cmsCache.get(cacheKey);
+  if (cached.hit) return success(c, cached.data);
+
   try {
-    const limit = Number(c.req.query('limit')) || 50;
     const items = await cms.articles.list({ limit });
+    cmsCache.set(cacheKey, items);
     return success(c, items);
   } catch {
     return success(c, []);
@@ -24,10 +44,15 @@ cmsRouter.get('/articles', async (c) => {
 });
 
 cmsRouter.get('/articles/:slug', async (c) => {
+  const slug = c.req.param('slug');
+  const cacheKey = `cms:articles:slug:${slug}`;
+  const cached = cmsCache.get(cacheKey);
+  if (cached.hit) return success(c, cached.data);
+
   try {
-    const slug = c.req.param('slug');
     const items = await cms.articles.bySlug(slug);
     const item = items?.[0] ?? null;
+    cmsCache.set(cacheKey, item);
     return success(c, item);
   } catch {
     return success(c, null);
@@ -86,15 +111,16 @@ const FALLBACK_HOMEPAGE_SECTIONS: CmsHomepageSection[] = [
 ];
 
 cmsRouter.get('/homepage-sections', async (c) => {
+  const cacheKey = 'cms:homepage-sections';
+  const cached = cmsCache.get(cacheKey);
+  if (cached.hit) return success(c, cached.data);
+
   try {
     const items = await cms.homepageSections.list();
-    if (items.length > 0) {
-      return success(c, items);
-    }
-    // CMS is available but has no sections — use fallback
-    return success(c, FALLBACK_HOMEPAGE_SECTIONS);
+    const result = items.length > 0 ? items : FALLBACK_HOMEPAGE_SECTIONS;
+    cmsCache.set(cacheKey, result);
+    return success(c, result);
   } catch {
-    // CMS is unreachable — use fallback
     return success(c, FALLBACK_HOMEPAGE_SECTIONS);
   }
 });
@@ -150,14 +176,22 @@ const FALLBACK_PAGES: Record<string, CmsPage> = {
 
 cmsRouter.get('/pages/:slug', async (c) => {
   const slug = c.req.param('slug');
+  const cacheKey = `cms:pages:slug:${slug}`;
+  const cached = cmsCache.get(cacheKey);
+  if (cached.hit) return success(c, cached.data);
+
   try {
     const items = await cms.pages.bySlug(slug);
     const item = items?.[0] ?? null;
-    if (item) return success(c, item);
+    if (item) {
+      cmsCache.set(cacheKey, item);
+      return success(c, item);
+    }
   } catch {
     // CMS is unreachable — fall through to fallback
   }
   // Fallback: return hardcoded content for known pages, null otherwise
+  cmsCache.set(cacheKey, FALLBACK_PAGES[slug] ?? null);
   return success(c, FALLBACK_PAGES[slug] ?? null);
 });
 

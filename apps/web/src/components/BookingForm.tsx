@@ -3,6 +3,11 @@ import { Button } from '@specialist/ui';
 import { createBrowserClient, formatCurrency } from '@specialist/shared';
 import { createGuestBookingSchema, createCustomerBookingSchema } from '@specialist/validation';
 
+function getEl(id: string): HTMLElement | null {
+  if (typeof document === 'undefined') return null;
+  return document.getElementById(id);
+}
+
 interface ServiceInfo {
   id: string;
   name: string;
@@ -21,6 +26,12 @@ interface AddressItem {
   receiverPhone: string;
 }
 
+interface InitialAuth {
+  userId: string;
+  userEmail: string;
+  userRole: string;
+}
+
 interface FieldError {
   field: string;
   message: string;
@@ -28,15 +39,11 @@ interface FieldError {
 
 interface BookingFormProps {
   serviceId: string | null;
+  initialAuth?: InitialAuth | null;
 }
 
 function getFieldError(errors: FieldError[], field: string): string | undefined {
   return errors.find((e) => e.field === field)?.message;
-}
-
-function getToken(): string | null {
-  if (typeof localStorage === 'undefined') return null;
-  return localStorage.getItem('spesialis_access_token');
 }
 
 function todayStr(): string {
@@ -47,15 +54,14 @@ function todayStr(): string {
   return `${y}-${m}-${day}`;
 }
 
-export function BookingForm({ serviceId }: BookingFormProps) {
+export function BookingForm({ serviceId, initialAuth }: BookingFormProps) {
   const api = useMemo(() => createBrowserClient(), []);
-
-  const [token] = useState(getToken);
-  const [isCustomer, setIsCustomer] = useState(false);
+  const isCustomer = initialAuth?.userRole === 'customer';
 
   const [service, setService] = useState<ServiceInfo | null>(null);
   const [addresses, setAddresses] = useState<AddressItem[]>([]);
   const [loadingService, setLoadingService] = useState(true);
+  const [whatsappPhone, setWhatsappPhone] = useState('');
 
   const [selectedAddressId, setSelectedAddressId] = useState('');
   const [fullName, setFullName] = useState('');
@@ -82,8 +88,6 @@ export function BookingForm({ serviceId }: BookingFormProps) {
   } | null>(null);
 
   useEffect(() => {
-    setIsCustomer(!!token);
-
     if (!serviceId) {
       setLoadingService(false);
       return;
@@ -98,7 +102,7 @@ export function BookingForm({ serviceId }: BookingFormProps) {
       .catch(() => {
         setLoadingService(false);
       });
-  }, [serviceId, token, api]);
+  }, [serviceId, api]);
 
   useEffect(() => {
     if (isCustomer) {
@@ -111,6 +115,17 @@ export function BookingForm({ serviceId }: BookingFormProps) {
         .catch(() => {});
     }
   }, [isCustomer, api]);
+
+  useEffect(() => {
+    fetch('/api/v1/public/settings')
+      .then((r) => (r.ok ? r.json() : null))
+      .then((body) => {
+        if (!body) return;
+        const data = body.data ?? body;
+        if (data.whatsapp_phone_number) setWhatsappPhone(data.whatsapp_phone_number);
+      })
+      .catch(() => {});
+  }, []);
 
   function handleAddressSelect(e: React.ChangeEvent<HTMLSelectElement>) {
     setSelectedAddressId(e.target.value);
@@ -274,6 +289,25 @@ export function BookingForm({ serviceId }: BookingFormProps) {
           </p>
         )}
       </div>
+
+      {/* WhatsApp CTA */}
+      {(whatsappPhone || getEl('app-settings')?.dataset.whatsappPhone) && (
+        <div className="rounded-lg border border-green-200 bg-green-50 p-4">
+          <p className="text-sm text-green-800">
+            Tidak ingin ribet mengisi form?{' '}
+            <a
+              href={`https://wa.me/${whatsappPhone || getEl('app-settings')?.dataset.whatsappPhone}?text=${encodeURIComponent(
+                `Halo Spesialis, saya ingin bertanya tentang ${service?.name ?? 'layanan'}`,
+              )}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-medium text-green-700 underline hover:text-green-600 transition-colors"
+            >
+              Hubungi kami langsung via WhatsApp
+            </a>
+          </p>
+        </div>
+      )}
 
       {/* Customer Info — only for guest */}
       {!isCustomer && (
@@ -521,6 +555,15 @@ export function BookingForm({ serviceId }: BookingFormProps) {
                 Tambah alamat
               </a>
             </div>
+          )}
+          {!isCustomer && initialAuth && (
+            <p className="text-xs text-text-muted">
+              Guest checkout tidak dapat menggunakan alamat tersimpan.{' '}
+              <a href="/register" className="text-primary hover:underline">
+                Daftar akun
+              </a>{' '}
+              untuk menyimpan alamat.
+            </p>
           )}
         </div>
       )}

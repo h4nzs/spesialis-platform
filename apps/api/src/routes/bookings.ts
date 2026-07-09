@@ -99,7 +99,7 @@ async function createGuestBooking(c: Context) {
 
       if (!profile) throw new Error('Gagal membuat profil');
 
-      const [address] = await tx
+      const [addressRecord] = await tx
         .insert(addresses)
         .values({
           customerId: profile.id,
@@ -111,20 +111,28 @@ async function createGuestBooking(c: Context) {
           postalCode: addr.postalCode,
           address: addr.address,
         })
-        .returning({ id: addresses.id });
+        .returning({
+          id: addresses.id,
+          address: addresses.address,
+          district: addresses.district,
+          city: addresses.city,
+          province: addresses.province,
+        });
 
-      if (!address) throw new Error('Gagal membuat alamat');
+      if (!addressRecord) throw new Error('Gagal membuat alamat');
 
       const serviceIds = orderItemsData.map((i) => i.serviceId);
       const prices = serviceIds.length
         ? await tx
-            .select({ id: services.id, price: services.basePrice })
+            .select({ id: services.id, name: services.name, price: services.basePrice })
             .from(services)
             .where(inArray(services.id, serviceIds))
         : [];
-      const priceMap = new Map(prices.map((s) => [s.id, Number(s.price ?? 0)]));
+      const priceLookup = new Map(
+        prices.map((s) => [s.id, { name: s.name, price: Number(s.price ?? 0) }]),
+      );
       const basePrice = orderItemsData.reduce(
-        (sum, item) => sum + (priceMap.get(item.serviceId) ?? 0) * item.quantity,
+        (sum, item) => sum + (priceLookup.get(item.serviceId)?.price ?? 0) * item.quantity,
         0,
       );
 
@@ -133,7 +141,7 @@ async function createGuestBooking(c: Context) {
         .values({
           bookingNumber,
           customerId: profile.id,
-          addressId: address.id,
+          addressId: addressRecord.id,
           status: 'Pending Confirmation',
           bookingDate,
           bookingTime,
@@ -195,7 +203,12 @@ async function createGuestBooking(c: Context) {
         note: null,
       });
 
-      return { bookingNumber, orderId: order.id };
+      const items = orderItemsData.map((i) => ({
+        name: priceLookup.get(i.serviceId)?.name ?? 'Layanan',
+        qty: i.quantity,
+      }));
+
+      return { bookingNumber, orderId: order.id, addressRecord, items };
     });
 
     // Notifications — outside transaction, non-critical
@@ -203,6 +216,16 @@ async function createGuestBooking(c: Context) {
       'booking.new',
       'Booking Baru',
       `Booking baru #${result.bookingNumber} dari ${fullName}`,
+      {
+        bookingNumber: result.bookingNumber,
+        customerName: fullName,
+        customerPhone: phone,
+        address: `${result.addressRecord.address}, ${result.addressRecord.district}, ${result.addressRecord.city}, ${result.addressRecord.province}`,
+        bookingDate,
+        bookingTime,
+        notes: notes ?? null,
+        items: result.items,
+      },
     );
 
     // Send WhatsApp to guest with booking details (silent if API key not configured)
@@ -257,14 +280,26 @@ async function createCustomerBooking(c: Context) {
   } = parsed.data;
 
   const [profile] = await db
-    .select({ id: customerProfiles.id })
+    .select({ id: customerProfiles.id, fullName: customerProfiles.fullName })
     .from(customerProfiles)
     .where(eq(customerProfiles.userId, userId))
     .limit(1);
   if (!profile) return error(c, 'PROFILE_NOT_FOUND', 'Lengkapi profil terlebih dahulu', 400);
 
+  const [customerUser] = await db
+    .select({ email: users.email, phone: users.phone })
+    .from(users)
+    .where(eq(users.id, userId))
+    .limit(1);
+
   const [addr] = await db
-    .select({ id: addresses.id })
+    .select({
+      id: addresses.id,
+      address: addresses.address,
+      district: addresses.district,
+      city: addresses.city,
+      province: addresses.province,
+    })
     .from(addresses)
     .where(and(eq(addresses.id, addressId), eq(addresses.customerId, profile.id)))
     .limit(1);
@@ -285,13 +320,15 @@ async function createCustomerBooking(c: Context) {
       const serviceIds = orderItemsData.map((i) => i.serviceId);
       const prices = serviceIds.length
         ? await tx
-            .select({ id: services.id, price: services.basePrice })
+            .select({ id: services.id, name: services.name, price: services.basePrice })
             .from(services)
             .where(inArray(services.id, serviceIds))
         : [];
-      const priceMap = new Map(prices.map((s) => [s.id, Number(s.price ?? 0)]));
+      const priceLookup = new Map(
+        prices.map((s) => [s.id, { name: s.name, price: Number(s.price ?? 0) }]),
+      );
       const basePrice = orderItemsData.reduce(
-        (sum, item) => sum + (priceMap.get(item.serviceId) ?? 0) * item.quantity,
+        (sum, item) => sum + (priceLookup.get(item.serviceId)?.price ?? 0) * item.quantity,
         0,
       );
 
@@ -313,17 +350,9 @@ async function createCustomerBooking(c: Context) {
       if (!order) throw new Error('Gagal membuat booking');
 
       for (const item of orderItemsData) {
-        const [svc] = await tx
-          .select({
-            name: services.name,
-            price: services.basePrice,
-          })
-          .from(services)
-          .where(eq(services.id, item.serviceId))
-          .limit(1);
-
+        const svc = priceLookup.get(item.serviceId);
         const snapName = svc?.name ?? '';
-        const unitPrice = Number(svc?.price ?? 0) * item.quantity;
+        const unitPrice = (svc?.price ?? 0) * item.quantity;
 
         await tx.insert(orderItems).values({
           orderId: order.id,
@@ -372,14 +401,29 @@ async function createCustomerBooking(c: Context) {
         note: null,
       });
 
-      return { bookingNumber, orderId: order.id };
+      const items = orderItemsData.map((i) => ({
+        name: priceLookup.get(i.serviceId)?.name ?? 'Layanan',
+        qty: i.quantity,
+      }));
+
+      return { bookingNumber, orderId: order.id, items };
     });
 
     // Notifications — outside transaction, non-critical
     notifyAdmins(
       'booking.new',
       'Booking Baru',
-      `Booking baru #${result.bookingNumber} dari customer`,
+      `Booking baru #${result.bookingNumber} dari ${profile.fullName}`,
+      {
+        bookingNumber: result.bookingNumber,
+        customerName: profile.fullName,
+        customerPhone: customerUser?.phone ?? '-',
+        address: `${addr.address}, ${addr.district}, ${addr.city}, ${addr.province}`,
+        bookingDate,
+        bookingTime,
+        notes: notes ?? null,
+        items: result.items,
+      },
     );
 
     createNotification({

@@ -1,10 +1,82 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro'
+import type { CmsPage } from '../lib/directus.ts'
+import { renderMarkdown } from '../lib/markdown.ts'
+
+// Try fetching page content from Directus CMS (cms_pages)
+// Fallback to hardcoded content when Directus is unreachable
+let pageSlug = 'tentang-kami'
+let pageTitle = 'Tentang Kami'
+let pageDescription = 'Spesialis adalah platform layanan jasa profesional on-demand yang menghubungkan pelanggan dengan teknisi terpercaya di Indonesia.'
+let pageHtml = ''
+const apiUrl = import.meta.env.PUBLIC_API_URL ?? 'http://localhost:3000'
+
+let useCms = false
+
+try {
+  const res = await fetch(`${apiUrl}/api/v1/cms/pages/${pageSlug}`).catch(() => null)
+  if (res?.ok) {
+    const json = await res.json()
+    const cmsPage: CmsPage | undefined = json.data ?? undefined
+    if (cmsPage) {
+      pageTitle = cmsPage.title
+      pageDescription = (cmsPage.meta as Record<string, string> | null)?.description ?? pageDescription
+      pageHtml = cmsPage.content ? renderMarkdown(cmsPage.content) : ''
+      useCms = true
+    }
+  }
+} catch {
+  // fallback to hardcoded content below
+}
+
+if (!useCms) {
+  pageHtml = `
+    <p class="text-text-primary leading-relaxed">
+      Spesialis adalah platform layanan jasa profesional on-demand yang menghubungkan pelanggan
+      dengan teknisi dan profesional terpercaya di Indonesia. Kami hadir untuk mempermudah
+      Anda menemukan tenaga ahli untuk kebutuhan rumah, kantor, dan bisnis.
+    </p>
+
+    <h2 class="text-h4 font-semibold text-text-primary">Visi</h2>
+    <p class="text-text-primary leading-relaxed">
+      Menjadi platform layanan jasa profesional terpercaya yang mendukung pertumbuhan ekonomi
+      lokal dan meningkatkan kualitas hidup masyarakat Indonesia.
+    </p>
+
+    <h2 class="text-h4 font-semibold text-text-primary">Misi</h2>
+    <ul class="list-disc pl-6 space-y-2 text-text-primary leading-relaxed">
+      <li>Menyediakan akses mudah ke layanan jasa profesional berkualitas.</li>
+      <li>Memberdayakan mitra teknisi lokal melalui platform yang adil dan transparan.</li>
+      <li>Menjamin kepuasan pelanggan melalui layanan yang cepat, terpercaya, dan bergaransi.</li>
+      <li>Mendukung pertumbuhan bisnis perusahaan melalui solusi maintenance dan outsourcing.</li>
+    </ul>
+
+    <h2 class="text-h4 font-semibold text-text-primary">Nilai Kami</h2>
+    <div class="grid gap-4 sm:grid-cols-2">
+      <div class="rounded-lg border border-border-default bg-bg-surface p-4">
+        <h3 class="font-semibold text-text-primary">Transparan</h3>
+        <p class="mt-1 text-body-sm text-text-secondary">Harga jelas tanpa biaya tersembunyi.</p>
+      </div>
+      <div class="rounded-lg border border-border-default bg-bg-surface p-4">
+        <h3 class="font-semibold text-text-primary">Terpercaya</h3>
+        <p class="mt-1 text-body-sm text-text-secondary">Setiap mitra telah diverifikasi dan berpengalaman.</p>
+      </div>
+      <div class="rounded-lg border border-border-default bg-bg-surface p-4">
+        <h3 class="font-semibold text-text-primary">Cepat</h3>
+        <p class="mt-1 text-body-sm text-text-secondary">Booking dalam hitungan menit, tanpa antre.</p>
+      </div>
+      <div class="rounded-lg border border-border-default bg-bg-surface p-4">
+        <h3 class="font-semibold text-text-primary">Bergaransi</h3>
+        <p class="mt-1 text-body-sm text-text-secondary">Setiap layanan dilindungi garansi kepuasan.</p>
+      </div>
+    </div>
+  `
+}
 ---
 
 <BaseLayout
-  title="Tentang Kami - Spesialis"
-  description="Spesialis adalah platform layanan jasa profesional on-demand yang menghubungkan pelanggan dengan teknisi terpercaya di Indonesia."
+  title={`${pageTitle} - Spesialis`}
+  description={pageDescription}
   canonicalUrl="/tentang-kami"
   jsonLd={{
     '@context': 'https://schema.org',
@@ -19,48 +91,14 @@ import BaseLayout from '../layouts/BaseLayout.astro'
   }}
 >
   <div class="mx-auto max-w-3xl px-4 py-12 sm:px-6 lg:px-8">
-    <h1 class="text-h2 font-bold text-text-primary">Tentang Spesialis</h1>
+    <nav class="mb-8 text-body-sm text-text-secondary">
+      <a href="/" class="hover:text-text-primary transition-colors">Beranda</a>
+      <span class="mx-2">/</span>
+      <span class="text-text-primary">{pageTitle}</span>
+    </nav>
 
-    <section class="mt-8 space-y-6 text-text-primary">
-      <p>
-        Spesialis adalah platform layanan jasa profesional on-demand yang menghubungkan pelanggan
-        dengan teknisi dan profesional terpercaya di Indonesia. Kami hadir untuk mempermudah
-        Anda menemukan tenaga ahli untuk kebutuhan rumah, kantor, dan bisnis.
-      </p>
+    <h1 class="text-h2 font-bold text-text-primary">{pageTitle}</h1>
 
-      <h2 class="text-h4 font-semibold text-text-primary">Visi</h2>
-      <p>
-        Menjadi platform layanan jasa profesional terpercaya yang mendukung pertumbuhan ekonomi
-        lokal dan meningkatkan kualitas hidup masyarakat Indonesia.
-      </p>
-
-      <h2 class="text-h4 font-semibold text-text-primary">Misi</h2>
-      <ul class="list-disc pl-6 space-y-2">
-        <li>Menyediakan akses mudah ke layanan jasa profesional berkualitas.</li>
-        <li>Memberdayakan mitra teknisi lokal melalui platform yang adil dan transparan.</li>
-        <li>Menjamin kepuasan pelanggan melalui layanan yang cepat, terpercaya, dan bergaransi.</li>
-        <li>Mendukung pertumbuhan bisnis perusahaan melalui solusi maintenance dan outsourcing.</li>
-      </ul>
-
-      <h2 class="text-h4 font-semibold text-text-primary">Nilai Kami</h2>
-      <div class="grid gap-4 sm:grid-cols-2">
-        <div class="rounded-lg border border-border-default bg-bg-surface p-4">
-          <h3 class="font-semibold text-text-primary">Transparan</h3>
-          <p class="mt-1 text-body-sm text-text-secondary">Harga jelas tanpa biaya tersembunyi.</p>
-        </div>
-        <div class="rounded-lg border border-border-default bg-bg-surface p-4">
-          <h3 class="font-semibold text-text-primary">Terpercaya</h3>
-          <p class="mt-1 text-body-sm text-text-secondary">Setiap mitra telah diverifikasi dan berpengalaman.</p>
-        </div>
-        <div class="rounded-lg border border-border-default bg-bg-surface p-4">
-          <h3 class="font-semibold text-text-primary">Cepat</h3>
-          <p class="mt-1 text-body-sm text-text-secondary">Booking dalam hitungan menit, tanpa antre.</p>
-        </div>
-        <div class="rounded-lg border border-border-default bg-bg-surface p-4">
-          <h3 class="font-semibold text-text-primary">Bergaransi</h3>
-          <p class="mt-1 text-body-sm text-text-secondary">Setiap layanan dilindungi garansi kepuasan.</p>
-        </div>
-      </div>
-    </section>
+    <section class="mt-8 space-y-6" set:html={pageHtml} />
   </div>
 </BaseLayout>

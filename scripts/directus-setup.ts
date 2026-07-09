@@ -416,6 +416,20 @@ async function updateCMSCollections(token: string): Promise<void> {
     } catch {
       console.log(`  - ${def.name}: metadata update skipped`);
     }
+
+    // Ensure id field auto-generates UUIDs
+    try {
+      await request(
+        `/fields/${def.name}/id`,
+        {
+          method: 'PATCH',
+          body: JSON.stringify({ meta: { special: ['uuid'] } }),
+        },
+        token,
+      );
+    } catch {
+      // id field update is best-effort
+    }
   }
 }
 

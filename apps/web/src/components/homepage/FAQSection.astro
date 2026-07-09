@@ -6,9 +6,17 @@
  * Goal: Self-serve answers to reduce support burden.
  * Visual: Clean accordion using native <details>/<summary>.
  *   Zero JavaScript required. Respects reduced-motion.
+ *
+ * Content sourced from Directus CMS (cms_faq) for editability.
+ * Falls back to hardcoded defaults if Directus is unreachable.
  */
 
-const faqs = [
+interface FaqItem {
+  q: string
+  a: string
+}
+
+const FALLBACK_FAQS: FaqItem[] = [
   {
     q: 'Apa itu Spesialis?',
     a: 'Spesialis adalah platform layanan jasa profesional on-demand yang menghubungkan Anda dengan teknisi dan profesional terpercaya untuk kebutuhan rumah, kantor, dan bisnis.',
@@ -34,6 +42,25 @@ const faqs = [
     a: 'Setiap layanan dilengkapi garansi. Jika ada ketidaksesuaian, Anda dapat mengajukan komplain melalui dashboard dan tim kami akan segera menindaklanjuti.',
   },
 ];
+
+const apiUrl = import.meta.env.PUBLIC_API_URL ?? 'http://localhost:3000'
+
+let faqs: FaqItem[] = FALLBACK_FAQS
+try {
+  const res = await fetch(`${apiUrl}/api/v1/cms/faq`)
+  if (res.ok) {
+    const json = await res.json()
+    const raw = json.data ?? []
+    if (Array.isArray(raw) && raw.length > 0) {
+      faqs = raw.map((item: { question: string; answer: string }) => ({
+        q: item.question,
+        a: item.answer,
+      }))
+    }
+  }
+} catch {
+  // use fallback
+}
 ---
 
 <section class="bg-bg-page" id="faq">

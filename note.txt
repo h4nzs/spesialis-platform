@@ -1,0 +1,5 @@
+Production setup needed:
+1. Create a Cloudflare API token with Zone > Cache Purge permission
+2. Find your Zone ID in Cloudflare Dashboard
+3. Set  CLOUDFLARE_API_TOKEN  and  CLOUDFLARE_ZONE_ID  in production  .env 
+4. Without these env vars, the revalidation endpoint still works — it just logs and acknowledges (no-op for CDN)

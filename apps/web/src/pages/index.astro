@@ -33,15 +33,23 @@ interface ArticleItem {
   publishedAt: string | null;
 }
 
+import type { CmsHomepageSection } from '../lib/directus.ts'
+
 const apiUrl = import.meta.env.PUBLIC_API_URL ?? 'http://localhost:3000'
 
-// SSR: fetch services and articles
+// SSR: fetch services, articles, and homepage sections
+// Services from Hono API (business logic), articles/sections from Directus (public content)
 let services: ServiceItem[] = []
 let articles: ArticleItem[] = []
+let heroSection: CmsHomepageSection | undefined
+let servicesSection: CmsHomepageSection | undefined
+let whyUsSection: CmsHomepageSection | undefined
+let ctaSection: CmsHomepageSection | undefined
 try {
-  const [servicesRes, articlesRes] = await Promise.all([
+  const [servicesRes, articlesRes, sectionsRes] = await Promise.all([
     fetch(`${apiUrl}/api/v1/services?limit=12`),
     fetch(`${apiUrl}/api/v1/cms/articles?limit=3`),
+    fetch(`${apiUrl}/api/v1/cms/homepage-sections`),
   ])
   if (servicesRes.ok) {
     const json = await servicesRes.json()
@@ -49,18 +57,28 @@ try {
   }
   if (articlesRes.ok) {
     const json = await articlesRes.json()
-    const raw: Array<{ title: string; slug: string; summary: string | null; cover_image: string | null; category: string | null; published_at: string | null }> = json.data ?? []
-    articles = raw.map((a) => ({
-      title: a.title,
-      slug: a.slug,
-      summary: a.summary,
-      coverImage: a.cover_image,
-      category: a.category,
-      publishedAt: a.published_at,
-    }))
+    const rawArticles = json.data ?? []
+    if (Array.isArray(rawArticles)) {
+      articles = (rawArticles as Array<{ title: string; slug: string; summary: string | null; cover_image: string | null; category: string | null; published_at: string | null }>).map((a) => ({
+        title: a.title,
+        slug: a.slug,
+        summary: a.summary,
+        coverImage: a.cover_image,
+        category: a.category,
+        publishedAt: a.published_at,
+      }))
+    }
+  }
+  if (sectionsRes.ok) {
+    const json = await sectionsRes.json()
+    const sections: CmsHomepageSection[] = json.data ?? []
+    heroSection = sections.find((s) => s.section_type === 'hero')
+    servicesSection = sections.find((s) => s.section_type === 'services')
+    whyUsSection = sections.find((s) => s.section_type === 'why-us')
+    ctaSection = sections.find((s) => s.section_type === 'cta')
   }
 } catch {
-  // silent — components handle empty state
+  // silent — components handle empty state with fallback
 }
 ---
 
@@ -113,16 +131,16 @@ try {
   }}
 >
   <!-- 1. Hero + HeroSearch -->
-  <Hero totalServices={services.length} />
+  <Hero totalServices={services.length} section={heroSection} />
 
   <!-- 2. Featured Services (curated) -->
   <FeaturedServices services={services} />
 
   <!-- 3. All Services Grid -->
-  <ServiceGrid services={services} />
+  <ServiceGrid services={services} section={servicesSection} />
 
   <!-- 4. Why Choose Us -->
-  <Benefits />
+  <Benefits section={whyUsSection} />
 
   <!-- 5. Statistics (trust evidence after benefits) -->
   <Statistics />
@@ -149,6 +167,6 @@ try {
   <FAQSection />
 
   <!-- 13. Final CTA -->
-  <FinalCTA />
+  <FinalCTA section={ctaSection} />
 
 </BaseLayout>

@@ -5,6 +5,8 @@
  * User problem: "What services do they offer?"
  * Goal: Allow quick scanning of available services.
  * Visual: Border-only cards, consistent height, icon-driven.
+ *
+ * CMS: title → section heading, content → subtitle
  */
 
 export interface ServiceItem {
@@ -18,9 +20,17 @@ export interface ServiceItem {
 
 interface Props {
   services: ServiceItem[];
+  /** CMS section data — falls back to hardcoded defaults */
+  section?: {
+    title: string | null;
+    content: string | null;
+  };
 }
 
-const { services } = Astro.props as Props;
+const { services, section } = Astro.props as Props;
+
+const sectionTitle = section?.title ?? 'Layanan Profesional'
+const sectionContent = section?.content ?? 'Pilih layanan yang Anda butuhkan — harga transparan, teknisi berpengalaman, garansi kepuasan.'
 
 function formatPrice(price: number): string {
   return new Intl.NumberFormat('id-ID', {
@@ -37,10 +47,8 @@ function formatPrice(price: number): string {
     <!-- Section header -->
     <div class="mx-auto max-w-2xl text-center">
       <p class="text-overline text-primary-500 tracking-widest">LAYANAN</p>
-      <h2 class="mt-3 text-h2 text-text-primary">Layanan Profesional</h2>
-      <p class="mt-3 text-body-lg text-text-secondary text-pretty">
-        Pilih layanan yang Anda butuhkan — harga transparan, teknisi berpengalaman, garansi kepuasan.
-      </p>
+      <h2 class="mt-3 text-h2 text-text-primary">{sectionTitle}</h2>
+      <p class="mt-3 text-body-lg text-text-secondary text-pretty">{sectionContent}</p>
     </div>
 
     <!-- Service grid -->

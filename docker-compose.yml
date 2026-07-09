@@ -90,13 +90,20 @@ services:
     env_file:
       - .env
     environment:
+      PORT: 8055
+      PUBLIC_URL: http://localhost:8055
       DB_CLIENT: pg
       DB_HOST: postgres
       DB_PORT: 5432
       DB_DATABASE: specialist
       DB_USER: specialist
       DB_PASSWORD: specialist
+      ADMIN_EMAIL: admin@example.com
+      ADMIN_PASSWORD: admin123
       API_URL: http://api:3000
+      REDIS_HOST: redis
+    extra_hosts:
+      - 'host.docker.internal:host-gateway'
     volumes:
       - ./apps/cms/src/extensions:/directus/extensions
     depends_on:

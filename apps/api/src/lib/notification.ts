@@ -1,6 +1,6 @@
 import { eq, inArray } from 'drizzle-orm';
 import { db, notifications, users } from './db.ts';
-import { sendNotificationEmail } from './email.ts';
+import { sendNewBookingToAdmin, sendNotificationEmail } from './email.ts';
 import { sendWhatsApp } from './whatsapp.ts';
 
 /**
@@ -59,12 +59,42 @@ export async function createNotification(params: {
   }
 }
 
-export async function notifyAdmins(type: string, title: string, message: string) {
+export interface BookingDetail {
+  bookingNumber: string;
+  customerName: string;
+  customerPhone: string;
+  address: string;
+  bookingDate: string;
+  bookingTime: string;
+  notes: string | null;
+  items: { name: string; qty: number }[];
+}
+
+export async function notifyAdmins(
+  type: string,
+  title: string,
+  message: string,
+  bookingDetail?: BookingDetail,
+) {
   const adminList = await db
-    .select({ id: users.id })
+    .select({ id: users.id, email: users.email })
     .from(users)
     .where(inArray(users.role, ['admin', 'super_admin', 'dispatcher']));
   for (const admin of adminList) {
     await createNotification({ userId: admin.id, type, title, message });
+    if (bookingDetail && admin.email) {
+      sendNewBookingToAdmin(
+        admin.email,
+        '',
+        bookingDetail.bookingNumber,
+        bookingDetail.customerName,
+        bookingDetail.customerPhone,
+        bookingDetail.address,
+        bookingDetail.bookingDate,
+        bookingDetail.bookingTime,
+        bookingDetail.notes,
+        bookingDetail.items,
+      );
+    }
   }
 }

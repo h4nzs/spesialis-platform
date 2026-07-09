@@ -6,7 +6,23 @@
  * Goal: Build trust through specific, credible value propositions.
  * Visual: 2x2 grid on desktop, 1 col on mobile. Icon + title + description.
  *   No floating cards. No excessive shadow. Clean typography.
+ *
+ * CMS: title → section heading, content → subtitle
+ * Individual benefit cards remain hardcoded (UI design, not CMS-managed).
  */
+
+interface Props {
+  /** CMS section data — falls back to hardcoded defaults */
+  section?: {
+    title: string | null;
+    content: string | null;
+  };
+}
+
+const { section } = Astro.props as Props;
+
+const sectionTitle = section?.title ?? 'Mengapa Memilih Kami'
+const sectionSubtitle = section?.content ?? 'Kami hadir untuk memberikan pengalaman layanan jasa yang berbeda — lebih cepat, lebih transparan, lebih terpercaya.'
 
 const benefits = [
   {
@@ -44,10 +60,8 @@ const iconSVGs: Record<string, string> = {
   <div class="container-page py-16 md:py-24">
     <div class="mx-auto max-w-2xl text-center">
       <p class="text-overline text-primary-500 tracking-widest">KENAPA SPESIALIS</p>
-      <h2 class="mt-3 text-h2 text-text-primary">Mengapa Memilih Kami</h2>
-      <p class="mt-3 text-body-lg text-text-secondary text-pretty">
-        Kami hadir untuk memberikan pengalaman layanan jasa yang berbeda — lebih cepat, lebih transparan, lebih terpercaya.
-      </p>
+      <h2 class="mt-3 text-h2 text-text-primary">{sectionTitle}</h2>
+      <p class="mt-3 text-body-lg text-text-secondary text-pretty">{sectionSubtitle}</p>
     </div>
 
     <div class="mt-12 grid gap-6 sm:grid-cols-2">

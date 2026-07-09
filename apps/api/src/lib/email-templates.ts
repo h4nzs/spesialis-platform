@@ -139,6 +139,52 @@ ${buttonHtml(verifyUrl, 'Verifikasi Email')}
 `);
 }
 
+export function newBookingAdminHtml(
+  bookingNumber: string,
+  customerName: string,
+  customerPhone: string,
+  address: string,
+  bookingDate: string,
+  bookingTime: string,
+  notes: string | null,
+  items: { name: string; qty: number }[],
+  adminUrl: string,
+): string {
+  const itemsRows = items
+    .map(
+      (i) =>
+        `<tr><td style="padding:4px 0;font-size:14px;color:#6b7280">${i.name}</td><td style="padding:4px 0;font-size:14px;color:#111827;text-align:right">${i.qty}x</td></tr>`,
+    )
+    .join('');
+
+  return baseHtml(`
+<h1 style="margin:0 0 8px;font-size:22px;font-weight:700;color:#111827">Booking Baru</h1>
+<p style="margin:0 0 16px;font-size:15px;color:#6b7280;line-height:1.6">
+  Booking baru telah dibuat dan menunggu konfirmasi.
+</p>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 16px;background-color:#f9fafb;border-radius:8px;padding:16px">
+  <tr><td style="padding:4px 0;font-size:14px;color:#6b7280">Nomor Booking</td><td style="padding:4px 0;font-size:14px;color:#111827;font-weight:600;text-align:right">#${bookingNumber}</td></tr>
+  <tr><td style="padding:4px 0;font-size:14px;color:#6b7280">Pelanggan</td><td style="padding:4px 0;font-size:14px;color:#111827;font-weight:600;text-align:right">${customerName}</td></tr>
+  <tr><td style="padding:4px 0;font-size:14px;color:#6b7280">No. Telepon</td><td style="padding:4px 0;font-size:14px;color:#111827;font-weight:600;text-align:right">${customerPhone}</td></tr>
+  <tr><td style="padding:4px 0;font-size:14px;color:#6b7280">Tanggal</td><td style="padding:4px 0;font-size:14px;color:#111827;font-weight:600;text-align:right">${bookingDate}</td></tr>
+  <tr><td style="padding:4px 0;font-size:14px;color:#6b7280">Waktu</td><td style="padding:4px 0;font-size:14px;color:#111827;font-weight:600;text-align:right">${bookingTime}</td></tr>
+  <tr><td style="padding:4px 0;font-size:14px;color:#6b7280">Alamat</td><td style="padding:4px 0;font-size:14px;color:#111827;font-weight:600;text-align:right">${address}</td></tr>
+</table>
+${
+  items.length
+    ? `
+<p style="margin:0 0 4px;font-size:14px;font-weight:600;color:#111827">Layanan:</p>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 16px;background-color:#f9fafb;border-radius:8px;padding:16px">
+  ${itemsRows}
+</table>`
+    : ''
+}
+${notes ? `<p style="margin:0 0 16px;font-size:14px;color:#6b7280;font-style:italic;line-height:1.5">Catatan: ${notes}</p>` : ''}
+${buttonHtml(adminUrl, 'Lihat & Konfirmasi Booking')}
+<p style="margin:0 0 0;font-size:13px;color:#9ca3af;line-height:1.5">Segera konfirmasi booking ini agar dapat diproses lebih lanjut.</p>
+`);
+}
+
 export function notificationEmailHtml(fullName: string, title: string, message: string): string {
   return baseHtml(`
 <h1 style="margin:0 0 8px;font-size:22px;font-weight:700;color:#111827">${title}</h1>

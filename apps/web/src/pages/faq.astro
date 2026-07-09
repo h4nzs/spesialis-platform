@@ -2,22 +2,23 @@
 export const prerender = false;
 import BaseLayout from '../layouts/BaseLayout.astro'
 import { FaqList } from '../components/faq/FaqList'
-
 interface FaqItem {
   q: string
   a: string
 }
 
-// SSR: fetch FAQ data for JSON-LD structured data
+const apiUrl = import.meta.env.PUBLIC_API_URL ?? 'http://localhost:3000'
+
+// SSR: fetch FAQ from Hono CMS proxy for JSON-LD structured data
 // FaqList client component handles visual rendering with skeleton
 let faqs: FaqItem[] = []
 try {
-  const apiUrl = import.meta.env.PUBLIC_API_URL ?? 'http://localhost:3000'
   const res = await fetch(`${apiUrl}/api/v1/cms/faq`)
   if (res.ok) {
     const json = await res.json()
-    if (Array.isArray(json.data) && json.data.length > 0) {
-      faqs = json.data.map((item: { question: string; answer: string }) => ({
+    const raw = json.data ?? []
+    if (Array.isArray(raw) && raw.length > 0) {
+      faqs = raw.map((item: { question: string; answer: string }) => ({
         q: item.question,
         a: item.answer,
       }))

@@ -217,4 +217,8 @@ Repeat until it feels intentionally designed by humans.
 
 ## Status Proyek
 
-**Active development.** API (`apps/api/`) dan Web (`apps/web/`) sudah memiliki implementasi penuh — ~80 endpoint, ~30 halaman dashboard, full booking lifecycle state machine. `packages/*/src/` sudah terisi (types, database 26 tabel, validation 17 skema, shared utilities, ui 13 komponen). **Kesenjangan utama:** CMS (`apps/cms/`) belum dikonfigurasi — Directus container siap tetapi collections/roles/permissions perlu setup manual. SEO (structured data, sitemap, OpenGraph) belum terpasang. Testing masih minimal — Vitest terinstall di `api`, `shared`, `validation` tapi coverage rendah.
+**Active development.** API (`apps/api/`) dan Web (`apps/web/`) sudah memiliki implementasi penuh — ~80 endpoint, ~30 halaman dashboard, full booking lifecycle state machine. `packages/*/src/` sudah terisi (types, database 26 tabel, validation 17 skema, shared utilities, ui 13 komponen).
+
+**CMS Directus sudah terkonfigurasi** — container berjalan di `localhost:8055`, collections (`cms_articles`, `cms_faq`, `cms_pages`, `cms_homepage_sections`) sudah dibuat, roles/permissions untuk Content Manager sudah diatur, 26 tabel bisnis di-hidden. Konten OP (4 articles, 7 FAQ, 4 pages, 5 homepage sections) sudah dimigrasi/di-seed. Lihat `scripts/directus-setup.ts` (setup) dan `scripts/directus-migrate-content.ts` (migrasi data).
+
+**Kesenjangan utama tersisa:** SEO (structured data, sitemap, OpenGraph) belum terpasang. Testing masih minimal — Vitest terinstall di `api`, `shared`, `validation` tapi coverage rendah.

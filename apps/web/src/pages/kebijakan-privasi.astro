@@ -1,21 +1,89 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro'
+import type { CmsPage } from '../lib/directus.ts'
+import { renderMarkdown } from '../lib/markdown.ts'
+
+let pageSlug = 'kebijakan-privasi'
+let pageTitle = 'Kebijakan Privasi'
+let pageDescription = 'Kebijakan privasi platform layanan jasa profesional Spesialis. Bagaimana kami mengelola dan melindungi data pribadi Anda.'
+let pageHtml = ''
+const apiUrl = import.meta.env.PUBLIC_API_URL ?? 'http://localhost:3000'
+
+let useCms = false
+
+try {
+  const res = await fetch(`${apiUrl}/api/v1/cms/pages/${pageSlug}`).catch(() => null)
+  if (res?.ok) {
+    const json = await res.json()
+    const cmsPage: CmsPage | undefined = json.data ?? undefined
+    if (cmsPage) {
+      pageTitle = cmsPage.title
+      pageDescription = (cmsPage.meta as Record<string, string> | null)?.description ?? pageDescription
+      pageHtml = cmsPage.content ? renderMarkdown(cmsPage.content) : ''
+      useCms = true
+    }
+  }
+} catch {
+  // fallback to hardcoded content below
+}
+
+if (!useCms) {
+  pageHtml = `
+    <p class="text-body-sm text-text-secondary leading-relaxed">Terakhir diperbarui: Juli 2026</p>
+    <section>
+      <h2 class="text-h5 font-semibold text-text-primary">1. Data yang Dikumpulkan</h2>
+      <p class="mt-2 text-text-primary leading-relaxed">
+        Kami mengumpulkan data yang Anda berikan secara langsung: nama, nomor telepon, alamat email, alamat, dan informasi lain yang diperlukan untuk pemesanan layanan.
+      </p>
+    </section>
+    <section>
+      <h2 class="text-h5 font-semibold text-text-primary">2. Penggunaan Data</h2>
+      <p class="mt-2 text-text-primary leading-relaxed">
+        Data Anda digunakan untuk: memproses pemesanan, menghubungi Anda terkait layanan, mengirimkan informasi penting, dan meningkatkan kualitas layanan kami.
+      </p>
+    </section>
+    <section>
+      <h2 class="text-h5 font-semibold text-text-primary">3. Perlindungan Data</h2>
+      <p class="mt-2 text-text-primary leading-relaxed">
+        Kami menerapkan langkah-langkah keamanan teknis untuk melindungi data Anda, termasuk enkripsi password menggunakan algoritma Argon2id, HTTPS, dan akses terbatas berdasarkan peran (RBAC).
+      </p>
+    </section>
+    <section>
+      <h2 class="text-h5 font-semibold text-text-primary">4. Berbagi Data</h2>
+      <p class="mt-2 text-text-primary leading-relaxed">
+        Data Anda hanya dibagikan dengan mitra penyedia jasa yang ditugaskan untuk pesanan Anda. Kami tidak menjual data Anda kepada pihak ketiga.
+      </p>
+    </section>
+    <section>
+      <h2 class="text-h5 font-semibold text-text-primary">5. Hak Anda</h2>
+      <p class="mt-2 text-text-primary leading-relaxed">
+        Anda berhak untuk mengakses, memperbaiki, atau menghapus data pribadi Anda kapan saja melalui dashboard akun. Untuk penghapusan akun permanen, hubungi tim kami.
+      </p>
+    </section>
+    <section>
+      <h2 class="text-h5 font-semibold text-text-primary">6. Kontak</h2>
+      <p class="mt-2 text-text-primary leading-relaxed">
+        Jika Anda memiliki pertanyaan tentang kebijakan privasi ini, silakan hubungi kami melalui halaman kontak atau email.
+      </p>
+    </section>
+  `
+}
 ---
 
 <BaseLayout
-  title="Kebijakan Privasi - Spesialis"
-  description="Kebijakan privasi platform layanan jasa profesional Spesialis. Bagaimana kami mengelola dan melindungi data pribadi Anda."
+  title={`${pageTitle} - Spesialis`}
+  description={pageDescription}
   canonicalUrl="/kebijakan-privasi"
   jsonLd={{
     '@context': 'https://schema.org',
     '@type': 'WebPage',
-    name: 'Kebijakan Privasi - Spesialis',
-    description: 'Kebijakan privasi platform layanan jasa profesional Spesialis.',
+    name: `${pageTitle} - Spesialis`,
+    description: pageDescription,
     breadcrumb: {
       '@type': 'BreadcrumbList',
       itemListElement: [
         { '@type': 'ListItem', position: 1, name: 'Beranda', item: 'https://spesialis.id' },
-        { '@type': 'ListItem', position: 2, name: 'Kebijakan Privasi' },
+        { '@type': 'ListItem', position: 2, name: pageTitle },
       ],
     },
   }}
@@ -24,54 +92,11 @@ import BaseLayout from '../layouts/BaseLayout.astro'
     <nav class="mb-8 text-body-sm text-text-secondary">
       <a href="/" class="hover:text-text-primary transition-colors">Beranda</a>
       <span class="mx-2">/</span>
-      <span class="text-text-primary">Kebijakan Privasi</span>
+      <span class="text-text-primary">{pageTitle}</span>
     </nav>
 
-    <h1 class="text-h2 font-bold text-text-primary">Kebijakan Privasi</h1>
-    <p class="mt-2 text-body-sm text-text-secondary">Terakhir diperbarui: Juli 2026</p>
+    <h1 class="text-h2 font-bold text-text-primary">{pageTitle}</h1>
 
-    <div class="mt-8 space-y-6 text-body-sm text-text-primary leading-relaxed">
-      <section>
-        <h2 class="text-h5 text-text-primary">1. Data yang Dikumpulkan</h2>
-        <p class="mt-2">
-          Kami mengumpulkan data yang Anda berikan secara langsung: nama, nomor telepon, alamat email, alamat, dan informasi lain yang diperlukan untuk pemesanan layanan.
-        </p>
-      </section>
-
-      <section>
-        <h2 class="text-h5 text-text-primary">2. Penggunaan Data</h2>
-        <p class="mt-2">
-          Data Anda digunakan untuk: memproses pemesanan, menghubungi Anda terkait layanan, mengirimkan informasi penting, dan meningkatkan kualitas layanan kami.
-        </p>
-      </section>
-
-      <section>
-        <h2 class="text-h5 text-text-primary">3. Perlindungan Data</h2>
-        <p class="mt-2">
-          Kami menerapkan langkah-langkah keamanan teknis untuk melindungi data Anda, termasuk enkripsi password menggunakan algoritma Argon2id, HTTPS, dan akses terbatas berdasarkan peran (RBAC).
-        </p>
-      </section>
-
-      <section>
-        <h2 class="text-h5 text-text-primary">4. Berbagi Data</h2>
-        <p class="mt-2">
-          Data Anda hanya dibagikan dengan mitra penyedia jasa yang ditugaskan untuk pesanan Anda. Kami tidak menjual data Anda kepada pihak ketiga.
-        </p>
-      </section>
-
-      <section>
-        <h2 class="text-h5 text-text-primary">5. Hak Anda</h2>
-        <p class="mt-2">
-          Anda berhak untuk mengakses, memperbaiki, atau menghapus data pribadi Anda kapan saja melalui dashboard akun. Untuk penghapusan akun permanen, hubungi tim kami.
-        </p>
-      </section>
-
-      <section>
-        <h2 class="text-h5 text-text-primary">6. Kontak</h2>
-        <p class="mt-2">
-          Jika Anda memiliki pertanyaan tentang kebijakan privasi ini, silakan hubungi kami melalui halaman kontak atau email.
-        </p>
-      </section>
-    </div>
+    <div class="mt-8 space-y-6 text-text-primary leading-relaxed" set:html={pageHtml} />
   </div>
 </BaseLayout>

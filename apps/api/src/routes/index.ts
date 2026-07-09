@@ -17,7 +17,6 @@ import { notificationsRouter } from './notifications.ts';
 import { dashboardRouter } from './admin/dashboard.ts';
 import { adminServicesRouter } from './admin/services.ts';
 import { adminServiceCategoriesRouter } from './admin/service-categories.ts';
-import { articlesRouter } from './articles.ts';
 import { mediaRouter } from './media.ts';
 import { adminArticlesRouter } from './admin/articles.ts';
 import { adminUsersRouter } from './admin/users.ts';
@@ -33,6 +32,7 @@ import { corporateInquiriesRouter } from './corporate-inquiries.ts';
 import { adminAuditLogsRouter } from './admin/audit-logs.ts';
 import { adminReportsRouter } from './admin/reports.ts';
 import { adminPenaltiesRouter } from './admin/penalties.ts';
+import { publicRouter } from './public.ts';
 
 const router = new Hono();
 
@@ -59,7 +59,6 @@ router.route('/notifications', notificationsRouter);
 router.route('/admin/dashboard', dashboardRouter);
 router.route('/admin/services', adminServicesRouter);
 router.route('/admin/service-categories', adminServiceCategoriesRouter);
-router.route('/articles', articlesRouter);
 router.route('/admin/articles', adminArticlesRouter);
 router.route('/admin/users', adminUsersRouter);
 router.route('/admin/settings', adminSettingsRouter);
@@ -75,5 +74,6 @@ router.route('/corporate-inquiries', corporateInquiriesRouter);
 router.route('/admin/audit-logs', adminAuditLogsRouter);
 router.route('/admin/reports', adminReportsRouter);
 router.route('/admin/penalties', adminPenaltiesRouter);
+router.route('/public', publicRouter);
 
 export { router as apiRouter };

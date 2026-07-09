@@ -1,50 +1,61 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro'
----
+import type { CmsPage } from '../lib/directus.ts'
+import { renderMarkdown } from '../lib/markdown.ts'
 
-<BaseLayout
-  title="Kontak - Spesialis"
-  description="Hubungi tim Spesialis untuk pertanyaan, kritik, saran, atau kerjasama. Kami siap membantu Anda."
-  canonicalUrl="/kontak"
-  jsonLd={{
-    '@context': 'https://schema.org',
-    '@type': 'LocalBusiness',
-    name: 'Spesialis',
-    url: 'https://spesialis.id',
-    logo: 'https://spesialis.id/favicon.svg',
-    image: 'https://spesialis.id/og-default.png',
-    description: 'Platform layanan jasa profesional on-demand di Indonesia.',
-    email: 'hello@spesialis.id',
-    telephone: '+6281234567890',
-    areaServed: { '@type': 'Country', name: 'Indonesia' },
-    openingHoursSpecification: [
-      { '@type': 'OpeningHoursSpecification', dayOfWeek: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'], opens: '08:00', closes: '20:00' },
-      { '@type': 'OpeningHoursSpecification', dayOfWeek: 'Sunday', opens: '09:00', closes: '17:00' },
-    ],
-    address: { '@type': 'PostalAddress', addressLocality: 'Jakarta', addressCountry: 'ID' },
-  }}
->
-  <div class="mx-auto max-w-3xl px-4 py-12 sm:px-6 lg:px-8">
-    <h1 class="text-h2 font-bold text-text-primary">Hubungi Kami</h1>
-    <p class="mt-2 text-text-secondary">
-      Punya pertanyaan atau butuh bantuan? Tim kami siap membantu.
-    </p>
+const apiUrl = import.meta.env.PUBLIC_API_URL ?? 'http://localhost:3000'
 
-    <div class="mt-10 grid gap-8 sm:grid-cols-2">
+// Fetch WhatsApp number from Hono API (public settings)
+let whatsappPhone = '6281234567890'
+try {
+  const res = await fetch(`${apiUrl}/api/v1/public/settings`)
+  if (res.ok) {
+    const body = await res.json() as { data: Record<string, string> }
+    const phone = (body.data ?? body).whatsapp_phone_number
+    if (phone) whatsappPhone = phone
+  }
+} catch {
+  // Fallback ke hardcoded default
+}
+
+const internationalPhone = `+${whatsappPhone.slice(0, 2)} ${whatsappPhone.slice(2, 5)}-${whatsappPhone.slice(5, 9)}-${whatsappPhone.slice(9)}`
+
+// Fetch page content from Directus CMS (cms_pages)
+let pageSlug = 'kontak'
+let pageTitle = 'Hubungi Kami'
+let pageDescription = 'Hubungi tim Spesialis untuk pertanyaan, kritik, saran, atau kerjasama. Kami siap membantu Anda.'
+let pageHtml = ''
+let useCms = false
+
+try {
+  const res = await fetch(`${apiUrl}/api/v1/cms/pages/${pageSlug}`).catch(() => null)
+  if (res?.ok) {
+    const json = await res.json()
+    const cmsPage: CmsPage | undefined = json.data ?? undefined
+    if (cmsPage) {
+      pageTitle = cmsPage.title
+      pageDescription = (cmsPage.meta as Record<string, string> | null)?.description ?? pageDescription
+      pageHtml = cmsPage.content ? renderMarkdown(cmsPage.content) : ''
+      useCms = true
+    }
+  }
+} catch {
+  // fallback to hardcoded content below
+}
+
+if (!useCms) {
+  pageHtml = `
+    <div class="grid gap-8 sm:grid-cols-2">
       <div class="rounded-lg border border-border-default bg-bg-surface p-6">
         <h2 class="font-semibold text-text-primary">Email</h2>
         <p class="mt-2 text-body-sm text-text-secondary">
-          <a href="mailto:hello@spesialis.id" class="text-primary hover:text-primary-hover transition-colors">
-            hello@spesialis.id
-          </a>
+          <a href="mailto:hello@spesialis.id" class="text-primary hover:text-primary-hover transition-colors">hello@spesialis.id</a>
         </p>
       </div>
       <div class="rounded-lg border border-border-default bg-bg-surface p-6">
         <h2 class="font-semibold text-text-primary">WhatsApp</h2>
         <p class="mt-2 text-body-sm text-text-secondary">
-          <a href="https://wa.me/6281234567890" class="text-primary hover:text-primary-hover transition-colors" target="_blank" rel="noopener noreferrer">
-            +62 812-3456-7890
-          </a>
+          <a href="https://wa.me/${whatsappPhone}" class="text-primary hover:text-primary-hover transition-colors" target="_blank" rel="noopener noreferrer">${internationalPhone}</a>
         </p>
       </div>
       <div class="rounded-lg border border-border-default bg-bg-surface p-6">
@@ -56,10 +67,47 @@ import BaseLayout from '../layouts/BaseLayout.astro'
       </div>
       <div class="rounded-lg border border-border-default bg-bg-surface p-6">
         <h2 class="font-semibold text-text-primary">Lokasi</h2>
-        <p class="mt-2 text-body-sm text-text-secondary">
-          Jakarta, Indonesia
-        </p>
+        <p class="mt-2 text-body-sm text-text-secondary">Jakarta, Indonesia</p>
       </div>
     </div>
+  `
+}
+---
+
+<BaseLayout
+  title={useCms ? `${pageTitle} - Spesialis` : 'Kontak - Spesialis'}
+  description={pageDescription}
+  canonicalUrl="/kontak"
+  jsonLd={{
+    '@context': 'https://schema.org',
+    '@type': 'LocalBusiness',
+    name: 'Spesialis',
+    url: 'https://spesialis.id',
+    logo: 'https://spesialis.id/favicon.svg',
+    image: 'https://spesialis.id/og-default.png',
+    description: 'Platform layanan jasa profesional on-demand di Indonesia.',
+    email: 'hello@spesialis.id',
+    telephone: internationalPhone,
+    areaServed: { '@type': 'Country', name: 'Indonesia' },
+    openingHoursSpecification: [
+      { '@type': 'OpeningHoursSpecification', dayOfWeek: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'], opens: '08:00', closes: '20:00' },
+      { '@type': 'OpeningHoursSpecification', dayOfWeek: 'Sunday', opens: '09:00', closes: '17:00' },
+    ],
+    address: { '@type': 'PostalAddress', addressLocality: 'Jakarta', addressCountry: 'ID' },
+  }}
+>
+  <div class="mx-auto max-w-3xl px-4 py-12 sm:px-6 lg:px-8">
+    <nav class="mb-8 text-body-sm text-text-secondary">
+      <a href="/" class="hover:text-text-primary transition-colors">Beranda</a>
+      <span class="mx-2">/</span>
+      <span class="text-text-primary">{pageTitle}</span>
+    </nav>
+
+    <h1 class="text-h2 font-bold text-text-primary">{pageTitle}</h1>
+    <p class="mt-2 text-text-secondary">
+      Punya pertanyaan atau butuh bantuan? Tim kami siap membantu.
+    </p>
+
+    <div class="mt-10" set:html={pageHtml} />
   </div>
 </BaseLayout>
