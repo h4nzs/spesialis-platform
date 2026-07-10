@@ -40,7 +40,6 @@ Frontend
 Backend
 
 - Hono (API Layer — Business Logic)
-- Directus (CMS Layer — Content & Admin)
 
 Database
 

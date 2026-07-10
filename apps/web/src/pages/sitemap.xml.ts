@@ -3,6 +3,9 @@ import type { APIRoute } from 'astro';
 const SITE = 'https://spesialis.id';
 const API_BASE = process.env.PUBLIC_API_URL ?? 'http://localhost:3000';
 
+// ISO date for lastmod — updates when this file is regenerated
+const NOW = new Date().toISOString();
+
 const staticPages = [
   { loc: '/', changefreq: 'weekly', priority: '1.0' },
   { loc: '/tentang-kami', changefreq: 'monthly', priority: '0.7' },
@@ -64,6 +67,7 @@ export const GET: APIRoute = async () => {
       (p) => `
   <url>
     <loc>${SITE}${p.loc}</loc>
+    <lastmod>${NOW}</lastmod>
     <changefreq>${p.changefreq}</changefreq>
     <priority>${p.priority}</priority>
   </url>`,

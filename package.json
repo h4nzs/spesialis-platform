@@ -16,12 +16,10 @@
     "format:check": "prettier --check .",
     "prepare": "husky",
     "cli": "node packages/cli/bin/spesialis.mjs",
-    "cms:setup": "tsx scripts/directus-setup.ts",
-    "cms:flows-setup": "tsx scripts/directus-flows-setup.ts",
     "start": "bash scripts/start.sh dev",
     "start:prod": "bash scripts/start.sh prod",
     "start:seed": "bash scripts/start.sh dev --seed",
-    "start:all": "bash scripts/start.sh dev --seed --mail --cms",
+    "start:all": "bash scripts/start.sh dev --seed --mail",
     "reset": "bash scripts/start.sh reset",
     "status": "bash scripts/start.sh status"
   },

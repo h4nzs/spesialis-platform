@@ -1,4 +1,5 @@
 import { pgTable, uuid, varchar, timestamp, text, boolean, index } from 'drizzle-orm/pg-core';
+import { sql } from 'drizzle-orm';
 import { articleCategories } from './article-categories.ts';
 import { users } from './users.ts';
 
@@ -20,6 +21,17 @@ export const articles = pgTable(
     authorName: varchar('author_name', { length: 255 }),
     status: varchar('status', { length: 50 }).notNull().default('Draft'),
     isFeatured: boolean('is_featured').notNull().default(false),
+    tags: text('tags')
+      .array()
+      .notNull()
+      .default(sql`'{}'::text[]`),
+    metaTitle: varchar('meta_title', { length: 255 }),
+    metaDescription: varchar('meta_description', { length: 320 }),
+    ogTitle: varchar('og_title', { length: 255 }),
+    ogDescription: varchar('og_description', { length: 500 }),
+    ogImage: varchar('og_image', { length: 500 }),
+    canonicalUrl: varchar('canonical_url', { length: 500 }),
+    robots: varchar('robots', { length: 100 }).notNull().default('index, follow'),
     publishedAt: timestamp('published_at'),
     createdAt: timestamp('created_at').defaultNow().notNull(),
     updatedAt: timestamp('updated_at').defaultNow().notNull(),

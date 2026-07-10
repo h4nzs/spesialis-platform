@@ -9,10 +9,22 @@ import { CorporateInquiryForm } from '../components/CorporateInquiryForm.tsx'
   canonicalUrl="/corporate"
   jsonLd={{
     '@context': 'https://schema.org',
-    '@type': 'BreadcrumbList',
-    itemListElement: [
-      { '@type': 'ListItem', position: 1, name: 'Beranda', item: 'https://spesialis.id' },
-      { '@type': 'ListItem', position: 2, name: 'Corporate' },
+    '@graph': [
+      {
+        '@type': 'BreadcrumbList',
+        itemListElement: [
+          { '@type': 'ListItem', position: 1, name: 'Beranda', item: 'https://spesialis.id' },
+          { '@type': 'ListItem', position: 2, name: 'Corporate' },
+        ],
+      },
+      {
+        '@type': 'Service',
+        name: 'Layanan Corporate Spesialis',
+        description: 'Layanan jasa profesional untuk perusahaan — maintenance rutin, outsourcing teknisi, dan SLA untuk kebutuhan bisnis.',
+        provider: { '@type': 'Organization', name: 'Spesialis' },
+        areaServed: { '@type': 'Country', name: 'Indonesia' },
+        audience: { '@type': 'BusinessAudience' },
+      },
     ],
   }}
 >

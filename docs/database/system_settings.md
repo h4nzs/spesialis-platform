@@ -76,6 +76,6 @@ storage.disk
 
 # Business Rules
 
-Seluruh konfigurasi dapat diubah melalui Directus.
+Seluruh konfigurasi dapat diubah melalui API/Settings panel.
 
 Tidak memerlukan deploy ulang.

@@ -3,7 +3,7 @@ export const prerender = false;
 
 import BaseLayout from '../../layouts/BaseLayout.astro'
 import { RelatedArticles } from '../../components/blog/RelatedArticles'
-import type { CmsArticle } from '../../lib/directus.ts'
+import type { CmsArticle } from '../../components/blog/utils'
 import { renderMarkdown } from '../../lib/markdown.ts'
 
 const { slug } = Astro.params
@@ -21,6 +21,12 @@ interface ArticleData {
   publishedAt: string | null
   createdAt: string
   updatedAt: string
+  metaTitle: string | null
+  metaDescription: string | null
+  ogTitle: string | null
+  ogDescription: string | null
+  ogImage: string | null
+  canonicalUrl: string | null
 }
 
 const apiUrl = import.meta.env.PUBLIC_API_URL ?? 'http://localhost:3000'
@@ -34,19 +40,33 @@ try {
     const json = await res.json()
     const raw: CmsArticle | undefined = json.data ?? undefined
     if (raw) {
+      const r = raw as CmsArticle & {
+        meta_title?: string | null
+        meta_description?: string | null
+        og_title?: string | null
+        og_description?: string | null
+        og_image?: string | null
+        canonical_url?: string | null
+      }
       article = {
-        id: raw.id,
-        title: raw.title,
-        slug: raw.slug,
-        summary: raw.summary,
-        content: raw.content,
-        coverImage: raw.cover_image,
-        authorName: raw.author,
-        categoryName: raw.category,
-        categorySlug: raw.category?.toLowerCase().replace(/\s+/g, '-') ?? null,
-        publishedAt: raw.published_at,
-        createdAt: raw.date_created ?? raw.published_at ?? '',
-        updatedAt: raw.date_updated ?? raw.published_at ?? '',
+        id: r.id,
+        title: r.title,
+        slug: r.slug,
+        summary: r.summary,
+        content: r.content,
+        coverImage: r.cover_image,
+        authorName: r.author,
+        categoryName: r.category,
+        categorySlug: r.category?.toLowerCase().replace(/\s+/g, '-') ?? null,
+        publishedAt: r.published_at,
+        createdAt: r.date_created ?? r.published_at ?? '',
+        updatedAt: r.date_updated ?? r.published_at ?? '',
+        metaTitle: r.meta_title ?? null,
+        metaDescription: r.meta_description ?? null,
+        ogTitle: r.og_title ?? null,
+        ogDescription: r.og_description ?? null,
+        ogImage: r.og_image ?? null,
+        canonicalUrl: r.canonical_url ?? null,
       }
     } else {
       error = 'Artikel tidak ditemukan'
@@ -57,15 +77,21 @@ try {
 } catch (e) {
   error = e instanceof Error ? e.message : 'Gagal memuat artikel'
 }
+
+// RichTextEditor produces HTML; renderMarkdown expects Markdown.
+// Detect HTML (starts with '<') and render directly, else convert from Markdown.
+const contentHtml = article?.content
+  ? (article.content.trim().startsWith('<') ? article.content : renderMarkdown(article.content))
+  : '';
 ---
 
 {
   article ? (
     <BaseLayout
-      title={`${article.title} - Blog Spesialis`}
-      description={article.summary ?? `Baca artikel ${article.title} di Blog Spesialis`}
-      canonicalUrl={`/blog/${article.slug}`}
-      ogImage={article.coverImage ?? undefined}
+      title={article.metaTitle ?? `${article.title} - Blog Spesialis`}
+      description={article.metaDescription ?? (article.summary ?? `Baca artikel ${article.title} di Blog Spesialis`)}
+      canonicalUrl={article.canonicalUrl ?? `/blog/${article.slug}`}
+      ogImage={article.ogImage ?? article.coverImage ?? undefined}
       ogType="article"
       ogImageAlt={article.title}
       articlePublishedTime={article.publishedAt ?? undefined}
@@ -136,8 +162,8 @@ try {
 
         <h1 class="mt-4 text-h2 font-bold text-text-primary">{article.title}</h1>
 
-        {article.content && (
-          <div class="prose prose-gray mt-8 max-w-none" set:html={renderMarkdown(article.content)} />
+        {contentHtml && (
+          <div class="prose prose-gray mt-8 max-w-none" set:html={contentHtml} />
         )}
 
         <div class="mt-12 border-t border-border-default pt-6">
@@ -149,7 +175,7 @@ try {
           </a>
         </div>
 
-        <RelatedArticles currentSlug={slug!} categorySlug={article.categorySlug} client:load />
+        <RelatedArticles currentSlug={slug!} categorySlug={article.categorySlug} client:visible />
       </div>
     </BaseLayout>
   ) : (

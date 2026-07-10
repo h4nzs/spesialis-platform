@@ -34,17 +34,15 @@ Architecture Goals:
                                 │
                                 ▼
                              Nginx
-                     ┌──────────┴──────────┐
-                     ▼                     ▼
-               Astro (apps/web)     Directus (apps/cms)
-                     │
-                     ▼
-              Hono API (apps/api)
-                     │
-                     ▼
-               ┌─────┴─────┐
-               ▼           ▼
-          PostgreSQL   Cloudflare R2
+                                │
+                                ▼
+                          Astro (apps/web)
+                              │
+                              ▼
+                       Hono API (apps/api)
+                           │        │
+                           ▼        ▼
+                    PostgreSQL  Cloudflare R2
 
 ---
 
@@ -59,7 +57,6 @@ Frontend
 Backend
 
 - Hono (API Layer — Business Logic)
-- Directus (CMS Layer — Content & Admin)
 
 Database
 
@@ -123,13 +120,13 @@ Prioritas:
 
 # 6. Backend
 
-Backend terdiri dari dua lapisan:
+Backend terdiri dari satu lapisan:
 
 ## 6.1 API Layer (apps/api)
 
 Framework: Hono
 
-Bertanggung jawab atas seluruh Business Logic.
+Bertanggung jawab atas seluruh Business Logic, Content Management, dan API.
 
 Fungsi:
 
@@ -140,28 +137,13 @@ Fungsi:
 - Review & Complaint
 - Notification
 - Validation & Audit Log
-
-## 6.2 CMS Layer (apps/cms)
-
-Framework: Directus
-
-Bertanggung jawab atas Content Management dan Admin Panel.
-
-Fungsi:
-
 - CMS (Articles, FAQ, Services)
 - Media Library
-- RBAC dasar
-- REST / GraphQL untuk kebutuhan konten
 - Settings & SEO
 
-## 6.3 Alur Data
+## 6.2 Alur Data
 
-Astro (apps/web) → Hono (apps/api) → PostgreSQL / Directus
-
-Astro (apps/web) → Directus (apps/cms) — untuk konten publik (SSG)
-
-Directus Admin Panel → Directus langsung — untuk manajemen konten
+Astro (apps/web) → Hono (apps/api) → PostgreSQL
 
 ---
 
@@ -171,18 +153,14 @@ Single PostgreSQL Database dengan pemisahan schema:
 
 ## 7.1 Schema Boundary
 
-| Schema     | Owner                  | Isi                                                          | Akses Directus           | Akses Hono |
-| ---------- | ---------------------- | ------------------------------------------------------------ | ------------------------ | ---------- |
-| `public`   | Hono (migration)       | Business entities: users, orders, payments, assignments, dll | Read-only via permission | Read/Write |
-| `directus` | Directus (auto)        | Directus internal tables                                     | Read/Write (managed)     | None       |
-| `cms`      | Directus (auto/manual) | Content: articles, faq, services metadata, media             | Read/Write (managed)     | Read-only  |
+| Schema   | Owner            | Isi                                                          |
+| -------- | ---------------- | ------------------------------------------------------------ |
+| `public` | Hono (migration) | Business entities: users, orders, payments, assignments, dll |
 
 ## 7.2 Aturan Schema
 
 - **Hono** mengelola `public` schema via Drizzle ORM migration.
-- **Directus** mengelola `directus` dan `cms` schema via UI.
 - Tidak ada dual-write ke tabel yang sama.
-- Foreign key tidak boleh lintas schema jika menghubungkan tabel bisnis ke tabel Directus. Gunakan logical reference (UUID stored as VARCHAR) bila diperlukan.
 
 ---
 
@@ -244,7 +222,6 @@ Service:
 - nginx
 - web (Astro)
 - api (Hono)
-- cms (Directus)
 - postgres
 - redis (Cache — Future)
 - mailpit (Email Development)
@@ -279,8 +256,6 @@ Horizontal Scaling.
 
 Astro dapat dipisahkan.
 
-Directus dapat dipisahkan.
-
 Database dapat dipindahkan ke Managed PostgreSQL.
 
 Storage menggunakan Object Storage.
@@ -295,7 +270,6 @@ apps/
 
 - web
 - api
-- cms
 - admin
 - mobile
 

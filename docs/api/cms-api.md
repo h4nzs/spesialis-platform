@@ -6,8 +6,6 @@ Base URL
 
 /cms/api/v1
 
-> **Catatan:** Nginx me-route `/cms/*` ke Directus (lihat `infrastructure/docker/nginx/default.conf`).
-
 ---
 
 GET /articles

@@ -26,7 +26,7 @@ const SITE_URL =
     : 'https://spesialis.id';
 
 // ── Collection-to-URL mapping ────────────────────────────────────────────
-// Maps Directus collection names to the URL paths they affect.
+// Maps CMS content types to the URL paths they affect.
 
 const COLLECTION_PATHS: Record<string, string[]> = {
   cms_pages: ['/'],

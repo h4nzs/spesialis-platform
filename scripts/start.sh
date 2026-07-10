@@ -50,31 +50,12 @@ if [[ "$MODE" == "dev" ]]; then
     pnpm --filter @specialist/api db:seed
   fi
 
-  # ─── CMS setup (optional) ─────────────────────────────────────
-  if [[ "$*" == *"--cms"* ]]; then
-    echo "📰 Setting up CMS (Directus)..."
-    docker compose up cms -d
-    echo -n "⏳ Waiting for Directus"
-    for i in $(seq 1 30); do
-      if curl -sfo /dev/null http://localhost:8055/server/health 2>/dev/null; then
-        echo " ✅"
-        break
-      fi
-      echo -n "."
-      sleep 2
-    done
-    pnpm cms:setup
-  fi
-
   # ─── Start dev servers ────────────────────────────────────────
   echo "🚀 Starting API (port 3000) & Web (port 4321)..."
   echo ""
   echo "  Frontend : http://localhost:4321"
   echo "  API      : http://localhost:3000"
   echo "  Health   : http://localhost:3000/api/v1/health"
-  if [[ "$*" == *"--cms"* ]]; then
-    echo "  CMS Admin: http://localhost:8055/admin"
-  fi
   echo ""
   pnpm dev
 
@@ -137,9 +118,6 @@ elif [[ "$MODE" == "prod" ]]; then
   echo "  Frontend : http://localhost:4321"
   echo "  API      : http://localhost:3000"
   echo "  Health   : http://localhost:3000/api/v1/health"
-  if docker compose ps cms --format json 2>/dev/null | grep -q running; then
-    echo "  CMS Admin: http://localhost:8055/admin  (admin@example.com / admin123)"
-  fi
   echo "  PID API  : $API_PID"
   echo "  PID Web  : $WEB_PID"
   echo "  Ctrl+C to stop all"
@@ -180,7 +158,6 @@ else
   echo "Flags:"
   echo "  --seed    Seed database with demo data"
   echo "  --mail    Start Mailpit (email dev UI at :8025)"
-  echo "  --cms     Start Directus CMS + run setup (CMS admin at :8055)"
   echo "  --redis   Start Redis (optional — in-memory fallback used otherwise)"
 
 fi

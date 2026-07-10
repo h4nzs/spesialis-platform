@@ -280,8 +280,6 @@ Article
 └── Tags
 ```
 
-CMS sepenuhnya dikelola melalui Directus.
-
 ---
 
 # 15. Media Domain
@@ -360,7 +358,6 @@ Domain Model menjadi acuan utama untuk:
 
 - Database Design
 - REST API
-- Directus Collections
 - Frontend State
 - AI Agent Development
 

@@ -10,7 +10,7 @@ Bahasa sumber: **Indonesia** — docs/, .ai/, dan konteks bisnis menggunakan Bah
 
 - **pnpm** + **Turborepo** — tiga apps, enam packages
   ```
-  apps/{web (Astro 7), api (Hono), cms (Directus Docker)}
+  apps/{web (Astro 7), api (Hono)}
   packages/{config, database, shared, types, ui, validation}
   ```
 - Semua sub-package ESM (`"type": "module"`)
@@ -36,11 +36,10 @@ Commit convention: **Conventional Commits** (`@commitlint/config-conventional`).
 
 ```
 Astro (apps/web) → Hono (apps/api) → PostgreSQL
-Astro (apps/web) → Directus (apps/cms) — konten publik (SSG)
 ```
 
 - **Business logic hanya di Hono API.** Astro/React = presentation only.
-- **Single PostgreSQL** — shared oleh API, Directus, dan seluruh service.
+- **Single PostgreSQL** — shared oleh API dan seluruh service.
 - Validation schemas di `packages/validation` — source of truth untuk FE & BE.
 - Database schema di `packages/database` — source of truth untuk struktur DB.
 - Static First → SSR when needed → React only for interactivity.
@@ -68,9 +67,7 @@ Jika dokumentasi vs code bertentangan, **dokumentasi dianggap benar**.
 
 ## Infra
 
-- `docker compose up` — postgres, redis (profile: cache), mailpit (profile: mail), api, web, cms, nginx
-- Nginx reverse-proxy: `/{api,cms}/` routed ke service masing-masing
-- CMS: Directus 11.6 via Docker (`directus/directus:11.6.0`)
+- `docker compose up` — postgres, redis (profile: cache), mailpit (profile: mail), api, web, nginx
 - Storage dev: filesystem; production: Cloudflare R2
 - `.env` template di `.env.example`
 
@@ -219,6 +216,4 @@ Repeat until it feels intentionally designed by humans.
 
 **Active development.** API (`apps/api/`) dan Web (`apps/web/`) sudah memiliki implementasi penuh — ~80 endpoint, ~30 halaman dashboard, full booking lifecycle state machine. `packages/*/src/` sudah terisi (types, database 26 tabel, validation 17 skema, shared utilities, ui 13 komponen).
 
-**CMS Directus sudah terkonfigurasi** — container berjalan di `localhost:8055`, collections (`cms_articles`, `cms_faq`, `cms_pages`, `cms_homepage_sections`) sudah dibuat, roles/permissions untuk Content Manager sudah diatur, 26 tabel bisnis di-hidden. Konten OP (4 articles, 7 FAQ, 4 pages, 5 homepage sections) sudah dimigrasi/di-seed. Lihat `scripts/directus-setup.ts` (setup) dan `scripts/directus-migrate-content.ts` (migrasi data).
-
-**Kesenjangan utama tersisa:** SEO (structured data, sitemap, OpenGraph) belum terpasang. Testing masih minimal — Vitest terinstall di `api`, `shared`, `validation` tapi coverage rendah.
+**SEO sudah terpasang:** Structured data (JSON-LD) di semua halaman utama (WebSite, LocalBusiness, Organization, Article, Blog, FAQPage, Service, BreadcrumbList, WebPage), OpenGraph/Twitter Card tags, canonical URL, dynamic sitemap, robots.txt, OG default image. Testing masih minimal — Vitest terinstall di `api`, `shared`, `validation` tapi coverage rendah.

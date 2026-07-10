@@ -67,7 +67,7 @@ test.describe('Admin Content Management - E2E-021 / E2E-019', () => {
 
   test('E2E-019: Published article appears in admin API', async ({ request }) => {
     expect(createdArticleSlug).toBeDefined();
-    // Public content is now served from Directus CMS directly.
+    // Public content is served from CMS API.
     // Verify via admin API which confirms the published status.
     const adminRes = await request.get(`${API_URL}/api/v1/admin/articles?limit=50`, {
       headers: { Authorization: `Bearer ${auth.token}` },

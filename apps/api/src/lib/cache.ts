@@ -1,6 +1,6 @@
 /**
  * Simple in-memory cache with TTL support.
- * Used to reduce load on Directus CMS from frequent SSR requests.
+ * Used to reduce load on CMS from frequent SSR requests.
  * Cache is invalidated when the revalidation endpoint is triggered.
  */
 
@@ -61,7 +61,7 @@ class MemoryCache {
 /** Global CMS cache instance — 60-second TTL */
 export const cmsCache = new MemoryCache(60_000);
 
-/** Map Directus collection names to cache key prefixes */
+/** Map CMS collection names to cache key prefixes */
 const COLLECTION_CACHE_PREFIXES: Record<string, string> = {
   cms_articles: 'cms:articles:',
   cms_faq: 'cms:faq:',
@@ -70,7 +70,7 @@ const COLLECTION_CACHE_PREFIXES: Record<string, string> = {
 };
 
 /**
- * Invalidate cache entries for a given Directus collection.
+ * Invalidate cache entries for a given CMS collection.
  * When collection is unrecognized, clears all CMS cache.
  */
 export function invalidateCollectionCache(collection?: string): void {

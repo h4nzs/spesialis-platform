@@ -33,12 +33,20 @@ interface ArticleItem {
   publishedAt: string | null;
 }
 
-import type { CmsHomepageSection } from '../lib/directus.ts'
+interface CmsHomepageSection {
+  id: string;
+  section_type: string;
+  title: string | null;
+  content: string | null;
+  image: string | null;
+  sort_order: number | null;
+  is_active: boolean;
+}
 
 const apiUrl = import.meta.env.PUBLIC_API_URL ?? 'http://localhost:3000'
 
 // SSR: fetch services, articles, and homepage sections
-// Services from Hono API (business logic), articles/sections from Directus (public content)
+// Services from Hono API (business logic), articles/sections from CMS API (public content)
 let services: ServiceItem[] = []
 let articles: ArticleItem[] = []
 let heroSection: CmsHomepageSection | undefined

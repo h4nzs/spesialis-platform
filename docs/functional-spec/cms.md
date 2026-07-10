@@ -14,8 +14,6 @@
 
 CMS digunakan Admin untuk mengelola seluruh konten website tanpa melakukan perubahan kode.
 
-Backend menggunakan **Directus** sebagai Headless CMS.
-
 ---
 
 # 2. Managed Content

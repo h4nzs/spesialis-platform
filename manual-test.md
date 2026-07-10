@@ -334,7 +334,6 @@
 
 - Gunakan **Mailpit** (`http://localhost:8025`) untuk verifikasi email.
 - Gunakan **dashboard admin** (`/dashboard/admin`) untuk workflow backend.
-- Gunakan **Directus** (`http://localhost:8055`) hanya jika perlu akses CMS langsung.
 - Semua notifikasi real-time menggunakan polling (`GET /notifications/unread-count`).
 
 ---

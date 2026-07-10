@@ -69,6 +69,8 @@ export function Avatar({ src, alt, fallback, size, className }: AvatarProps) {
           src={src}
           alt={alt}
           onError={() => setImgError(true)}
+          loading="lazy"
+          decoding="async"
           className="h-full w-full object-cover"
         />
       ) : (

@@ -1,9 +1,11 @@
 import { Hono } from 'hono';
-import { eq } from 'drizzle-orm';
+import { eq, desc } from 'drizzle-orm';
 import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { db, media } from '../lib/db.ts';
 import { authMiddleware } from '../middleware/auth.ts';
+import { buildPaginationMeta } from '../lib/pagination.ts';
+import { sql } from 'drizzle-orm';
 import {
   saveFile,
   deleteFile,
@@ -11,9 +13,45 @@ import {
   isWithinSizeLimit,
   UPLOAD_DIR,
 } from '../lib/storage.ts';
-import { success, created, error, notFound, forbidden, serverError } from '../lib/response.ts';
+import {
+  success,
+  successPaginated,
+  created,
+  error,
+  notFound,
+  forbidden,
+  serverError,
+} from '../lib/response.ts';
 
 const router = new Hono();
+
+router.get('/', authMiddleware, async (c) => {
+  const page = Number(c.req.query('page') ?? 1);
+  const limit = Number(c.req.query('limit') ?? 50);
+  const query = db
+    .select({
+      id: media.id,
+      filename: media.filename,
+      mimeType: media.mimeType,
+      extension: media.extension,
+      size: media.size,
+      width: media.width,
+      height: media.height,
+      url: sql<string>`'/api/v1/media/' || ${media.id} || '/file'`,
+      createdAt: media.createdAt,
+    })
+    .from(media);
+
+  const items = await query
+    .orderBy(desc(media.createdAt))
+    .limit(limit)
+    .offset((page - 1) * limit);
+
+  const countResult = await db.select({ count: sql<number>`count(*)` }).from(media);
+  const total = Number(countResult[0]?.count ?? 0);
+
+  return successPaginated(c, items, buildPaginationMeta(page, limit, total));
+});
 
 router.post('/upload', authMiddleware, async (c) => {
   const userId = c.get('userId');

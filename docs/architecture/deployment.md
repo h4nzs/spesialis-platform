@@ -28,7 +28,7 @@ Web (Astro)
 
 API (Hono)
 
-CMS (Directus)
+CMS
 
 Redis (Cache — Future)
 
@@ -56,7 +56,7 @@ API (Hono)
 
 ↓
 
-CMS (Directus)
+CMS
 
 ---
 
@@ -86,7 +86,7 @@ cms.domain.com
 
 ↓
 
-CMS (Directus)
+CMS
 
 ---
 

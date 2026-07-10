@@ -1,12 +1,5 @@
 # ERD
 
-## System Tables
-
-directus_users ─── directus_roles ─── directus_permissions
-│
-├── directus_files
-└── directus_folders
-
 ## Users & Profiles
 
 users

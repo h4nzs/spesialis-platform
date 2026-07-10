@@ -18,7 +18,6 @@ Platform dirancang untuk scalable, SEO-first, dan production-ready.
 | ------------- | --------------------------------- |
 | Frontend      | Astro 7, React 19, Tailwind CSS 4 |
 | API Layer     | Hono (Business Logic)             |
-| CMS Layer     | Directus (Content & Admin)        |
 | Database      | PostgreSQL 18                     |
 | Storage       | Cloudflare R2                     |
 | Infrastruktur | Docker Compose, Nginx             |
@@ -33,7 +32,6 @@ spesialis/
 ├── apps/
 │   ├── web/          # Astro Frontend — Website & Dashboards
 │   ├── api/          # Hono API — Business Logic Layer
-│   └── cms/          # Directus — CMS & Admin Panel
 ├── packages/
 │   ├── cli/          # CLI tools (db, cms, generator)
 │   ├── config/       # Shared config (ESLint, Prettier, TS, Tailwind)
@@ -81,7 +79,7 @@ Semua dokumentasi berada pada folder `docs/`.
 # Minimal (DB + migrate + dev servers)
 pnpm start
 
-# With demo data + email dev + CMS
+# With demo data + email dev
 pnpm start:all
 ```
 
@@ -97,7 +95,6 @@ pnpm start:all
 
 - Seeds demo data (9 users, 14 services, 10 orders)
 - Starts Mailpit for email development (`http://localhost:8025`)
-- Starts Directus CMS + runs automated setup (`http://localhost:8055/admin`)
 
 For subsequent runs without re-seeding:
 
@@ -151,15 +148,6 @@ pnpm dev
 - API: `http://localhost:3000`
 - Health check: `http://localhost:3000/api/v1/health`
 
-### 7. (Optional) Setup CMS
-
-```bash
-docker compose up cms -d
-pnpm cms:setup
-```
-
-Then open `http://localhost:8055/admin` and configure permissions manually (see `apps/cms/SETUP.md`).
-
 ---
 
 ## Commands
@@ -168,7 +156,7 @@ Then open `http://localhost:8055/admin` and configure permissions manually (see 
 | ----------------- | ---------------------------------------- |
 | `pnpm start`      | 🚀 Dev start (DB + migrate + dev server) |
 | `pnpm start:seed` | Start + seed demo data                   |
-| `pnpm start:all`  | Start + seed + Mailpit + CMS             |
+| `pnpm start:all`  | Start + seed + Mailpit                   |
 | `pnpm start:prod` | Build + start production servers         |
 | `pnpm reset`      | Remove all Docker containers & volumes   |
 | `pnpm status`     | Show running services                    |
@@ -179,7 +167,6 @@ Then open `http://localhost:8055/admin` and configure permissions manually (see 
 | `pnpm test`       | Run Vitest tests                         |
 | `pnpm format`     | Prettier format                          |
 | `pnpm cli`        | Unified CLI (`pnpm cli help`)            |
-| `pnpm cms:setup`  | Setup Directus collections and roles     |
 
 ### Unified CLI (`pnpm cli`)
 
@@ -188,8 +175,6 @@ pnpm cli db:generate              # Generate migration from schema
 pnpm cli db:migrate               # Apply pending migrations
 pnpm cli db:push                  # Push schema langsung ke DB
 pnpm cli db:seed                  # Seed demo data
-pnpm cli cms:setup                # Setup Directus collections & roles
-pnpm cli cms:flows-setup          # Setup Directus Flows (SEO revalidation)
 pnpm cli generate resource <name> # Scaffold route + test baru
 pnpm cli start                    # Start full dev environment
 pnpm cli help                     # Show all commands

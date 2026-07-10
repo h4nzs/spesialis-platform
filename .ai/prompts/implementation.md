@@ -26,10 +26,9 @@ Priority order:
 4. docs/database/
 5. docs/api/
 6. docs/frontend/
-7. docs/directus/
-8. docs/security/
-9. docs/development/
-10. ADR documents
+7. docs/security/
+8. docs/development/
+9. ADR documents
 
 Never ignore documentation.
 

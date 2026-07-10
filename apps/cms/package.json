@@ -1,9 +1,0 @@
-{
-  "name": "@specialist/cms",
-  "private": true,
-  "type": "module",
-  "description": "Directus CMS configuration & extensions",
-  "scripts": {
-    "setup:flows": "pnpm --filter root cms:flows-setup"
-  }
-}

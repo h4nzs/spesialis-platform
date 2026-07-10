@@ -1,6 +1,12 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro'
-import type { CmsPage } from '../lib/directus.ts'
+interface CmsPage {
+  id: string;
+  title: string;
+  slug: string;
+  content: string | null;
+  meta: Record<string, unknown> | null;
+}
 import { renderMarkdown } from '../lib/markdown.ts'
 
 let pageSlug = 'syarat-ketentuan'

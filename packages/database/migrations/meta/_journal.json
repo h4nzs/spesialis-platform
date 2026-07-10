@@ -71,6 +71,20 @@
       "when": 1783580427204,
       "tag": "0009_breezy_nicolaos",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1783611765594,
+      "tag": "0010_wealthy_the_professor",
+      "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1783617615896,
+      "tag": "0011_wonderful_adam_warlock",
+      "breakpoints": true
     }
   ]
 }

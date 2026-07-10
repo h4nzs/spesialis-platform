@@ -12,6 +12,9 @@ const NAV_MAP: Record<string, NavItem[]> = {
   content_manager: [
     { href: '/dashboard/admin', label: 'Ringkasan', icon: 'dashboard' },
     { href: '/dashboard/admin/articles', label: 'Artikel', icon: 'fileText' },
+    { href: '/dashboard/admin/faq', label: 'FAQ', icon: 'helpCircle' },
+    { href: '/dashboard/admin/cms-pages', label: 'Halaman', icon: 'file' },
+    { href: '/dashboard/admin/homepage-sections', label: 'Homepage', icon: 'home' },
     { href: '/dashboard/admin/services', label: 'Layanan', icon: 'wrench' },
     { href: '/dashboard/admin/settings', label: 'Pengaturan', icon: 'settings' },
   ],
@@ -40,6 +43,9 @@ const NAV_MAP: Record<string, NavItem[]> = {
     { href: '/dashboard/admin/users', label: 'User', icon: 'user' },
     { href: '/dashboard/admin/services', label: 'Layanan', icon: 'wrench' },
     { href: '/dashboard/admin/articles', label: 'Artikel', icon: 'fileText' },
+    { href: '/dashboard/admin/faq', label: 'FAQ', icon: 'helpCircle' },
+    { href: '/dashboard/admin/cms-pages', label: 'Halaman', icon: 'file' },
+    { href: '/dashboard/admin/homepage-sections', label: 'Homepage', icon: 'home' },
     { href: '/dashboard/admin/audit-logs', label: 'Audit Log', icon: 'scrollText' },
     { href: '/dashboard/admin/penalties', label: 'Penalty', icon: 'ban' },
     { href: '/dashboard/admin/reports', label: 'Laporan', icon: 'barChart' },
@@ -53,6 +59,8 @@ const NAV_MAP: Record<string, NavItem[]> = {
     { href: '/dashboard/admin/users', label: 'User', icon: 'user' },
     { href: '/dashboard/admin/services', label: 'Layanan', icon: 'wrench' },
     { href: '/dashboard/admin/articles', label: 'Artikel', icon: 'fileText' },
+    { href: '/dashboard/admin/faq', label: 'FAQ', icon: 'helpCircle' },
+    { href: '/dashboard/admin/cms-pages', label: 'Halaman', icon: 'file' },
     { href: '/dashboard/admin/audit-logs', label: 'Audit Log', icon: 'scrollText' },
     { href: '/dashboard/admin/penalties', label: 'Penalty', icon: 'ban' },
     { href: '/dashboard/admin/reports', label: 'Laporan', icon: 'barChart' },
@@ -114,6 +122,10 @@ const ICON_SVGS: Record<string, string> = {
     '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"/><path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"/><path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2"/><path d="M10 6h4"/><path d="M10 10h4"/><path d="M10 14h4"/><path d="M10 18h4"/></svg>',
   receipt:
     '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1-2 1Z"/><path d="M8 7h8"/><path d="M8 11h8"/><path d="M8 15h5"/></svg>',
+  helpCircle:
+    '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg>',
+  file: '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/></svg>',
+  home: '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>',
 
   /* ── Mobile menu + logout ──────────────────────────────────── */
   menu: '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="18" y2="18"/></svg>',

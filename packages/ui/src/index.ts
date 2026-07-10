@@ -57,5 +57,29 @@ export { PhoneInput, type PhoneInputProps } from './components/PhoneInput.tsx';
 export { NumberInput, type NumberInputProps } from './components/NumberInput.tsx';
 export { TimePicker, type TimePickerProps } from './components/TimePicker.tsx';
 
+// ─── Rich Text Editor ───────────────────────────────────────────
+export { RichTextEditor, type RichTextEditorProps } from './components/RichTextEditor.tsx';
+
+// ─── Media Browser ────────────────────────────────────────────
+export { MediaBrowser, type MediaBrowserProps } from './components/MediaBrowser.tsx';
+
+// ─── Tags Input ─────────────────────────────────────────────────
+export { TagsInput, type TagsInputProps } from './components/TagsInput.tsx';
+
+// ─── SEO Editor ─────────────────────────────────────────────────
+export {
+  SEOEditor,
+  type SEOEditorProps,
+  type SeoData,
+  DEFAULT_SEO,
+} from './components/SEOEditor.tsx';
+
+// ─── Section Manager ─────────────────────────────────────────────
+export {
+  SectionManager,
+  type SectionManagerProps,
+  type HomepageSection,
+} from './components/SectionManager.tsx';
+
 // ─── Utilities ──────────────────────────────────────────────────────────
 export { cn } from './utils/cn.ts';

@@ -28,8 +28,6 @@ Commands:
   db:migrate               Apply pending migrations
   db:push                  Push schema directly to database
   db:seed                  Seed database with sample data
-  cms:setup                Set up Directus CMS collections & roles
-  cms:build-extensions     Build Directus extensions
   generate resource <name> Scaffold a new resource (route + test)
   start                    Start full dev environment
   help                     Show this help
@@ -60,25 +58,6 @@ async function main() {
     case 'db:seed':
       runFilter('@specialist/api', 'db:seed');
       break;
-
-    case 'cms:setup': {
-      const script = join(ROOT, 'scripts', 'directus-setup.ts');
-      run(`tsx ${script}`);
-      break;
-    }
-
-    case 'cms:build-extensions': {
-      const extDirs = [
-        join(ROOT, 'apps', 'cms', 'src', 'extensions', 'seo-revalidation'),
-        join(ROOT, 'apps', 'cms', 'src', 'extensions', 'dashboard-stats'),
-      ];
-      for (const dir of extDirs) {
-        if (existsSync(join(dir, 'package.json'))) {
-          run(`cd ${dir} && npx directus-extension build`);
-        }
-      }
-      break;
-    }
 
     case 'generate': {
       const type = process.argv[3];

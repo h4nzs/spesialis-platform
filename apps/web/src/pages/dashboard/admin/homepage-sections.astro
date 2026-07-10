@@ -1,0 +1,9 @@
+---
+export const prerender = false
+import DashboardLayout from '../../../layouts/DashboardLayout.astro'
+import { AdminHomepage } from '../../../components/dashboard/admin/AdminHomepage.tsx'
+---
+
+<DashboardLayout title="Kelola Homepage" role={['admin', 'super_admin', 'content_manager']}>
+  <AdminHomepage client:load />
+</DashboardLayout>

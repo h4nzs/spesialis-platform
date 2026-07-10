@@ -14,11 +14,23 @@ const serviceId = Astro.url.searchParams.get('serviceId')
   canonicalUrl={serviceId ? `/book?serviceId=${serviceId}` : '/book'}
   jsonLd={{
     '@context': 'https://schema.org',
-    '@type': 'BreadcrumbList',
-    itemListElement: [
-      { '@type': 'ListItem', position: 1, name: 'Beranda', item: 'https://spesialis.id' },
-      { '@type': 'ListItem', position: 2, name: 'Layanan', item: 'https://spesialis.id/services' },
-      { '@type': 'ListItem', position: 3, name: 'Booking' },
+    '@graph': [
+      {
+        '@type': 'BreadcrumbList',
+        '@id': 'https://spesialis.id/book#breadcrumb',
+        itemListElement: [
+          { '@type': 'ListItem', position: 1, name: 'Beranda', item: 'https://spesialis.id' },
+          { '@type': 'ListItem', position: 2, name: 'Layanan', item: 'https://spesialis.id/services' },
+          { '@type': 'ListItem', position: 3, name: 'Booking' },
+        ],
+      },
+      {
+        '@type': 'WebPage',
+        name: 'Booking - Spesialis',
+        description: 'Pesan layanan jasa profesional online. Booking teknisi terpercaya untuk AC, plumbing, listrik, cleaning, dan lainnya.',
+        url: 'https://spesialis.id/book',
+        breadcrumb: { '@id': 'https://spesialis.id/book#breadcrumb' },
+      },
     ],
   }}
 >

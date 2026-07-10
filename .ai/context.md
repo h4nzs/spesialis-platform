@@ -82,7 +82,6 @@ Invoice
 | ------------- | --------------------------------- |
 | Frontend      | Astro 7, React 19, Tailwind CSS 4 |
 | API Layer     | Hono                              |
-| CMS Layer     | Directus                          |
 | Database      | PostgreSQL 18                     |
 | Storage       | Cloudflare R2                     |
 | Infrastruktur | Docker Compose, Nginx             |
@@ -134,13 +133,7 @@ Permission
 
 ↓
 
-Hono API (apps/api) + Directus (apps/cms)
-
-CMS Content
-
-↓
-
-Directus (apps/cms)
+Hono API (apps/api)
 
 ---
 
@@ -150,7 +143,6 @@ Directus (apps/cms)
 apps/
 ├── web/      # Astro Frontend — Website & Dashboards
 ├── api/      # Hono API — Business Logic Layer
-└── cms/      # Directus — CMS & Admin Panel
 
 packages/
 ├── config/       # Shared config (ESLint, Prettier, TS, Tailwind)

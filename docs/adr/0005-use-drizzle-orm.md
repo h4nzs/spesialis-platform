@@ -60,7 +60,7 @@ Positif:
 Negatif:
 
 - Tim perlu belajar Drizzle syntax (berbeda dari Prisma).
-- Tidak ada visual editor untuk schema (berbeda dari Prisma Studio / Directus).
+- Tidak ada visual editor untuk schema (berbeda dari Prisma Studio).
 - Relasi perlu didefinisikan manual di schema (tidak otomatis dari FK).
 
 ---

@@ -3,3 +3,9 @@ Production setup needed:
 2. Find your Zone ID in Cloudflare Dashboard
 3. Set  CLOUDFLARE_API_TOKEN  and  CLOUDFLARE_ZONE_ID  in production  .env 
 4. Without these env vars, the revalidation endpoint still works — it just logs and acknowledges (no-op for CDN)
+
+⚠️ Kesenjangan (gaps):
+- SEO: structured data, sitemap, OpenGraph — masih minimal/belum terpasang penuh
+- Testing coverage: Masih rendah — Vitest ada di  api ,  shared ,  validation  tapi coverage minim
+- Notifications: WhatsApp dan email sudah ada, tapi push notification belum
+- Monitoring & observability masih dasar

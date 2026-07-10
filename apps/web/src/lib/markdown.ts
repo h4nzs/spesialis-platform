@@ -2,7 +2,7 @@
  * Simple Markdown Renderer
  *
  * Lightweight markdown-to-HTML conversion for CMS page content.
- * Handles the subset of markdown used in Directus cms_pages:
+ * Handles the subset of markdown used in cms_pages:
  * headings, paragraphs, bold, lists, line breaks.
  *
  * Not a full CommonMark implementation — only what's needed for
@@ -10,7 +10,18 @@
  */
 
 export function renderMarkdown(md: string): string {
-  const lines = md.split('\n');
+  // Normalize line breaks: insert \n before heading/list markers if missing
+  // Handles content stored without line breaks (single-string markdown)
+  const normalized = md
+    .replace(/\r\n/g, '\n')
+    // Insert blank line before heading markers (##, ###, #) that appear mid-text
+    .replace(/(?<=\S)\s+(?=#{1,3}\s)/g, '\n\n')
+    // Insert blank line before list items (-, *) that appear mid-text
+    .replace(/(?<=\S)\s+(?=[-*]\s)/g, '\n\n')
+    // Insert blank line before numbered list items (1., 2., etc.) that appear mid-text
+    // BUT NOT when preceded by a heading marker (## 1.) to avoid splitting headings
+    .replace(/(?<=\S)(?<!#)\s+(?=\d+\.\s)/g, '\n\n');
+  const lines = normalized.split('\n');
   const html: string[] = [];
   let inList = false;
 
@@ -33,7 +44,7 @@ export function renderMarkdown(md: string): string {
         html.push('</ul>');
         inList = false;
       }
-      html.push(`<h1 class="text-h2 font-bold text-text-primary">${escapeHtml(h1Match[1])}</h1>`);
+      html.push(`<h1>${escapeHtml(h1Match[1])}</h1>`);
       continue;
     }
 
@@ -44,9 +55,7 @@ export function renderMarkdown(md: string): string {
         html.push('</ul>');
         inList = false;
       }
-      html.push(
-        `<h2 class="text-h4 font-semibold text-text-primary mt-8 mb-3">${escapeHtml(h2Match[1])}</h2>`,
-      );
+      html.push(`<h2>${escapeHtml(h2Match[1])}</h2>`);
       continue;
     }
 
@@ -57,20 +66,29 @@ export function renderMarkdown(md: string): string {
         html.push('</ul>');
         inList = false;
       }
-      html.push(
-        `<h3 class="text-h5 font-semibold text-text-primary mt-6 mb-2">${escapeHtml(h3Match[1])}</h3>`,
-      );
+      html.push(`<h3>${escapeHtml(h3Match[1])}</h3>`);
       continue;
     }
 
-    // List item: - item or * item
-    const liMatch = line.match(/^[-*] (.+)$/);
-    if (liMatch) {
+    // Unordered list item: - item or * item
+    const ulMatch = line.match(/^[-*] (.+)$/);
+    if (ulMatch) {
       if (!inList) {
-        html.push('<ul class="list-disc pl-6 space-y-2 text-text-primary leading-relaxed">');
+        html.push('<ul>');
         inList = true;
       }
-      html.push(`<li>${renderInline(liMatch[1])}</li>`);
+      html.push(`<li>${renderInline(ulMatch[1])}</li>`);
+      continue;
+    }
+
+    // Ordered list item: 1. item, 2. item, etc.
+    const olMatch = line.match(/^\d+\. (.+)$/);
+    if (olMatch) {
+      if (!inList) {
+        html.push('<ol>');
+        inList = true;
+      }
+      html.push(`<li>${renderInline(olMatch[1])}</li>`);
       continue;
     }
 
@@ -79,7 +97,7 @@ export function renderMarkdown(md: string): string {
       html.push('</ul>');
       inList = false;
     }
-    html.push(`<p class="text-text-primary leading-relaxed">${renderInline(line)}</p>`);
+    html.push(`<p>${renderInline(line)}</p>`);
   }
 
   if (inList) {
@@ -94,15 +112,20 @@ function renderInline(text: string): string {
   let result = escapeHtml(text);
   // Bold: **text**
   result = result.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+  // Italic: *text*
+  result = result.replace(/\*(.+?)\*/g, '<em>$1</em>');
   // Inline code: `code`
-  result = result.replace(
-    /`(.+?)`/g,
-    '<code class="rounded bg-neutral-100 px-1.5 py-0.5 text-sm">$1</code>',
-  );
+  result = result.replace(/`(.+?)`/g, '<code>$1</code>');
   // Links: [text](url)
+  // rel=nofollow prevents SEO spam via article content
+  // Auto-add https:// if URL has no protocol
   result = result.replace(
     /\[([^\]]+)\]\(([^)]+)\)/g,
-    '<a href="$2" target="_blank" rel="noopener noreferrer" class="text-primary hover:text-primary-hover underline transition-colors">$1</a>',
+    (_match: string, text: string, url: string) => {
+      // Preserve existing http/https/mailto/tel protocols; auto-add https:// for bare domains
+      const href = url.match(/^[a-zA-Z][a-zA-Z0-9+.-]*:/) ? url : `https://${url}`;
+      return `<a href="${href}" target="_blank" rel="noopener noreferrer nofollow">${text}</a>`;
+    },
   );
   return result;
 }

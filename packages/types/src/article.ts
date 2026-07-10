@@ -21,6 +21,14 @@ export interface Article {
   authorName: string | null;
   status: ArticleStatus;
   isFeatured: boolean;
+  tags: string[];
+  metaTitle: string | null;
+  metaDescription: string | null;
+  ogTitle: string | null;
+  ogDescription: string | null;
+  ogImage: string | null;
+  canonicalUrl: string | null;
+  robots: string;
   publishedAt: string | null;
   createdAt: string;
   updatedAt: string;
@@ -37,6 +45,14 @@ export type CreateArticleInput = {
   authorName?: string;
   status?: ArticleStatus;
   isFeatured?: boolean;
+  tags?: string[];
+  metaTitle?: string;
+  metaDescription?: string;
+  ogTitle?: string;
+  ogDescription?: string;
+  ogImage?: string;
+  canonicalUrl?: string;
+  robots?: string;
 };
 
 export type UpdateArticleInput = Partial<CreateArticleInput>;

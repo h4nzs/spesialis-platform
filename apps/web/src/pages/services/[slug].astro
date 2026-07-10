@@ -30,18 +30,17 @@ try {
   error = e instanceof Error ? e.message : 'Gagal memuat layanan'
 }
 
-const jsonLdGraph: Record<string, unknown>[] = [
-  {
+const jsonLdGraph: Record<string, unknown>[] = [];
+
+if (service) {
+  jsonLdGraph.push({
     '@type': 'BreadcrumbList',
     itemListElement: [
       { '@type': 'ListItem', position: 1, name: 'Beranda', item: 'https://spesialis.id' },
       { '@type': 'ListItem', position: 2, name: 'Layanan', item: 'https://spesialis.id/services' },
-      { '@type': 'ListItem', position: 3, name: service?.name },
+      { '@type': 'ListItem', position: 3, name: service?.name ?? 'Detail Layanan' },
     ],
-  },
-]
-
-if (service) {
+  })
   const serviceSchema: Record<string, unknown> = {
     '@type': 'Service',
     name: service.name,
@@ -77,6 +76,10 @@ if (service) {
 
   jsonLdGraph.push(serviceSchema)
 }
+
+const jsonLdPayload = service
+  ? { '@context': 'https://schema.org', '@graph': jsonLdGraph }
+  : undefined
 ---
 
 <BaseLayout
@@ -85,7 +88,7 @@ if (service) {
   canonicalUrl={service ? `/services/${service.slug}` : '/services'}
   ogImage={service?.thumbnail ?? undefined}
   ogImageAlt={service?.name ?? undefined}
-  jsonLd={service ? { '@context': 'https://schema.org', '@graph': jsonLdGraph } : undefined}
+  jsonLd={jsonLdPayload}
 >
   <ServiceDetail slug={slug!} client:load />
 </BaseLayout>

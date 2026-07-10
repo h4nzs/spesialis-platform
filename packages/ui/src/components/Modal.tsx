@@ -1,5 +1,15 @@
 import { type ReactNode, useRef, useEffect, useId, useCallback } from 'react';
 
+export type ModalSize = 'sm' | 'md' | 'lg' | 'xl' | 'full';
+
+const MODAL_WIDTH: Record<ModalSize, string> = {
+  sm: 'max-w-sm',
+  md: 'max-w-lg',
+  lg: 'max-w-2xl',
+  xl: 'max-w-4xl',
+  full: 'max-w-6xl',
+};
+
 export interface ModalProps {
   /** Whether the modal is visible. */
   open: boolean;
@@ -11,6 +21,8 @@ export interface ModalProps {
   children: ReactNode;
   /** Optional footer area, typically action buttons. */
   footer?: ReactNode;
+  /** Modal width variant. Defaults to 'md' (max-w-lg). */
+  size?: ModalSize;
 }
 
 /** CSS selector for focusable elements inside the modal. */
@@ -31,7 +43,7 @@ const FOCUSABLE_SELECTOR =
  *   <button>Simpan</button>
  * </Modal>
  */
-export function Modal({ open, onClose, title, children, footer }: ModalProps) {
+export function Modal({ open, onClose, title, children, footer, size = 'md' }: ModalProps) {
   const dialogRef = useRef<HTMLDivElement>(null);
   const previousFocusRef = useRef<HTMLElement | null>(null);
   const titleId = useId();
@@ -109,7 +121,7 @@ export function Modal({ open, onClose, title, children, footer }: ModalProps) {
         aria-modal="true"
         aria-labelledby={title ? titleId : undefined}
         aria-describedby={descriptionId}
-        className="relative z-10 mx-auto max-w-lg w-full rounded-2xl border border-border-default bg-bg-surface p-6 shadow-lg"
+        className={`relative z-10 w-full max-h-[85vh] overflow-y-auto rounded-2xl border border-border-default bg-bg-surface p-6 shadow-lg ${MODAL_WIDTH[size]} mx-auto`}
         onKeyDown={handleKeyDown}
       >
         {title && (

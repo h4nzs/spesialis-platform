@@ -84,6 +84,10 @@ export function FileUpload({
               <img
                 src={src}
                 alt={`Preview ${i + 1}`}
+                loading="lazy"
+                decoding="async"
+                width="64"
+                height="64"
                 className="h-full w-full object-cover"
                 onLoad={() => URL.revokeObjectURL(src)}
               />

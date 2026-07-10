@@ -10,26 +10,7 @@ Hono
 
 Business Logic Layer.
 
-API middleware antara Astro (`apps/web`) dengan Directus (`apps/cms`).
-
----
-
-## Latar Belakang
-
-Berdasarkan [ADR-0001 (Use Directus)](../../docs/adr/0001-use-directus.md), backend awal menggunakan Directus.
-
-Seiring berkembangnya platform, business logic kompleks dipisahkan ke layer API sendiri menggunakan **Hono** agar:
-
-- Business Logic tidak terikat Directus Extensions.
-- Testing lebih mudah.
-- Dapat berkembang menjadi microservices di masa depan.
-
-Directus tetap digunakan untuk:
-
-- CMS & Admin Panel
-- Media Library
-- RBAC dasar
-- REST/GraphQL API untuk kebutuhan CMS
+API middleware antara Astro (`apps/web`) dengan database dan service backend.
 
 ---
 

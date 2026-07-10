@@ -1,6 +1,12 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro'
-import type { CmsPage } from '../lib/directus.ts'
+interface CmsPage {
+  id: string;
+  title: string;
+  slug: string;
+  content: string | null;
+  meta: Record<string, unknown> | null;
+}
 import { renderMarkdown } from '../lib/markdown.ts'
 
 const apiUrl = import.meta.env.PUBLIC_API_URL ?? 'http://localhost:3000'
@@ -20,7 +26,7 @@ try {
 
 const internationalPhone = `+${whatsappPhone.slice(0, 2)} ${whatsappPhone.slice(2, 5)}-${whatsappPhone.slice(5, 9)}-${whatsappPhone.slice(9)}`
 
-// Fetch page content from Directus CMS (cms_pages)
+// Fetch page content from CMS API (cms_pages)
 let pageSlug = 'kontak'
 let pageTitle = 'Hubungi Kami'
 let pageDescription = 'Hubungi tim Spesialis untuk pertanyaan, kritik, saran, atau kerjasama. Kami siap membantu Anda.'
@@ -80,20 +86,31 @@ if (!useCms) {
   canonicalUrl="/kontak"
   jsonLd={{
     '@context': 'https://schema.org',
-    '@type': 'LocalBusiness',
-    name: 'Spesialis',
-    url: 'https://spesialis.id',
-    logo: 'https://spesialis.id/favicon.svg',
-    image: 'https://spesialis.id/og-default.png',
-    description: 'Platform layanan jasa profesional on-demand di Indonesia.',
-    email: 'hello@spesialis.id',
-    telephone: internationalPhone,
-    areaServed: { '@type': 'Country', name: 'Indonesia' },
-    openingHoursSpecification: [
-      { '@type': 'OpeningHoursSpecification', dayOfWeek: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'], opens: '08:00', closes: '20:00' },
-      { '@type': 'OpeningHoursSpecification', dayOfWeek: 'Sunday', opens: '09:00', closes: '17:00' },
+    '@graph': [
+      {
+        '@type': 'BreadcrumbList',
+        itemListElement: [
+          { '@type': 'ListItem', position: 1, name: 'Beranda', item: 'https://spesialis.id' },
+          { '@type': 'ListItem', position: 2, name: 'Kontak' },
+        ],
+      },
+      {
+        '@type': 'LocalBusiness',
+        name: 'Spesialis',
+        url: 'https://spesialis.id',
+        logo: 'https://spesialis.id/favicon.svg',
+        image: 'https://spesialis.id/og-default.png',
+        description: 'Platform layanan jasa profesional on-demand di Indonesia.',
+        email: 'hello@spesialis.id',
+        telephone: internationalPhone,
+        areaServed: { '@type': 'Country', name: 'Indonesia' },
+        openingHoursSpecification: [
+          { '@type': 'OpeningHoursSpecification', dayOfWeek: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'], opens: '08:00', closes: '20:00' },
+          { '@type': 'OpeningHoursSpecification', dayOfWeek: 'Sunday', opens: '09:00', closes: '17:00' },
+        ],
+        address: { '@type': 'PostalAddress', addressLocality: 'Jakarta', addressCountry: 'ID' },
+      },
     ],
-    address: { '@type': 'PostalAddress', addressLocality: 'Jakarta', addressCountry: 'ID' },
   }}
 >
   <div class="mx-auto max-w-3xl px-4 py-12 sm:px-6 lg:px-8">

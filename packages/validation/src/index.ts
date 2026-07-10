@@ -161,3 +161,17 @@ export type {
 
 export { imposePenaltySchema, updatePenaltyStatusSchema } from './penalty.ts';
 export type { ImposePenaltyInput, UpdatePenaltyStatusInput } from './penalty.ts';
+
+export { createCmsPageSchema, updateCmsPageSchema } from './cms-pages.ts';
+export type { CreateCmsPageInput, UpdateCmsPageInput } from './cms-pages.ts';
+
+export {
+  createHomepageSectionSchema,
+  updateHomepageSectionSchema,
+  reorderHomepageSectionsSchema,
+} from './homepage-sections.ts';
+export type {
+  CreateHomepageSectionInput,
+  UpdateHomepageSectionInput,
+  ReorderHomepageSectionsInput,
+} from './homepage-sections.ts';

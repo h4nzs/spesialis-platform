@@ -10,7 +10,6 @@
 | mailpit  | mailpit      | Email Development (Dev) |
 | api      | -            | Hono API                |
 | web      | -            | Astro Frontend          |
-| cms      | directus     | CMS & Admin Panel       |
 
 ---
 

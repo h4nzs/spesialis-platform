@@ -51,7 +51,7 @@ function starSVG(filled: boolean): string {
         testimonials.map((t) => (
           <div class="flex flex-col rounded-xl border border-border-default bg-bg-surface p-6 md:p-8">
             <!-- Star rating -->
-            <div class="flex gap-0.5" aria-label={`${t.rating} dari 5 bintang`}>
+            <div class="flex gap-0.5" role="img" aria-label={`${t.rating} dari 5 bintang`}>
               {
                 [1, 2, 3, 4, 5].map((star) => (
                   <span set:html={starSVG(star <= t.rating)} />

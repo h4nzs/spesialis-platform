@@ -39,6 +39,14 @@ export const createArticleSchema = z.object({
   authorName: z.string().max(255).optional(),
   status: articleStatusEnum.optional(),
   isFeatured: z.boolean().optional(),
+  tags: z.array(z.string().max(50)).max(20).optional(),
+  metaTitle: z.string().max(255).optional(),
+  metaDescription: z.string().max(320).optional(),
+  ogTitle: z.string().max(255).optional(),
+  ogDescription: z.string().max(500).optional(),
+  ogImage: z.string().max(500).optional(),
+  canonicalUrl: z.string().max(500).optional(),
+  robots: z.string().max(100).optional(),
 });
 
 export const updateArticleSchema = z.object({
@@ -56,6 +64,14 @@ export const updateArticleSchema = z.object({
   authorName: z.string().max(255).optional().nullable(),
   status: articleStatusEnum.optional(),
   isFeatured: z.boolean().optional(),
+  tags: z.array(z.string().max(50)).max(20).optional(),
+  metaTitle: z.string().max(255).optional().nullable(),
+  metaDescription: z.string().max(320).optional().nullable(),
+  ogTitle: z.string().max(255).optional().nullable(),
+  ogDescription: z.string().max(500).optional().nullable(),
+  ogImage: z.string().max(500).optional().nullable(),
+  canonicalUrl: z.string().max(500).optional().nullable(),
+  robots: z.string().max(100).optional().nullable(),
 });
 
 export type CreateArticleCategoryInput = z.infer<typeof createArticleCategorySchema>;
