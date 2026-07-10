@@ -1,0 +1,10 @@
+---
+export const prerender = false
+import DashboardLayout from '../../../../layouts/DashboardLayout.astro'
+import { AdminContractDetail } from '../../../../components/dashboard/admin/AdminContractDetail.tsx'
+const { id } = Astro.params
+---
+
+<DashboardLayout title="Detail Kontrak" role="admin">
+  <AdminContractDetail client:load id={id!} />
+</DashboardLayout>

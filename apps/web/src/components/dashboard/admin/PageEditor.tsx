@@ -125,6 +125,32 @@ export function PageEditor({ editingId }: PageEditorProps) {
     setForm((f) => ({ ...f, seo }));
   }, []);
 
+  // ── SEO image upload handler ────────────────────────────────────
+  const handleSeoImageUpload = useCallback(
+    (insertImage: (url: string) => void) => {
+      // Create a temporary file input and trigger it
+      const input = document.createElement('input');
+      input.type = 'file';
+      input.accept = 'image/jpeg,image/png,image/webp';
+      input.onchange = async (e) => {
+        const file = (e.target as HTMLInputElement).files?.[0];
+        if (!file) return;
+        try {
+          const formData = new FormData();
+          formData.append('file', file);
+          const result = await api.post<{ url: string }>('/api/v1/media/upload', { formData });
+          const data = result as unknown as { url?: string; id?: string };
+          const url = data?.url ?? `/api/v1/media/${data?.id}/file`;
+          insertImage(url);
+        } catch {
+          setError('Gagal mengupload gambar');
+        }
+      };
+      input.click();
+    },
+    [api],
+  );
+
   // ── Submit handler ─────────────────────────────────────────────
   async function handleSave(e: React.SyntheticEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -282,6 +308,7 @@ export function PageEditor({ editingId }: PageEditorProps) {
                   robots: form.seo.robots,
                 }}
                 onChange={handleSeoChange}
+                onImageUpload={handleSeoImageUpload}
               />
             </Card>
           </div>

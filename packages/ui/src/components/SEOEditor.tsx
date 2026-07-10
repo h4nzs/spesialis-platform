@@ -45,6 +45,13 @@ export interface SEOEditorProps {
   collapsed?: boolean;
   /** Disable all fields */
   disabled?: boolean;
+  /**
+   * Custom handler for OG image upload.
+   * Receives a callback to insert the image URL once selected.
+   * Opens MediaBrowser or file picker depending on parent implementation.
+   * Falls back to manual URL input if not provided.
+   */
+  onImageUpload?: (insertImage: (url: string) => void) => void;
 }
 
 // ── Character counter component ──────────────────────────────────
@@ -104,6 +111,7 @@ export function SEOEditor({
   onChange,
   collapsed = true,
   disabled = false,
+  onImageUpload,
 }: SEOEditorProps) {
   const seo: SeoData = { ...DEFAULT_SEO, ...value };
 
@@ -114,6 +122,12 @@ export function SEOEditor({
     },
     [seo, onChange],
   );
+
+  const handleOgUploadClick = useCallback(() => {
+    if (!onImageUpload) return;
+    const insertImage = (url: string) => update('ogImage', url);
+    onImageUpload(insertImage);
+  }, [onImageUpload, update]);
 
   return (
     <details open={!collapsed} className="group rounded-lg border border-border-default">
@@ -198,14 +212,56 @@ export function SEOEditor({
         </SeoField>
 
         {/* OpenGraph Image */}
-        <div className="space-y-1">
-          <span className="text-sm font-medium text-text-primary">OG Image URL</span>
+        <div className="space-y-2">
+          <span className="text-sm font-medium text-text-primary">OG Image</span>
+
+          {/* Upload button (opens MediaBrowser / file picker) */}
+          {onImageUpload && (
+            <button
+              type="button"
+              onClick={handleOgUploadClick}
+              className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-md border-2 border-dashed border-border-default bg-bg-surface px-3 py-3 text-xs text-text-muted transition-colors hover:border-primary hover:text-primary"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+              >
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                <polyline points="17 8 12 3 7 8" />
+                <line x1="12" y1="3" x2="12" y2="15" />
+              </svg>
+              Pilih gambar OG
+            </button>
+          )}
+
+          {/* URL input */}
           <Input
             value={seo.ogImage}
             onChange={(e) => update('ogImage', e.target.value)}
             placeholder="https://example.com/image.jpg"
             disabled={disabled}
           />
+
+          {/* Image preview */}
+          {seo.ogImage && (
+            <div className="relative aspect-video w-full overflow-hidden rounded-md border border-border-default bg-neutral-100">
+              <img
+                src={seo.ogImage}
+                alt="OG Image preview"
+                loading="lazy"
+                decoding="async"
+                className="h-full w-full object-cover"
+                onError={(e) => {
+                  (e.target as HTMLImageElement).style.display = 'none';
+                }}
+              />
+            </div>
+          )}
         </div>
 
         {/* Divider */}

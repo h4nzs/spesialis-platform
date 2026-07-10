@@ -83,16 +83,94 @@ export function ArticleEditor({ editingId }: ArticleEditorProps) {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(true);
+  const [coverUploading, setCoverUploading] = useState(false);
+  const [coverDragOver, setCoverDragOver] = useState(false);
+  const coverInputRef = useRef<HTMLInputElement>(null);
 
   // MediaBrowser state
   const [showMediaBrowser, setShowMediaBrowser] = useState(false);
-  const [mediaBrowserMode, setMediaBrowserMode] = useState<'content' | 'cover'>('content');
+  const [mediaBrowserMode, setMediaBrowserMode] = useState<'content' | 'cover' | 'og'>('content');
   const insertImageRef = useRef<((url: string) => void) | null>(null);
 
   // Navigate back to article list
   function goBack() {
     window.location.href = '/dashboard/admin/articles';
   }
+
+  // Upload a file to the media API and return the URL
+  const uploadToMedia = useCallback(
+    async (file: File): Promise<string> => {
+      const formData = new FormData();
+      formData.append('file', file);
+      const result = await api.post<{ url: string; id: string }>('/api/v1/media/upload', {
+        formData,
+      });
+      const data = result as unknown as { url?: string; id?: string };
+      // The API returns a relative path like /api/v1/media/:id/file
+      return data?.url ?? `/api/v1/media/${data?.id}/file`;
+    },
+    [api],
+  );
+
+  // Handle file drops for cover image
+  const handleCoverDrop = useCallback(
+    async (e: React.DragEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      setCoverDragOver(false);
+
+      const files = Array.from(e.dataTransfer.files);
+      if (files.length === 0) return;
+      const file = files[0];
+
+      if (!file.type.startsWith('image/')) return;
+
+      setCoverUploading(true);
+      try {
+        const url = await uploadToMedia(file);
+        setForm((f) => ({ ...f, coverImage: url }));
+      } catch {
+        setError('Gagal mengupload gambar sampul');
+      } finally {
+        setCoverUploading(false);
+      }
+    },
+    [uploadToMedia],
+  );
+
+  const handleCoverDragOver = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setCoverDragOver(true);
+  }, []);
+
+  const handleCoverDragLeave = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setCoverDragOver(false);
+  }, []);
+
+  // Handle file select via input
+  const handleCoverFileSelect = useCallback(
+    async (e: React.ChangeEvent<HTMLInputElement>) => {
+      const files = Array.from(e.target.files ?? []);
+      if (files.length === 0) return;
+      const file = files[0];
+      if (!file.type.startsWith('image/')) return;
+
+      setCoverUploading(true);
+      try {
+        const url = await uploadToMedia(file);
+        setForm((f) => ({ ...f, coverImage: url }));
+      } catch {
+        setError('Gagal mengupload gambar sampul');
+      } finally {
+        setCoverUploading(false);
+      }
+      e.target.value = '';
+    },
+    [uploadToMedia],
+  );
 
   // Load categories & article detail
   useEffect(() => {
@@ -162,6 +240,8 @@ export function ArticleEditor({ editingId }: ArticleEditorProps) {
         insertImageRef.current = null;
       } else if (mediaBrowserMode === 'cover') {
         setForm((f) => ({ ...f, coverImage: url }));
+      } else if (mediaBrowserMode === 'og') {
+        setForm((f) => ({ ...f, ogImage: url }));
       }
     },
     [mediaBrowserMode],
@@ -179,6 +259,13 @@ export function ArticleEditor({ editingId }: ArticleEditorProps) {
       canonicalUrl: seo.canonicalUrl,
       robots: seo.robots,
     }));
+  }, []);
+
+  // ── SEO image upload handler ───────────────────────────────────
+  const handleSeoImageUpload = useCallback((insertImage: (url: string) => void) => {
+    insertImageRef.current = insertImage;
+    setMediaBrowserMode('og');
+    setShowMediaBrowser(true);
   }, []);
 
   // ── Submit handler ─────────────────────────────────────────────
@@ -241,7 +328,10 @@ export function ArticleEditor({ editingId }: ArticleEditorProps) {
       {/* ── MediaBrowser ─────────────────────────────────────── */}
       <MediaBrowser
         open={showMediaBrowser}
-        onClose={() => setShowMediaBrowser(false)}
+        onClose={() => {
+          setShowMediaBrowser(false);
+          insertImageRef.current = null;
+        }}
         onSelect={handleMediaSelect}
       />
 
@@ -382,18 +472,78 @@ export function ArticleEditor({ editingId }: ArticleEditorProps) {
 
             <Card>
               <h3 className="mb-4 text-sm font-semibold text-text-primary">Gambar Sampul</h3>
-              <div className="flex gap-2">
-                <div className="flex-1">
-                  <Input
-                    value={form.coverImage}
-                    onChange={(e) => setForm((f) => ({ ...f, coverImage: e.target.value }))}
-                    placeholder="URL gambar"
-                  />
+              <div className="space-y-3">
+                {/* Drag & drop upload zone */}
+                <div
+                  onDragOver={handleCoverDragOver}
+                  onDragLeave={handleCoverDragLeave}
+                  onDrop={handleCoverDrop}
+                  onClick={() => coverInputRef.current?.click()}
+                  className={`flex cursor-pointer items-center justify-center gap-2 rounded-md border-2 border-dashed px-3 py-4 text-xs transition-colors ${
+                    coverDragOver
+                      ? 'border-primary bg-primary/5 text-primary'
+                      : 'border-border-default bg-bg-surface text-text-muted hover:border-primary hover:text-primary'
+                  }`}
+                  role="button"
+                  tabIndex={0}
+                  aria-label="Upload gambar sampul — drag & drop or click"
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      coverInputRef.current?.click();
+                    }
+                  }}
+                >
+                  {coverUploading ? (
+                    <>
+                      <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+                      Mengupload...
+                    </>
+                  ) : (
+                    <>
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="16"
+                        height="16"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                      >
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                        <polyline points="17 8 12 3 7 8" />
+                        <line x1="12" y1="3" x2="12" y2="15" />
+                      </svg>
+                      {coverDragOver
+                        ? 'Lepaskan file untuk mengupload'
+                        : 'Drag & drop gambar atau klik untuk upload'}
+                    </>
+                  )}
                 </div>
-                <Button type="button" variant="secondary" onClick={openMediaForCover}>
-                  Pilih
-                </Button>
+                <input
+                  ref={coverInputRef}
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp"
+                  className="hidden"
+                  onChange={handleCoverFileSelect}
+                />
+
+                {/* URL input + Pilih button */}
+                <div className="flex gap-2">
+                  <div className="flex-1">
+                    <Input
+                      value={form.coverImage}
+                      onChange={(e) => setForm((f) => ({ ...f, coverImage: e.target.value }))}
+                      placeholder="URL gambar"
+                    />
+                  </div>
+                  <Button type="button" variant="secondary" onClick={openMediaForCover}>
+                    Pilih
+                  </Button>
+                </div>
               </div>
+
+              {/* Image preview */}
               {form.coverImage && (
                 <div className="relative mt-3 aspect-video w-full overflow-hidden rounded-md border border-border-default bg-neutral-100">
                   <img
@@ -433,6 +583,7 @@ export function ArticleEditor({ editingId }: ArticleEditorProps) {
                   robots: form.robots,
                 }}
                 onChange={handleSeoChange}
+                onImageUpload={handleSeoImageUpload}
               />
             </Card>
           </div>

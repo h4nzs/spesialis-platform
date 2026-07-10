@@ -62,6 +62,27 @@ router.get('/', requireRole('admin', 'super_admin'), async (c) => {
   return successPaginated(c, items, pagination);
 });
 
+router.get('/me', requireRole('corporate'), async (c) => {
+  const userId = c.get('userId');
+
+  // Find the user's company
+  const [cu] = await db
+    .select({ companyId: companyUsers.companyId })
+    .from(companyUsers)
+    .where(eq(companyUsers.userId, userId))
+    .limit(1);
+  if (!cu) return notFound(c, 'Perusahaan tidak ditemukan');
+
+  // Fetch all contracts for this company, newest first
+  const items = await db
+    .select()
+    .from(contracts)
+    .where(eq(contracts.companyId, cu.companyId))
+    .orderBy(desc(contracts.createdAt));
+
+  return success(c, items);
+});
+
 router.get('/:id', requireRole('admin', 'super_admin', 'corporate'), async (c) => {
   const contractId = c.req.param('id')!;
   const userId = c.get('userId');

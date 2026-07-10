@@ -20,9 +20,9 @@ export function FileUpload({
   const inputRef = useRef<HTMLInputElement>(null);
   const [previews, setPreviews] = useState<string[]>([]);
   const [fileError, setFileError] = useState<string | null>(null);
+  const [dragOver, setDragOver] = useState(false);
 
-  function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
-    const files = Array.from(e.target.files ?? []);
+  function processFiles(files: File[]) {
     setFileError(null);
 
     if (files.length === 0) return;
@@ -38,13 +38,53 @@ export function FileUpload({
     onChange?.(files);
   }
 
+  function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
+    processFiles(Array.from(e.target.files ?? []));
+  }
+
+  function handleDragOver(e: React.DragEvent) {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragOver(true);
+  }
+
+  function handleDragLeave(e: React.DragEvent) {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragOver(false);
+  }
+
+  function handleDrop(e: React.DragEvent) {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragOver(false);
+    if (e.dataTransfer.files.length > 0) {
+      processFiles(Array.from(e.dataTransfer.files));
+    }
+  }
+
   return (
     <div className="flex flex-col gap-1.5">
       {label && <span className="text-sm font-medium text-text-primary">{label}</span>}
-      <button
-        type="button"
+      <div
+        onDragOver={handleDragOver}
+        onDragLeave={handleDragLeave}
+        onDrop={handleDrop}
         onClick={() => inputRef.current?.click()}
-        className="flex cursor-pointer items-center justify-center gap-2 rounded-md border-2 border-dashed border-border-default bg-bg-surface px-4 py-6 text-sm text-text-muted hover:border-primary hover:text-primary transition-colors"
+        className={`flex cursor-pointer items-center justify-center gap-2 rounded-md border-2 border-dashed px-4 py-6 text-sm transition-colors ${
+          dragOver
+            ? 'border-primary bg-primary/5 text-primary'
+            : 'border-border-default bg-bg-surface text-text-muted hover:border-primary hover:text-primary'
+        }`}
+        role="button"
+        tabIndex={0}
+        aria-label={label ?? 'Upload file — drag & drop or click'}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            inputRef.current?.click();
+          }
+        }}
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -59,8 +99,8 @@ export function FileUpload({
           <polyline points="17 8 12 3 7 8" />
           <line x1="12" y1="3" x2="12" y2="15" />
         </svg>
-        Klik untuk upload
-      </button>
+        {dragOver ? 'Lepaskan file untuk mengupload' : 'Drag & drop atau klik untuk upload'}
+      </div>
       <input
         ref={inputRef}
         type="file"

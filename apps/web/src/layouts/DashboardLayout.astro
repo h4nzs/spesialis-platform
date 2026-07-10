@@ -2,6 +2,7 @@
 import BaseLayout from './BaseLayout.astro'
 import { AuthGuard } from '../components/dashboard/AuthGuard.tsx'
 import { Sidebar } from '../components/dashboard/Sidebar.tsx'
+import { MobileBottomNav } from '../components/dashboard/MobileBottomNav.tsx'
 import { NotificationBell } from '../components/dashboard/NotificationBell.tsx'
 import type { UserRole } from '@specialist/types'
 
@@ -24,13 +25,14 @@ const sidebarRole = initialUser?.role ?? (Array.isArray(role) ? role[0] : role);
   <AuthGuard client:load requiredRole={role} initialUser={initialUser}>
     <div class="mx-auto flex max-w-7xl gap-8 px-4 py-8 sm:px-6 lg:px-8">
       <Sidebar client:load role={sidebarRole as UserRole} currentPath={currentPath} />
-      <div class="min-w-0 flex-1">
+      <div class="min-w-0 flex-1 pb-16 sm:pb-0">
         <div class="mb-6 flex items-center justify-between">
           <h1 class="text-h2 text-text-primary">{title}</h1>
           <NotificationBell client:load />
         </div>
         <slot />
       </div>
+      <MobileBottomNav client:load role={sidebarRole as UserRole} currentPath={currentPath} />
     </div>
   </AuthGuard>
 </BaseLayout>

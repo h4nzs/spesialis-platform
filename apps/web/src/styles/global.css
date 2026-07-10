@@ -346,6 +346,7 @@
   --animate-skeleton: skeleton-shimmer 1.5s ease-in-out infinite;
   --animate-spin: spin 1s linear infinite;
   --animate-pulse-soft: pulse-soft 2s ease-in-out infinite;
+  --animate-loading-bar: loading-bar 1.2s ease-in-out infinite;
 
   /* =====================================================================
      Z-Index Scale
@@ -430,6 +431,13 @@
 @keyframes spin {
   from { transform: rotate(0deg); }
   to { transform: rotate(360deg); }
+}
+
+/* ── Loading Bar ─────────────────────────────────────────────────────────── */
+@keyframes loading-bar {
+  0% { transform: translateX(-100%); }
+  50% { transform: translateX(0%); }
+  100% { transform: translateX(100%); }
 }
 
 /* ==========================================================================

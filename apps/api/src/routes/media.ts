@@ -27,8 +27,21 @@ const router = new Hono();
 
 router.get('/', authMiddleware, async (c) => {
   const page = Number(c.req.query('page') ?? 1);
-  const limit = Number(c.req.query('limit') ?? 50);
-  const query = db
+  const limit = Number(c.req.query('limit') ?? 20);
+  const search = c.req.query('search');
+  const mediaType = c.req.query('mediaType');
+
+  const conditions: ReturnType<typeof sql>[] = [];
+  if (search) {
+    conditions.push(sql`${media.filename} ILIKE ${'%' + search + '%'}`);
+  }
+  if (mediaType === 'images') {
+    conditions.push(sql`${media.mimeType} LIKE 'image/%'`);
+  } else if (mediaType === 'documents') {
+    conditions.push(sql`${media.mimeType} NOT LIKE 'image/%'`);
+  }
+
+  const items = await db
     .select({
       id: media.id,
       filename: media.filename,
@@ -40,14 +53,16 @@ router.get('/', authMiddleware, async (c) => {
       url: sql<string>`'/api/v1/media/' || ${media.id} || '/file'`,
       createdAt: media.createdAt,
     })
-    .from(media);
-
-  const items = await query
+    .from(media)
+    .where(conditions.length > 0 ? conditions.reduce((a, b) => sql`${a} AND ${b}`) : undefined)
     .orderBy(desc(media.createdAt))
     .limit(limit)
     .offset((page - 1) * limit);
 
-  const countResult = await db.select({ count: sql<number>`count(*)` }).from(media);
+  const countResult = await db
+    .select({ count: sql<number>`count(*)` })
+    .from(media)
+    .where(conditions.length > 0 ? conditions.reduce((a, b) => sql`${a} AND ${b}`) : undefined);
   const total = Number(countResult[0]?.count ?? 0);
 
   return successPaginated(c, items, buildPaginationMeta(page, limit, total));

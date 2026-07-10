@@ -7,7 +7,6 @@ interface CmsPage {
   content: string | null;
   meta: Record<string, unknown> | null;
 }
-import { renderMarkdown } from '../lib/markdown.ts'
 
 let pageSlug = 'kebijakan-privasi'
 let pageTitle = 'Kebijakan Privasi'
@@ -25,7 +24,7 @@ try {
     if (cmsPage) {
       pageTitle = cmsPage.title
       pageDescription = (cmsPage.meta as Record<string, string> | null)?.description ?? pageDescription
-      pageHtml = cmsPage.content ? renderMarkdown(cmsPage.content) : ''
+      pageHtml = cmsPage.content ?? ''
       useCms = true
     }
   }
@@ -103,6 +102,6 @@ if (!useCms) {
 
     <h1 class="text-h2 font-bold text-text-primary">{pageTitle}</h1>
 
-    <div class="mt-8 space-y-6 text-text-primary leading-relaxed" set:html={pageHtml} />
+    <div class="prose mt-8 max-w-none" set:html={pageHtml} />
   </div>
 </BaseLayout>

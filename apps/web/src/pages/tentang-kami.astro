@@ -7,7 +7,6 @@ interface CmsPage {
   content: string | null;
   meta: Record<string, unknown> | null;
 }
-import { renderMarkdown } from '../lib/markdown.ts'
 
 // Try fetching page content from CMS API (cms_pages)
 // Fallback to hardcoded content when CMS is unreachable
@@ -27,7 +26,7 @@ try {
     if (cmsPage) {
       pageTitle = cmsPage.title
       pageDescription = (cmsPage.meta as Record<string, string> | null)?.description ?? pageDescription
-      pageHtml = cmsPage.content ? renderMarkdown(cmsPage.content) : ''
+      pageHtml = cmsPage.content ?? ''
       useCms = true
     }
   }
@@ -105,6 +104,6 @@ if (!useCms) {
 
     <h1 class="text-h2 font-bold text-text-primary">{pageTitle}</h1>
 
-    <section class="mt-8 space-y-6" set:html={pageHtml} />
+    <section class="prose mt-8 max-w-none" set:html={pageHtml} />
   </div>
 </BaseLayout>

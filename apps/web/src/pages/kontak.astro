@@ -7,7 +7,6 @@ interface CmsPage {
   content: string | null;
   meta: Record<string, unknown> | null;
 }
-import { renderMarkdown } from '../lib/markdown.ts'
 
 const apiUrl = import.meta.env.PUBLIC_API_URL ?? 'http://localhost:3000'
 
@@ -41,7 +40,7 @@ try {
     if (cmsPage) {
       pageTitle = cmsPage.title
       pageDescription = (cmsPage.meta as Record<string, string> | null)?.description ?? pageDescription
-      pageHtml = cmsPage.content ? renderMarkdown(cmsPage.content) : ''
+      pageHtml = cmsPage.content ?? ''
       useCms = true
     }
   }
@@ -125,6 +124,6 @@ if (!useCms) {
       Punya pertanyaan atau butuh bantuan? Tim kami siap membantu.
     </p>
 
-    <div class="mt-10" set:html={pageHtml} />
+    <div class="prose mt-10 max-w-none" set:html={pageHtml} />
   </div>
 </BaseLayout>

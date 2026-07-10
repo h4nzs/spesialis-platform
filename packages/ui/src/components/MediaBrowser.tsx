@@ -1,7 +1,13 @@
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { createBrowserClient } from '@specialist/shared';
 import { Modal } from './Modal.tsx';
+import { Select } from './Select.tsx';
+import { Pagination } from './Pagination.tsx';
 import { cn } from '../utils/cn.ts';
+
+// ── Constants ────────────────────────────────────────────────────
+
+const PAGE_SIZE = 20;
 
 // ── Types ────────────────────────────────────────────────────────
 
@@ -17,6 +23,8 @@ interface MediaItem {
   createdAt: string;
 }
 
+export type MediaTypeFilter = 'images' | 'documents' | 'all';
+
 export interface MediaBrowserProps {
   /** Whether the browser is open */
   open: boolean;
@@ -27,11 +35,17 @@ export interface MediaBrowserProps {
    * Passes the media URL and the full media item for reference.
    */
   onSelect: (url: string, media: MediaItem) => void;
-  /** Optional filter: only show images (default: true) */
-  imagesOnly?: boolean;
+  /** Default media type filter (default: 'images') */
+  defaultMediaType?: MediaTypeFilter;
   /** Optional: ID of the currently selected media (for highlighting) */
   selectedId?: string;
 }
+
+const MEDIA_TYPE_OPTIONS: { value: MediaTypeFilter; label: string }[] = [
+  { value: 'images', label: 'Gambar' },
+  { value: 'documents', label: 'Dokumen' },
+  { value: 'all', label: 'Semua' },
+];
 
 // ── Format helpers ───────────────────────────────────────────────
 
@@ -59,38 +73,77 @@ export function MediaBrowser({
   open,
   onClose,
   onSelect,
-  imagesOnly = true,
+  defaultMediaType = 'images',
   selectedId,
 }: MediaBrowserProps) {
   const api = useMemo(() => createBrowserClient(), []);
   const [items, setItems] = useState<MediaItem[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [initialLoading, setInitialLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState('');
   const [search, setSearch] = useState('');
   const [uploading, setUploading] = useState(false);
   const [dragOver, setDragOver] = useState(false);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalItems, setTotalItems] = useState(0);
+  const [mediaType, setMediaType] = useState<MediaTypeFilter>(defaultMediaType);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const isFirstLoad = useRef(true);
 
-  // ── Load media ─────────────────────────────────────────────────
+  // ── Load media (paginated) ─────────────────────────────────────
   const loadMedia = useCallback(async () => {
-    setLoading(true);
     setError('');
+    if (!isFirstLoad.current) setRefreshing(true);
     try {
-      const result = await api.get<MediaItem[]>('/api/v1/media', {
-        params: { limit: 100 },
+      const params: Record<string, string | number> = {
+        page,
+        limit: PAGE_SIZE,
+      };
+      if (search) params.search = search;
+      if (mediaType !== 'all') params.mediaType = mediaType;
+
+      const { data: rawData, pagination } = await api.getPaginated<MediaItem>('/api/v1/media', {
+        params,
       });
-      const raw = Array.isArray(result) ? result : [];
-      setItems(imagesOnly ? raw.filter((m) => isImage(m.mimeType)) : raw);
+
+      const raw = Array.isArray(rawData) ? rawData : [];
+      setItems(raw);
+      setTotalPages(pagination?.totalPages ?? 1);
+      setTotalItems(pagination?.total ?? raw.length);
     } catch {
       setError('Gagal memuat media');
     } finally {
-      setLoading(false);
+      isFirstLoad.current = false;
+      setInitialLoading(false);
+      setRefreshing(false);
     }
-  }, [api, imagesOnly]);
+  }, [api, mediaType, page, search]);
 
+  // Reset to initial state when modal opens
+  useEffect(() => {
+    if (open) {
+      isFirstLoad.current = true;
+      setInitialLoading(true);
+    }
+  }, [open]);
+
+  // Fetch when modal opens or page/search changes
   useEffect(() => {
     if (open) loadMedia();
   }, [open, loadMedia]);
+
+  // Reset to page 1 when search or filter changes
+  const handleSearchChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value;
+    setSearch(val);
+    setPage(1);
+  }, []);
+
+  const handleMediaTypeChange = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
+    setMediaType(e.target.value as MediaTypeFilter);
+    setPage(1);
+  }, []);
 
   // ── Upload handler ─────────────────────────────────────────────
   const uploadFiles = useCallback(
@@ -109,6 +162,8 @@ export function MediaBrowser({
             formData,
           });
         }
+        // After upload, go back to page 1 to see new files
+        setPage(1);
         await loadMedia();
       } catch {
         setError('Gagal mengupload file');
@@ -144,11 +199,6 @@ export function MediaBrowser({
     [uploadFiles],
   );
 
-  // ── Filter by search ───────────────────────────────────────────
-  const filteredItems = search
-    ? items.filter((m) => m.filename.toLowerCase().includes(search.toLowerCase()))
-    : items;
-
   // ── Select handler ─────────────────────────────────────────────
   const handleSelect = useCallback(
     (item: MediaItem) => {
@@ -161,8 +211,18 @@ export function MediaBrowser({
   return (
     <Modal open={open} onClose={onClose} title="Pilih Media">
       <div className="flex flex-col gap-4">
-        {/* Search + Upload area */}
+        {/* Search + filter + Upload area */}
         <div className="flex items-center gap-2">
+          {/* Media type filter */}
+          <Select
+            value={mediaType}
+            onChange={handleMediaTypeChange}
+            aria-label="Filter tipe media"
+            options={MEDIA_TYPE_OPTIONS}
+            className="shrink-0"
+          />
+
+          {/* Search */}
           <div className="relative flex-1">
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -182,7 +242,7 @@ export function MediaBrowser({
               placeholder="Cari file..."
               aria-label="Cari file"
               value={search}
-              onChange={(e) => setSearch(e.target.value)}
+              onChange={handleSearchChange}
               className="w-full rounded-md border border-border-default bg-bg-surface py-2 pl-9 pr-3 text-sm text-text-primary outline-none transition-colors focus:border-primary focus:ring-1 focus:ring-primary"
             />
           </div>
@@ -243,6 +303,16 @@ export function MediaBrowser({
         {/* Error state */}
         {error && <p className="text-sm text-danger-500">{error}</p>}
 
+        {/* Progress bar for page/filter changes */}
+        {refreshing && (
+          <div
+            className="h-1 w-full overflow-hidden rounded-full bg-neutral-100"
+            aria-hidden="true"
+          >
+            <div className="h-full w-full animate-loading-bar rounded-full bg-primary-500" />
+          </div>
+        )}
+
         {/* Grid */}
         <div
           className="min-h-[200px]"
@@ -250,13 +320,13 @@ export function MediaBrowser({
           onDragLeave={handleDragLeave}
           onDrop={handleDrop}
         >
-          {loading ? (
+          {initialLoading ? (
             <div className="grid grid-cols-4 gap-3">
               {Array.from({ length: 8 }).map((_, i) => (
                 <div key={i} className="aspect-square animate-pulse rounded-lg bg-neutral-200" />
               ))}
             </div>
-          ) : filteredItems.length === 0 ? (
+          ) : items.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12 text-center">
               <div className="text-3xl text-text-muted">🖼️</div>
               <p className="mt-2 text-sm text-text-muted">
@@ -274,7 +344,7 @@ export function MediaBrowser({
             </div>
           ) : (
             <div className="grid grid-cols-4 gap-3">
-              {filteredItems.map((item) => (
+              {items.map((item) => (
                 <button
                   key={item.id}
                   type="button"
@@ -325,10 +395,38 @@ export function MediaBrowser({
           )}
         </div>
 
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <div className="flex justify-center">
+            <Pagination page={page} totalPages={totalPages} onPageChange={setPage} />
+          </div>
+        )}
+
         {/* Footer info */}
         <div className="flex items-center justify-between text-xs text-text-muted">
-          <span>{filteredItems.length} file</span>
-          <span>Klik untuk memilih</span>
+          <span>
+            {totalItems} file{totalItems !== 1 ? 's' : ''}
+            {totalPages > 1 && ` — halaman ${page} dari ${totalPages}`}
+          </span>
+          <div className="flex items-center gap-3">
+            <span className="flex items-center gap-1">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="12"
+                height="12"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+              >
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                <polyline points="17 8 12 3 7 8" />
+                <line x1="12" y1="3" x2="12" y2="15" />
+              </svg>
+              Drag & drop
+            </span>
+            <span>Klik untuk pilih</span>
+          </div>
         </div>
       </div>
     </Modal>
