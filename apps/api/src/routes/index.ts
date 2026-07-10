@@ -84,6 +84,6 @@ router.route('/admin/cms-pages', adminCmsPagesRouter);
 router.route('/admin/redirects', adminRedirectsRouter);
 router.route('/admin/page-errors', adminPageErrorsRouter);
 router.route('/sitemap-settings', sitemapSettingsRouter);
-router.route('/', indexnowRouter);
+router.route('/indexnow', indexnowRouter);
 
 export { router as apiRouter };
