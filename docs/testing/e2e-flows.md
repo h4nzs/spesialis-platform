@@ -1098,6 +1098,109 @@ Semua berjalan normal.
 
 ---
 
+# SEO E2E Flows
+
+Test file: `apps/web/tests/seo.spec.ts` (19 tests, serial mode)
+
+Test IDs: `SEOE2E-01` to `SEOE2E-19`
+
+---
+
+# SEOE2E-01 to SEOE2E-07
+
+SitemapSettings & RoleManager (Settings Page)
+
+Priority
+
+P1
+
+Actor
+
+Admin / Super Admin
+
+Tests:
+
+| ID        | Test                                          |
+| --------- | --------------------------------------------- |
+| SEOE2E-01 | Settings page loads with SitemapSettings      |
+| SEOE2E-02 | Priority & changefreq inputs visible          |
+| SEOE2E-03 | IndexNow key & auto-ping toggle visible       |
+| SEOE2E-04 | RoleManager renders 8 features × role columns |
+| SEOE2E-05 | RoleManager checkboxes interactive            |
+| SEOE2E-06 | Save & reset buttons exist                    |
+| SEOE2E-07 | Admin/Super Admin checkboxes disabled         |
+
+---
+
+# SEOE2E-08 to SEOE2E-11
+
+SchemaBuilder (Article Editor)
+
+Priority
+
+P1
+
+Actor
+
+Admin / Super Admin / Content Manager
+
+Tests:
+
+| ID        | Test                                                    |
+| --------- | ------------------------------------------------------- |
+| SEOE2E-08 | Article editor page loads                               |
+| SEOE2E-09 | SchemaBuilder template selector visible in sidebar      |
+| SEOE2E-10 | SchemaBuilder shows template types (Article, FAQ, etc.) |
+| SEOE2E-11 | Content Manager can access SchemaBuilder section        |
+
+---
+
+# SEOE2E-12 to SEOE2E-15
+
+Permission Enforcement
+
+Priority
+
+P0
+
+Actor
+
+Content Manager / Partner / Customer
+
+Tests:
+
+| ID        | Test                                                       |
+| --------- | ---------------------------------------------------------- |
+| SEOE2E-12 | Content Manager dapat mengakses SEO audit (seo.audit)      |
+| SEOE2E-13 | Content Manager diblock dari SEO redirects (seo.redirects) |
+| SEOE2E-14 | Partner tidak dapat mengakses settings page                |
+| SEOE2E-15 | Settings API mengembalikan 403 untuk partner               |
+
+---
+
+# SEOE2E-16 to SEOE2E-19
+
+SEO Dashboard Pages
+
+Priority
+
+P1
+
+Actor
+
+Admin / Super Admin
+
+Tests:
+
+| ID        | Test                           |
+| --------- | ------------------------------ |
+| SEOE2E-16 | SEO Bulk Edit page loads       |
+| SEOE2E-17 | SEO Audit page loads           |
+| SEOE2E-18 | Redirect Management page loads |
+| SEOE2E-19 | 404 Monitor page loads         |
+
+---
+
 # Cross Module Flow
 
 Booking

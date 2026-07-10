@@ -1,0 +1,13 @@
+---
+import DashboardLayout from '../../../../layouts/DashboardLayout.astro'
+import { AdminRedirects } from '../../../../components/dashboard/admin/AdminRedirects'
+---
+
+<DashboardLayout title="Redirect Manager" canonicalUrl="/dashboard/admin/seo/redirects">
+  <div class="space-y-6">
+    <p class="text-body-sm text-text-secondary">
+      Kelola pengalihan URL untuk menjaga reputasi SEO saat halaman dipindahkan atau dihapus
+    </p>
+    <AdminRedirects client:load />
+  </div>
+</DashboardLayout>

@@ -43,6 +43,19 @@ vi.mock('../middleware/auth.ts', () => ({
     },
 }));
 
+// Mock the requirePermission middleware to mirror the old requireRole for seo routes
+vi.mock('../middleware/seo-permissions.ts', () => ({
+  requirePermission: (_permission: string) => async (c: Context, next: () => Promise<void>) => {
+    // Allow admin, super_admin, content_manager for seo routes (matching DEFAULT_PERMISSIONS)
+    const allowedRoles = ['admin', 'super_admin', 'content_manager'];
+    if (!allowedRoles.includes(authState.userRole)) {
+      c.status(403);
+      return c.json({ success: false, code: 'FORBIDDEN', message: 'Forbidden' });
+    }
+    await next();
+  },
+}));
+
 const UUID = '550e8400-e29b-41d4-a716-446655440000';
 
 function a() {

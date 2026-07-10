@@ -32,6 +32,11 @@ export { partnerPenalties } from './partner-penalties.ts';
 export { faq } from './faq.ts';
 export { corporateInquiries } from './corporate-inquiries.ts';
 export { cmsPages } from './cms-pages.ts';
+export { redirects } from './redirects.ts';
+export { pageErrors } from './page-errors.ts';
+export { indexnowLogs } from './indexnow-logs.ts';
+
+export { indexnowLogsRelations } from './relations.ts';
 
 export {
   usersRelations,

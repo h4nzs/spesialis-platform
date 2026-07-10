@@ -95,6 +95,7 @@ cmsRouter.get('/articles/:slug', async (c) => {
         og_description: articles.ogDescription,
         og_image: articles.ogImage,
         canonical_url: articles.canonicalUrl,
+        schema_json: articles.schemaJson,
         published_at: articles.publishedAt,
         date_created: articles.createdAt,
         date_updated: articles.updatedAt,

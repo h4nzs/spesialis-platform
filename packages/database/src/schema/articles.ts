@@ -1,4 +1,13 @@
-import { pgTable, uuid, varchar, timestamp, text, boolean, index } from 'drizzle-orm/pg-core';
+import {
+  pgTable,
+  uuid,
+  varchar,
+  timestamp,
+  text,
+  boolean,
+  jsonb,
+  index,
+} from 'drizzle-orm/pg-core';
 import { sql } from 'drizzle-orm';
 import { articleCategories } from './article-categories.ts';
 import { users } from './users.ts';
@@ -32,6 +41,7 @@ export const articles = pgTable(
     ogImage: varchar('og_image', { length: 500 }),
     canonicalUrl: varchar('canonical_url', { length: 500 }),
     robots: varchar('robots', { length: 100 }).notNull().default('index, follow'),
+    schemaJson: jsonb('schema_json'),
     publishedAt: timestamp('published_at'),
     createdAt: timestamp('created_at').defaultNow().notNull(),
     updatedAt: timestamp('updated_at').defaultNow().notNull(),

@@ -25,6 +25,7 @@ import {
 } from '../../lib/response.ts';
 import { buildPaginationMeta } from '../../lib/pagination.ts';
 import { omitUndefined } from '../../lib/update.ts';
+import { notifyArticlePublished } from '../../lib/indexnow.ts';
 
 const router = new Hono();
 
@@ -143,6 +144,8 @@ router.get(
         title: articles.title,
         slug: articles.slug,
         summary: articles.summary,
+        content: articles.content,
+        coverImage: articles.coverImage,
         authorName: articles.authorName,
         status: articles.status,
         isFeatured: articles.isFeatured,
@@ -204,6 +207,7 @@ router.get(
         ogImage: articles.ogImage,
         canonicalUrl: articles.canonicalUrl,
         robots: articles.robots,
+        schemaJson: articles.schemaJson,
         publishedAt: articles.publishedAt,
         createdAt: articles.createdAt,
         updatedAt: articles.updatedAt,
@@ -256,11 +260,18 @@ router.post(
         ogImage: data.ogImage ?? null,
         canonicalUrl: data.canonicalUrl ?? null,
         robots: data.robots ?? 'index, follow',
+        schemaJson: data.schemaJson ?? null,
         publishedAt: isPublished ? now : null,
       })
       .returning();
 
     if (!created_article) return serverError(c, 'Gagal membuat artikel');
+
+    // Ping IndexNow for newly published article
+    if (isPublished && created_article.slug) {
+      notifyArticlePublished(created_article.slug).catch(() => {});
+    }
+
     return created(c, created_article, 'Artikel berhasil dibuat');
   },
 );
@@ -307,6 +318,7 @@ router.patch(
       ogImage: data.ogImage,
       canonicalUrl: data.canonicalUrl,
       robots: data.robots,
+      schemaJson: data.schemaJson,
     });
 
     if (data.status !== undefined) {
@@ -321,6 +333,11 @@ router.patch(
       .set(updateData)
       .where(eq(articles.id, id))
       .returning();
+
+    // Ping IndexNow if article was just published
+    if (data.status === 'Published' && article.status !== 'Published' && updated?.slug) {
+      notifyArticlePublished(updated.slug).catch(() => {});
+    }
 
     return success(c, updated, 'Artikel berhasil diperbarui');
   },

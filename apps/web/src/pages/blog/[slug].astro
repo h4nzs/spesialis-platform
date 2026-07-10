@@ -27,6 +27,7 @@ interface ArticleData {
   ogDescription: string | null
   ogImage: string | null
   canonicalUrl: string | null
+  schemaJson: Record<string, unknown> | null
 }
 
 const apiUrl = import.meta.env.PUBLIC_API_URL ?? 'http://localhost:3000'
@@ -47,6 +48,7 @@ try {
         og_description?: string | null
         og_image?: string | null
         canonical_url?: string | null
+        schema_json?: Record<string, unknown> | null
       }
       article = {
         id: r.id,
@@ -65,8 +67,9 @@ try {
         metaDescription: r.meta_description ?? null,
         ogTitle: r.og_title ?? null,
         ogDescription: r.og_description ?? null,
-        ogImage: r.og_image ?? null,
-        canonicalUrl: r.canonical_url ?? null,
+  ogImage: r.og_image ?? null,
+  canonicalUrl: r.canonical_url ?? null,
+  schemaJson: r.schema_json ?? null,
       }
     } else {
       error = 'Artikel tidak ditemukan'
@@ -76,6 +79,55 @@ try {
   }
 } catch (e) {
   error = e instanceof Error ? e.message : 'Gagal memuat artikel'
+}
+
+// Build the JSON-LD graph: default schemas + optional custom schema
+const defaultJsonLd: Record<string, unknown> | undefined = article
+  ? {
+      '@context': 'https://schema.org',
+      '@graph': [
+        {
+          '@type': 'BreadcrumbList',
+          itemListElement: [
+            { '@type': 'ListItem', position: 1, name: 'Beranda', item: 'https://spesialis.id' },
+            { '@type': 'ListItem', position: 2, name: 'Blog', item: 'https://spesialis.id/blog' },
+            { '@type': 'ListItem', position: 3, name: article.title },
+          ],
+        },
+        {
+          '@type': 'Article',
+          headline: article.title,
+          description: article.summary,
+          image: article.coverImage,
+          author: article.authorName
+            ? { '@type': 'Person', name: article.authorName }
+            : { '@type': 'Organization', name: 'Spesialis' },
+          datePublished: article.publishedAt,
+          dateModified: article.updatedAt,
+          publisher: { '@type': 'Organization', name: 'Spesialis' },
+        },
+      ],
+    }
+  : undefined;
+
+// Merge custom schemaJson into the graph if present
+let jsonLdPayload = defaultJsonLd;
+if (article?.schemaJson && defaultJsonLd) {
+  const custom = article.schemaJson;
+  const baseGraph = defaultJsonLd['@graph'] as Record<string, unknown>[];
+  if (custom['@graph']) {
+    // Custom schema is a graph — merge items
+    jsonLdPayload = {
+      '@context': 'https://schema.org',
+      '@graph': [...baseGraph, ...(custom['@graph'] as Record<string, unknown>[])],
+    };
+  } else if (custom['@type']) {
+    // Single schema object — add to graph
+    jsonLdPayload = {
+      '@context': 'https://schema.org',
+      '@graph': [...baseGraph, custom],
+    };
+  }
 }
 
 // RichTextEditor produces HTML; renderMarkdown expects Markdown.
@@ -97,29 +149,7 @@ const contentHtml = article?.content
       articlePublishedTime={article.publishedAt ?? undefined}
       articleModifiedTime={article.updatedAt ?? undefined}
       articleAuthor={article.authorName ?? undefined}
-      jsonLd={{
-        '@context': 'https://schema.org',
-        '@graph': [
-          {
-            '@type': 'BreadcrumbList',
-            itemListElement: [
-              { '@type': 'ListItem', position: 1, name: 'Beranda', item: 'https://spesialis.id' },
-              { '@type': 'ListItem', position: 2, name: 'Blog', item: 'https://spesialis.id/blog' },
-              { '@type': 'ListItem', position: 3, name: article.title },
-            ],
-          },
-          {
-            '@type': 'Article',
-            headline: article.title,
-            description: article.summary,
-            image: article.coverImage,
-            author: article.authorName ? { '@type': 'Person', name: article.authorName } : { '@type': 'Organization', name: 'Spesialis' },
-            datePublished: article.publishedAt,
-            dateModified: article.updatedAt,
-            publisher: { '@type': 'Organization', name: 'Spesialis' },
-          },
-        ],
-      }}
+      jsonLd={jsonLdPayload}
     >
       <div class="mx-auto max-w-3xl px-4 py-12 sm:px-6 lg:px-8">
         <nav class="mb-8 text-body-sm text-text-secondary">

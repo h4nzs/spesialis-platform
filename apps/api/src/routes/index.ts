@@ -34,6 +34,10 @@ import { adminReportsRouter } from './admin/reports.ts';
 import { adminPenaltiesRouter } from './admin/penalties.ts';
 import { publicRouter } from './public.ts';
 import { adminCmsPagesRouter } from './admin/cms-pages.ts';
+import { adminRedirectsRouter } from './admin/redirects.ts';
+import { adminPageErrorsRouter } from './admin/page-errors.ts';
+import { sitemapSettingsRouter } from './sitemap-settings.ts';
+import { indexnowRouter } from './indexnow.ts';
 
 const router = new Hono();
 
@@ -77,5 +81,9 @@ router.route('/admin/reports', adminReportsRouter);
 router.route('/admin/penalties', adminPenaltiesRouter);
 router.route('/public', publicRouter);
 router.route('/admin/cms-pages', adminCmsPagesRouter);
+router.route('/admin/redirects', adminRedirectsRouter);
+router.route('/admin/page-errors', adminPageErrorsRouter);
+router.route('/sitemap-settings', sitemapSettingsRouter);
+router.route('/', indexnowRouter);
 
 export { router as apiRouter };

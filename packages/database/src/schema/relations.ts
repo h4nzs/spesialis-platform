@@ -29,6 +29,9 @@ import { contracts } from './contracts.ts';
 import { invoices } from './invoices.ts';
 import { partnerPenalties } from './partner-penalties.ts';
 import { cmsPages } from './cms-pages.ts';
+import { indexnowLogs } from './indexnow-logs.ts';
+
+export const indexnowLogsRelations = relations(indexnowLogs, () => ({}));
 
 export const usersRelations = relations(users, ({ one, many }) => ({
   customerProfile: one(customerProfiles),

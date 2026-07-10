@@ -183,6 +183,178 @@ Body:
 
 ---
 
+## SEO Permissions
+
+Role: `admin`, `super_admin`
+
+`GET /seo/permissions` — Ambil permission matrix (dari DB, fallback ke DEFAULT_PERMISSIONS).
+
+`PATCH /seo/permissions` — Update permission matrix.
+
+Body:
+
+```json
+{
+  "permissions": {
+    "seo.meta": "admin,super_admin,content_manager",
+    "seo.bulk": "admin,super_admin"
+  }
+}
+```
+
+---
+
+## SEO Metadata
+
+Role: `admin`, `super_admin`, `content_manager`
+
+`GET /seo` — List SEO metadata (filter by entityType, entityId).
+
+Query: `?entityType=Service&entityId=uuid`
+
+`POST /seo` — Create or upsert SEO metadata.
+
+`GET /seo/:id` — Detail SEO metadata.
+
+`PATCH /seo/:id` — Update SEO metadata (partial).
+
+`DELETE /seo/:id` — Delete SEO metadata.
+
+Body (upsert schema):
+
+```json
+{
+  "entityType": "Service | Article | ServiceCategory | CmsPage",
+  "entityId": "uuid",
+  "metaTitle": "Judul Halaman - Spesialis",
+  "metaDescription": "Deskripsi meta halaman...",
+  "canonicalUrl": "https://spesialis.id/services/ac-cleaning",
+  "robots": "index, follow",
+  "ogTitle": "OpenGraph Title",
+  "ogDescription": "OpenGraph Description",
+  "ogImage": "https://spesialis.id/images/og.jpg",
+  "schemaJson": { "@type": "Service", ... }
+}
+```
+
+---
+
+## Redirect Management
+
+Role: `admin`, `super_admin`
+
+`GET /admin/redirects` — List redirects (paginated, searchable).
+
+Query: `?page=1&limit=20&search=/old-path`
+
+`GET /admin/redirects/:id` — Detail redirect.
+
+`POST /admin/redirects` — Buat redirect baru.
+
+Body:
+
+```json
+{
+  "sourcePath": "/old-page",
+  "targetPath": "/new-page",
+  "statusCode": 301,
+  "isActive": true,
+  "notes": "Redirect due to page restructure"
+}
+```
+
+`PATCH /admin/redirects/:id` — Update redirect.
+
+`DELETE /admin/redirects/:id` — Hapus redirect.
+
+---
+
+## 404 Monitor (Page Errors)
+
+Role: `admin`, `super_admin`, `content_manager`
+
+`GET /admin/page-errors` — List 404 errors (paginated, searchable by path).
+
+Query: `?page=1&limit=20&search=/broken`
+
+`GET /admin/page-errors/stats` — Statistik 404 (total, top 10 paths, last 24h).
+
+Response:
+
+```json
+{
+  "success": true,
+  "data": {
+    "total": 150,
+    "topPaths": [{ "path": "/old-link", "count": 25 }],
+    "last24h": 12
+  }
+}
+```
+
+`DELETE /admin/page-errors/:id` — Hapus individual error entry.
+
+`DELETE /admin/page-errors/all` — Hapus semua error entries.
+
+---
+
+## IndexNow
+
+Role: `admin`, `super_admin`
+
+`GET /indexnow/key` — Get or create IndexNow API key.
+
+Response:
+
+```json
+{
+  "success": true,
+  "data": {
+    "key": "uuid-key",
+    "keyLocation": "https://spesialis.id/uuid-key.txt",
+    "enabled": true
+  }
+}
+```
+
+`GET /indexnow/logs` — Recent 50 ping logs with stats (success/error rate).
+
+Response:
+
+```json
+{
+  "success": true,
+  "data": {
+    "logs": [{ "url": "https://...", "status": "success", "createdAt": "..." }],
+    "stats": { "total": 20, "success": 18, "error": 2, "successRate": 90 }
+  }
+}
+```
+
+---
+
+## Sitemap Settings (Public)
+
+`GET /sitemap-settings` — No auth required. Returns sitemap priority/changefreq configuration.
+
+Response:
+
+```json
+{
+  "success": true,
+  "data": {
+    "staticPages": { "priority": "1.0", "changefreq": "weekly" },
+    "services": { "priority": "0.8", "changefreq": "weekly" },
+    "articles": { "priority": "0.7", "changefreq": "weekly" },
+    "blogListing": { "priority": "0.8", "changefreq": "daily" },
+    "cmsPages": { "priority": "0.6", "changefreq": "monthly" },
+    "indexnow": { "key": "uuid-key", "enabled": true }
+  }
+}
+```
+
+---
+
 ## Services
 
 Role: `admin`, `super_admin`

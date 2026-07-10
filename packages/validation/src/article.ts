@@ -47,6 +47,7 @@ export const createArticleSchema = z.object({
   ogImage: z.string().max(500).optional(),
   canonicalUrl: z.string().max(500).optional(),
   robots: z.string().max(100).optional(),
+  schemaJson: z.record(z.string(), z.unknown()).optional().nullable(),
 });
 
 export const updateArticleSchema = z.object({
@@ -72,6 +73,7 @@ export const updateArticleSchema = z.object({
   ogImage: z.string().max(500).optional().nullable(),
   canonicalUrl: z.string().max(500).optional().nullable(),
   robots: z.string().max(100).optional().nullable(),
+  schemaJson: z.record(z.string(), z.unknown()).optional().nullable(),
 });
 
 export type CreateArticleCategoryInput = z.infer<typeof createArticleCategorySchema>;

@@ -43,6 +43,8 @@ import { secureHeaders } from 'hono/secure-headers';
 import { success } from './lib/response.ts';
 import { errorHandler } from './middleware/error-handler.ts';
 import { traceMiddleware } from './middleware/trace.ts';
+import { redirectCheck } from './middleware/redirect-check.ts';
+import { indexnowKeyHandler } from './routes/indexnow-key.ts';
 import { apiRouter } from './routes/index.ts';
 
 const app = new Hono();
@@ -89,12 +91,18 @@ app.use('*', logger());
 
 app.onError(errorHandler);
 
+// 404 redirect check — must be before the route definition that returns 404
+app.notFound(redirectCheck);
+
 app.get('/', (c) => {
   return success(c, {
     service: 'Specialist API',
     version: '1.0.0',
   });
 });
+
+// IndexNow key file — must be at root for search engine verification
+app.get('/:key.txt', indexnowKeyHandler);
 
 app.route('/api/v1', apiRouter);
 

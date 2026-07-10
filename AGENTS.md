@@ -174,9 +174,16 @@ Repeat until it feels intentionally designed by humans.
 
 **CMS Pages (4 system pages): tentang-kami, syarat-ketentuan, kebijakan-privasi, kontak** — dikelola dari admin panel via PageEditor (full page editor, bukan modal). Konten disimpan di tabel `cms_pages` dengan seed default dari hardcoded fallback. Admin dapat mengedit/menambah/menghapus halaman kapan saja.
 
-**SEO sudah terpasang:** Structured data (JSON-LD) di semua halaman utama (WebSite, LocalBusiness, Organization, Article, Blog, FAQPage, Service, BreadcrumbList, WebPage), OpenGraph/Twitter Card tags, canonical URL, dynamic sitemap, robots.txt, OG default image.
+**SEO Management (full suite):**
+- **8 permission keys** — `seo.meta`, `seo.bulk`, `seo.audit`, `seo.redirects`, `seo.404_monitor`, `seo.indexnow`, `seo.schema`, `seo.sitemap_settings` — dikelola via RoleManager UI, middleware `requirePermission()` dengan 30s cache & DB fallback
+- **SchemaBuilder** — visual JSON-LD builder dengan 6 template types (Article, FAQ, Service, LocalBusiness, BreadcrumbList, Organization), preview & copy-to-clipboard
+- **SitemapSettings** — admin UI untuk prioritas/changefreq 5 page types + IndexNow auto-ping toggle
+- **Redirect Management** — CRUD API dengan duplicate detection, middleware auto-redirect di 404 handler
+- **404 Monitor** — statistik 404 errors, top paths, last 24h, auto-logging dari setiap 404
+- **IndexNow** — API key generation, auto-ping saat artikel dipublish, log ping success/error rate
+- Structured data (JSON-LD), OpenGraph, Twitter Card, canonical URL, dynamic sitemap, robots.txt, OG default image
 
 **Partner approve/decline:** Admin dapat menyetujui atau menolak partner. Saat ditolak, modal input alasan muncul — alasan dikirim via API sebagai `note`, partner mendapat notifikasi & email dengan alasan.
 
-**Testing:** Vitest terinstall di `api`, `shared`, `validation` + Playwright E2E (16 spec files, ~140+ tests, 100% P0 coverage).
+**Testing:** Vitest terinstall di `api`, `shared`, `validation` + Playwright E2E (19 spec files, ~160+ tests, 100% P0 coverage, SEO-specific E2E tests).
 ````

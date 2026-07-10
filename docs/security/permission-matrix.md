@@ -13,3 +13,11 @@
 | CMS                  | ❌    | ❌       | ❌      | ❌        | ❌         | ❌      | ✅              | ✅    | ✅          |
 | User Management      | ❌    | ❌       | ❌      | ❌        | ❌         | ❌      | ❌              | ✅    | ✅          |
 | System Settings      | ❌    | ❌       | ❌      | ❌        | ❌         | ❌      | ❌              | ❌    | ✅          |
+| SEO Meta             | ❌    | ❌       | ❌      | ❌        | ❌         | ❌      | ✅              | ✅    | ✅          |
+| SEO Bulk Edit        | ❌    | ❌       | ❌      | ❌        | ❌         | ❌      | ❌              | ✅    | ✅          |
+| SEO Audit            | ❌    | ❌       | ❌      | ❌        | ❌         | ❌      | ✅              | ✅    | ✅          |
+| SEO Redirects        | ❌    | ❌       | ❌      | ❌        | ❌         | ❌      | ❌              | ✅    | ✅          |
+| SEO 404 Monitor      | ❌    | ❌       | ❌      | ❌        | ❌         | ❌      | ✅              | ✅    | ✅          |
+| SEO IndexNow         | ❌    | ❌       | ❌      | ❌        | ❌         | ❌      | ❌              | ✅    | ✅          |
+| SEO Schema Builder   | ❌    | ❌       | ❌      | ❌        | ❌         | ❌      | ✅              | ✅    | ✅          |
+| SEO Sitemap Settings | ❌    | ❌       | ❌      | ❌        | ❌         | ❌      | ❌              | ✅    | ✅          |

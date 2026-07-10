@@ -200,25 +200,31 @@ pnpm cli help                     # Show all commands
 
 ## Project Status
 
-| Feature              | Status |
-| -------------------- | ------ |
-| Guest Booking        | ✅     |
-| Customer Dashboard   | ✅     |
-| Partner Registration | ✅     |
-| Partner Verification | ✅     |
-| Corporate Inquiry    | ✅     |
-| Corporate Dashboard  | ✅     |
-| Admin Dashboard      | ✅     |
-| CMS Articles         | ✅     |
-| CMS Pages (4 system) | ✅     |
-| CMS FAQ              | ✅     |
-| CMS Services         | ✅     |
-| SEO (JSON-LD, OG)    | ✅     |
-| Payment (manual)     | ✅     |
-| Assignment (manual)  | ✅     |
-| Audit Log            | ✅     |
-| Media Upload         | ✅     |
-| E2E Tests (~140+)    | ✅     |
+| Feature                     | Status |
+| --------------------------- | ------ |
+| Guest Booking               | ✅     |
+| Customer Dashboard          | ✅     |
+| Partner Registration        | ✅     |
+| Partner Verification        | ✅     |
+| Corporate Inquiry           | ✅     |
+| Corporate Dashboard         | ✅     |
+| Admin Dashboard             | ✅     |
+| CMS Articles                | ✅     |
+| CMS Pages (4 system)        | ✅     |
+| CMS FAQ                     | ✅     |
+| CMS Services                | ✅     |
+| SEO (Metadata, JSON-LD, OG) | ✅     |
+| SEO Redirect Management     | ✅     |
+| SEO 404 Monitor             | ✅     |
+| SEO IndexNow                | ✅     |
+| SEO Schema Builder          | ✅     |
+| SEO RoleManager             | ✅     |
+| SEO Sitemap Settings        | ✅     |
+| Payment (manual)            | ✅     |
+| Assignment (manual)         | ✅     |
+| Audit Log                   | ✅     |
+| Media Upload                | ✅     |
+| E2E Tests (~140+)           | ✅     |
 
 ---
 

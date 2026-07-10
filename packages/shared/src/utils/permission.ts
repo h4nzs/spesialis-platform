@@ -49,11 +49,22 @@ export const DEFAULT_PERMISSIONS: PermissionMap = {
   // CMS
   'cms.manage': ['admin', 'super_admin', 'content_manager'],
 
+  // SEO & Indexing
+  'seo.meta': ['admin', 'super_admin', 'content_manager'],
+  'seo.bulk': ['admin', 'super_admin'],
+  'seo.audit': ['admin', 'super_admin', 'content_manager'],
+  'seo.redirects': ['admin', 'super_admin'],
+  'seo.404_monitor': ['admin', 'super_admin', 'content_manager'],
+  'seo.indexnow': ['admin', 'super_admin'],
+  'seo.schema': ['admin', 'super_admin', 'content_manager'],
+  'seo.sitemap_settings': ['admin', 'super_admin'],
+
   // Admin
   'admin.dashboard': ['admin', 'super_admin', 'dispatcher', 'finance'],
   'admin.users': ['admin', 'super_admin'],
   'admin.settings': ['admin', 'super_admin'],
   'admin.audit_logs': ['admin', 'super_admin'],
+  'admin.role_manager': ['admin', 'super_admin'],
 };
 
 // ─── Permission Check Functions ──────────────────────────────────
@@ -138,5 +149,43 @@ export function canManageRole(manager: UserRole, target: UserRole): boolean {
   if (isStaffRole(manager) && !isStaffRole(target)) return true;
   return compareRoles(manager, target) > 0;
 }
+
+/**
+ * SEO feature permission keys — digunakan untuk referensi di middleware & UI.
+ */
+export const SEO_PERMISSION_KEYS: {
+  key: string;
+  label: string;
+  description: string;
+}[] = [
+  {
+    key: 'seo.meta',
+    label: 'SEO Editor',
+    description: 'Edit meta title, description, dan pengaturan SEO per halaman',
+  },
+  { key: 'seo.bulk', label: 'Bulk SEO', description: 'Edit meta SEO secara massal' },
+  {
+    key: 'seo.audit',
+    label: 'SEO Audit',
+    description: 'Menjalankan audit SEO dan melihat hasilnya',
+  },
+  { key: 'seo.redirects', label: 'Redirect Manager', description: 'Mengelola redirect URL' },
+  { key: 'seo.404_monitor', label: '404 Monitor', description: 'Melihat dan mengelola error 404' },
+  {
+    key: 'seo.indexnow',
+    label: 'IndexNow',
+    description: 'Mengatur key IndexNow dan melihat log ping',
+  },
+  {
+    key: 'seo.schema',
+    label: 'Schema Builder',
+    description: 'Membuat dan mengedit schema markup JSON-LD',
+  },
+  {
+    key: 'seo.sitemap_settings',
+    label: 'Sitemap Settings',
+    description: 'Mengatur prioritas dan frekuensi sitemap',
+  },
+];
 
 export { isAdminRole, isStaffRole, ADMIN_ROLES, ROLES };

@@ -1283,7 +1283,137 @@ async function seed() {
       description: 'Nomor WhatsApp untuk tombol WA di halaman publik',
     },
   ]);
-  console.log('  ✓ 12 system settings created');
+
+  // ─── Sitemap Settings ────────────────────────────────────────────
+  await db.insert(systemSettings).values([
+    {
+      category: 'sitemap',
+      key: 'sitemap_static_pages_priority',
+      value: '1.0',
+      description: 'Prioritas halaman statis di sitemap',
+    },
+    {
+      category: 'sitemap',
+      key: 'sitemap_static_pages_changefreq',
+      value: 'weekly',
+      description: 'Frekuensi perubahan halaman statis',
+    },
+    {
+      category: 'sitemap',
+      key: 'sitemap_services_priority',
+      value: '0.8',
+      description: 'Prioritas halaman layanan di sitemap',
+    },
+    {
+      category: 'sitemap',
+      key: 'sitemap_services_changefreq',
+      value: 'weekly',
+      description: 'Frekuensi perubahan halaman layanan',
+    },
+    {
+      category: 'sitemap',
+      key: 'sitemap_articles_priority',
+      value: '0.7',
+      description: 'Prioritas halaman artikel di sitemap',
+    },
+    {
+      category: 'sitemap',
+      key: 'sitemap_articles_changefreq',
+      value: 'weekly',
+      description: 'Frekuensi perubahan halaman artikel',
+    },
+    {
+      category: 'sitemap',
+      key: 'sitemap_blog_listing_priority',
+      value: '0.8',
+      description: 'Prioritas halaman blog listing di sitemap',
+    },
+    {
+      category: 'sitemap',
+      key: 'sitemap_blog_listing_changefreq',
+      value: 'daily',
+      description: 'Frekuensi perubahan halaman blog listing',
+    },
+    {
+      category: 'sitemap',
+      key: 'sitemap_cms_pages_priority',
+      value: '0.6',
+      description: 'Prioritas halaman CMS di sitemap',
+    },
+    {
+      category: 'sitemap',
+      key: 'sitemap_cms_pages_changefreq',
+      value: 'monthly',
+      description: 'Frekuensi perubahan halaman CMS',
+    },
+    {
+      category: 'sitemap',
+      key: 'indexnow_key',
+      value: '',
+      description: 'Kunci IndexNow untuk ping otomatis',
+    },
+    {
+      category: 'sitemap',
+      key: 'indexnow_enabled',
+      value: 'false',
+      description: 'Aktifkan IndexNow auto-ping',
+    },
+  ]);
+
+  // ─── SEO Permissions ─────────────────────────────────────────────
+  await db.insert(systemSettings).values([
+    {
+      category: 'seo_permissions',
+      key: 'perm_seo_meta',
+      value: 'admin,super_admin,content_manager',
+      description: 'Izin mengelola SEO metadata',
+    },
+    {
+      category: 'seo_permissions',
+      key: 'perm_seo_bulk',
+      value: 'admin,super_admin',
+      description: 'Izin SEO bulk edit',
+    },
+    {
+      category: 'seo_permissions',
+      key: 'perm_seo_audit',
+      value: 'admin,super_admin,content_manager',
+      description: 'Izin mengakses SEO audit',
+    },
+    {
+      category: 'seo_permissions',
+      key: 'perm_seo_redirects',
+      value: 'admin,super_admin',
+      description: 'Izin mengelola redirects',
+    },
+    {
+      category: 'seo_permissions',
+      key: 'perm_seo_404_monitor',
+      value: 'admin,super_admin,content_manager',
+      description: 'Izin memantau 404 errors',
+    },
+    {
+      category: 'seo_permissions',
+      key: 'perm_seo_indexnow',
+      value: 'admin,super_admin',
+      description: 'Izin mengelola IndexNow',
+    },
+    {
+      category: 'seo_permissions',
+      key: 'perm_seo_schema',
+      value: 'admin,super_admin,content_manager',
+      description: 'Izin mengelola Schema Markup',
+    },
+    {
+      category: 'seo_permissions',
+      key: 'perm_seo_sitemap_settings',
+      value: 'admin,super_admin',
+      description: 'Izin mengatur sitemap',
+    },
+  ]);
+  console.log(
+    '  ✓ 33 system settings created (12 existing + 12 sitemap + 8 seo_permissions + 1 whatsapp)',
+  );
 
   console.log('\n═══════════════════════════════════════════');
   console.log('  ✅ Seed complete!');
@@ -1304,7 +1434,7 @@ async function seed() {
   console.log('    10 orders across all lifecycle stages');
   console.log('    2 reviews, 2 complaints, 4 notifications');
   console.log('    4 categories, 4 articles, 7 FAQ entries');
-  console.log('    3 SEO entries, 12 system settings');
+  console.log('    3 SEO entries, 33 system settings');
 }
 
 seed()

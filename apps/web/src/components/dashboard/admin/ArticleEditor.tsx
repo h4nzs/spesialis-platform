@@ -9,6 +9,8 @@ import {
   MediaBrowser,
   TagsInput,
   SEOEditor,
+  SeoAnalyzerPanel,
+  SchemaBuilder,
 } from '@specialist/ui';
 import type { SeoData } from '@specialist/ui';
 import { renderMarkdown } from '../../../lib/markdown.ts';
@@ -33,6 +35,7 @@ interface ArticleFormData {
   ogImage: string;
   canonicalUrl: string;
   robots: string;
+  schemaJson: Record<string, unknown> | null;
 }
 
 interface CategoryItem {
@@ -65,6 +68,7 @@ const EMPTY_FORM: ArticleFormData = {
   ogImage: '',
   canonicalUrl: '',
   robots: 'index, follow',
+  schemaJson: null,
 };
 
 const STATUS_OPTIONS = [
@@ -209,6 +213,7 @@ export function ArticleEditor({ editingId }: ArticleEditorProps) {
             ogImage: (d.ogImage as string) ?? '',
             canonicalUrl: (d.canonicalUrl as string) ?? '',
             robots: (d.robots as string) ?? 'index, follow',
+            schemaJson: (d.schemaJson as Record<string, unknown>) ?? null,
           });
         }
       } catch {
@@ -268,6 +273,11 @@ export function ArticleEditor({ editingId }: ArticleEditorProps) {
     setShowMediaBrowser(true);
   }, []);
 
+  // ── Schema handler ─────────────────────────────────────────────
+  const handleSchemaChange = useCallback((schema: Record<string, unknown> | null) => {
+    setForm((f) => ({ ...f, schemaJson: schema }));
+  }, []);
+
   // ── Submit handler ─────────────────────────────────────────────
   async function handleSave(e: React.SyntheticEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -296,6 +306,7 @@ export function ArticleEditor({ editingId }: ArticleEditorProps) {
         ogImage: form.ogImage || undefined,
         canonicalUrl: form.canonicalUrl || undefined,
         robots: form.robots || undefined,
+        schemaJson: form.schemaJson,
       };
 
       if (editingId) {
@@ -335,34 +346,29 @@ export function ArticleEditor({ editingId }: ArticleEditorProps) {
         onSelect={handleMediaSelect}
       />
 
-      {/* ── Header ──────────────────────────────────────────── */}
-      <div className="mb-6 flex items-center justify-between">
-        <div>
-          <button
-            type="button"
-            onClick={goBack}
-            className="mb-2 flex items-center gap-1 text-sm text-text-muted hover:text-text-primary transition-colors"
+      {/* ── Back button ─────────────────────────────────────── */}
+      <div className="mb-6">
+        <button
+          type="button"
+          onClick={goBack}
+          className="flex items-center gap-1 text-sm text-text-muted hover:text-text-primary transition-colors"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
           >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="16"
-              height="16"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <path d="M19 12H5" />
-              <path d="M12 19l-7-7 7-7" />
-            </svg>
-            Kembali ke daftar artikel
-          </button>
-          <h1 className="text-h2 text-text-primary">
-            {editingId ? 'Edit Artikel' : 'Tulis Artikel Baru'}
-          </h1>
-        </div>
+            <path d="M19 12H5" />
+            <path d="M12 19l-7-7 7-7" />
+          </svg>
+          Kembali ke daftar artikel
+        </button>
       </div>
 
       {error && (
@@ -586,6 +592,17 @@ export function ArticleEditor({ editingId }: ArticleEditorProps) {
                 onImageUpload={handleSeoImageUpload}
               />
             </Card>
+
+            <SchemaBuilder value={form.schemaJson} onChange={handleSchemaChange} />
+
+            <SeoAnalyzerPanel
+              contentHtml={form.content}
+              title={form.title}
+              slug={form.slug}
+              metaTitle={form.metaTitle}
+              metaDescription={form.metaDescription}
+              url={`/blog/${form.slug}`}
+            />
           </div>
         </div>
 

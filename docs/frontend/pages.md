@@ -124,7 +124,17 @@ Hono API       → validasi token → proses → response JSON
 
 `/dashboard/admin/penalties` — Manajemen Penalty
 
-`/dashboard/admin/settings` — Pengaturan Sistem
+`/dashboard/admin/settings` — Pengaturan Sistem + SitemapSettings + RoleManager (SEO permissions)
+
+`/dashboard/admin/seo` — SEO Metadata Management (list, create, edit)
+
+`/dashboard/admin/seo/bulk-edit` — SEO Bulk Edit
+
+`/dashboard/admin/seo/audit` — SEO Audit
+
+`/dashboard/admin/seo/redirects` — Redirect Management
+
+`/dashboard/admin/seo/404-monitor` — 404 Monitor
 
 `/dashboard/admin/dispatcher` — Dispatcher Overview
 

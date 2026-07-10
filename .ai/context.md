@@ -38,9 +38,63 @@ PageEditor.tsx adalah full page editor (2 kolom, Card-based, live preview) mengg
 
 Saat admin menolak partner, modal muncul dengan textarea untuk alasan. Alasan dikirim sebagai `note` ke API, partner mendapat notifikasi & email.
 
-## ✅ SEO sudah terpasang
+## ✅ SEO Management (Full Suite)
 
-Structured data (JSON-LD), OpenGraph, Twitter Card, canonical URL, dynamic sitemap, robots.txt.
+### SEO Metadata Management
+
+- CRUD API di `apps/api/src/routes/seo.ts` — kelola meta title, description, canonical, robots, OG/Twitter, schema_json per entity (Service, Article, Category, CMS Page)
+- SEOEditor component (`packages/ui/src/components/SEOEditor.tsx`) dengan real-time preview, character count, dan slug detection
+- Shared antara ArticleEditor dan PageEditor
+
+### SEO Permission System
+
+- 8 permission keys: `seo.meta`, `seo.bulk`, `seo.audit`, `seo.redirects`, `seo.404_monitor`, `seo.indexnow`, `seo.schema`, `seo.sitemap_settings`
+- Middleware `requirePermission()` di `apps/api/src/middleware/seo-permissions.ts` dengan 30s cache
+- RoleManager UI (`apps/web/src/components/dashboard/admin/RoleManager.tsx`) — matrix 8 features × 8 roles, configurable via DB
+- Fallback ke `DEFAULT_PERMISSIONS` jika tidak ada konfigurasi di DB
+
+### Schema Builder (JSON-LD)
+
+- `packages/ui/src/components/SchemaBuilder.tsx` — visual builder untuk Structured Data
+- 6 template types: Article, FAQ, Service, LocalBusiness, BreadcrumbList, Organization
+- Seleksi template, isi field, copy JSON ke clipboard
+- Data disimpan di kolom `schema_json` tabel `seo_metadata`
+
+### Sitemap Settings
+
+- `apps/web/src/components/dashboard/admin/SitemapSettings.tsx` — admin UI untuk prioritas & changefreq
+- 5 page types: static pages, services, articles, blog listing, CMS pages
+- Auto-ping IndexNow toggle
+- Konfigurasi disimpan di `system_settings` (category: `sitemap`)
+
+### Redirect Management
+
+- CRUD API di `apps/api/src/routes/admin/redirects.ts` — source path, target path, status code (301/302), active toggle
+- Duplicate source path detection
+- Middleware `redirectCheck` di `apps/api/src/middleware/redirect-check.ts` — otomatis redirect di 404 handler
+- Logging ke tabel `page_errors` untuk setiap 404
+
+### 404 Monitor
+
+- `apps/api/src/routes/admin/page-errors.ts` — lihat statistik 404, top paths, last 24h count
+- Auto-logging dari middleware `redirectCheck`
+- Dapat membersihkan semua error entries
+
+### IndexNow
+
+- `apps/api/src/routes/indexnow.ts` — get/create API key, lihat ping logs
+- `apps/api/src/lib/indexnow.ts` — utility untuk auto-ping saat artikel dipublish
+- Key generation menggunakan `crypto.randomUUID()`
+- Dashboard widget untuk melihat success/error rate ping
+
+### Standalone Features (sebelumnya)
+
+- Structured data (JSON-LD) di semua halaman utama (WebSite, LocalBusiness, Organization, Article, Blog, FAQPage, Service, BreadcrumbList, WebPage)
+- OpenGraph/Twitter Card tags
+- Canonical URL
+- Dynamic sitemap
+- robots.txt
+- OG default image
 
 ---
 

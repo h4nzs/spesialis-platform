@@ -1,0 +1,13 @@
+---
+import DashboardLayout from '../../../../layouts/DashboardLayout.astro'
+import { BulkSeoEditor } from '../../../../components/dashboard/admin/BulkSeoEditor'
+---
+
+<DashboardLayout title="Bulk SEO Editor" canonicalUrl="/dashboard/admin/seo/bulk-edit">
+  <div class="space-y-6">
+    <p class="text-body-sm text-text-secondary">
+      Edit meta title dan meta description banyak artikel sekaligus
+    </p>
+    <BulkSeoEditor client:load />
+  </div>
+</DashboardLayout>

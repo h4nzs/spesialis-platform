@@ -440,6 +440,57 @@ Publish Action
 
 ---
 
+# SEO Components
+
+SEO Editor (packages/ui/src/components/SEOEditor.tsx)
+
+- Meta title & description with character count
+- Real-time preview (Google snippet)
+- Shared between ArticleEditor and PageEditor
+
+Schema Builder (packages/ui/src/components/SchemaBuilder.tsx)
+
+- Visual JSON-LD Structured Data builder
+- 6 template types: Article, FAQ, Service, LocalBusiness, BreadcrumbList, Organization
+- Template selector dropdown
+- Interactive field editor
+- JSON preview pane
+- Copy to clipboard
+- Data disimpan di `schema_json` kolom `seo_metadata`
+
+RoleManager (apps/web/src/components/dashboard/admin/RoleManager.tsx)
+
+- Permission matrix: 8 SEO features × 8 roles
+- Loading skeleton
+- Interactive checkboxes for configurable roles
+- Admin/Super Admin columns always disabled (always have access)
+- Reset to defaults button
+- Save permissions button
+- Menyimpan di `system_settings` (category: `seo_permissions`)
+
+SitemapSettings (apps/web/src/components/dashboard/admin/SitemapSettings.tsx)
+
+- Konfigurasi prioritas & changefreq untuk 5 page types
+- Page types: Static Pages, Services, Articles, Blog Listing, CMS Pages
+- IndexNow key display
+- Auto-ping IndexNow toggle
+- Menyimpan di `system_settings` (category: `sitemap`)
+
+RedirectManager (admin dashboard page — belum sebagai component standalone)
+
+- CRUD redirect dengan source path, target path, status code (301/302)
+- Duplicate source validation
+- Active/inactive toggle
+
+PageErrorsMonitor (admin dashboard page)
+
+- 404 error monitoring table
+- Top paths (sorted by count)
+- Last 24h stats
+- Delete individual / clear all actions
+
+---
+
 # Component Variants
 
 Button

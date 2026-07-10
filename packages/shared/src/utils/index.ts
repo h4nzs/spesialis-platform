@@ -11,6 +11,7 @@ export {
   ADMIN_ROLES,
   ROLES,
   DEFAULT_PERMISSIONS,
+  SEO_PERMISSION_KEYS,
 } from './permission.ts';
 export type { PermissionMap } from './permission.ts';
 

@@ -74,5 +74,15 @@ export {
   DEFAULT_SEO,
 } from './components/SEOEditor.tsx';
 
+// ─── Schema Builder ────────────────────────────────────────────
+export { SchemaBuilder, type SchemaBuilderProps } from './components/SchemaBuilder.tsx';
+
+// ─── SEO Analyzer ────────────────────────────────────────────
+export { SeoScoreGauge, type SeoScoreGaugeProps } from './components/SeoScoreGauge.tsx';
+export { SeoChecklist, type SeoChecklistProps } from './components/SeoChecklist.tsx';
+export { SnippetPreview, type SnippetPreviewProps } from './components/SnippetPreview.tsx';
+export { ReadabilityScore, type ReadabilityScoreProps } from './components/ReadabilityScore.tsx';
+export { SeoAnalyzerPanel, type SeoAnalyzerPanelProps } from './components/SeoAnalyzerPanel.tsx';
+
 // ─── Utilities ──────────────────────────────────────────────────────────
 export { cn } from './utils/cn.ts';

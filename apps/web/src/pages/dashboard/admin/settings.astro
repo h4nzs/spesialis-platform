@@ -3,9 +3,13 @@ export const prerender = false
 import DashboardLayout from '../../../layouts/DashboardLayout.astro'
 import { ProfileSettings } from '../../../components/dashboard/ProfileSettings.tsx'
 import { SystemSettings } from '../../../components/dashboard/admin/SystemSettings.tsx'
+import { SitemapSettings } from '../../../components/dashboard/admin/SitemapSettings.tsx'
+import { RoleManager } from '../../../components/dashboard/admin/RoleManager.tsx'
 ---
 
 <DashboardLayout title="Pengaturan" role={['admin', 'super_admin', 'content_manager', 'dispatcher', 'finance']}>
   <ProfileSettings client:load />
   <SystemSettings client:load />
+  <SitemapSettings client:load />
+  <RoleManager client:load />
 </DashboardLayout>

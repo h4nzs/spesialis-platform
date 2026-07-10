@@ -2,6 +2,7 @@ import { Hono } from 'hono';
 import { eq, and } from 'drizzle-orm';
 import { db, seoMetadata } from '../lib/db.ts';
 import { authMiddleware, requireRole } from '../middleware/auth.ts';
+import { requirePermission } from '../middleware/seo-permissions.ts';
 import { validateBody } from '../middleware/validation.ts';
 import { upsertSeoSchema } from '@specialist/validation';
 import type { UpsertSeoInput } from '@specialist/validation';
@@ -9,7 +10,7 @@ import { success, created, notFound } from '../lib/response.ts';
 
 const router = new Hono();
 
-router.use('*', authMiddleware, requireRole('admin', 'super_admin', 'content_manager'));
+router.use('*', authMiddleware, requirePermission('seo.meta'));
 
 router.get('/', async (c) => {
   const entityType = c.req.query('entityType');

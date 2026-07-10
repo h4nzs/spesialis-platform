@@ -8,7 +8,15 @@ interface NavItem {
   icon: string;
 }
 
-const NAV_MAP: Record<string, NavItem[]> = {
+interface NavSection {
+  label: string;
+  icon: string;
+  children: NavItem[];
+}
+
+type NavEntry = NavItem | NavSection;
+
+const NAV_MAP: Record<string, NavEntry[]> = {
   content_manager: [
     { href: '/dashboard/admin', label: 'Ringkasan', icon: 'dashboard' },
     { href: '/dashboard/admin/articles', label: 'Artikel', icon: 'fileText' },
@@ -45,6 +53,16 @@ const NAV_MAP: Record<string, NavItem[]> = {
     { href: '/dashboard/admin/contracts', label: 'Kontrak', icon: 'scrollText' },
     { href: '/dashboard/admin/invoices', label: 'Invoice', icon: 'receipt' },
     { href: '/dashboard/admin/articles', label: 'Artikel', icon: 'fileText' },
+    {
+      label: 'SEO',
+      icon: 'search',
+      children: [
+        { href: '/dashboard/admin/seo/bulk-edit', label: 'Bulk SEO', icon: 'barChart' },
+        { href: '/dashboard/admin/seo/audit', label: 'SEO Audit', icon: 'search' },
+        { href: '/dashboard/admin/seo/redirects', label: 'Redirect', icon: 'redirect' },
+        { href: '/dashboard/admin/seo/404-monitor', label: '404 Monitor', icon: 'alertTriangle' },
+      ],
+    },
     { href: '/dashboard/admin/faq', label: 'FAQ', icon: 'helpCircle' },
     { href: '/dashboard/admin/media', label: 'Media', icon: 'file' },
     { href: '/dashboard/admin/cms-pages', label: 'Halaman', icon: 'fileText' },
@@ -63,6 +81,16 @@ const NAV_MAP: Record<string, NavItem[]> = {
     { href: '/dashboard/admin/contracts', label: 'Kontrak', icon: 'scrollText' },
     { href: '/dashboard/admin/invoices', label: 'Invoice', icon: 'receipt' },
     { href: '/dashboard/admin/articles', label: 'Artikel', icon: 'fileText' },
+    {
+      label: 'SEO',
+      icon: 'search',
+      children: [
+        { href: '/dashboard/admin/seo/bulk-edit', label: 'Bulk SEO', icon: 'barChart' },
+        { href: '/dashboard/admin/seo/audit', label: 'SEO Audit', icon: 'search' },
+        { href: '/dashboard/admin/seo/redirects', label: 'Redirect', icon: 'redirect' },
+        { href: '/dashboard/admin/seo/404-monitor', label: '404 Monitor', icon: 'alertTriangle' },
+      ],
+    },
     { href: '/dashboard/admin/faq', label: 'FAQ', icon: 'helpCircle' },
     { href: '/dashboard/admin/media', label: 'Media', icon: 'file' },
     { href: '/dashboard/admin/cms-pages', label: 'Halaman', icon: 'fileText' },
@@ -132,7 +160,13 @@ const ICON_SVGS: Record<string, string> = {
   helpCircle:
     '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg>',
   file: '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/></svg>',
+  redirect:
+    '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 14 20 9 15 4"/><path d="M4 20v-7a4 4 0 0 1 4-4h12"/></svg>',
+  alertTriangle:
+    '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>',
   home: '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>',
+  search:
+    '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>',
 
   /* ── Mobile menu + logout ──────────────────────────────────── */
   menu: '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="18" y2="18"/></svg>',
@@ -153,13 +187,28 @@ function Icon({ name, className }: { name: string; className?: string }) {
   );
 }
 
+function isNavItem(entry: NavEntry): entry is NavItem {
+  return 'href' in entry;
+}
+
 export function Sidebar({ role, currentPath }: { role: UserRole; currentPath?: string }) {
   const [open, setOpen] = useState(false);
-  const items = (NAV_MAP[role] ?? NAV_MAP.customer)!;
+  const [sectionsOpen, setSectionsOpen] = useState<Record<string, boolean>>({
+    seo: true,
+  });
+  const entries = (NAV_MAP[role] ?? NAV_MAP.customer)!;
   const path = currentPath ?? (typeof window !== 'undefined' ? window.location.pathname : '');
 
   function isActive(href: string) {
     return path === href;
+  }
+
+  function isSectionActive(section: NavSection): boolean {
+    return section.children.some((child) => isActive(child.href));
+  }
+
+  function toggleSection(label: string) {
+    setSectionsOpen((prev) => ({ ...prev, [label.toLowerCase()]: !prev[label.toLowerCase()] }));
   }
 
   return (
@@ -200,28 +249,94 @@ export function Sidebar({ role, currentPath }: { role: UserRole; currentPath?: s
           </div>
         </div>
 
-        {/* Nav items */}
+        {/* Nav items & sections */}
         <div className="flex-1 overflow-y-auto px-3 py-4">
-          {items.map((item) => (
-            <a
-              key={item.href}
-              href={item.href}
-              onClick={() => setOpen(false)}
-              className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-body-sm font-medium transition-colors duration-150 ease-out ${
-                isActive(item.href)
-                  ? 'bg-primary-50 text-primary-700'
-                  : 'text-text-secondary hover:bg-neutral-100 hover:text-text-primary'
-              }`}
-            >
-              <Icon
-                name={item.icon}
-                className={`flex shrink-0 items-center justify-center ${
-                  isActive(item.href) ? 'text-primary-600' : 'text-text-muted'
-                }`}
-              />
-              {item.label}
-            </a>
-          ))}
+          {entries.map((entry) => {
+            if (isNavItem(entry)) {
+              return (
+                <a
+                  key={entry.href}
+                  href={entry.href}
+                  onClick={() => setOpen(false)}
+                  className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-body-sm font-medium transition-colors duration-150 ease-out ${
+                    isActive(entry.href)
+                      ? 'bg-primary-50 text-primary-700'
+                      : 'text-text-secondary hover:bg-neutral-100 hover:text-text-primary'
+                  }`}
+                >
+                  <Icon
+                    name={entry.icon}
+                    className={`flex shrink-0 items-center justify-center ${
+                      isActive(entry.href) ? 'text-primary-600' : 'text-text-muted'
+                    }`}
+                  />
+                  {entry.label}
+                </a>
+              );
+            }
+
+            // ── Collapsible section ──────────────────────────────
+            const sectionKey = entry.label.toLowerCase();
+            const isOpen = sectionsOpen[sectionKey] ?? true;
+            const anyChildActive = isSectionActive(entry);
+
+            return (
+              <div key={`section:${entry.label}`} className="space-y-0.5">
+                <button
+                  type="button"
+                  onClick={() => toggleSection(entry.label)}
+                  className={`flex w-full items-center gap-3 rounded-lg px-3 py-2 text-body-sm font-medium transition-colors duration-150 ease-out ${
+                    anyChildActive
+                      ? 'text-primary-700'
+                      : 'text-text-secondary hover:text-text-primary'
+                  }`}
+                >
+                  <Icon name={entry.icon} className="shrink-0 text-text-muted" />
+                  <span className="flex-1 text-left">{entry.label}</span>
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="14"
+                    height="14"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    className={`text-text-muted transition-transform duration-200 ${
+                      isOpen ? 'rotate-180' : ''
+                    }`}
+                  >
+                    <path d="m6 9 6 6 6-6" />
+                  </svg>
+                </button>
+
+                {isOpen && (
+                  <div className="ml-3 space-y-0.5 border-l-2 border-border-default pl-3">
+                    {entry.children.map((child) => (
+                      <a
+                        key={child.href}
+                        href={child.href}
+                        onClick={() => setOpen(false)}
+                        className={`flex items-center gap-2.5 rounded-lg px-3 py-2 text-body-sm font-medium transition-colors duration-150 ease-out ${
+                          isActive(child.href)
+                            ? 'bg-primary-50 text-primary-700'
+                            : 'text-text-secondary hover:bg-neutral-100 hover:text-text-primary'
+                        }`}
+                      >
+                        <span
+                          className={`h-1.5 w-1.5 shrink-0 rounded-full ${
+                            isActive(child.href) ? 'bg-primary-500' : 'bg-text-muted'
+                          }`}
+                        />
+                        {child.label}
+                      </a>
+                    ))}
+                  </div>
+                )}
+              </div>
+            );
+          })}
         </div>
 
         {/* Logout */}

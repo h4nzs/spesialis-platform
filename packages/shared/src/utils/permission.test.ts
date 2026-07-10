@@ -9,6 +9,8 @@ import {
   getRoleHierarchy,
   compareRoles,
   canManageRole,
+  SEO_PERMISSION_KEYS,
+  DEFAULT_PERMISSIONS,
 } from './permission.ts';
 
 describe('hasPermission', () => {
@@ -109,5 +111,105 @@ describe('canManageRole', () => {
 
   it('customer cannot manage others', () => {
     expect(canManageRole('customer', 'partner')).toBe(false);
+  });
+});
+
+describe('SEO permissions', () => {
+  describe('seo.meta', () => {
+    it('allows admin, super_admin, content_manager', () => {
+      expect(hasPermission('admin', 'seo.meta')).toBe(true);
+      expect(hasPermission('super_admin', 'seo.meta')).toBe(true);
+      expect(hasPermission('content_manager', 'seo.meta')).toBe(true);
+    });
+
+    it('denies customer, partner, corporate, dispatcher, finance', () => {
+      expect(hasPermission('customer', 'seo.meta')).toBe(false);
+      expect(hasPermission('partner', 'seo.meta')).toBe(false);
+      expect(hasPermission('corporate', 'seo.meta')).toBe(false);
+      expect(hasPermission('dispatcher', 'seo.meta')).toBe(false);
+      expect(hasPermission('finance', 'seo.meta')).toBe(false);
+    });
+  });
+
+  describe('seo.bulk', () => {
+    it('allows only admin and super_admin', () => {
+      expect(hasPermission('admin', 'seo.bulk')).toBe(true);
+      expect(hasPermission('super_admin', 'seo.bulk')).toBe(true);
+      expect(hasPermission('content_manager', 'seo.bulk')).toBe(false);
+    });
+  });
+
+  describe('seo.redirects', () => {
+    it('allows only admin and super_admin', () => {
+      expect(hasPermission('admin', 'seo.redirects')).toBe(true);
+      expect(hasPermission('super_admin', 'seo.redirects')).toBe(true);
+      expect(hasPermission('content_manager', 'seo.redirects')).toBe(false);
+    });
+  });
+
+  describe('seo.indexnow', () => {
+    it('allows only admin and super_admin', () => {
+      expect(hasPermission('admin', 'seo.indexnow')).toBe(true);
+      expect(hasPermission('super_admin', 'seo.indexnow')).toBe(true);
+      expect(hasPermission('content_manager', 'seo.indexnow')).toBe(false);
+    });
+  });
+
+  describe('seo.audit', () => {
+    it('allows admin, super_admin, content_manager', () => {
+      expect(hasPermission('admin', 'seo.audit')).toBe(true);
+      expect(hasPermission('super_admin', 'seo.audit')).toBe(true);
+      expect(hasPermission('content_manager', 'seo.audit')).toBe(true);
+    });
+  });
+
+  describe('seo.404_monitor', () => {
+    it('allows admin, super_admin, content_manager', () => {
+      expect(hasPermission('admin', 'seo.404_monitor')).toBe(true);
+      expect(hasPermission('super_admin', 'seo.404_monitor')).toBe(true);
+      expect(hasPermission('content_manager', 'seo.404_monitor')).toBe(true);
+    });
+  });
+
+  describe('seo.schema', () => {
+    it('allows admin, super_admin, content_manager', () => {
+      expect(hasPermission('admin', 'seo.schema')).toBe(true);
+      expect(hasPermission('super_admin', 'seo.schema')).toBe(true);
+      expect(hasPermission('content_manager', 'seo.schema')).toBe(true);
+    });
+  });
+
+  describe('seo.sitemap_settings', () => {
+    it('allows only admin and super_admin', () => {
+      expect(hasPermission('admin', 'seo.sitemap_settings')).toBe(true);
+      expect(hasPermission('super_admin', 'seo.sitemap_settings')).toBe(true);
+      expect(hasPermission('content_manager', 'seo.sitemap_settings')).toBe(false);
+    });
+  });
+});
+
+describe('SEO_PERMISSION_KEYS', () => {
+  it('has 8 permission entries', () => {
+    expect(SEO_PERMISSION_KEYS).toHaveLength(8);
+  });
+
+  it('each entry has key, label, and description', () => {
+    for (const perm of SEO_PERMISSION_KEYS) {
+      expect(perm.key).toBeTruthy();
+      expect(perm.label).toBeTruthy();
+      expect(perm.description).toBeTruthy();
+    }
+  });
+
+  it('all keys exist in DEFAULT_PERMISSIONS', () => {
+    for (const perm of SEO_PERMISSION_KEYS) {
+      expect(DEFAULT_PERMISSIONS[perm.key]).toBeDefined();
+    }
+  });
+
+  it('SEO keys are prefixed with seo.', () => {
+    for (const perm of SEO_PERMISSION_KEYS) {
+      expect(perm.key).toMatch(/^seo\./);
+    }
   });
 });

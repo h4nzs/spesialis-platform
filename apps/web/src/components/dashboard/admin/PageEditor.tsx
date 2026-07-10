@@ -1,6 +1,14 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { createBrowserClient } from '@specialist/shared';
-import { Button, Input, Select, Card, RichTextEditor, SEOEditor } from '@specialist/ui';
+import {
+  Button,
+  Input,
+  Select,
+  Card,
+  RichTextEditor,
+  SEOEditor,
+  SeoAnalyzerPanel,
+} from '@specialist/ui';
 import type { SeoData } from '@specialist/ui';
 
 // ── Types ────────────────────────────────────────────────────────
@@ -197,34 +205,29 @@ export function PageEditor({ editingId }: PageEditorProps) {
 
   return (
     <>
-      {/* ── Header ──────────────────────────────────────────── */}
-      <div className="mb-6 flex items-center justify-between">
-        <div>
-          <button
-            type="button"
-            onClick={goBack}
-            className="mb-2 flex items-center gap-1 text-sm text-text-muted hover:text-text-primary transition-colors"
+      {/* ── Back button ─────────────────────────────────────── */}
+      <div className="mb-6">
+        <button
+          type="button"
+          onClick={goBack}
+          className="flex items-center gap-1 text-sm text-text-muted hover:text-text-primary transition-colors"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
           >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="16"
-              height="16"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <path d="M19 12H5" />
-              <path d="M12 19l-7-7 7-7" />
-            </svg>
-            Kembali ke daftar halaman
-          </button>
-          <h1 className="text-h2 text-text-primary">
-            {editingId ? 'Edit Halaman' : 'Tambah Halaman'}
-          </h1>
-        </div>
+            <path d="M19 12H5" />
+            <path d="M12 19l-7-7 7-7" />
+          </svg>
+          Kembali ke daftar halaman
+        </button>
       </div>
 
       {error && (
@@ -311,6 +314,15 @@ export function PageEditor({ editingId }: PageEditorProps) {
                 onImageUpload={handleSeoImageUpload}
               />
             </Card>
+
+            <SeoAnalyzerPanel
+              contentHtml={form.content}
+              title={form.title}
+              slug={form.slug}
+              metaTitle={form.seo.metaTitle}
+              metaDescription={form.seo.metaDescription}
+              url={`/${form.slug}`}
+            />
           </div>
         </div>
 

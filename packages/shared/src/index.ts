@@ -90,6 +90,7 @@ export {
   getRoleHierarchy,
   compareRoles,
   canManageRole,
+  SEO_PERMISSION_KEYS,
   validateStatusChange,
   canCustomerCancel,
   getNextStatuses,
@@ -102,3 +103,26 @@ export {
 export { serializeCSV, downloadCSV, downloadBlob } from './utils/index.ts';
 
 export type { PermissionMap, StatusChangeResult, LogLevel, LoggerOptions } from './utils/index.ts';
+
+// ─── IndexNow ────────────────────────────────────────────────────
+export { pingIndexNow, generateIndexNowKey, getIndexNowKeyLocation } from './indexnow.ts';
+
+// ─── Schema Templates ────────────────────────────────────────────
+export { SCHEMA_TEMPLATES, getSchemaTemplate } from './schema-templates.ts';
+export type { SchemaTemplate, SchemaTemplateType, SchemaField } from './schema-templates.ts';
+
+// ─── SEO Analyzer ─────────────────────────────────────────────────
+export {
+  analyzeContent,
+  checkReadability,
+  getSnippetPreview,
+  getScoreColor,
+  getScoreLabel,
+  slugify as seoSlugify,
+} from './seo-analyzer.ts';
+export type {
+  SeoAnalysisResult,
+  SeoCheck,
+  ReadabilityResult,
+  SnippetPreviewData,
+} from './seo-analyzer.ts';

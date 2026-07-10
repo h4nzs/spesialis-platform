@@ -165,3 +165,6 @@ export type { ImposePenaltyInput, UpdatePenaltyStatusInput } from './penalty.ts'
 
 export { createCmsPageSchema, updateCmsPageSchema } from './cms-pages.ts';
 export type { CreateCmsPageInput, UpdateCmsPageInput } from './cms-pages.ts';
+
+export { createRedirectSchema, updateRedirectSchema } from './redirect.ts';
+export type { CreateRedirectInput, UpdateRedirectInput } from './redirect.ts';

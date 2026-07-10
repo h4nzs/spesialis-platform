@@ -141,7 +141,44 @@ Fungsi:
 - Media Library
 - Settings & SEO
 
-## 6.2 Alur Data
+## 6.2 SEO Management
+
+SEO dikelola melalui beberapa komponen yang saling terintegrasi:
+
+### Permission System
+
+- 8 permission keys dengan granular role assignment (admin/super_admin/content_manager)
+- Middleware `requirePermission()` dengan 30s cache, fallback ke hardcoded defaults
+- Configurable via RoleManager UI → disimpan di `system_settings` (category: `seo_permissions`)
+- Route protection di semua SEO-related endpoints
+
+### Metadata Management
+
+- CRUD endpoint di `/api/v1/seo` — meta title, description, canonical, robots, OG/Twitter
+- Schema JSON-LD per entity (disimpan di kolom `schema_json`)
+- SEOEditor UI shared antara ArticleEditor & PageEditor
+- Entity types: Service, Article, ServiceCategory, CmsPage
+
+### Sitemap & IndexNow
+
+- Dynamic sitemap dengan priority/changefreq configurable
+- 5 page types: static, services, articles, blog listing, CMS pages
+- IndexNow protocol support: auto-generate API key, auto-ping on publish
+- Log monitoring di dashboard
+
+### Redirect Management
+
+- CRUD API dengan duplicate source path detection
+- Middleware `redirectCheck` auto-redirect di 404 handler
+- Status code 301/302, active/inactive toggle
+
+### 404 Monitor
+
+- Auto-logging setiap 404 ke tabel `page_errors`
+- Stats: total errors, top paths, last 24h
+- Admin dapat menghapus individual entries atau clear all
+
+## 6.3 Alur Data
 
 Astro (apps/web) → Hono (apps/api) → PostgreSQL
 

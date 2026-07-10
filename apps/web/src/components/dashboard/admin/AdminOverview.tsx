@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { createBrowserClient, formatCurrency } from '@specialist/shared';
 import { Card, Skeleton, Grid } from '@specialist/ui';
+import { IndexNowWidget } from './IndexNowWidget.tsx';
 
 interface DashboardResponse {
   users?: { total: number; customers: number; partners: number };
@@ -102,6 +103,9 @@ export function AdminOverview() {
           </Card>
         ))}
       </Grid>
+
+      {/* IndexNow Widget */}
+      <IndexNowWidget />
 
       {/* Quick Actions */}
       <Card padding="lg">
