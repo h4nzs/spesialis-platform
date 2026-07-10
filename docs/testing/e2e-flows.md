@@ -4,7 +4,7 @@
 
 Project: Specialist Platform
 
-Version: 1.0
+Version: 1.1
 
 Status: LOCKED
 
@@ -704,7 +704,45 @@ Artikel muncul Public.
 
 # E2E-020
 
-Admin Update Homepage
+Admin Manage CMS Pages
+
+Actor
+
+Content Manager
+
+Priority
+
+P1
+
+Note
+
+Homepage Section management telah dihapus. Digantikan dengan CMS Pages management.
+
+Flow
+
+CMS
+
+↓
+
+Halaman (Pages)
+
+↓
+
+Edit Halaman System (tentang-kami, syarat-ketentuan, kebijakan-privasi, kontak)
+
+↓
+
+Simpan
+
+Expected
+
+Perubahan konten tampil di halaman publik (fallback ke hardcoded jika CMS kosong).
+
+---
+
+# E2E-021
+
+Admin Create CMS Page
 
 Actor
 
@@ -720,23 +758,31 @@ CMS
 
 ↓
 
-Homepage
+Halaman
 
 ↓
 
-Edit Hero
+Tambah Baru
 
 ↓
 
-Save
+Isi Title, Slug, Content
+
+↓
+
+Simpan
+
+↓
+
+Buka halaman publik
 
 Expected
 
-Homepage berubah.
+Halaman baru tampil di URL sesuai slug.
 
 ---
 
-# E2E-021
+# E2E-022
 
 Media Upload
 
@@ -766,7 +812,7 @@ File berhasil.
 
 ---
 
-# E2E-022
+# E2E-023
 
 Search Flow
 
@@ -800,7 +846,7 @@ Result sesuai.
 
 ---
 
-# E2E-023
+# E2E-024
 
 Complaint Flow
 
@@ -834,7 +880,7 @@ Complaint masuk Dashboard.
 
 ---
 
-# E2E-024
+# E2E-025
 
 Partner Verification
 
@@ -856,7 +902,7 @@ Admin Review
 
 ↓
 
-Approve
+Approve / Reject (dengan alasan)
 
 Expected
 
@@ -864,7 +910,7 @@ Partner Verified.
 
 ---
 
-# E2E-025
+# E2E-026
 
 Forgot Password
 
@@ -900,7 +946,7 @@ Future.
 
 ---
 
-# E2E-026
+# E2E-027
 
 Permission Test
 
@@ -924,7 +970,7 @@ Expected
 
 ---
 
-# E2E-027
+# E2E-028
 
 Session Expired
 
@@ -950,7 +996,7 @@ Redirect Login.
 
 ---
 
-# E2E-028
+# E2E-029
 
 Responsive Test
 
@@ -984,7 +1030,7 @@ Layout tetap benar.
 
 ---
 
-# E2E-029
+# E2E-030
 
 Accessibility Test
 
@@ -1018,7 +1064,7 @@ Lulus axe-core.
 
 ---
 
-# E2E-030
+# E2E-031
 
 Production Smoke Test
 

@@ -147,7 +147,7 @@ elif [[ "$MODE" == "status" ]]; then
   fi
 
 else
-  echo "Usage: bash scripts/start.sh <mode> [--seed] [--mail] [--cms] [--redis]"
+  echo "Usage: bash scripts/start.sh <mode> [--seed] [--mail] [--redis]"
   echo ""
   echo "Modes:"
   echo "  dev       Start development environment (default)"

@@ -11,9 +11,17 @@ interface UserProfile {
   role: string;
 }
 
+interface MeResponse {
+  user: UserProfile & { emailVerifiedAt: string | null };
+}
+
 export function ProfileSettings() {
   const api = useMemo(() => createBrowserClient(), []);
   const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [emailVerified, setEmailVerified] = useState(false);
+  const [verifSending, setVerifSending] = useState(false);
+  const [verifSent, setVerifSent] = useState(false);
+  const [verifError, setVerifError] = useState('');
   const [loading, setLoading] = useState(true);
 
   const [email, setEmail] = useState('');
@@ -30,11 +38,13 @@ export function ProfileSettings() {
 
   useEffect(() => {
     api
-      .get<{ id: string; email: string; phone: string; role: string }>('/api/v1/auth/me')
+      .get<MeResponse>('/api/v1/auth/me')
       .then((data) => {
-        setProfile(data);
-        setEmail(data.email);
-        setPhone(data.phone);
+        const u = data.user;
+        setProfile(u);
+        setEmail(u.email);
+        setPhone(u.phone);
+        setEmailVerified(!!u.emailVerifiedAt);
       })
       .catch(() => {})
       .finally(() => setLoading(false));
@@ -96,8 +106,71 @@ export function ProfileSettings() {
     return <p className="text-sm text-danger-500">Gagal memuat profil</p>;
   }
 
+  async function handleSendVerification() {
+    setVerifSending(true);
+    setVerifSent(false);
+    setVerifError('');
+    try {
+      await api.post('/api/v1/auth/resend-verification');
+      setVerifSent(true);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Gagal mengirim email verifikasi';
+      setVerifError(msg);
+    } finally {
+      setVerifSending(false);
+    }
+  }
+
   return (
     <div className="space-y-8">
+      {/* Email Verification Banner */}
+      {!emailVerified && (
+        <section className="rounded-xl border border-warning-500/30 bg-warning-100/50 p-5">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <h3 className="font-semibold text-text-primary">Verifikasi Email</h3>
+              <p className="mt-1 text-sm text-text-secondary">
+                Email <strong>{profile?.email}</strong> belum diverifikasi. Kirim email verifikasi
+                untuk mengaktifkan notifikasi dan fitur lainnya.
+              </p>
+            </div>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={handleSendVerification}
+              disabled={verifSending}
+              className="shrink-0"
+            >
+              {verifSending ? 'Mengirim...' : 'Kirim Email Verifikasi'}
+            </Button>
+          </div>
+          {verifSent && (
+            <p className="mt-3 text-sm text-success-600">
+              ✅ Email verifikasi telah dikirim ke <strong>{profile?.email}</strong>. Cek inbox
+              (atau folder spam) Anda.
+            </p>
+          )}
+          {verifError && <p className="mt-3 text-sm text-danger-500">❌ {verifError}</p>}
+        </section>
+      )}
+
+      {/* Verified badge */}
+      {emailVerified && (
+        <section className="rounded-xl border border-success-500/30 bg-success-100/50 p-5">
+          <div className="flex items-center gap-3">
+            <span className="flex h-8 w-8 items-center justify-center rounded-full bg-success-500 text-sm text-white">
+              ✓
+            </span>
+            <div>
+              <h3 className="font-semibold text-text-primary">Email Terverifikasi</h3>
+              <p className="text-sm text-text-secondary">
+                <strong>{profile?.email}</strong> — semua notifikasi akan dikirim ke email ini.
+              </p>
+            </div>
+          </div>
+        </section>
+      )}
+
       <section>
         <h2 className="mb-4 text-lg font-semibold text-text-primary">Profil</h2>
         <form onSubmit={handleProfileUpdate} className="max-w-md space-y-4">

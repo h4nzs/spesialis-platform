@@ -1,6 +1,6 @@
 import { Hono } from 'hono';
 import { eq, and, desc, asc, isNull } from 'drizzle-orm';
-import { db, articles, articleCategories, faq, cmsPages, homepageSections } from '../lib/db.ts';
+import { db, articles, articleCategories, faq, cmsPages } from '../lib/db.ts';
 import { success } from '../lib/response.ts';
 import { cmsCache } from '../lib/cache.ts';
 
@@ -110,33 +110,6 @@ cmsRouter.get('/articles/:slug', async (c) => {
     return success(c, item ?? null);
   } catch {
     return success(c, null);
-  }
-});
-
-cmsRouter.get('/homepage-sections', async (c) => {
-  const cacheKey = 'cms:homepage-sections';
-  const cached = cmsCache.get(cacheKey);
-  if (cached.hit) return success(c, cached.data);
-
-  try {
-    const items = await db
-      .select({
-        id: homepageSections.id,
-        section_type: homepageSections.sectionType,
-        title: homepageSections.title,
-        content: homepageSections.content,
-        image: homepageSections.imageMediaId,
-        sort_order: homepageSections.sortOrder,
-        is_active: homepageSections.isActive,
-      })
-      .from(homepageSections)
-      .where(eq(homepageSections.isActive, true))
-      .orderBy(asc(homepageSections.sortOrder));
-
-    cmsCache.set(cacheKey, items);
-    return success(c, items);
-  } catch {
-    return success(c, []);
   }
 });
 

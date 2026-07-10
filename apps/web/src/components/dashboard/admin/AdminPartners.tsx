@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { createBrowserClient } from '@specialist/shared';
-import { Table, Button, EmptyState, CSVExportButton, TableSkeleton } from '@specialist/ui';
+import { Table, Button, Modal, EmptyState, CSVExportButton, TableSkeleton } from '@specialist/ui';
 import type { Column } from '@specialist/ui';
 
 interface PartnerItem {
@@ -16,6 +16,11 @@ export function AdminPartners() {
   const api = useMemo(() => createBrowserClient(), []);
   const [partners, setPartners] = useState<PartnerItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [showRejectModal, setShowRejectModal] = useState(false);
+  const [rejectPartnerId, setRejectPartnerId] = useState<string | null>(null);
+  const [rejectPartnerName, setRejectPartnerName] = useState('');
+  const [rejectNote, setRejectNote] = useState('');
+  const [submitting, setSubmitting] = useState(false);
 
   const loadPartners = useCallback(async () => {
     setLoading(true);
@@ -33,14 +38,40 @@ export function AdminPartners() {
     loadPartners();
   }, [loadPartners]);
 
-  async function handleVerify(partnerId: string, status: string) {
+  async function handleApprove(partnerId: string) {
     try {
       await api.post(`/api/v1/partners/${partnerId}/verify`, {
-        body: { verificationStatus: status },
+        body: { verificationStatus: 'Approved' },
       });
       await loadPartners();
     } catch {
       // silent
+    }
+  }
+
+  function openRejectModal(item: PartnerItem) {
+    setRejectPartnerId(item.id);
+    setRejectPartnerName(item.fullName);
+    setRejectNote('');
+    setShowRejectModal(true);
+  }
+
+  async function handleReject() {
+    if (!rejectPartnerId) return;
+    setSubmitting(true);
+    try {
+      await api.post(`/api/v1/partners/${rejectPartnerId}/verify`, {
+        body: {
+          verificationStatus: 'Rejected',
+          note: rejectNote.trim() || undefined,
+        },
+      });
+      setShowRejectModal(false);
+      await loadPartners();
+    } catch {
+      // silent
+    } finally {
+      setSubmitting(false);
     }
   }
 
@@ -63,15 +94,15 @@ export function AdminPartners() {
       header: 'Aksi',
       render: (item) => (
         <div className="flex gap-1">
-          {item.verificationStatus === 'Pending' && (
-            <>
-              <Button size="sm" onClick={() => handleVerify(item.id, 'Approved')}>
-                Setujui
-              </Button>
-              <Button size="sm" variant="danger" onClick={() => handleVerify(item.id, 'Rejected')}>
-                Tolak
-              </Button>
-            </>
+          {item.verificationStatus !== 'Approved' && (
+            <Button size="sm" onClick={() => handleApprove(item.id)}>
+              Setujui
+            </Button>
+          )}
+          {item.verificationStatus !== 'Rejected' && (
+            <Button size="sm" variant="danger" onClick={() => openRejectModal(item)}>
+              Tolak
+            </Button>
           )}
         </div>
       ),
@@ -111,6 +142,36 @@ export function AdminPartners() {
         keyExtractor={(p) => p.id}
         emptyState={<EmptyState title="Belum ada partner" />}
       />
+
+      {/* ── Reject Reason Modal ─────────────────────────────── */}
+      <Modal
+        open={showRejectModal}
+        onClose={() => setShowRejectModal(false)}
+        title={`Tolak Partner — ${rejectPartnerName}`}
+      >
+        <div className="space-y-4">
+          <p className="text-sm text-text-secondary">
+            Berikan alasan penolakan. Partner akan menerima notifikasi dan email berisi alasan ini.
+          </p>
+          <textarea
+            value={rejectNote}
+            onChange={(e) => setRejectNote(e.target.value)}
+            rows={4}
+            maxLength={500}
+            className="w-full rounded-md border border-border-default bg-bg-surface px-3 py-2 text-sm text-text-primary outline-none transition-colors focus:border-primary focus:ring-1 focus:ring-primary resize-none"
+            placeholder="Contoh: Dokumen KTP tidak jelas, data tidak lengkap..."
+          />
+          <p className="text-xs text-text-muted">{rejectNote.length}/500 karakter</p>
+          <div className="flex justify-end gap-2 pt-2">
+            <Button variant="ghost" type="button" onClick={() => setShowRejectModal(false)}>
+              Batal
+            </Button>
+            <Button variant="danger" type="button" onClick={handleReject} disabled={submitting}>
+              {submitting ? 'Menyimpan...' : 'Tolak Partner'}
+            </Button>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 }

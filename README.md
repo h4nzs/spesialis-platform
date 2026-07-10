@@ -18,7 +18,7 @@ Platform dirancang untuk scalable, SEO-first, dan production-ready.
 | ------------- | --------------------------------- |
 | Frontend      | Astro 7, React 19, Tailwind CSS 4 |
 | API Layer     | Hono (Business Logic)             |
-| Database      | PostgreSQL 18                     |
+| Database      | PostgreSQL 18, Drizzle ORM        |
 | Storage       | Cloudflare R2                     |
 | Infrastruktur | Docker Compose, Nginx             |
 | Monorepo      | Turborepo, pnpm, TypeScript       |
@@ -30,20 +30,21 @@ Platform dirancang untuk scalable, SEO-first, dan production-ready.
 ```
 spesialis/
 ├── apps/
-│   ├── web/          # Astro Frontend — Website & Dashboards
-│   ├── api/          # Hono API — Business Logic Layer
+│   ├── web/          # Astro Frontend — Website & Dashboards (62 pages)
+│   └── api/          # Hono API — Business Logic Layer (67 route files)
 ├── packages/
 │   ├── cli/          # CLI tools (db, cms, generator)
 │   ├── config/       # Shared config (ESLint, Prettier, TS, Tailwind)
-│   ├── database/     # Schema, Migration, Seed
-│   ├── shared/       # Shared utilities (pure TS)
+│   ├── database/     # Schema (34 files), Migration (9 migrations), Seed
+│   ├── shared/       # Shared utilities (API client, constants, formatters)
 │   ├── types/        # Shared TypeScript types
-│   ├── ui/           # Shared UI components
-│   └── validation/   # Zod validation schemas
-├── docs/             # Dokumentasi lengkap
+│   ├── ui/           # Shared UI components (106+ React components)
+│   └── validation/   # Zod validation schemas (50+ files)
+├── docs/             # Dokumentasi lengkap (product, architecture, database, dll)
 ├── infrastructure/   # Docker, Nginx config
 ├── scripts/          # Dev, build, deploy, backup scripts
-└── tools/            # Generator, migration, seed CLI
+├── tools/            # Generator, migration, seed CLI
+└── .ai/              # AI Agent konfigurasi & prompts
 ```
 
 ---
@@ -62,6 +63,9 @@ Semua dokumentasi berada pada folder `docs/`.
 | Database Design      | `docs/architecture/database-design.md`   |
 | Business Rules       | `docs/product/business-rules.md`         |
 | Glossary             | `docs/product/glossary.md`               |
+| CMS Functional Spec  | `docs/functional-spec/cms.md`            |
+| CMS API              | `docs/api/cms-api.md`                    |
+| Admin API            | `docs/api/admin-api.md`                  |
 
 ---
 
@@ -119,6 +123,9 @@ pnpm --filter @specialist/database db:migrate
 # Seed demo data
 pnpm --filter @specialist/api db:seed
 
+# Seed CMS pages (4 system pages: tentang-kami, syarat-ketentuan, kebijakan-privasi, kontak)
+pnpm --filter @specialist/database db:seed-pages
+
 # Start dev servers
 pnpm dev
 ```
@@ -138,7 +145,7 @@ Seeded accounts (password `password123`):
 | Customer    | customer2@spesialis.id  |
 | Corporate   | corporate@spesialis.id  |
 
-### 6. Start dev servers
+### 4. Start dev servers
 
 ```bash
 pnpm dev
@@ -168,6 +175,15 @@ pnpm dev
 | `pnpm format`     | Prettier format                          |
 | `pnpm cli`        | Unified CLI (`pnpm cli help`)            |
 
+### Database Commands
+
+```bash
+pnpm --filter @specialist/database db:migrate           # Apply migrations
+pnpm --filter @specialist/database db:generate           # Generate migration from schema
+pnpm --filter @specialist/database db:push               # Push schema langsung ke DB
+pnpm --filter @specialist/database db:seed-pages         # Seed 4 CMS system pages
+```
+
 ### Unified CLI (`pnpm cli`)
 
 ```bash
@@ -179,6 +195,30 @@ pnpm cli generate resource <name> # Scaffold route + test baru
 pnpm cli start                    # Start full dev environment
 pnpm cli help                     # Show all commands
 ```
+
+---
+
+## Project Status
+
+| Feature              | Status |
+| -------------------- | ------ |
+| Guest Booking        | ✅     |
+| Customer Dashboard   | ✅     |
+| Partner Registration | ✅     |
+| Partner Verification | ✅     |
+| Corporate Inquiry    | ✅     |
+| Corporate Dashboard  | ✅     |
+| Admin Dashboard      | ✅     |
+| CMS Articles         | ✅     |
+| CMS Pages (4 system) | ✅     |
+| CMS FAQ              | ✅     |
+| CMS Services         | ✅     |
+| SEO (JSON-LD, OG)    | ✅     |
+| Payment (manual)     | ✅     |
+| Assignment (manual)  | ✅     |
+| Audit Log            | ✅     |
+| Media Upload         | ✅     |
+| E2E Tests (~140+)    | ✅     |
 
 ---
 

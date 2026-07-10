@@ -2,7 +2,7 @@
 
 # Specialist Platform
 
-Version: 1.0
+Version: 1.1
 
 Status: Source of Truth
 
@@ -16,13 +16,31 @@ Platform bukan sekadar Company Profile.
 
 Platform adalah Operational Platform.
 
-Target jangka panjang:
+**Status saat ini:** Active development. Semua fitur inti MVP telah selesai — booking, assignment, payment, CMS, SEO, dashboards.
 
-- Booking Platform
-- Corporate Maintenance Platform
-- Outsourcing Platform
-- Mobile App
-- AI Dispatcher
+---
+
+# Perubahan Signifikan
+
+## ✅ Homepage Sections (CMS-managed) telah dihapus
+
+Fitur Homepage Sections (hero, benefits, dll yang bisa diedit via CMS admin) telah dihapus total dari codebase — 15 file dihapus (admin UI, API routes, DB schema, validation, SectionManager component, cache). Homepage sekarang menggunakan komponen hardcoded dengan fallback CMS hanya untuk teks tertentu. Keputusan: performa lebih penting daripada fleksibilitas CMS untuk homepage.
+
+## ✅ CMS Pages system dibuat
+
+4 system pages (tentang-kami, syarat-ketentuan, kebijakan-privasi, kontak) dengan seed script di `packages/database/src/seed-cms-pages.ts`. Admin mengelola via PageEditor (full page editor — bukan modal). Konten CMS fallback ke hardcoded HTML jika tidak ada.
+
+## ✅ PageFormModal diganti PageEditor
+
+PageEditor.tsx adalah full page editor (2 kolom, Card-based, live preview) menggantikan PageFormModal yang berbasis modal. Routing: `/dashboard/admin/cms-pages/new` dan `/edit/:id`.
+
+## ✅ Partner approve/decline dengan modal alasan
+
+Saat admin menolak partner, modal muncul dengan textarea untuk alasan. Alasan dikirim sebagai `note` ke API, partner mendapat notifikasi & email.
+
+## ✅ SEO sudah terpasang
+
+Structured data (JSON-LD), OpenGraph, Twitter Card, canonical URL, dynamic sitemap, robots.txt.
 
 ---
 
@@ -89,6 +107,17 @@ Invoice
 
 ---
 
+# Repository Stats
+
+- **62** Astro pages
+- **67** API route files
+- **34** database schema files
+- **106+** shared UI components
+- **16** Playwright E2E spec files (~140+ tests)
+- **100%** P0 E2E coverage
+
+---
+
 # Development Philosophy
 
 Static First
@@ -137,30 +166,6 @@ Hono API (apps/api)
 
 ---
 
-# Repository Structure
-
-```
-apps/
-├── web/      # Astro Frontend — Website & Dashboards
-├── api/      # Hono API — Business Logic Layer
-
-packages/
-├── config/       # Shared config (ESLint, Prettier, TS, Tailwind)
-├── database/     # Schema, Migration, Seed
-├── shared/       # Shared utilities (pure TS)
-├── types/        # Shared TypeScript types
-├── ui/           # Shared UI components
-└── validation/   # Zod validation schemas
-
-docs/             # Dokumentasi lengkap
-infrastructure/   # Docker, Nginx config
-scripts/          # Dev, build, deploy, backup scripts
-tools/            # Generator, migration, seed CLI
-.ai/              # AI Agent konfigurasi & prompts
-```
-
----
-
 # Source of Truth Priority
 
 1 Business Rules
@@ -186,52 +191,6 @@ tools/            # Generator, migration, seed CLI
 6 User Prompt
 
 Jika User Prompt bertentangan dengan Architecture, jangan langsung ikuti — berikan rekomendasi terlebih dahulu.
-
----
-
-# AI Goal
-
-Generate Production Ready Code.
-
-Never Prototype Code.
-
-Never Demo Code.
-
-Always Assume Production.
-
----
-
-# Forbidden
-
-Never use any.
-
-Never hardcode.
-
-Never duplicate.
-
-Never ignore error.
-
-Never bypass validation.
-
-Never expose secret.
-
-Never disable strict mode.
-
----
-
-# Quality Target
-
-Readable
-
-Maintainable
-
-Secure
-
-Scalable
-
-Testable
-
-Reusable
 
 ---
 

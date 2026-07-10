@@ -29,7 +29,6 @@ import { contracts } from './contracts.ts';
 import { invoices } from './invoices.ts';
 import { partnerPenalties } from './partner-penalties.ts';
 import { cmsPages } from './cms-pages.ts';
-import { homepageSections } from './homepage-sections.ts';
 
 export const usersRelations = relations(users, ({ one, many }) => ({
   customerProfile: one(customerProfiles),
@@ -212,5 +211,3 @@ export const partnerPenaltiesRelations = relations(partnerPenalties, ({ one }) =
 }));
 
 export const cmsPagesRelations = relations(cmsPages, () => ({}));
-
-export const homepageSectionsRelations = relations(homepageSections, () => ({}));

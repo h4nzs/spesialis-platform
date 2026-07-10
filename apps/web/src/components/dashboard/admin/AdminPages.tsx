@@ -1,7 +1,6 @@
-import React, { useState, useEffect, useCallback, useMemo, Suspense } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { createBrowserClient } from '@specialist/shared';
 import { Button, Table, Badge, EmptyState, TableSkeleton } from '@specialist/ui';
-import { LazyFallback } from '../../ui/LazyFallback';
 import type { Column } from '@specialist/ui';
 
 interface PageItem {
@@ -13,15 +12,10 @@ interface PageItem {
   updatedAt: string;
 }
 
-// ── Lazy-loaded form modal ──────────────────────────────────────
-const PageFormModal = React.lazy(() => import('./PageFormModal'));
-
 export function AdminPages() {
   const api = useMemo(() => createBrowserClient(), []);
   const [items, setItems] = useState<PageItem[]>([]);
   const [loading, setLoading] = useState(true);
-  const [showModal, setShowModal] = useState(false);
-  const [editing, setEditing] = useState<string | null>(null);
 
   const loadData = useCallback(async () => {
     try {
@@ -41,13 +35,11 @@ export function AdminPages() {
   }, [loadData]);
 
   function openCreate() {
-    setEditing(null);
-    setShowModal(true);
+    window.location.href = '/dashboard/admin/cms-pages/new';
   }
 
   function openEdit(item: PageItem) {
-    setEditing(item.id);
-    setShowModal(true);
+    window.location.href = `/dashboard/admin/cms-pages/edit/${item.id}`;
   }
 
   async function handleDelete(item: PageItem) {
@@ -127,16 +119,6 @@ export function AdminPages() {
           />
         }
       />
-
-      {/* ── Page Form Modal (lazy-loaded) ──────────────────── */}
-      <Suspense fallback={<LazyFallback />}>
-        <PageFormModal
-          open={showModal}
-          onClose={() => setShowModal(false)}
-          editingId={editing}
-          onSaved={loadData}
-        />
-      </Suspense>
     </div>
   );
 }

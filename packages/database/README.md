@@ -17,6 +17,14 @@ Menyimpan seluruh resource yang berhubungan dengan database.
 
 ---
 
+## Contents
+
+- Database Schema (34 files)
+- Migration (9 migrations)
+- Seed (demo data + CMS pages)
+- Database Helper
+- Database Constant
+
 ## Folder
 
 schema/

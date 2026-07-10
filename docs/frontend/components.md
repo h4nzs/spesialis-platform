@@ -4,7 +4,7 @@
 
 Project: Specialist Platform
 
-Version: 1.0
+Version: 1.1
 
 Status: Locked
 
@@ -318,7 +318,7 @@ Hero
 
 Hero Search
 
-Category Grid
+Service Grid
 
 Featured Services
 
@@ -420,15 +420,17 @@ Corporate Dashboard
 
 # CMS Components
 
-Article Editor
+Article Editor (full page — ArticleEditor.tsx)
 
-SEO Editor
+Page Editor (full page — PageEditor.tsx, menggantikan PageFormModal yang berbasis modal)
+
+SEO Editor (SEOEditor.tsx — shared antara ArticleEditor & PageEditor)
 
 Media Picker
 
 Category Selector
 
-Rich Text Editor
+Rich Text Editor (TipTap)
 
 Slug Generator
 

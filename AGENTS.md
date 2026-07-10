@@ -8,7 +8,7 @@ Bahasa sumber: **Indonesia** — docs/, .ai/, dan konteks bisnis menggunakan Bah
 
 ## Monorepo
 
-- **pnpm** + **Turborepo** — tiga apps, enam packages
+- **pnpm** + **Turborepo** — dua apps, enam packages
   ```
   apps/{web (Astro 7), api (Hono)}
   packages/{config, database, shared, types, ui, validation}
@@ -34,9 +34,8 @@ Commit convention: **Conventional Commits** (`@commitlint/config-conventional`).
 
 ## Architecture
 
-```
-Astro (apps/web) → Hono (apps/api) → PostgreSQL
-```
+````
+Astro (apps/web) → Hono (apps/api) → PostgreSQL```
 
 - **Business logic hanya di Hono API.** Astro/React = presentation only.
 - **Single PostgreSQL** — shared oleh API dan seluruh service.
@@ -68,6 +67,7 @@ Jika dokumentasi vs code bertentangan, **dokumentasi dianggap benar**.
 ## Infra
 
 - `docker compose up` — postgres, redis (profile: cache), mailpit (profile: mail), api, web, nginx
+- Nginx reverse-proxy: `/api/` routed ke API service
 - Storage dev: filesystem; production: Cloudflare R2
 - `.env` template di `.env.example`
 
@@ -128,26 +128,6 @@ excellent accessibility
 
 excellent consistency
 
-Floating Glass Navbar
-
-Huge Gradient Background
-
-Blob Background
-
-Mesh Gradient
-
-Random Dashboard Cards
-
-Animated Counters Everywhere
-
-Overuse of Glassmorphism
-
-Overuse of Blur
-
-Overuse of Floating Elements
-
-Overuse of Gradients
-
 Whitespace is a feature.
 
 Never try to fill empty space.
@@ -157,32 +137,6 @@ Empty space improves trust.
 Empty space improves readability.
 
 Empty space improves perceived quality.
-
-Before designing any page:
-
-Create a visual direction.
-
-Describe:
-
-Mood
-
-Visual weight
-
-Hierarchy
-
-Contrast
-
-Density
-
-Interaction style
-
-Photography style
-
-Illustration style
-
-Motion style
-
-Only then design.
 
 Avoid layouts that look like:
 
@@ -214,6 +168,15 @@ Repeat until it feels intentionally designed by humans.
 
 ## Status Proyek
 
-**Active development.** API (`apps/api/`) dan Web (`apps/web/`) sudah memiliki implementasi penuh — ~80 endpoint, ~30 halaman dashboard, full booking lifecycle state machine. `packages/*/src/` sudah terisi (types, database 26 tabel, validation 17 skema, shared utilities, ui 13 komponen).
+**Active development.** API (`apps/api/`) dan Web (`apps/web/`) sudah memiliki implementasi penuh — ~80+ endpoint, ~62 halaman dashboard, full booking lifecycle state machine. `packages/*/src/` sudah terisi (types, database 34 tabel/schema, validation 17+ skema, shared utilities, ui 106+ shared komponen React + Astro).
 
-**SEO sudah terpasang:** Structured data (JSON-LD) di semua halaman utama (WebSite, LocalBusiness, Organization, Article, Blog, FAQPage, Service, BreadcrumbList, WebPage), OpenGraph/Twitter Card tags, canonical URL, dynamic sitemap, robots.txt, OG default image. Testing masih minimal — Vitest terinstall di `api`, `shared`, `validation` tapi coverage rendah.
+**Homepage** menggunakan 14+ komponen hardcoded (Hero, ServiceGrid, Statistics, Benefits, Process, FeaturedServices, Testimonials, Coverage, FAQSection, LatestArticles, PartnerCTA, CorporateCTA, FinalCTA, Footer) dengan CMS fallback untuk konten teks. **Homepage Sections (CMS-managed sections) telah dihapus** — homepage dikelola sepenuhnya via komponen Astro.
+
+**CMS Pages (4 system pages): tentang-kami, syarat-ketentuan, kebijakan-privasi, kontak** — dikelola dari admin panel via PageEditor (full page editor, bukan modal). Konten disimpan di tabel `cms_pages` dengan seed default dari hardcoded fallback. Admin dapat mengedit/menambah/menghapus halaman kapan saja.
+
+**SEO sudah terpasang:** Structured data (JSON-LD) di semua halaman utama (WebSite, LocalBusiness, Organization, Article, Blog, FAQPage, Service, BreadcrumbList, WebPage), OpenGraph/Twitter Card tags, canonical URL, dynamic sitemap, robots.txt, OG default image.
+
+**Partner approve/decline:** Admin dapat menyetujui atau menolak partner. Saat ditolak, modal input alasan muncul — alasan dikirim via API sebagai `note`, partner mendapat notifikasi & email dengan alasan.
+
+**Testing:** Vitest terinstall di `api`, `shared`, `validation` + Playwright E2E (16 spec files, ~140+ tests, 100% P0 coverage).
+````

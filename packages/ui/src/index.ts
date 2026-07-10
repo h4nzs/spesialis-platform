@@ -74,12 +74,5 @@ export {
   DEFAULT_SEO,
 } from './components/SEOEditor.tsx';
 
-// ─── Section Manager ─────────────────────────────────────────────
-export {
-  SectionManager,
-  type SectionManagerProps,
-  type HomepageSection,
-} from './components/SectionManager.tsx';
-
 // ─── Utilities ──────────────────────────────────────────────────────────
 export { cn } from './utils/cn.ts';

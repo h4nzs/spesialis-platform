@@ -1,0 +1,9 @@
+---
+export const prerender = false
+import DashboardLayout from '../../../../layouts/DashboardLayout.astro'
+import { PageEditor } from '../../../../components/dashboard/admin/PageEditor'
+---
+
+<DashboardLayout title="Tambah Halaman" role={['admin', 'super_admin', 'content_manager']}>
+  <PageEditor client:load />
+</DashboardLayout>

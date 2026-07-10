@@ -99,8 +99,6 @@ router.post('/register', rateLimit(10, 60_000), validateBody(registerSchema), as
     return { user: createdUser, token: jwtToken, verificationToken: vt };
   });
 
-  sendVerificationEmail(email, fullName, verificationToken);
-
   setAuthCookies(c, token);
   return created(c, { user: { id: user.id, email: user.email, role: user.role }, token });
 });
@@ -405,6 +403,7 @@ router.get('/me', authMiddleware, async (c) => {
       phone: users.phone,
       role: users.role,
       status: users.status,
+      emailVerifiedAt: users.emailVerifiedAt,
     })
     .from(users)
     .where(eq(users.id, userId))

@@ -11,10 +11,16 @@ import {
   orders,
   reviews,
   partnerPenalties,
+  passwordResets,
 } from '../lib/db.ts';
 import { authMiddleware, requireRole } from '../middleware/auth.ts';
 import { validateBody, validateQuery } from '../middleware/validation.ts';
-import { hashPassword } from '../lib/auth.ts';
+import {
+  hashPassword,
+  generateRefreshToken,
+  hashToken,
+  getRefreshTokenExpiry,
+} from '../lib/auth.ts';
 import {
   partnerRegistrationSchema,
   updatePartnerSchema,
@@ -43,7 +49,7 @@ import {
 } from '../lib/response.ts';
 import { buildPaginationMeta } from '../lib/pagination.ts';
 import { omitUndefined } from '../lib/update.ts';
-import { sendPartnerVerifiedEmail } from '../lib/email.ts';
+import { sendPartnerVerifiedEmail, sendVerificationEmail } from '../lib/email.ts';
 import { createNotification, notifyAdmins } from '../lib/notification.ts';
 import { rateLimit } from '../middleware/rate-limiter.ts';
 
@@ -105,6 +111,15 @@ router.post(
       phone,
       ktpNumber,
     });
+
+    // Generate verification token & send email (fire-and-forget)
+    const verificationToken = generateRefreshToken();
+    await db.insert(passwordResets).values({
+      userId: user.id,
+      tokenHash: hashToken(verificationToken),
+      expiresAt: getRefreshTokenExpiry(),
+    });
+    sendVerificationEmail(email, fullName, verificationToken);
 
     notifyAdmins(
       'partner.registered',

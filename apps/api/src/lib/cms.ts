@@ -39,16 +39,6 @@ export interface CmsArticle {
   status: string;
 }
 
-export interface CmsHomepageSection {
-  id: string;
-  section_type: string;
-  title: string | null;
-  content: string | null;
-  image: string | null;
-  sort_order: number | null;
-  is_active: boolean;
-}
-
 export interface CmsPage {
   id: string;
   title: string;
@@ -69,12 +59,6 @@ export const cms = {
       ),
     bySlug: (slug: string) =>
       request<CmsArticle[]>(`/items/cms_articles?filter[slug][_eq]=${slug}&limit=1`),
-  },
-  homepageSections: {
-    list: () =>
-      request<CmsHomepageSection[]>(
-        '/items/cms_homepage_sections?filter[is_active][_eq]=true&sort=sort_order',
-      ),
   },
   pages: {
     bySlug: (slug: string) =>

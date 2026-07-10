@@ -1,3 +1,5 @@
+# docs/api/admin-api.md
+
 # Admin API
 
 Base URL: `/api/v1/admin`
@@ -118,6 +120,36 @@ Query: `?page=1&limit=50&search=email&role=customer&status=active`
 `PATCH /articles/categories/:id` — Update kategori.
 
 `DELETE /articles/categories/:id` — Hapus kategori.
+
+---
+
+## CMS Pages
+
+Role: `admin`, `super_admin`, `content_manager`
+
+`GET /cms-pages` — List semua CMS pages (paginated).
+
+`POST /cms-pages` — Buat CMS page baru.
+
+Body:
+
+```json
+{
+  "title": "Halaman Baru",
+  "slug": "halaman-baru",
+  "content": "<h2>Konten...</h2>",
+  "meta": { "description": "Deskripsi" },
+  "status": "Published"
+}
+```
+
+`GET /cms-pages/:id` — Detail CMS page.
+
+`PATCH /cms-pages/:id` — Update CMS page.
+
+`DELETE /cms-pages/:id` — Soft delete CMS page.
+
+Default seed: 4 system pages (tentang-kami, syarat-ketentuan, kebijakan-privasi, kontak) via `pnpm --filter @specialist/database db:seed-pages`.
 
 ---
 

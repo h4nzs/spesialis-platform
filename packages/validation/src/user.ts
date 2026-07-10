@@ -56,6 +56,19 @@ export const updateUserStatusSchema = z.object({
   status: z.enum(['active', 'blocked', 'suspended', 'deleted']),
 });
 
+export const updateUserRoleSchema = z.object({
+  role: z.enum([
+    'customer',
+    'partner',
+    'corporate',
+    'admin',
+    'super_admin',
+    'dispatcher',
+    'finance',
+    'content_manager',
+  ]),
+});
+
 export const convertGuestSchema = z.object({
   phone: z
     .string()

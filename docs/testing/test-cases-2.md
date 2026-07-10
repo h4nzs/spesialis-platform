@@ -794,15 +794,35 @@ File muncul.
 
 ## CMS-009
 
-Edit Homepage Hero.
+Edit CMS Page (tentang-kami, syarat-ketentuan, kebijakan-privasi, kontak).
 
 Expected
 
-Homepage berubah.
+Perubahan konten tampil di halaman publik (fallback jika CMS kosong).
 
 ---
 
 ## CMS-010
+
+Buat CMS Page baru.
+
+Expected
+
+Halaman dengan slug custom tampil di URL yang sesuai.
+
+---
+
+## CMS-011
+
+Hapus CMS Page.
+
+Expected
+
+Halaman publik fallback ke konten hardcoded.
+
+---
+
+## CMS-012
 
 Tambah FAQ.
 
@@ -832,7 +852,7 @@ Tidak tampil Public.
 
 ---
 
-## CMS-013
+## CMS-016
 
 Media Delete.
 
@@ -842,7 +862,7 @@ Soft Delete.
 
 ---
 
-## CMS-014
+## CMS-017
 
 Restore Revision.
 
@@ -852,7 +872,7 @@ Konten kembali.
 
 ---
 
-## CMS-015
+## CMS-018
 
 SEO Preview.
 

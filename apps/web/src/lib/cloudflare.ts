@@ -32,7 +32,6 @@ const COLLECTION_PATHS: Record<string, string[]> = {
   cms_pages: ['/'],
   cms_articles: ['/blog', '/blog/'],
   cms_faq: ['/faq'],
-  cms_homepage_sections: ['/'],
 };
 
 // ── Types ────────────────────────────────────────────────────────────────

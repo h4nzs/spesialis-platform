@@ -1040,17 +1040,18 @@ AI QA Assistant
 | E2E-017 | Admin Verify Payment         | P1       | ✅     | `flows.spec.ts`                                                                 |
 | E2E-018 | Admin Generate Invoice       | P1       | 🟡     | `admin-flows.spec.ts` (page load only)                                          |
 | E2E-019 | Admin Publish Article        | P1       | ✅     | `admin-media.spec.ts` (create draft → publish → verify in admin API)            |
-| E2E-020 | Admin Update Homepage        | P1       | 🟡     | `admin-flows.spec.ts` (page load only)                                          |
-| E2E-021 | Media Upload                 | P2       | ✅     | `admin-media.spec.ts`                                                           |
-| E2E-022 | Search Flow                  | P2       | ✅     | `search.spec.ts`                                                                |
-| E2E-023 | Complaint Flow               | P1       | ✅     | `customer.spec.ts` (create via API with booking, list, 404/422/401, admin view) |
-| E2E-024 | Partner Skills               | P1       | ✅     | `partner-skills.spec.ts`                                                        |
-| E2E-025 | Forgot Password              | P1       | 🟡     | `customer.spec.ts` (page load only)                                             |
-| E2E-026 | Permission Test              | P0       | ✅     | `permission.spec.ts`, `auth.spec.ts`                                            |
-| E2E-027 | Session Expired              | P1       | ✅     | `customer.spec.ts`                                                              |
-| E2E-028 | Responsive Test              | P1       | ✅     | `responsive-a11y.spec.ts`                                                       |
-| E2E-029 | Accessibility Test           | P1       | ✅     | `responsive-a11y.spec.ts`                                                       |
-| E2E-030 | Production Smoke Test        | P0       | ✅     | `smoke.spec.ts`                                                                 |
+| E2E-020 | Admin Manage CMS Pages       | P1       | ✅     | `admin-flows.spec.ts` (page load only)                                          |
+| E2E-021 | CMS Pages CRUD               | P1       | 🟡     | Admin pages page load (create/edit/detail flow via UI)                          |
+| E2E-022 | Media Upload                 | P2       | ✅     | `admin-media.spec.ts`                                                           |
+| E2E-023 | Search Flow                  | P2       | ✅     | `search.spec.ts`                                                                |
+| E2E-024 | Complaint Flow               | P1       | ✅     | `customer.spec.ts` (create via API with booking, list, 404/422/401, admin view) |
+| E2E-025 | Partner Skills               | P1       | ✅     | `partner-skills.spec.ts`                                                        |
+| E2E-026 | Forgot Password              | P1       | 🟡     | `customer.spec.ts` (page load only)                                             |
+| E2E-027 | Permission Test              | P0       | ✅     | `permission.spec.ts`, `auth.spec.ts`                                            |
+| E2E-028 | Session Expired              | P1       | ✅     | `customer.spec.ts`                                                              |
+| E2E-029 | Responsive Test              | P1       | ✅     | `responsive-a11y.spec.ts`                                                       |
+| E2E-030 | Accessibility Test           | P1       | ✅     | `responsive-a11y.spec.ts`                                                       |
+| E2E-031 | Production Smoke Test        | P0       | ✅     | `smoke.spec.ts`                                                                 |
 
 ### Legend
 
@@ -1073,7 +1074,7 @@ AI QA Assistant
 
 - **E2E-012** (Corporate Download Invoice): Page load test exists, but actual PDF download interaction not tested.
 - **E2E-018** (Admin Generate Invoice): Page load test exists, but invoice generation workflow not tested.
-- **E2E-020** (Admin Update Homepage): Services page load test exists, but homepage CMS editing not tested.
+- **E2E-020** (Admin Manage CMS Pages): Page load test for admin pages exists, CMS pages create/edit flow via UI not tested.
 - **E2E-025** (Forgot Password): Page load test for forgot/reset password pages exists, but full OTP flow not tested.
 
 ### Quick Stats

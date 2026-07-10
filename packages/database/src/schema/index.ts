@@ -32,7 +32,6 @@ export { partnerPenalties } from './partner-penalties.ts';
 export { faq } from './faq.ts';
 export { corporateInquiries } from './corporate-inquiries.ts';
 export { cmsPages } from './cms-pages.ts';
-export { homepageSections } from './homepage-sections.ts';
 
 export {
   usersRelations,
@@ -61,5 +60,4 @@ export {
   invoicesRelations,
   partnerPenaltiesRelations,
   cmsPagesRelations,
-  homepageSectionsRelations,
 } from './relations.ts';

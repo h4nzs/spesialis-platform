@@ -33,31 +33,15 @@ interface ArticleItem {
   publishedAt: string | null;
 }
 
-interface CmsHomepageSection {
-  id: string;
-  section_type: string;
-  title: string | null;
-  content: string | null;
-  image: string | null;
-  sort_order: number | null;
-  is_active: boolean;
-}
-
 const apiUrl = import.meta.env.PUBLIC_API_URL ?? 'http://localhost:3000'
 
-// SSR: fetch services, articles, and homepage sections
-// Services from Hono API (business logic), articles/sections from CMS API (public content)
+// SSR: fetch services and articles from Hono API (business logic) + CMS API (public content)
 let services: ServiceItem[] = []
 let articles: ArticleItem[] = []
-let heroSection: CmsHomepageSection | undefined
-let servicesSection: CmsHomepageSection | undefined
-let whyUsSection: CmsHomepageSection | undefined
-let ctaSection: CmsHomepageSection | undefined
 try {
-  const [servicesRes, articlesRes, sectionsRes] = await Promise.all([
-    fetch(`${apiUrl}/api/v1/services?limit=12`),
-    fetch(`${apiUrl}/api/v1/cms/articles?limit=3`),
-    fetch(`${apiUrl}/api/v1/cms/homepage-sections`),
+  const [servicesRes, articlesRes] = await Promise.all([
+    fetch(`${import.meta.env.PUBLIC_API_URL ?? 'http://localhost:3000'}/api/v1/services?limit=12`),
+    fetch(`${import.meta.env.PUBLIC_API_URL ?? 'http://localhost:3000'}/api/v1/cms/articles?limit=3`),
   ])
   if (servicesRes.ok) {
     const json = await servicesRes.json()
@@ -76,14 +60,6 @@ try {
         publishedAt: a.published_at,
       }))
     }
-  }
-  if (sectionsRes.ok) {
-    const json = await sectionsRes.json()
-    const sections: CmsHomepageSection[] = json.data ?? []
-    heroSection = sections.find((s) => s.section_type === 'hero')
-    servicesSection = sections.find((s) => s.section_type === 'services')
-    whyUsSection = sections.find((s) => s.section_type === 'why-us')
-    ctaSection = sections.find((s) => s.section_type === 'cta')
   }
 } catch {
   // silent — components handle empty state with fallback
@@ -139,16 +115,16 @@ try {
   }}
 >
   <!-- 1. Hero + HeroSearch -->
-  <Hero totalServices={services.length} section={heroSection} />
+  <Hero totalServices={services.length} />
 
   <!-- 2. Featured Services (curated) -->
   <FeaturedServices services={services} />
 
   <!-- 3. All Services Grid -->
-  <ServiceGrid services={services} section={servicesSection} />
+  <ServiceGrid services={services} />
 
   <!-- 4. Why Choose Us -->
-  <Benefits section={whyUsSection} />
+  <Benefits />
 
   <!-- 5. Statistics (trust evidence after benefits) -->
   <Statistics />
@@ -175,6 +151,6 @@ try {
   <FAQSection />
 
   <!-- 13. Final CTA -->
-  <FinalCTA section={ctaSection} />
+  <FinalCTA />
 
 </BaseLayout>

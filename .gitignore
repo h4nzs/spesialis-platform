@@ -1,28 +1,35 @@
-node_modules
+# ── Dependencies ────────────────────────────────────────────────
+node_modules/
+.pnpm-store/
 
-dist
+# ── Build output ────────────────────────────────────────────────
+dist/
+.next/
+storybook-static/
+.turbo/
 
+# ── Astro ───────────────────────────────────────────────────────
+.astro/
+
+# ── Environment ─────────────────────────────────────────────────
 .env
-
 .env.*
-
 !.env.example
 
-coverage
-
-.next
-
-.cache
-
-.DS_Store
-.turbo/cache
-.idea
-
-.vscode/settings.json
-
-*.log
-
-# Playwright
+# ── Testing ─────────────────────────────────────────────────────
+coverage/
 playwright-report/
 test-results/
 playwright/.cache/
+
+# ── IDE / Editor ────────────────────────────────────────────────
+.idea/
+.vscode/settings.json
+.DS_Store
+
+# ── Runtime ─────────────────────────────────────────────────────
+*.log
+uploads/
+
+# ── Cache ───────────────────────────────────────────────────────
+.cache/

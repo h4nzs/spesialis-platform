@@ -4,6 +4,10 @@ Production setup needed:
 3. Set  CLOUDFLARE_API_TOKEN  and  CLOUDFLARE_ZONE_ID  in production  .env 
 4. Without these env vars, the revalidation endpoint still works — it just logs and acknowledges (no-op for CDN)
 
+🌱 Seed scripts:
+- CMS system pages: pnpm --filter @specialist/database db:seed-pages
+  → Mengisi cms_pages dengan: tentang-kami, syarat-ketentuan, kebijakan-privasi, kontak
+
 ⚠️ Kesenjangan (gaps):
 - SEO: structured data, sitemap, OpenGraph — masih minimal/belum terpasang penuh
 - Testing coverage: Masih rendah — Vitest ada di  api ,  shared ,  validation  tapi coverage minim

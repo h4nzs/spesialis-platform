@@ -147,24 +147,50 @@ Astro (apps/web) → Hono (apps/api) → PostgreSQL
 
 ---
 
-# 7. Database
+# 7. CMS Management
 
-Single PostgreSQL Database dengan pemisahan schema:
+CMS dikelola sepenuhnya melalui Hono API (`apps/api`), bukan melalui sistem CMS terpisah.
 
-## 7.1 Schema Boundary
+### Managed Content melalui Hono API
 
-| Schema   | Owner            | Isi                                                          |
-| -------- | ---------------- | ------------------------------------------------------------ |
-| `public` | Hono (migration) | Business entities: users, orders, payments, assignments, dll |
+- **Articles** — Blog content via Hono API
+- **FAQ** — FAQ management via Hono API
+- **CMS Pages** — 4 system pages (tentang-kami, syarat-ketentuan, kebijakan-privasi, kontak) + custom pages
+  - Admin mengelola via PageEditor (full page editor)
+  - Publik di-render dari CMS API, dengan fallback ke hardcoded HTML
+- **Services & Categories** — Service management via Hono API
+- **Media** — File upload via Hono API
 
-## 7.2 Aturan Schema
+### Hybrid Page Rendering
 
-- **Hono** mengelola `public` schema via Drizzle ORM migration.
-- Tidak ada dual-write ke tabel yang sama.
+CMS Pages menggunakan pola **hybrid**:
+
+```
+Halaman publik Astro (.astro)
+    ↓
+Coba fetch dari CMS API: /api/v1/cms/pages/{slug}
+    ↓
+Jika CMS punya konten → render konten CMS ✅
+Jika tidak → fallback ke HTML hardcoded di file .astro ✅
+```
+
+Keuntungan:
+
+- **Performa**: Fallback langsung render tanpa fetch
+- **Fleksibel**: Admin bisa override konten kapan saja
+- **Zero risk**: Jika API down, halaman tetap tampil normal
 
 ---
 
-# 8. Authentication
+# 8. Database
+
+Single PostgreSQL Database.
+
+Semua tabel bisnis dikelola melalui Drizzle ORM migration di Hono API.
+
+---
+
+# 9. Authentication
 
 JWT Authentication.
 

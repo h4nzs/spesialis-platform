@@ -13,6 +13,7 @@ export {
   changePasswordSchema,
   deleteAccountSchema,
   updateUserStatusSchema,
+  updateUserRoleSchema,
   convertGuestSchema,
   refreshTokenSchema,
   verifyEmailSchema,
@@ -164,14 +165,3 @@ export type { ImposePenaltyInput, UpdatePenaltyStatusInput } from './penalty.ts'
 
 export { createCmsPageSchema, updateCmsPageSchema } from './cms-pages.ts';
 export type { CreateCmsPageInput, UpdateCmsPageInput } from './cms-pages.ts';
-
-export {
-  createHomepageSectionSchema,
-  updateHomepageSectionSchema,
-  reorderHomepageSectionsSchema,
-} from './homepage-sections.ts';
-export type {
-  CreateHomepageSectionInput,
-  UpdateHomepageSectionInput,
-  ReorderHomepageSectionsInput,
-} from './homepage-sections.ts';

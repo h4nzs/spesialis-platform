@@ -56,6 +56,35 @@ const ROLE_LABELS: Record<string, string> = {
   content_manager: 'Content Manager',
 };
 
+const ROLE_SELECT_OPTIONS = [
+  { value: 'customer', label: 'Customer' },
+  { value: 'partner', label: 'Partner' },
+  { value: 'corporate', label: 'Corporate' },
+  { value: 'admin', label: 'Admin' },
+  { value: 'super_admin', label: 'Super Admin' },
+  { value: 'dispatcher', label: 'Dispatcher' },
+  { value: 'finance', label: 'Finance' },
+  { value: 'content_manager', label: 'Content Manager' },
+];
+
+/** Decode JWT payload from cookie without crypto (client-side only). */
+function decodeJwtFromCookie(): { sub: string; email: string; role: string } | null {
+  const match = document.cookie.match(/(?:^|;\s*)token=([^;]*)/);
+  if (!match?.[1]) return null;
+  try {
+    const b64 = match[1].split('.')[1];
+    if (!b64) return null;
+    const json = atob(b64.replace(/-/g, '+').replace(/_/g, '/'));
+    const payload = JSON.parse(json);
+    if (payload.sub && payload.email && payload.role) {
+      return { sub: payload.sub, email: payload.email, role: payload.role };
+    }
+    return null;
+  } catch {
+    return null;
+  }
+}
+
 export function AdminUsers() {
   const api = useMemo(() => createBrowserClient(), []);
   const [users, setUsers] = useState<UserItem[]>([]);
@@ -64,9 +93,19 @@ export function AdminUsers() {
   const [roleFilter, setRoleFilter] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
   const [showStatusModal, setShowStatusModal] = useState(false);
+  const [showRoleModal, setShowRoleModal] = useState(false);
   const [selectedUser, setSelectedUser] = useState<UserItem | null>(null);
   const [newStatus, setNewStatus] = useState('');
+  const [newRole, setNewRole] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const [currentUserRole, setCurrentUserRole] = useState<string>('');
+
+  useEffect(() => {
+    const decoded = decodeJwtFromCookie();
+    if (decoded?.role) {
+      setCurrentUserRole(decoded.role);
+    }
+  }, []);
 
   const loadData = useCallback(
     async (searchTerm?: string) => {
@@ -77,8 +116,8 @@ export function AdminUsers() {
         if (roleFilter) params.role = roleFilter;
         if (statusFilter) params.status = statusFilter;
 
-        const result = await api.get<{ data: UserItem[] }>('/api/v1/admin/users', { params });
-        setUsers(result?.data ?? []);
+        const result = await api.get<UserItem[]>('/api/v1/admin/users', { params });
+        setUsers(Array.isArray(result) ? result : []);
       } catch {
         setUsers([]);
       } finally {
@@ -103,6 +142,12 @@ export function AdminUsers() {
     setShowStatusModal(true);
   }
 
+  function openRoleModal(user: UserItem) {
+    setSelectedUser(user);
+    setNewRole(user.role);
+    setShowRoleModal(true);
+  }
+
   async function handleUpdateStatus() {
     if (!selectedUser || !newStatus || newStatus === selectedUser.status) {
       setShowStatusModal(false);
@@ -121,6 +166,27 @@ export function AdminUsers() {
       setSubmitting(false);
     }
   }
+
+  async function handleUpdateRole() {
+    if (!selectedUser || !newRole || newRole === selectedUser.role) {
+      setShowRoleModal(false);
+      return;
+    }
+    setSubmitting(true);
+    try {
+      await api.patch(`/api/v1/admin/users/${selectedUser.id}/role`, {
+        body: { role: newRole },
+      });
+      setShowRoleModal(false);
+      await loadData();
+    } catch {
+      // silent
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  const isSuperAdmin = currentUserRole === 'super_admin';
 
   const columns: Column<UserItem>[] = [
     {
@@ -173,12 +239,22 @@ export function AdminUsers() {
       key: 'id',
       header: 'Aksi',
       render: (item) => (
-        <Button size="sm" onClick={() => openStatusModal(item)}>
-          Ubah Status
-        </Button>
+        <div className="flex gap-2">
+          <Button size="sm" variant="ghost" onClick={() => openRoleModal(item)}>
+            Ubah Role
+          </Button>
+          <Button size="sm" onClick={() => openStatusModal(item)}>
+            Ubah Status
+          </Button>
+        </div>
       ),
     },
   ];
+
+  /** Filter out super_admin option for non-super_admin users. */
+  const roleModalOptions = ROLE_SELECT_OPTIONS.filter(
+    (opt) => isSuperAdmin || opt.value !== 'super_admin',
+  );
 
   return (
     <div className="space-y-4">
@@ -281,6 +357,41 @@ export function AdminUsers() {
               type="button"
               onClick={handleUpdateStatus}
               disabled={submitting || !newStatus || newStatus === selectedUser?.status}
+            >
+              {submitting ? 'Menyimpan...' : 'Simpan'}
+            </Button>
+          </div>
+        </div>
+      </Modal>
+
+      <Modal
+        open={showRoleModal}
+        onClose={() => setShowRoleModal(false)}
+        title={`Ubah Role - ${selectedUser?.email ?? ''}`}
+      >
+        <div className="space-y-4">
+          <p className="text-sm text-text-secondary">
+            Role saat ini:{' '}
+            <strong>{ROLE_LABELS[selectedUser?.role ?? ''] ?? selectedUser?.role}</strong>
+          </p>
+          {!isSuperAdmin && (
+            <p className="text-xs text-warning-500 bg-warning-100 rounded-md px-3 py-2">
+              Anda tidak dapat memberikan role <strong>Super Admin</strong>.
+            </p>
+          )}
+          <Select
+            value={newRole}
+            onChange={(e) => setNewRole(e.target.value)}
+            options={roleModalOptions}
+          />
+          <div className="flex justify-end gap-2 pt-2">
+            <Button variant="ghost" type="button" onClick={() => setShowRoleModal(false)}>
+              Batal
+            </Button>
+            <Button
+              type="button"
+              onClick={handleUpdateRole}
+              disabled={submitting || !newRole || newRole === selectedUser?.role}
             >
               {submitting ? 'Menyimpan...' : 'Simpan'}
             </Button>

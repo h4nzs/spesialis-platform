@@ -2,11 +2,11 @@
 
 **Project Name:** Specialist Platform
 
-**Version:** 1.0
+**Version:** 1.1
 
 **Status:** Locked
 
-**Last Updated:** 29 June 2026
+**Last Updated:** 10 July 2026
 
 ---
 
@@ -50,8 +50,8 @@ Platform ini tidak hanya menjadi website company profile, tetapi berkembang menj
 
 - Semua halaman layanan dapat diindex.
 - Dynamic Sitemap.
-- Structured Data.
-- OpenGraph.
+- Structured Data (JSON-LD).
+- OpenGraph / Twitter Card.
 - Canonical URL.
 
 ---
@@ -98,7 +98,7 @@ Tim operasional yang mengelola:
 - Booking
 - Assignment
 - Pembayaran
-- CMS
+- CMS (Blog, FAQ, Pages, Services)
 - Customer
 - Corporate
 - Partner
@@ -110,7 +110,7 @@ Tim operasional yang mengelola:
 ## MVP
 
 - Landing Page
-- SEO
+- SEO (Structured Data, Sitemap, OpenGraph)
 - Booking
 - Guest Booking
 - Customer Account
@@ -120,11 +120,12 @@ Tim operasional yang mengelola:
 - Dashboard Customer
 - Dashboard Partner
 - Dashboard Corporate
-- CMS
+- CMS (Articles, FAQ, Pages)
 - Blog
 - Tracking
 - Manual Payment
 - Manual Assignment
+- Partner Verification (approve/reject dengan alasan)
 
 ---
 
@@ -146,12 +147,14 @@ Tim operasional yang mengelola:
 
 ## Public
 
-- Homepage
+- Homepage (14 komponen hardcoded, tanpa CMS Homepage Sections)
 - Services
 - Blog
 - FAQ
-- About
-- Contact
+- About (CMS-managed: tentang-kami)
+- Syarat & Ketentuan (CMS-managed)
+- Kebijakan Privasi (CMS-managed)
+- Kontak (CMS-managed)
 - Tracking
 - Booking
 
@@ -182,12 +185,13 @@ Tim operasional yang mengelola:
 ## Partner
 
 - Registration
-- Verification
+- Verification (approve/reject dengan alasan)
 - Job List
 - Accept / Reject Job
 - Availability
 - Earnings
 - Rating
+- Skills & Documents
 
 ---
 
@@ -196,11 +200,14 @@ Tim operasional yang mengelola:
 - Dashboard
 - Booking Management
 - Assignment
-- CMS
+- CMS (Articles, FAQ, Pages)
 - Users
 - Services
 - Reports
 - SEO
+- Partner Management
+- Audit Logs
+- System Settings
 
 ---
 
@@ -322,13 +329,12 @@ Monorepo
 # 11. Security
 
 - HTTPS
-- JWT
-- RBAC
+- JWT + Refresh Token (httpOnly Cookie)
+- RBAC (8 roles)
 - Audit Log
 - Soft Delete
 - Rate Limiting
-- Secure Cookie
-- CSP
+- Argon2id Password Hashing
 
 ---
 
@@ -352,6 +358,7 @@ tanpa perubahan arsitektur besar.
 - Assignment masih manual.
 - WhatsApp menjadi kanal komunikasi utama.
 - Fokus area Jabodetabek dan Bandung pada fase awal.
+- Homepage menggunakan komponen hardcoded (bukan CMS-managed sections).
 
 ---
 
@@ -374,9 +381,10 @@ MVP dianggap selesai apabila:
 - Admin dapat mengelola booking.
 - Partner dapat menerima pekerjaan.
 - Corporate dapat mengirim inquiry.
-- CMS dapat mengelola konten.
-- SEO berjalan dengan baik.
+- CMS dapat mengelola konten (Articles, FAQ, Pages).
+- SEO berjalan dengan baik (Structured Data, Sitemap, OpenGraph).
 - Dashboard seluruh role dapat digunakan.
+- Partner verification dengan alasan penolakan.
 
 ---
 
@@ -384,7 +392,7 @@ MVP dianggap selesai apabila:
 
 Phase 1
 
-- MVP Launch
+- MVP Launch ✅ (sebagian besar)
 
 Phase 2
 

@@ -4,8 +4,8 @@ import type { UserRole, UserStatus } from '@specialist/types';
 import { db, users } from '../../lib/db.ts';
 import { authMiddleware, requireRole } from '../../middleware/auth.ts';
 import { validateBody } from '../../middleware/validation.ts';
-import { updateUserStatusSchema } from '@specialist/validation';
-import { success, successPaginated, notFound } from '../../lib/response.ts';
+import { updateUserStatusSchema, updateUserRoleSchema } from '@specialist/validation';
+import { success, successPaginated, notFound, error, forbidden } from '../../lib/response.ts';
 import { buildPaginationMeta } from '../../lib/pagination.ts';
 import { createAuditLog } from '../../lib/audit.ts';
 
@@ -95,4 +95,67 @@ router.patch(
   },
 );
 
+router.patch(
+  '/:id/role',
+  authMiddleware,
+  requireRole('admin', 'super_admin'),
+  validateBody(updateUserRoleSchema),
+  async (c) => {
+    const id = c.req.param('id')!;
+    const data = c.get('validated') as { role: string };
+    const currentUserRole = c.get('userRole') as string;
+
+    // Admin biasa tidak boleh mengubah role ke super_admin
+    if (currentUserRole !== 'super_admin' && data.role === 'super_admin') {
+      return forbidden(c, 'Anda tidak memiliki izin untuk memberikan role Super Admin');
+    }
+
+    const [user] = await db
+      .select({ id: users.id, role: users.role })
+      .from(users)
+      .where(and(eq(users.id, id), isNull(users.deletedAt)))
+      .limit(1);
+    if (!user) return notFound(c, 'User tidak ditemukan');
+
+    const oldRole = user.role;
+
+    const [updated] = await db
+      .update(users)
+      .set({ role: data.role as UserRole })
+      .where(eq(users.id, id))
+      .returning({
+        id: users.id,
+        email: users.email,
+        role: users.role,
+        status: users.status,
+      });
+
+    await createAuditLog(c, {
+      userId: c.get('userId'),
+      action: 'UPDATE_USER_ROLE',
+      entity: 'user',
+      entityId: id,
+      oldValue: { role: oldRole },
+      newValue: { role: data.role },
+    });
+
+    return success(
+      c,
+      updated,
+      `Role user berhasil diubah menjadi ${ROLE_LABELS[data.role as keyof typeof ROLE_LABELS] ?? data.role}`,
+    );
+  },
+);
+
 export { router as adminUsersRouter };
+
+const ROLE_LABELS: Record<string, string> = {
+  customer: 'Customer',
+  partner: 'Partner',
+  corporate: 'Corporate',
+  admin: 'Admin',
+  super_admin: 'Super Admin',
+  dispatcher: 'Dispatcher',
+  finance: 'Finance',
+  content_manager: 'Content Manager',
+};
