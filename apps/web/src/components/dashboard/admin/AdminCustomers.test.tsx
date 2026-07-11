@@ -12,6 +12,7 @@ const { mockGet, mockPatch, mockDownloadCSV } = vi.hoisted(() => ({
 vi.mock('@ahlipanggilan/shared', () => ({
   createBrowserClient: () => ({ get: mockGet, patch: mockPatch }),
   downloadCSV: mockDownloadCSV,
+  SCHEMA_TEMPLATES: [],
 }));
 
 beforeEach(() => {

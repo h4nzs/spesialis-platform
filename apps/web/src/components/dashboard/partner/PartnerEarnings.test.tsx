@@ -8,6 +8,7 @@ vi.mock('@ahlipanggilan/shared', () => ({
   createBrowserClient: () => ({ get: mockGet }),
   formatDate: (d: string) => d,
   getStatusLabel: (s: string) => s,
+  SCHEMA_TEMPLATES: [],
 }));
 
 vi.mock('@ahlipanggilan/ui', () => ({
@@ -45,6 +46,33 @@ vi.mock('@ahlipanggilan/ui', () => ({
     <div>{title ?? children}</div>
   ),
   Skeleton: () => <div aria-hidden="true" />,
+  TableSkeleton: () => <div data-testid="table-skeleton" />,
+  Grid: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+  Modal: ({
+    children,
+    open,
+    onClose,
+    title,
+  }: {
+    children: React.ReactNode;
+    open: boolean;
+    onClose?: () => void;
+    title?: string;
+  }) =>
+    open ? (
+      <div data-testid="modal">
+        {title ? <h2>{title}</h2> : null}
+        {children}
+      </div>
+    ) : null,
+  CSVExportButton: ({ onClick }: { onClick?: () => void }) => (
+    <button type="button" onClick={onClick}>
+      Export CSV
+    </button>
+  ),
+  Pagination: ({ ..._props }: { [key: string]: unknown }) => <div />,
+  ConfirmDialog: ({ ..._props }: { [key: string]: unknown }) => null,
+  Spinner: () => <div aria-hidden="true" />,
 }));
 
 beforeEach(() => {

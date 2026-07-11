@@ -2,10 +2,36 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { PartnerOverview } from './PartnerOverview';
 
+vi.mock('@ahlipanggilan/ui', () => ({
+  Card: ({ children, ..._props }: { children: React.ReactNode; [key: string]: unknown }) => (
+    <div>{children}</div>
+  ),
+  Grid: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+  Skeleton: () => <div aria-hidden="true" />,
+  Badge: ({ children }: { children: React.ReactNode }) => <span>{children}</span>,
+  Button: ({
+    children,
+    onClick,
+    type,
+  }: {
+    children: React.ReactNode;
+    onClick?: () => void;
+    type?: string;
+  }) => (
+    <button type={type ?? 'button'} onClick={onClick}>
+      {children}
+    </button>
+  ),
+  EmptyState: ({ title, children }: { title?: string; children?: React.ReactNode }) => (
+    <div>{title ?? children}</div>
+  ),
+}));
+
 const mockGet = vi.fn();
 
 vi.mock('@ahlipanggilan/shared', () => ({
   createBrowserClient: () => ({ get: mockGet }),
+  SCHEMA_TEMPLATES: [],
 }));
 
 beforeEach(() => {

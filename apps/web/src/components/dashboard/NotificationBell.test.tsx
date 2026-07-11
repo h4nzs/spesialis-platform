@@ -9,6 +9,7 @@ const mockPatch = vi.fn();
 vi.mock('@ahlipanggilan/shared', () => ({
   createBrowserClient: () => ({ get: mockGet, patch: mockPatch }),
   formatDate: (d: string) => d,
+  SCHEMA_TEMPLATES: [],
 }));
 
 beforeEach(() => {

@@ -13,6 +13,7 @@ const { mockGet, mockPost, mockDelete, mockDownloadCSV } = vi.hoisted(() => ({
 vi.mock('@ahlipanggilan/shared', () => ({
   createBrowserClient: () => ({ get: mockGet, post: mockPost, delete: mockDelete }),
   downloadCSV: mockDownloadCSV,
+  SCHEMA_TEMPLATES: [],
 }));
 
 vi.mock('@ahlipanggilan/ui', () => ({
@@ -87,6 +88,22 @@ vi.mock('@ahlipanggilan/ui', () => ({
   EmptyState: ({ title, children }: { title?: string; children?: React.ReactNode }) => (
     <div>{title ?? children}</div>
   ),
+  TableSkeleton: () => <div data-testid="table-skeleton" />,
+  Card: ({ children, ..._props }: { children: React.ReactNode; [key: string]: unknown }) => (
+    <div>{children}</div>
+  ),
+  Grid: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+  Badge: ({ children, ..._props }: { children: React.ReactNode; [key: string]: unknown }) => (
+    <span>{children}</span>
+  ),
+  CSVExportButton: ({ onClick }: { onClick?: () => void }) => (
+    <button type="button" onClick={onClick}>
+      Export CSV
+    </button>
+  ),
+  Pagination: ({ ..._props }: { [key: string]: unknown }) => <div />,
+  ConfirmDialog: ({ ..._props }: { [key: string]: unknown }) => null,
+  Spinner: () => <div aria-hidden="true" />,
 }));
 
 beforeEach(() => {

@@ -16,6 +16,7 @@ vi.mock('@ahlipanggilan/shared', () => ({
     return `Rp${formatted}`;
   },
   downloadCSV: mockDownloadCSV,
+  SCHEMA_TEMPLATES: [],
 }));
 
 vi.mock('@ahlipanggilan/ui', () => ({
@@ -25,6 +26,36 @@ vi.mock('@ahlipanggilan/ui', () => ({
   EmptyState: ({ title, children }: { title?: string; children?: React.ReactNode }) => (
     <div>{title ?? children}</div>
   ),
+  TableSkeleton: () => <div data-testid="table-skeleton" />,
+  Grid: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+  Badge: ({ children, ..._props }: { children: React.ReactNode; [key: string]: unknown }) => (
+    <span>{children}</span>
+  ),
+  Modal: ({
+    children,
+    open,
+    onClose,
+    title,
+  }: {
+    children: React.ReactNode;
+    open: boolean;
+    onClose?: () => void;
+    title?: string;
+  }) =>
+    open ? (
+      <div data-testid="modal">
+        {title ? <h2>{title}</h2> : null}
+        {children}
+      </div>
+    ) : null,
+  CSVExportButton: ({ onClick }: { onClick?: () => void }) => (
+    <button type="button" onClick={onClick}>
+      Export CSV
+    </button>
+  ),
+  Pagination: ({ ..._props }: { [key: string]: unknown }) => <div />,
+  ConfirmDialog: ({ ..._props }: { [key: string]: unknown }) => null,
+  Spinner: () => <div aria-hidden="true" />,
 }));
 
 beforeEach(() => {

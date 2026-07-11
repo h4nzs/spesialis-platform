@@ -2,6 +2,22 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { LoginForm } from './LoginForm';
 
+vi.mock('@ahlipanggilan/ui', () => ({
+  Button: ({
+    children,
+    onClick,
+    type,
+  }: {
+    children: React.ReactNode;
+    onClick?: () => void;
+    type?: string;
+  }) => (
+    <button type={type ?? 'button'} onClick={onClick}>
+      {children}
+    </button>
+  ),
+}));
+
 const mockPost = vi.fn();
 const mockSetTokens = vi.fn();
 

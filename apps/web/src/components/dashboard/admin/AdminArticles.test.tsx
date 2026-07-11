@@ -15,6 +15,7 @@ vi.mock('@ahlipanggilan/shared', () => ({
     delete: mockDelete,
   }),
   downloadCSV: mockDownloadCSV,
+  SCHEMA_TEMPLATES: [],
 }));
 
 vi.mock('@ahlipanggilan/ui', () => ({
@@ -72,6 +73,30 @@ vi.mock('@ahlipanggilan/ui', () => ({
     </button>
   ),
   TableSkeleton: () => <div data-testid="table-skeleton" />,
+  Card: ({ children, ..._props }: { children: React.ReactNode; [key: string]: unknown }) => (
+    <div>{children}</div>
+  ),
+  Grid: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+  Modal: ({
+    children,
+    open,
+    onClose,
+    title,
+  }: {
+    children: React.ReactNode;
+    open: boolean;
+    onClose?: () => void;
+    title?: string;
+  }) =>
+    open ? (
+      <div data-testid="modal">
+        {title ? <h2>{title}</h2> : null}
+        {children}
+      </div>
+    ) : null,
+  Pagination: ({ ..._props }: { [key: string]: unknown }) => <div />,
+  ConfirmDialog: ({ ..._props }: { [key: string]: unknown }) => null,
+  Spinner: () => <div aria-hidden="true" />,
 }));
 
 beforeEach(() => {

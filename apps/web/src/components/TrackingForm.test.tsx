@@ -9,6 +9,7 @@ vi.mock('@ahlipanggilan/shared', () => ({
   formatCurrency: (n: number) => `Rp${n.toLocaleString('id-ID')}`,
   getStatusLabel: (s: string) => s,
   getStatusColor: () => 'default',
+  SCHEMA_TEMPLATES: [],
 }));
 
 beforeEach(() => {

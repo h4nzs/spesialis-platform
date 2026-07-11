@@ -25,6 +25,7 @@ vi.mock('@ahlipanggilan/shared', () => ({
   getStatusColor: () => 'default' as const,
   downloadCSV: mockDownloadCSV,
   downloadBlob: mockDownloadBlob,
+  SCHEMA_TEMPLATES: [],
 }));
 
 vi.mock('@ahlipanggilan/ui', () => ({
@@ -149,6 +150,18 @@ vi.mock('@ahlipanggilan/ui', () => ({
   EmptyState: ({ title, children }: { title?: string; children?: React.ReactNode }) => (
     <div>{title ?? children}</div>
   ),
+  TableSkeleton: () => <div data-testid="table-skeleton" />,
+  Card: ({ children, ..._props }: { children: React.ReactNode; [key: string]: unknown }) => (
+    <div>{children}</div>
+  ),
+  Grid: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+  CSVExportButton: ({ onClick }: { onClick?: () => void }) => (
+    <button type="button" onClick={onClick}>
+      Export CSV
+    </button>
+  ),
+  ConfirmDialog: ({ ..._props }: { [key: string]: unknown }) => null,
+  Spinner: () => <div aria-hidden="true" />,
 }));
 
 beforeEach(() => {

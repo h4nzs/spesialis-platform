@@ -14,6 +14,7 @@ vi.mock('@ahlipanggilan/shared', () => ({
     patch: mockPatch,
     delete: mockDelete,
   }),
+  SCHEMA_TEMPLATES: [],
 }));
 
 beforeEach(() => {

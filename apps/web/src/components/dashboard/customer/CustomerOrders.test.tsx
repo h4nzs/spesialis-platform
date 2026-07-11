@@ -15,6 +15,7 @@ vi.mock('@ahlipanggilan/shared', () => ({
   getStatusLabel: (s: string) => s,
   getStatusColor: () => 'default',
   downloadCSV: mockDownloadCSV,
+  SCHEMA_TEMPLATES: [],
 }));
 
 beforeEach(() => {

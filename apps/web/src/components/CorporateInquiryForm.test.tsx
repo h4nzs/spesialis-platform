@@ -6,6 +6,7 @@ const mockPost = vi.fn();
 
 vi.mock('@ahlipanggilan/shared', () => ({
   createBrowserClient: () => ({ post: mockPost }),
+  SCHEMA_TEMPLATES: [],
 }));
 
 beforeEach(() => {

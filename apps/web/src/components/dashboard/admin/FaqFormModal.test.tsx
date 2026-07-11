@@ -16,6 +16,7 @@ vi.mock('@ahlipanggilan/shared', () => ({
     patch: mockPatch,
     delete: vi.fn(),
   }),
+  SCHEMA_TEMPLATES: [],
 }));
 
 vi.mock('@ahlipanggilan/ui', () => ({
@@ -106,6 +107,31 @@ vi.mock('@ahlipanggilan/ui', () => ({
       onChange={(e) => onChange?.(e.target.value)}
     />
   ),
+  TableSkeleton: () => <div data-testid="table-skeleton" />,
+  Card: ({ children, ..._props }: { children: React.ReactNode; [key: string]: unknown }) => (
+    <div>{children}</div>
+  ),
+  Grid: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+  Badge: ({ children, ..._props }: { children: React.ReactNode; [key: string]: unknown }) => (
+    <span>{children}</span>
+  ),
+  CSVExportButton: ({ onClick }: { onClick?: () => void }) => (
+    <button type="button" onClick={onClick}>
+      Export CSV
+    </button>
+  ),
+  EmptyState: ({
+    title,
+    children,
+    ..._props
+  }: {
+    title?: string;
+    children?: React.ReactNode;
+    [key: string]: unknown;
+  }) => <div>{title ?? children}</div>,
+  Pagination: ({ ..._props }: { [key: string]: unknown }) => <div />,
+  ConfirmDialog: ({ ..._props }: { [key: string]: unknown }) => null,
+  Spinner: () => <div aria-hidden="true" />,
 }));
 
 const onClose = vi.fn();

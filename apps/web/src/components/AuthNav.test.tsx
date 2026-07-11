@@ -2,6 +2,8 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { AuthNav } from './AuthNav';
 
+vi.mock('@ahlipanggilan/ui', () => ({}));
+
 beforeEach(() => {
   vi.clearAllMocks();
   localStorage.clear();

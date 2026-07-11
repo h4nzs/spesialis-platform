@@ -7,6 +7,7 @@ const mockGet = vi.fn();
 vi.mock('@ahlipanggilan/shared', () => ({
   createBrowserClient: () => ({ get: mockGet }),
   formatCurrency: (n: number) => `Rp${n.toLocaleString('id-ID')}`,
+  SCHEMA_TEMPLATES: [],
 }));
 
 beforeEach(() => {
