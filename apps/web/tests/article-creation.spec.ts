@@ -218,7 +218,7 @@ test.describe('Article Creation & Rendering', () => {
       'Seed data not loaded — run `pnpm --filter @ahlipanggilan/api db:seed` first',
     );
 
-    await expect(h1).toContainText('Tips Membersihkan Rumah', { timeout: 10000 });
+    await expect(h1.first()).toContainText('Tips Membersihkan Rumah', { timeout: 10000 });
 
     const prose = page.locator('.prose');
     await expect(prose.locator('h2').first()).toBeVisible({ timeout: 5000 });
