@@ -1,4 +1,4 @@
-import type { ApiError as ApiErrorResponse, ValidationError } from '@specialist/types';
+import type { ApiError as ApiErrorResponse, ValidationError } from '@ahlipanggilan/types';
 
 /**
  * Error yang dilempar oleh ApiClient saat request gagal.

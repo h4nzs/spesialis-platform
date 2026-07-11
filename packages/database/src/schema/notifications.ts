@@ -1,5 +1,5 @@
 import { pgTable, uuid, varchar, timestamp, text, boolean, index } from 'drizzle-orm/pg-core';
-import { type NotificationChannel } from '@specialist/types';
+import { type NotificationChannel } from '@ahlipanggilan/types';
 import { users } from './users.ts';
 
 export const notifications = pgTable(

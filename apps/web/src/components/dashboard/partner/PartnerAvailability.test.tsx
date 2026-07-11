@@ -5,11 +5,11 @@ import { PartnerAvailability } from './PartnerAvailability';
 const mockGet = vi.fn();
 const mockPatch = vi.fn();
 
-vi.mock('@specialist/shared', () => ({
+vi.mock('@ahlipanggilan/shared', () => ({
   createBrowserClient: () => ({ get: mockGet, patch: mockPatch }),
 }));
 
-vi.mock('@specialist/ui', () => ({
+vi.mock('@ahlipanggilan/ui', () => ({
   Card: ({
     children,
     className,

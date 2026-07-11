@@ -7,12 +7,12 @@ import {
   createContractSchema,
   updateContractSchema,
   updateContractStatusSchema,
-} from '@specialist/validation';
+} from '@ahlipanggilan/validation';
 import type {
   CreateContractInput,
   UpdateContractInput,
   UpdateContractStatusInput,
-} from '@specialist/validation';
+} from '@ahlipanggilan/validation';
 import { success, successPaginated, created, error, notFound, forbidden } from '../lib/response.ts';
 import { buildPaginationMeta } from '../lib/pagination.ts';
 import { omitUndefined } from '../lib/update.ts';

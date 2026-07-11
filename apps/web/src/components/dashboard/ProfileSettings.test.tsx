@@ -6,11 +6,11 @@ import { ProfileSettings } from './ProfileSettings';
 const mockGet = vi.fn();
 const mockPatch = vi.fn();
 
-vi.mock('@specialist/shared', () => ({
+vi.mock('@ahlipanggilan/shared', () => ({
   createBrowserClient: () => ({ get: mockGet, patch: mockPatch }),
 }));
 
-vi.mock('@specialist/ui', () => ({
+vi.mock('@ahlipanggilan/ui', () => ({
   Input: ({
     label,
     value,
@@ -44,7 +44,7 @@ vi.mock('@specialist/ui', () => ({
   ),
 }));
 
-vi.mock('@specialist/validation', () => ({
+vi.mock('@ahlipanggilan/validation', () => ({
   updateProfileSchema: {
     safeParse: (data: unknown) => {
       const d = data as { email: string; phone: string };

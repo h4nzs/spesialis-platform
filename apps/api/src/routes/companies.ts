@@ -10,14 +10,14 @@ import {
   verifyCompanySchema,
   createBranchSchema,
   updateBranchSchema,
-} from '@specialist/validation';
+} from '@ahlipanggilan/validation';
 import type {
   CreateCompanyInput,
   UpdateCompanyInput,
   VerifyCompanyInput,
   CreateBranchInput,
   UpdateBranchInput,
-} from '@specialist/validation';
+} from '@ahlipanggilan/validation';
 import { success, created, notFound, forbidden, conflict, serverError } from '../lib/response.ts';
 import { omitUndefined } from '../lib/update.ts';
 import { createAuditLog } from '../lib/audit.ts';

@@ -77,14 +77,14 @@ describe('Article builder', () => {
       headline: 'Test',
       authorName: 'Author',
       datePublished: '2024-01-01',
-      publisherName: 'Spesialis',
-      publisherLogo: 'https://spesialis.id/logo.png',
+      publisherName: 'Ahli Panggilan',
+      publisherLogo: 'https://ahlipanggilan.id/logo.png',
     });
 
     expect(result.publisher).toEqual({
       '@type': 'Organization',
-      name: 'Spesialis',
-      logo: { '@type': 'ImageObject', url: 'https://spesialis.id/logo.png' },
+      name: 'Ahli Panggilan',
+      logo: { '@type': 'ImageObject', url: 'https://ahlipanggilan.id/logo.png' },
     });
   });
 
@@ -93,12 +93,12 @@ describe('Article builder', () => {
       headline: 'Test',
       authorName: 'Author',
       datePublished: '2024-01-01',
-      imageUrl: 'https://spesialis.id/image.jpg',
+      imageUrl: 'https://ahlipanggilan.id/image.jpg',
     });
 
     expect(result.image).toEqual({
       '@type': 'ImageObject',
-      url: 'https://spesialis.id/image.jpg',
+      url: 'https://ahlipanggilan.id/image.jpg',
     });
   });
 
@@ -164,13 +164,13 @@ describe('Service builder', () => {
     const result = template.toJsonLD({
       name: 'Cuci AC',
       description: 'Layanan cuci AC profesional',
-      providerName: 'Spesialis',
+      providerName: 'Ahli Panggilan',
       priceRange: 'Rp100,000',
     });
 
     expect(result['@type']).toBe('Service');
     expect(result.name).toBe('Cuci AC');
-    expect(result.provider).toEqual({ '@type': 'Organization', name: 'Spesialis' });
+    expect(result.provider).toEqual({ '@type': 'Organization', name: 'Ahli Panggilan' });
     expect(result.offers).toEqual({ '@type': 'Offer', price: 'Rp100,000' });
   });
 
@@ -188,13 +188,13 @@ describe('LocalBusiness builder', () => {
 
   it('builds valid LocalBusiness JSON-LD', () => {
     const result = template.toJsonLD({
-      name: 'Spesialis',
+      name: 'Ahli Panggilan',
       address: 'Jl. Raya No. 123, Jakarta',
       telephone: '+62812-3456-7890',
     });
 
     expect(result['@type']).toBe('LocalBusiness');
-    expect(result.name).toBe('Spesialis');
+    expect(result.name).toBe('Ahli Panggilan');
     expect(result.address).toEqual({
       '@type': 'PostalAddress',
       streetAddress: 'Jl. Raya No. 123, Jakarta',
@@ -209,9 +209,9 @@ describe('BreadcrumbList builder', () => {
   it('builds valid BreadcrumbList JSON-LD', () => {
     const result = template.toJsonLD({
       item1Name: 'Beranda',
-      item1Url: 'https://spesialis.id/',
+      item1Url: 'https://ahlipanggilan.id/',
       item2Name: 'Layanan',
-      item2Url: 'https://spesialis.id/services',
+      item2Url: 'https://ahlipanggilan.id/services',
     }) as Record<string, unknown>;
     const items = result.itemListElement as Array<Record<string, unknown>>;
 
@@ -221,7 +221,7 @@ describe('BreadcrumbList builder', () => {
       '@type': 'ListItem',
       position: 1,
       name: 'Beranda',
-      item: 'https://spesialis.id/',
+      item: 'https://ahlipanggilan.id/',
     });
   });
 
@@ -245,35 +245,38 @@ describe('Organization builder', () => {
 
   it('builds valid Organization JSON-LD', () => {
     const result = template.toJsonLD({
-      name: 'Spesialis',
-      url: 'https://spesialis.id',
-      logo: 'https://spesialis.id/logo.png',
+      name: 'Ahli Panggilan',
+      url: 'https://ahlipanggilan.id',
+      logo: 'https://ahlipanggilan.id/logo.png',
     });
 
     expect(result['@type']).toBe('Organization');
-    expect(result.name).toBe('Spesialis');
-    expect(result.url).toBe('https://spesialis.id');
-    expect(result.logo).toEqual({ '@type': 'ImageObject', url: 'https://spesialis.id/logo.png' });
+    expect(result.name).toBe('Ahli Panggilan');
+    expect(result.url).toBe('https://ahlipanggilan.id');
+    expect(result.logo).toEqual({
+      '@type': 'ImageObject',
+      url: 'https://ahlipanggilan.id/logo.png',
+    });
   });
 
   it('includes sameAs array for social links', () => {
     const result = template.toJsonLD({
-      name: 'Spesialis',
-      url: 'https://spesialis.id',
-      sameAs1: 'https://facebook.com/spesialis',
-      sameAs2: 'https://instagram.com/spesialis',
+      name: 'Ahli Panggilan',
+      url: 'https://ahlipanggilan.id',
+      sameAs1: 'https://facebook.com/ahlipanggilan',
+      sameAs2: 'https://instagram.com/ahlipanggilan',
     });
 
     expect(result.sameAs).toEqual([
-      'https://facebook.com/spesialis',
-      'https://instagram.com/spesialis',
+      'https://facebook.com/ahlipanggilan',
+      'https://instagram.com/ahlipanggilan',
     ]);
   });
 
   it('omits sameAs when no links provided', () => {
     const result = template.toJsonLD({
-      name: 'Spesialis',
-      url: 'https://spesialis.id',
+      name: 'Ahli Panggilan',
+      url: 'https://ahlipanggilan.id',
     });
 
     expect(result.sameAs).toBeUndefined();

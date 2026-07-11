@@ -5,11 +5,11 @@ import { ComplaintForm } from './ComplaintForm';
 
 const mockPost = vi.fn();
 
-vi.mock('@specialist/shared', () => ({
+vi.mock('@ahlipanggilan/shared', () => ({
   createBrowserClient: () => ({ post: mockPost }),
 }));
 
-vi.mock('@specialist/ui', () => ({
+vi.mock('@ahlipanggilan/ui', () => ({
   Button: ({
     children,
     onClick,
@@ -62,7 +62,7 @@ vi.mock('@specialist/ui', () => ({
   ),
 }));
 
-vi.mock('@specialist/validation', () => ({
+vi.mock('@ahlipanggilan/validation', () => ({
   createComplaintSchema: {
     safeParse: (data: unknown) => {
       const d = data as { orderId: string; title: string; description: string };

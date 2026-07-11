@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
-import { createBrowserClient, formatCurrency } from '@specialist/shared';
-import { Card, Skeleton, Grid } from '@specialist/ui';
+import { createBrowserClient, formatCurrency } from '@ahlipanggilan/shared';
+import { Card, Skeleton, Grid } from '@ahlipanggilan/ui';
 import { IndexNowWidget } from './IndexNowWidget.tsx';
 
 interface DashboardResponse {

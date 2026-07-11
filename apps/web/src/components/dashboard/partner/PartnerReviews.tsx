@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
-import { createBrowserClient, formatDate, formatRating } from '@specialist/shared';
-import { Table, EmptyState, Skeleton, CSVExportButton } from '@specialist/ui';
-import type { Column } from '@specialist/ui';
+import { createBrowserClient, formatDate, formatRating } from '@ahlipanggilan/shared';
+import { Table, EmptyState, Skeleton, CSVExportButton } from '@ahlipanggilan/ui';
+import type { Column } from '@ahlipanggilan/ui';
 
 interface Review {
   id: string;

@@ -2,7 +2,7 @@ import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { LazyFallback } from './LazyFallback';
 
-vi.mock('@specialist/ui', () => ({
+vi.mock('@ahlipanggilan/ui', () => ({
   Spinner: ({ size }: { size?: string }) => <div data-testid="spinner" data-size={size} />,
 }));
 

@@ -4,7 +4,7 @@ import { VerifyEmailForm } from './VerifyEmailForm';
 
 const mockPost = vi.fn();
 
-vi.mock('@specialist/shared', () => ({
+vi.mock('@ahlipanggilan/shared', () => ({
   createBrowserClient: () => ({ post: mockPost }),
 }));
 

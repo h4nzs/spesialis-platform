@@ -27,7 +27,7 @@ test.describe('Article Creation — Real User Flow', () => {
     await page.waitForSelector('#email', { timeout: 10000 });
 
     // Type credentials
-    await page.fill('#email', 'admin@spesialis.id');
+    await page.fill('#email', 'admin@ahlipanggilan.id');
     await page.fill('#password', 'password123');
 
     // Click login button
@@ -145,7 +145,10 @@ test.describe('Article Creation — Real User Flow', () => {
     const h1 = page.locator('h1').first();
     const exists = (await h1.count()) > 0;
 
-    test.skip(!exists, 'Seed data not loaded — run `pnpm --filter @specialist/api db:seed` first');
+    test.skip(
+      !exists,
+      'Seed data not loaded — run `pnpm --filter @ahlipanggilan/api db:seed` first',
+    );
 
     await expect(h1).toContainText('Saluran Air Mampet', { timeout: 10000 });
 

@@ -15,7 +15,7 @@ export function SnippetPreview({ title, description, url, className }: SnippetPr
 
   const displayTitle = title || 'Meta Title akan tampil di sini';
   const displayDesc = description || 'Meta description akan tampil di sini...';
-  const displayUrl = url || 'https://spesialis.id/...';
+  const displayUrl = url || 'https://ahlipanggilan.id/...';
 
   const titleTooLong = title.length > 60;
   const descTooLong = description.length > 160;

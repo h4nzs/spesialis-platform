@@ -6,7 +6,7 @@
  *     <LazyComponent />
  *   </Suspense>
  */
-import { Spinner } from '@specialist/ui';
+import { Spinner } from '@ahlipanggilan/ui';
 
 export function LazyFallback() {
   return (

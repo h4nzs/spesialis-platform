@@ -28,7 +28,7 @@ Platform dirancang untuk scalable, SEO-first, dan production-ready.
 ## Repository Structure
 
 ```
-spesialis/
+ahlipanggilan/
 ├── apps/
 │   ├── web/          # Astro Frontend — Website & Dashboards (62 pages)
 │   └── api/          # Hono API — Business Logic Layer (67 route files)
@@ -118,13 +118,13 @@ cp .env.example .env
 docker compose up -d postgres
 
 # Run migrations
-pnpm --filter @specialist/database db:migrate
+pnpm --filter @ahlipanggilan/database db:migrate
 
 # Seed demo data
-pnpm --filter @specialist/api db:seed
+pnpm --filter @ahlipanggilan/api db:seed
 
 # Seed CMS pages (4 system pages: tentang-kami, syarat-ketentuan, kebijakan-privasi, kontak)
-pnpm --filter @specialist/database db:seed-pages
+pnpm --filter @ahlipanggilan/database db:seed-pages
 
 # Start dev servers
 pnpm dev
@@ -132,18 +132,18 @@ pnpm dev
 
 Seeded accounts (password `password123`):
 
-| Role        | Email                   |
-| ----------- | ----------------------- |
-| Super Admin | admin@spesialis.id      |
-| Admin       | admin2@spesialis.id     |
-| Dispatcher  | dispatcher@spesialis.id |
-| Finance     | finance@spesialis.id    |
-| Content Mgr | content@spesialis.id    |
-| Partner     | partner@spesialis.id    |
-| Partner     | partner2@spesialis.id   |
-| Customer    | customer@spesialis.id   |
-| Customer    | customer2@spesialis.id  |
-| Corporate   | corporate@spesialis.id  |
+| Role        | Email                       |
+| ----------- | --------------------------- |
+| Super Admin | admin@ahlipanggilan.id      |
+| Admin       | admin2@ahlipanggilan.id     |
+| Dispatcher  | dispatcher@ahlipanggilan.id |
+| Finance     | finance@ahlipanggilan.id    |
+| Content Mgr | content@ahlipanggilan.id    |
+| Partner     | partner@ahlipanggilan.id    |
+| Partner     | partner2@ahlipanggilan.id   |
+| Customer    | customer@ahlipanggilan.id   |
+| Customer    | customer2@ahlipanggilan.id  |
+| Corporate   | corporate@ahlipanggilan.id  |
 
 ### 4. Start dev servers
 
@@ -178,10 +178,10 @@ pnpm dev
 ### Database Commands
 
 ```bash
-pnpm --filter @specialist/database db:migrate           # Apply migrations
-pnpm --filter @specialist/database db:generate           # Generate migration from schema
-pnpm --filter @specialist/database db:push               # Push schema langsung ke DB
-pnpm --filter @specialist/database db:seed-pages         # Seed 4 CMS system pages
+pnpm --filter @ahlipanggilan/database db:migrate           # Apply migrations
+pnpm --filter @ahlipanggilan/database db:generate           # Generate migration from schema
+pnpm --filter @ahlipanggilan/database db:push               # Push schema langsung ke DB
+pnpm --filter @ahlipanggilan/database db:seed-pages         # Seed 4 CMS system pages
 ```
 
 ### Unified CLI (`pnpm cli`)
@@ -247,12 +247,12 @@ First time on your VPS:
 
 ```bash
 # 1. Clone and configure
-git clone <repo> && cd spesialis
+git clone <repo> && cd ahlipanggilan
 cp .env.prod.example .env.prod && nano .env.prod   # fill in secrets
 
 # 2. Get SSL certificates
 docker compose -f docker-compose.prod.yml up -d nginx   # starts HTTP-only for ACME
-sudo certbot certonly --webroot -w /var/www/letsencrypt -d spesialis.id
+sudo certbot certonly --webroot -w /var/www/letsencrypt -d ahlipanggilan.id
 
 # 3. Start the full stack
 docker compose -f docker-compose.prod.yml --env-file .env.prod up -d
@@ -283,7 +283,7 @@ Variable (Settings → Secrets and variables → Actions → Variables):
 └─────────────┴───────┘
 And on the VPS, you'll need:
 // bash
-git clone <repo> /home/deploy/spesialis
+git clone <repo> /home/deploy/ahlipanggilan
 cp .env.prod.example .env.prod # fill in your secrets
 
 # Get SSL certs (as described earlier)

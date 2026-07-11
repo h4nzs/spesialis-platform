@@ -7,7 +7,7 @@ import {
   getStatusColor,
   downloadCSV,
   downloadBlob,
-} from '@specialist/shared';
+} from '@ahlipanggilan/shared';
 import {
   Badge,
   Table,
@@ -19,9 +19,9 @@ import {
   EmptyState,
   CSVExportButton,
   TableSkeleton,
-} from '@specialist/ui';
-import type { Column } from '@specialist/ui';
-import type { OrderStatus } from '@specialist/types';
+} from '@ahlipanggilan/ui';
+import type { Column } from '@ahlipanggilan/ui';
+import type { OrderStatus } from '@ahlipanggilan/types';
 
 interface BookingItem {
   id: string;

@@ -17,13 +17,13 @@ describe('generateIndexNowKey', () => {
 
 describe('getIndexNowKeyLocation', () => {
   it('returns key location URL with host', () => {
-    const location = getIndexNowKeyLocation('https://spesialis.id', 'test-key');
-    expect(location).toBe('https://spesialis.id/test-key.txt');
+    const location = getIndexNowKeyLocation('https://ahlipanggilan.id', 'test-key');
+    expect(location).toBe('https://ahlipanggilan.id/test-key.txt');
   });
 
   it('strips trailing slash from host', () => {
-    const location = getIndexNowKeyLocation('https://spesialis.id/', 'mykey');
-    expect(location).toBe('https://spesialis.id/mykey.txt');
+    const location = getIndexNowKeyLocation('https://ahlipanggilan.id/', 'mykey');
+    expect(location).toBe('https://ahlipanggilan.id/mykey.txt');
   });
 
   it('works with ip-based host', () => {
@@ -64,10 +64,10 @@ describe('pingIndexNow', () => {
     mockFetch.mockResolvedValue({ status: 200 });
 
     const results = await pingIndexNow(
-      ['https://spesialis.id/blog/test-article'],
+      ['https://ahlipanggilan.id/blog/test-article'],
       'test-key',
-      'https://spesialis.id/test-key.txt',
-      'https://spesialis.id',
+      'https://ahlipanggilan.id/test-key.txt',
+      'https://ahlipanggilan.id',
     );
 
     expect(mockFetch).toHaveBeenCalledTimes(2);
@@ -79,10 +79,10 @@ describe('pingIndexNow', () => {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        host: 'spesialis.id',
+        host: 'ahlipanggilan.id',
         key: 'test-key',
-        keyLocation: 'https://spesialis.id/test-key.txt',
-        urlList: ['https://spesialis.id/blog/test-article'],
+        keyLocation: 'https://ahlipanggilan.id/test-key.txt',
+        urlList: ['https://ahlipanggilan.id/blog/test-article'],
       }),
     });
 
@@ -99,37 +99,37 @@ describe('pingIndexNow', () => {
     mockFetch.mockResolvedValue({ status: 200 });
 
     await pingIndexNow(
-      ['https://spesialis.id/blog/test'],
+      ['https://ahlipanggilan.id/blog/test'],
       'key',
-      'https://spesialis.id/key.txt',
-      'https://spesialis.id',
+      'https://ahlipanggilan.id/key.txt',
+      'https://ahlipanggilan.id',
     );
 
     const callBody = JSON.parse(mockFetch.mock.calls[0]![1]!.body as string);
-    expect(callBody.host).toBe('spesialis.id');
+    expect(callBody.host).toBe('ahlipanggilan.id');
   });
 
   it('strips trailing slash from host in payload', async () => {
     mockFetch.mockResolvedValue({ status: 200 });
 
     await pingIndexNow(
-      ['https://spesialis.id/blog/test'],
+      ['https://ahlipanggilan.id/blog/test'],
       'key',
-      'https://spesialis.id/key.txt',
-      'https://spesialis.id/',
+      'https://ahlipanggilan.id/key.txt',
+      'https://ahlipanggilan.id/',
     );
 
     const callBody = JSON.parse(mockFetch.mock.calls[0]![1]!.body as string);
-    expect(callBody.host).toBe('spesialis.id');
+    expect(callBody.host).toBe('ahlipanggilan.id');
   });
 
   it('reports error when fetch fails', async () => {
     mockFetch.mockRejectedValue(new Error('Network failure'));
 
     const results = await pingIndexNow(
-      ['https://spesialis.id/blog/test'],
+      ['https://ahlipanggilan.id/blog/test'],
       'key',
-      'https://spesialis.id/key.txt',
+      'https://ahlipanggilan.id/key.txt',
     );
 
     expect(results).toHaveLength(2);
@@ -144,9 +144,9 @@ describe('pingIndexNow', () => {
     mockFetch.mockResolvedValueOnce({ status: 429 }).mockResolvedValueOnce({ status: 500 });
 
     const results = await pingIndexNow(
-      ['https://spesialis.id/blog/test'],
+      ['https://ahlipanggilan.id/blog/test'],
       'key',
-      'https://spesialis.id/key.txt',
+      'https://ahlipanggilan.id/key.txt',
     );
 
     expect(results[0]!.status).toBe(429);
@@ -159,9 +159,9 @@ describe('pingIndexNow', () => {
     mockFetch.mockResolvedValueOnce({ status: 200 }).mockRejectedValueOnce(new Error('Timeout'));
 
     const results = await pingIndexNow(
-      ['https://spesialis.id/blog/test'],
+      ['https://ahlipanggilan.id/blog/test'],
       'key',
-      'https://spesialis.id/key.txt',
+      'https://ahlipanggilan.id/key.txt',
     );
 
     expect(results[0]).toEqual({ destination: 'indexnow.org', status: 200, error: null });
@@ -172,12 +172,12 @@ describe('pingIndexNow', () => {
     mockFetch.mockResolvedValue({ status: 200 });
 
     const urls = [
-      'https://spesialis.id/blog/one',
-      'https://spesialis.id/blog/two',
-      'https://spesialis.id/blog/three',
+      'https://ahlipanggilan.id/blog/one',
+      'https://ahlipanggilan.id/blog/two',
+      'https://ahlipanggilan.id/blog/three',
     ];
 
-    await pingIndexNow(urls, 'key', 'https://spesialis.id/key.txt');
+    await pingIndexNow(urls, 'key', 'https://ahlipanggilan.id/key.txt');
 
     const callBody = JSON.parse(mockFetch.mock.calls[0]![1]!.body as string);
     expect(callBody.urlList).toHaveLength(3);

@@ -89,8 +89,8 @@ const defaultJsonLd: Record<string, unknown> | undefined = article
         {
           '@type': 'BreadcrumbList',
           itemListElement: [
-            { '@type': 'ListItem', position: 1, name: 'Beranda', item: 'https://spesialis.id' },
-            { '@type': 'ListItem', position: 2, name: 'Blog', item: 'https://spesialis.id/blog' },
+            { '@type': 'ListItem', position: 1, name: 'Beranda', item: 'https://ahlipanggilan.id' },
+            { '@type': 'ListItem', position: 2, name: 'Blog', item: 'https://ahlipanggilan.id/blog' },
             { '@type': 'ListItem', position: 3, name: article.title },
           ],
         },
@@ -101,10 +101,10 @@ const defaultJsonLd: Record<string, unknown> | undefined = article
           image: article.coverImage,
           author: article.authorName
             ? { '@type': 'Person', name: article.authorName }
-            : { '@type': 'Organization', name: 'Spesialis' },
+            : { '@type': 'Organization', name: 'Ahli Panggilan' },
           datePublished: article.publishedAt,
           dateModified: article.updatedAt,
-          publisher: { '@type': 'Organization', name: 'Spesialis' },
+          publisher: { '@type': 'Organization', name: 'Ahli Panggilan' },
         },
       ],
     }
@@ -140,8 +140,8 @@ const contentHtml = article?.content
 {
   article ? (
     <BaseLayout
-      title={article.metaTitle ?? `${article.title} - Blog Spesialis`}
-      description={article.metaDescription ?? (article.summary ?? `Baca artikel ${article.title} di Blog Spesialis`)}
+      title={article.metaTitle ?? `${article.title} - Blog Ahli Panggilan`}
+      description={article.metaDescription ?? (article.summary ?? `Baca artikel ${article.title} di Blog Ahli Panggilan`)}
       canonicalUrl={article.canonicalUrl ?? `/blog/${article.slug}`}
       ogImage={article.ogImage ?? article.coverImage ?? undefined}
       ogType="article"
@@ -210,7 +210,7 @@ const contentHtml = article?.content
     </BaseLayout>
   ) : (
     <BaseLayout
-      title={error ? 'Artikel Tidak Ditemukan - Blog Spesialis' : 'Memuat... - Blog Spesialis'}
+      title={error ? 'Artikel Tidak Ditemukan - Blog Ahli Panggilan' : 'Memuat... - Blog Ahli Panggilan'}
       description={error ?? 'Memuat artikel'}
     >
       <div class="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8">

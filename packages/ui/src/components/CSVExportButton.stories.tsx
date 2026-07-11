@@ -41,7 +41,6 @@ const meta = {
   },
   args: {
     onClick: () => console.log('Custom onClick triggered'),
-    onExport: () => console.log('Custom onExport triggered'),
   },
 } satisfies Meta<typeof CSVExportButton>;
 
@@ -50,14 +49,7 @@ type Story = StoryObj<typeof meta>;
 
 // ─── Sample Data ──────────────────────────────────────────────────────────
 
-interface User {
-  name: string;
-  email: string;
-  role: string;
-  joinedAt: string;
-}
-
-const sampleUsers: User[] = [
+const sampleUsers: Record<string, unknown>[] = [
   { name: 'John Doe', email: 'john@example.com', role: 'admin', joinedAt: '2024-01-15' },
   { name: 'Jane Smith', email: 'jane@example.com', role: 'customer', joinedAt: '2024-03-22' },
   { name: 'Bob Johnson', email: 'bob@example.com', role: 'partner', joinedAt: '2024-06-10' },
@@ -78,7 +70,7 @@ const userColumns = [
  */
 export const Default: Story = {
   args: {
-    data: sampleUsers,
+    data: sampleUsers as Record<string, unknown>[],
     columns: userColumns,
     filename: 'users-export.csv',
   },
@@ -110,7 +102,7 @@ export const EmptyData: Story = {
  */
 export const Loading: Story = {
   args: {
-    data: sampleUsers,
+    data: sampleUsers as Record<string, unknown>[],
     columns: userColumns,
     filename: 'users-export.csv',
     loading: true,
@@ -122,7 +114,7 @@ export const Loading: Story = {
  */
 export const CustomLoadingLabel: Story = {
   args: {
-    data: sampleUsers,
+    data: sampleUsers as Record<string, unknown>[],
     columns: userColumns,
     filename: 'users-export.csv',
     loading: true,
@@ -136,7 +128,7 @@ export const CustomLoadingLabel: Story = {
  */
 export const Disabled: Story = {
   args: {
-    data: sampleUsers,
+    data: sampleUsers as Record<string, unknown>[],
     columns: userColumns,
     filename: 'users-export.csv',
     disabled: true,
@@ -156,7 +148,7 @@ const ROLE_LABELS: Record<string, string> = {
 
 export const WithFormatCallbacks: Story = {
   args: {
-    data: sampleUsers,
+    data: sampleUsers as Record<string, unknown>[],
     columns: [
       { key: 'name' as const, label: 'Nama' },
       { key: 'email' as const, label: 'Email' },
@@ -186,7 +178,7 @@ export const WithFormatCallbacks: Story = {
  */
 export const CustomOnClick: Story = {
   args: {
-    data: sampleUsers,
+    data: sampleUsers as Record<string, unknown>[],
     columns: userColumns,
     filename: 'users-export.csv',
     onClick: () => {
@@ -210,7 +202,7 @@ export const CustomOnClick: Story = {
  */
 export const CustomOnExport: Story = {
   args: {
-    data: sampleUsers,
+    data: sampleUsers as Record<string, unknown>[],
     columns: userColumns,
     filename: 'users-export.csv',
     onExport: (headers, rows, filename) => {

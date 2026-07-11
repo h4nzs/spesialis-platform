@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { createBrowserClient, formatCurrency } from '@specialist/shared';
+import { createBrowserClient, formatCurrency } from '@ahlipanggilan/shared';
 
 interface ServiceItem {
   id: string;

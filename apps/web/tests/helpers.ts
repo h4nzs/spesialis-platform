@@ -134,18 +134,18 @@ export async function trackBooking(request: APIRequestContext, bookingNumber: st
 }
 
 export const TEST_CREDENTIALS = {
-  admin: { email: 'admin@spesialis.id', password: 'password123', role: 'super_admin' },
-  admin2: { email: 'admin2@spesialis.id', password: 'password123', role: 'admin' },
-  dispatcher: { email: 'dispatcher@spesialis.id', password: 'password123', role: 'dispatcher' },
-  finance: { email: 'finance@spesialis.id', password: 'password123', role: 'finance' },
+  admin: { email: 'admin@ahlipanggilan.id', password: 'password123', role: 'super_admin' },
+  admin2: { email: 'admin2@ahlipanggilan.id', password: 'password123', role: 'admin' },
+  dispatcher: { email: 'dispatcher@ahlipanggilan.id', password: 'password123', role: 'dispatcher' },
+  finance: { email: 'finance@ahlipanggilan.id', password: 'password123', role: 'finance' },
   contentManager: {
-    email: 'content@spesialis.id',
+    email: 'content@ahlipanggilan.id',
     password: 'password123',
     role: 'content_manager',
   },
-  partner1: { email: 'partner@spesialis.id', password: 'password123', role: 'partner' },
-  partner2: { email: 'partner2@spesialis.id', password: 'password123', role: 'partner' },
-  customer1: { email: 'customer@spesialis.id', password: 'password123', role: 'customer' },
-  customer2: { email: 'customer2@spesialis.id', password: 'password123', role: 'customer' },
-  corporate: { email: 'corporate@spesialis.id', password: 'password123', role: 'corporate' },
+  partner1: { email: 'partner@ahlipanggilan.id', password: 'password123', role: 'partner' },
+  partner2: { email: 'partner2@ahlipanggilan.id', password: 'password123', role: 'partner' },
+  customer1: { email: 'customer@ahlipanggilan.id', password: 'password123', role: 'customer' },
+  customer2: { email: 'customer2@ahlipanggilan.id', password: 'password123', role: 'customer' },
+  corporate: { email: 'corporate@ahlipanggilan.id', password: 'password123', role: 'corporate' },
 } as const;

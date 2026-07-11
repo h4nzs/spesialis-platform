@@ -8,14 +8,14 @@ const { mockGet, mockDownloadCSV } = vi.hoisted(() => ({
   mockDownloadCSV: vi.fn(),
 }));
 
-vi.mock('@specialist/shared', () => ({
+vi.mock('@ahlipanggilan/shared', () => ({
   createBrowserClient: () => ({ get: mockGet }),
   formatDate: (d: string) => d,
   formatRating: (r: number) => `${r}/5`,
   downloadCSV: mockDownloadCSV,
 }));
 
-vi.mock('@specialist/ui', () => ({
+vi.mock('@ahlipanggilan/ui', () => ({
   Table: ({
     data,
     emptyMessage,

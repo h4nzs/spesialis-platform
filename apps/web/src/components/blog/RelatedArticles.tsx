@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { createBrowserClient } from '@specialist/shared';
+import { createBrowserClient } from '@ahlipanggilan/shared';
 import type { CmsArticle, ArticleItem } from './utils';
 import { formatDate, transformArticle } from './utils';
 

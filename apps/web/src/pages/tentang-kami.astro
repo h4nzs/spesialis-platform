@@ -12,7 +12,7 @@ interface CmsPage {
 // Fallback to hardcoded content when CMS is unreachable
 let pageSlug = 'tentang-kami'
 let pageTitle = 'Tentang Kami'
-let pageDescription = 'Spesialis adalah platform layanan jasa profesional on-demand yang menghubungkan pelanggan dengan teknisi terpercaya di Indonesia.'
+let pageDescription = 'Ahli Panggilan adalah platform layanan jasa profesional on-demand yang menghubungkan pelanggan dengan teknisi terpercaya di Indonesia.'
 let pageHtml = ''
 const apiUrl = import.meta.env.PUBLIC_API_URL ?? 'http://localhost:3000'
 
@@ -37,7 +37,7 @@ try {
 if (!useCms) {
   pageHtml = `
     <p class="text-text-primary leading-relaxed">
-      Spesialis adalah platform layanan jasa profesional on-demand yang menghubungkan pelanggan
+      Ahli Panggilan adalah platform layanan jasa profesional on-demand yang menghubungkan pelanggan
       dengan teknisi dan profesional terpercaya di Indonesia. Kami hadir untuk mempermudah
       Anda menemukan tenaga ahli untuk kebutuhan rumah, kantor, dan bisnis.
     </p>
@@ -80,18 +80,18 @@ if (!useCms) {
 ---
 
 <BaseLayout
-  title={`${pageTitle} - Spesialis`}
+  title={`${pageTitle} - Ahli Panggilan`}
   description={pageDescription}
   canonicalUrl="/tentang-kami"
   jsonLd={{
     '@context': 'https://schema.org',
     '@type': 'Organization',
-    name: 'Spesialis',
-    url: 'https://spesialis.id',
-    logo: 'https://spesialis.id/favicon.svg',
+    name: 'Ahli Panggilan',
+    url: 'https://ahlipanggilan.id',
+    logo: 'https://ahlipanggilan.id/favicon.svg',
     description: 'Platform layanan jasa profesional on-demand di Indonesia.',
     foundingDate: '2025',
-    founder: { '@type': 'Organization', name: 'Spesialis' },
+    founder: { '@type': 'Organization', name: 'Ahli Panggilan' },
     sameAs: [],
   }}
 >

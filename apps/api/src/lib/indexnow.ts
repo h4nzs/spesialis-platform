@@ -1,6 +1,6 @@
 import { eq } from 'drizzle-orm';
 import { db, systemSettings, indexnowLogs } from './db.ts';
-import { pingIndexNow, generateIndexNowKey } from '@specialist/shared';
+import { pingIndexNow, generateIndexNowKey } from '@ahlipanggilan/shared';
 
 /**
  * Ping IndexNow for article URLs when an article is published.
@@ -26,7 +26,7 @@ export async function notifyArticlePublished(slug: string): Promise<void> {
 
     if (enabledSetting?.value === 'false') return; // Disabled
 
-    const host = process.env.SITE_URL ?? 'https://spesialis.id';
+    const host = process.env.SITE_URL ?? 'https://ahlipanggilan.id';
     const keyLocation = `${host}/${key}.txt`;
     const url = `${host}/blog/${slug}`;
 

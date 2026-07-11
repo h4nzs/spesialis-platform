@@ -5,8 +5,8 @@ import {
   formatDate,
   getInvoiceBadge,
   INVOICE_STATUS_CHANGE_OPTIONS,
-} from '@specialist/shared';
-import { Card, Badge, Button, Skeleton, EmptyState } from '@specialist/ui';
+} from '@ahlipanggilan/shared';
+import { Card, Badge, Button, Skeleton, EmptyState } from '@ahlipanggilan/ui';
 
 // ── Types ──────────────────────────────────────────────────────
 

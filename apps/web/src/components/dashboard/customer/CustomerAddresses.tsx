@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
-import { createBrowserClient } from '@specialist/shared';
-import { createAddressSchema } from '@specialist/validation';
-import { Card, Button, Input, Modal, EmptyState } from '@specialist/ui';
+import { createBrowserClient } from '@ahlipanggilan/shared';
+import { createAddressSchema } from '@ahlipanggilan/validation';
+import { Card, Button, Input, Modal, EmptyState } from '@ahlipanggilan/ui';
 
 interface Address {
   id: string;

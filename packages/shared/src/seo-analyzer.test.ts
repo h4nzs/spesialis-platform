@@ -85,7 +85,7 @@ describe('analyzeContent', () => {
       'membersihkan AC',
       'Cara Membersihkan AC',
       'cara-membersihkan-ac',
-      'Cara Membersihkan AC | Spesialis',
+      'Cara Membersihkan AC | Ahli Panggilan',
     );
 
     expect(result).toHaveProperty('score');
@@ -217,11 +217,11 @@ describe('getSnippetPreview', () => {
     const result = getSnippetPreview(
       'Judul Halaman',
       'Deskripsi meta',
-      'https://spesialis.id/page',
+      'https://ahlipanggilan.id/page',
     );
     expect(result.title).toBe('Judul Halaman');
     expect(result.description).toBe('Deskripsi meta');
-    expect(result.url).toBe('https://spesialis.id/page');
+    expect(result.url).toBe('https://ahlipanggilan.id/page');
   });
 
   it('flags title over 60 characters', () => {
@@ -246,6 +246,6 @@ describe('getSnippetPreview', () => {
     const result = getSnippetPreview('', '', '');
     expect(result.title).toBeTruthy();
     expect(result.description).toBeTruthy();
-    expect(result.url).toBe('https://spesialis.id/...');
+    expect(result.url).toBe('https://ahlipanggilan.id/...');
   });
 });

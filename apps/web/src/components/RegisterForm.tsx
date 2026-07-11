@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { registerSchema } from '@specialist/validation';
-import { Button } from '@specialist/ui';
+import { registerSchema } from '@ahlipanggilan/validation';
+import { Button } from '@ahlipanggilan/ui';
 import { getApiClient, redirectToDashboard } from '../lib/auth.ts';
 
 interface FieldError {

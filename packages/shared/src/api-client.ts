@@ -1,4 +1,8 @@
-import type { ApiResponse, ApiError as ApiErrorResponse, PaginationMeta } from '@specialist/types';
+import type {
+  ApiResponse,
+  ApiError as ApiErrorResponse,
+  PaginationMeta,
+} from '@ahlipanggilan/types';
 import {
   ApiClientError,
   NetworkError,

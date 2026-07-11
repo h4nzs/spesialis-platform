@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
-import { createBrowserClient, formatCurrency, downloadCSV } from '@specialist/shared';
-import { Card, EmptyState } from '@specialist/ui';
+import { createBrowserClient, formatCurrency, downloadCSV } from '@ahlipanggilan/shared';
+import { Card, EmptyState } from '@ahlipanggilan/ui';
 
 interface MonthRevenue {
   month: string;

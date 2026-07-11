@@ -16,4 +16,4 @@ EXPOSE 3000
 
 # Production: run without file watcher (no hot-reload)
 # Uses tsx to execute TypeScript directly — no build step needed
-CMD ["pnpm", "--filter", "@specialist/api", "start"]
+CMD ["pnpm", "--filter", "@ahlipanggilan/api", "start"]

@@ -5,7 +5,7 @@ import {
   formatDate,
   getStatusLabel,
   getStatusColor,
-} from '@specialist/shared';
+} from '@ahlipanggilan/shared';
 import {
   Badge,
   Table,
@@ -13,9 +13,9 @@ import {
   EmptyState,
   TableSkeleton,
   CSVExportButton,
-} from '@specialist/ui';
-import type { Column } from '@specialist/ui';
-import type { OrderStatus } from '@specialist/types';
+} from '@ahlipanggilan/ui';
+import type { Column } from '@ahlipanggilan/ui';
+import type { OrderStatus } from '@ahlipanggilan/types';
 
 interface OrderItem {
   id: string;

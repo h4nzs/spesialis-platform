@@ -1,6 +1,6 @@
 import type { Context, Next } from 'hono';
 import { getCookie } from 'hono/cookie';
-import type { UserRole } from '@specialist/types';
+import type { UserRole } from '@ahlipanggilan/types';
 import { verifyAccessToken } from '../lib/auth.ts';
 import { unauthorized, forbidden } from '../lib/response.ts';
 

@@ -16,7 +16,7 @@ Dokumen ini mendefinisikan seluruh komponen UI yang digunakan pada platform.
 
 Semua halaman wajib menggunakan komponen dari package:
 
-@specialist/ui
+@ahlipanggilan/ui
 
 Tidak diperbolehkan membuat UI baru apabila komponen serupa sudah tersedia.
 
@@ -925,6 +925,6 @@ White Label Theme
 
 Seluruh UI Platform harus berasal dari package:
 
-@specialist/ui
+@ahlipanggilan/ui
 
 Tidak diperbolehkan membuat duplicate component pada apps/web.

@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
-import { createBrowserClient } from '@specialist/shared';
-import { Card, Button, Select, Skeleton } from '@specialist/ui';
+import { createBrowserClient } from '@ahlipanggilan/shared';
+import { Card, Button, Select, Skeleton } from '@ahlipanggilan/ui';
 
 export function PartnerAvailability() {
   const api = useMemo(() => createBrowserClient(), []);

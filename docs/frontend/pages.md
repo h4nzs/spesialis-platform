@@ -30,7 +30,7 @@ Interaksi menggunakan React Islands.
 
 ## React Islands (Client)
 
-- Gunakan `@specialist/shared` API Client.
+- Gunakan `@ahlipanggilan/shared` API Client.
 - Token JWT diterima via props dari Astro — jangan akses cookie langsung.
 - Setiap request menyertakan header: `Authorization: Bearer <token>`.
 

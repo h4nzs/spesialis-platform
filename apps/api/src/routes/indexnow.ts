@@ -3,9 +3,7 @@ import { eq, desc, sql } from 'drizzle-orm';
 import { db, systemSettings, indexnowLogs } from '../lib/db.ts';
 import { authMiddleware } from '../middleware/auth.ts';
 import { requirePermission } from '../middleware/seo-permissions.ts';
-import { generateIndexNowKey } from '@specialist/shared';
-import { success } from '../lib/response.ts';
-
+import { generateIndexNowKey } from '@ahlipanggilan/shared';
 const router = new Hono();
 
 /**
@@ -37,7 +35,7 @@ router.get('/key', authMiddleware, requirePermission('seo.indexnow'), async (c) 
       success: true,
       data: {
         key: created!.value,
-        keyLocation: `https://spesialis.id/${created!.value}.txt`,
+        keyLocation: `https://ahlipanggilan.id/${created!.value}.txt`,
         enabled: true,
       },
     });
@@ -54,7 +52,7 @@ router.get('/key', authMiddleware, requirePermission('seo.indexnow'), async (c) 
     success: true,
     data: {
       key: setting.value,
-      keyLocation: `https://spesialis.id/${setting.value}.txt`,
+      keyLocation: `https://ahlipanggilan.id/${setting.value}.txt`,
       enabled: enabledSetting?.value !== 'false',
     },
   });

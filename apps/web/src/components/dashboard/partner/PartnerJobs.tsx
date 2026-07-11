@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { createBrowserClient, formatDate, getStatusLabel } from '@specialist/shared';
-import { Badge, Card, Button, Modal, Input, EmptyState, Skeleton } from '@specialist/ui';
-import type { OrderStatus } from '@specialist/types';
+import { createBrowserClient, formatDate, getStatusLabel } from '@ahlipanggilan/shared';
+import { Badge, Card, Button, Modal, Input, EmptyState, Skeleton } from '@ahlipanggilan/ui';
+import type { OrderStatus } from '@ahlipanggilan/types';
 
 interface JobItem {
   id: string;

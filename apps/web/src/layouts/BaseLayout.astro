@@ -20,7 +20,7 @@ export interface Props {
 }
 
 const {
-  title = 'Spesialis - Layanan Profesional',
+  title = 'Ahli Panggilan - Layanan Profesional',
   description = 'Platform layanan jasa profesional on-demand. Booking teknisi dan profesional terpercaya untuk kebutuhan rumah, kantor, dan bisnis Anda.',
   ogImage = '/og-default.svg',
   ogImageAlt,
@@ -35,7 +35,7 @@ const {
 
 const auth = Astro.locals.auth
 
-const siteUrl = 'https://spesialis.id'
+const siteUrl = 'https://ahlipanggilan.id'
 const canonical = canonicalUrl ? `${siteUrl}${canonicalUrl}` : undefined
 
 // ── WhatsApp settings ─────────────────────────────────────────
@@ -74,15 +74,15 @@ const showWa = whatsappPhone && waPages.some(
 
     {canonical && <link rel="canonical" href={canonical} />}
     <meta property="og:locale" content="id_ID" />
-    <meta property="og:site_name" content="Spesialis" />
+    <meta property="og:site_name" content="Ahli Panggilan" />
     <meta property="og:type" content={ogType} />
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
     <meta property="og:url" content={canonical ?? siteUrl} />
     <meta property="og:image" content={`${siteUrl}${ogImage}`} />
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:site" content="@spesialis_id" />
-    <meta name="twitter:creator" content="@spesialis_id" />
+    <meta name="twitter:site" content="@ahlipanggilan_id" />
+    <meta name="twitter:creator" content="@ahlipanggilan_id" />
     <meta name="twitter:title" content={title} />
     <meta name="twitter:description" content={description} />
     <meta name="twitter:image" content={`${siteUrl}${ogImage}`} />
@@ -105,7 +105,7 @@ const showWa = whatsappPhone && waPages.some(
     </a>
     <header class="sticky top-0 z-navbar border-b border-border-default bg-bg-navbar/80 backdrop-blur-md">
       <div class="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-        <a href="/" class="text-xl font-bold tracking-tight text-primary">Spesialis</a>
+        <a href="/" class="text-xl font-bold tracking-tight text-primary">Ahli Panggilan</a>
         <nav class="flex items-center gap-4 text-sm font-medium text-text-muted sm:gap-6">
           <a href="/" class="hover:text-text-primary transition-colors">Beranda</a>
           <a href="/services" class="hover:text-text-primary transition-colors">Layanan</a>

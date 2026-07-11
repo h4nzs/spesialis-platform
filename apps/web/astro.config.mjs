@@ -17,7 +17,7 @@ if (process.env['ANALYZE'] === 'true') {
 }
 
 export default defineConfig({
-  site: 'https://spesialis.id',
+  site: 'https://ahlipanggilan.id',
   output: 'server',
   adapter: node({ mode: 'standalone' }),
   compressHTML: true,
@@ -48,9 +48,9 @@ export default defineConfig({
         output: {
           manualChunks(id) {
             // UI library — biggest contributor (>200KB with TipTap)
-            if (id.includes('@specialist/ui')) return 'vendor-ui';
+            if (id.includes('@ahlipanggilan/ui')) return 'vendor-ui';
             // React is already auto-split by Astro at ~19KB — no need
-            // TipTap editor (part of @specialist/ui but also standalone)
+            // TipTap editor (part of @ahlipanggilan/ui but also standalone)
             if (id.includes('node_modules/@tiptap')) return 'vendor-editor';
             // Lucide icons — can be 100KB+
             if (id.includes('node_modules/lucide-react')) return 'vendor-icons';

@@ -9,7 +9,7 @@ const serviceId = Astro.url.searchParams.get('serviceId')
 ---
 
 <BaseLayout
-  title="Booking - Spesialis"
+  title="Booking - Ahli Panggilan"
   description="Pesan layanan jasa profesional online. Isi form booking untuk memesan teknisi terpercaya."
   canonicalUrl={serviceId ? `/book?serviceId=${serviceId}` : '/book'}
   jsonLd={{
@@ -17,19 +17,19 @@ const serviceId = Astro.url.searchParams.get('serviceId')
     '@graph': [
       {
         '@type': 'BreadcrumbList',
-        '@id': 'https://spesialis.id/book#breadcrumb',
+        '@id': 'https://ahlipanggilan.id/book#breadcrumb',
         itemListElement: [
-          { '@type': 'ListItem', position: 1, name: 'Beranda', item: 'https://spesialis.id' },
-          { '@type': 'ListItem', position: 2, name: 'Layanan', item: 'https://spesialis.id/services' },
+          { '@type': 'ListItem', position: 1, name: 'Beranda', item: 'https://ahlipanggilan.id' },
+          { '@type': 'ListItem', position: 2, name: 'Layanan', item: 'https://ahlipanggilan.id/services' },
           { '@type': 'ListItem', position: 3, name: 'Booking' },
         ],
       },
       {
         '@type': 'WebPage',
-        name: 'Booking - Spesialis',
+        name: 'Booking - Ahli Panggilan',
         description: 'Pesan layanan jasa profesional online. Booking teknisi terpercaya untuk AC, plumbing, listrik, cleaning, dan lainnya.',
-        url: 'https://spesialis.id/book',
-        breadcrumb: { '@id': 'https://spesialis.id/book#breadcrumb' },
+        url: 'https://ahlipanggilan.id/book',
+        breadcrumb: { '@id': 'https://ahlipanggilan.id/book#breadcrumb' },
       },
     ],
   }}

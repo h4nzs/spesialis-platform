@@ -1,5 +1,5 @@
 import { cn } from '../utils/cn.ts';
-import { getScoreColor, getScoreLabel } from '@specialist/shared';
+import { getScoreColor, getScoreLabel } from '@ahlipanggilan/shared';
 
 export interface SeoScoreGaugeProps {
   score: number;

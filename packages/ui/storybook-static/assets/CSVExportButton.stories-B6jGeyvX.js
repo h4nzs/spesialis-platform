@@ -309,7 +309,7 @@ button + download-icon + \`handleExportCSV\` pattern found across 8+ dashboard c
               },
             },
             description:
-              'Custom export function.\nReceives the computed headers, rows, and filename.\nDefaults to `downloadCSV` from `@specialist/shared`.',
+              'Custom export function.\nReceives the computed headers, rows, and filename.\nDefaults to `downloadCSV` from `@ahlipanggilan/shared`.',
           },
         },
       }));

@@ -1,5 +1,5 @@
 {
-  "name": "@specialist/shared",
+  "name": "@ahlipanggilan/shared",
   "version": "1.0.0",
   "private": true,
   "type": "module",
@@ -20,7 +20,7 @@
     "test": "vitest run"
   },
   "devDependencies": {
-    "@specialist/types": "workspace:*",
+    "@ahlipanggilan/types": "workspace:*",
     "typescript": "^6.0.3",
     "vitest": "^4.1.9"
   }

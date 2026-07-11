@@ -1,5 +1,5 @@
 import { cn } from '../utils/cn.ts';
-import type { SeoCheck } from '@specialist/shared';
+import type { SeoCheck } from '@ahlipanggilan/shared';
 
 export interface SeoChecklistProps {
   checks: SeoCheck[];

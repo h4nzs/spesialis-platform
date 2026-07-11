@@ -71,8 +71,8 @@ export const LongContent: Story = {
       <div className="space-y-3 text-body-sm text-text-secondary">
         {Array.from({ length: 8 }, (_, i) => (
           <p key={i}>
-            {i + 1}. Dengan menggunakan layanan Spesialis, Anda menyetujui ketentuan berikut ini.
-            Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quos.
+            {i + 1}. Dengan menggunakan layanan Ahli Panggilan, Anda menyetujui ketentuan berikut
+            ini. Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quos.
           </p>
         ))}
       </div>

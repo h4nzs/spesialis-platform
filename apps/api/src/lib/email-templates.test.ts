@@ -18,8 +18,8 @@ import {
 function assertBaseHtml(html: string) {
   expect(html).toContain('<!DOCTYPE html>');
   expect(html).toContain('<html lang="id">');
-  expect(html).toContain('<title>Spesialis</title>');
-  expect(html).toContain('Spesialis — Platform Layanan Jasa Profesional');
+  expect(html).toContain('<title>Ahli Panggilan</title>');
+  expect(html).toContain('Ahli Panggilan — Platform Layanan Jasa Profesional');
   expect(html).toContain('Email ini dikirim secara otomatis');
   expect(html).toContain(TEST_APP_URL);
 }
@@ -188,7 +188,7 @@ describe('paymentVerifiedHtml', () => {
     expect(html).toContain('Rp150.000');
     expect(html).toContain('Transfer Bank');
     expect(html).toContain('Lunas');
-    expect(html).toContain('Terima kasih telah menggunakan layanan Spesialis');
+    expect(html).toContain('Terima kasih telah menggunakan layanan Ahli Panggilan');
   });
 
   it('renders failed status without payment summary', () => {

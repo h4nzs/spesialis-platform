@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
-import { createBrowserClient } from '@specialist/shared';
-import { Input, Button } from '@specialist/ui';
+import { createBrowserClient } from '@ahlipanggilan/shared';
+import { Input, Button } from '@ahlipanggilan/ui';
 
 export function SystemSettings() {
   const api = useMemo(() => createBrowserClient(), []);

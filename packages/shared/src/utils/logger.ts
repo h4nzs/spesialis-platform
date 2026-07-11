@@ -3,7 +3,7 @@ export type LogLevel = 'debug' | 'info' | 'warn' | 'error';
 export interface LoggerOptions {
   /** Minimum level yang akan dicetak. Default: 'info' */
   minLevel?: LogLevel;
-  /** Prefix untuk setiap log. Default: '[Spesialis]' */
+  /** Prefix untuk setiap log. Default: '[Ahli Panggilan]' */
   prefix?: string;
   /** Jika true, log dengan console.warn/error untuk level warn+error. Default: true */
   useNativeLevels?: boolean;
@@ -29,7 +29,7 @@ export class Logger {
 
   constructor(options: LoggerOptions = {}) {
     this.minLevel = options.minLevel ?? 'info';
-    this.prefix = options.prefix ?? '[Spesialis]';
+    this.prefix = options.prefix ?? '[Ahli Panggilan]';
     this.useNativeLevels = options.useNativeLevels ?? true;
     this.handler = options.handler;
   }

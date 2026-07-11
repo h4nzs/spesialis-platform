@@ -1,4 +1,4 @@
-import { db as drizzleClient } from '@specialist/database';
+import { db as drizzleClient } from '@ahlipanggilan/database';
 
 export { drizzleClient as db };
-export * from '@specialist/database';
+export * from '@ahlipanggilan/database';

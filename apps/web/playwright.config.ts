@@ -24,7 +24,7 @@ export default defineConfig({
   ],
   webServer: [
     {
-      command: 'pnpm --filter @specialist/api dev',
+      command: 'pnpm --filter @ahlipanggilan/api dev',
       port: 3000,
       cwd: '../..',
       reuseExistingServer: true,

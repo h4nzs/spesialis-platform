@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { Hono } from 'hono';
 import type { Context } from 'hono';
-import type { UserRole } from '@specialist/types';
+import type { UserRole } from '@ahlipanggilan/types';
 import { adminAuditLogsRouter } from './audit-logs.ts';
 import { setTestEnv, makeChain } from '../../test-utils.ts';
 

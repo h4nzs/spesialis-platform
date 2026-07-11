@@ -36,8 +36,8 @@ if (service) {
   jsonLdGraph.push({
     '@type': 'BreadcrumbList',
     itemListElement: [
-      { '@type': 'ListItem', position: 1, name: 'Beranda', item: 'https://spesialis.id' },
-      { '@type': 'ListItem', position: 2, name: 'Layanan', item: 'https://spesialis.id/services' },
+      { '@type': 'ListItem', position: 1, name: 'Beranda', item: 'https://ahlipanggilan.id' },
+      { '@type': 'ListItem', position: 2, name: 'Layanan', item: 'https://ahlipanggilan.id/services' },
       { '@type': 'ListItem', position: 3, name: service?.name ?? 'Detail Layanan' },
     ],
   })
@@ -45,7 +45,7 @@ if (service) {
     '@type': 'Service',
     name: service.name,
     description: service.shortDescription,
-    provider: { '@type': 'Organization', name: 'Spesialis' },
+    provider: { '@type': 'Organization', name: 'Ahli Panggilan' },
     offers: {
       '@type': 'Offer',
       price: service.basePrice,
@@ -83,7 +83,7 @@ const jsonLdPayload = service
 ---
 
 <BaseLayout
-  title={service ? `${service.name} - Spesialis` : error ? 'Layanan Tidak Ditemukan - Spesialis' : 'Memuat... - Spesialis'}
+  title={service ? `${service.name} - Ahli Panggilan` : error ? 'Layanan Tidak Ditemukan - Ahli Panggilan' : 'Memuat... - Ahli Panggilan'}
   description={service?.shortDescription ?? error ?? 'Memuat detail layanan'}
   canonicalUrl={service ? `/services/${service.slug}` : '/services'}
   ogImage={service?.thumbnail ?? undefined}

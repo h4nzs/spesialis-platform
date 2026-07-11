@@ -33,8 +33,6 @@ interface ArticleItem {
   publishedAt: string | null;
 }
 
-const apiUrl = import.meta.env.PUBLIC_API_URL ?? 'http://localhost:3000'
-
 // SSR: fetch services and articles from Hono API (business logic) + CMS API (public content)
 let services: ServiceItem[] = []
 let articles: ArticleItem[] = []
@@ -67,7 +65,7 @@ try {
 ---
 
 <BaseLayout
-  title="Spesialis - Layanan Profesional Tanpa Ribet"
+  title="Ahli Panggilan - Layanan Profesional Tanpa Ribet"
   description="Platform layanan jasa profesional on-demand. Booking teknisi AC, plumbing, listrik, cleaning, dan jasa profesional lainnya dengan harga transparan dan garansi."
   canonicalUrl="/"
   jsonLd={{
@@ -75,26 +73,26 @@ try {
     '@graph': [
       {
         '@type': 'WebSite',
-        '@id': 'https://spesialis.id/#website',
-        url: 'https://spesialis.id',
-        name: 'Spesialis',
+        '@id': 'https://ahlipanggilan.id/#website',
+        url: 'https://ahlipanggilan.id',
+        name: 'Ahli Panggilan',
         description: 'Platform layanan jasa profesional on-demand di Indonesia.',
         potentialAction: {
           '@type': 'SearchAction',
           target: {
             '@type': 'EntryPoint',
-            urlTemplate: 'https://spesialis.id/services?q={search_term_string}',
+            urlTemplate: 'https://ahlipanggilan.id/services?q={search_term_string}',
           },
           'query-input': 'required name=search_term_string',
         },
       },
       {
         '@type': 'LocalBusiness',
-        '@id': 'https://spesialis.id',
-        name: 'Spesialis',
-        url: 'https://spesialis.id',
-        logo: 'https://spesialis.id/favicon.svg',
-        image: 'https://spesialis.id/og-default.png',
+        '@id': 'https://ahlipanggilan.id',
+        name: 'Ahli Panggilan',
+        url: 'https://ahlipanggilan.id',
+        logo: 'https://ahlipanggilan.id/favicon.svg',
+        image: 'https://ahlipanggilan.id/og-default.png',
         description: 'Platform layanan jasa profesional on-demand di Indonesia.',
         areaServed: { '@type': 'Country', name: 'Indonesia' },
         offers: { '@type': 'AggregateOffer', priceCurrency: 'IDR' },
@@ -106,8 +104,8 @@ try {
           availableLanguage: ['Indonesian'],
         },
         sameAs: [
-          'https://instagram.com/spesialis.id',
-          'https://facebook.com/spesialis.id',
+          'https://instagram.com/ahlipanggilan.id',
+          'https://facebook.com/ahlipanggilan.id',
         ],
         address: { '@type': 'PostalAddress', addressCountry: 'ID' },
       },

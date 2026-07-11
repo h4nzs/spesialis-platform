@@ -4,7 +4,7 @@ import { ServiceList } from './ServiceList';
 
 const mockGet = vi.fn();
 
-vi.mock('@specialist/shared', () => ({
+vi.mock('@ahlipanggilan/shared', () => ({
   createBrowserClient: () => ({ get: mockGet }),
   formatCurrency: (n: number) => `Rp${n.toLocaleString('id-ID')}`,
 }));

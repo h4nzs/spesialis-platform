@@ -4,7 +4,7 @@ import { CustomerOverview } from './CustomerOverview';
 
 const mockGet = vi.fn();
 
-vi.mock('@specialist/shared', () => ({
+vi.mock('@ahlipanggilan/shared', () => ({
   createBrowserClient: () => ({ get: mockGet }),
 }));
 

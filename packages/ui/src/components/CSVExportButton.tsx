@@ -1,4 +1,4 @@
-import { downloadCSV } from '@specialist/shared';
+import { downloadCSV } from '@ahlipanggilan/shared';
 
 /**
  * Column definition for CSVExportButton.
@@ -40,7 +40,7 @@ export interface CSVExportButtonProps<T = Record<string, unknown>> {
   /**
    * Custom export function.
    * Receives the computed headers, rows, and filename.
-   * Defaults to `downloadCSV` from `@specialist/shared`.
+   * Defaults to `downloadCSV` from `@ahlipanggilan/shared`.
    */
   onExport?: (headers: string[], rows: string[][], filename: string) => void;
 }

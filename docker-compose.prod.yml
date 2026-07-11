@@ -14,7 +14,7 @@ services:
   # ── PostgreSQL ─────────────────────────────────────────────────────
   postgres:
     image: postgres:18
-    container_name: specialist-postgres
+    container_name: ahlipanggilan-postgres
     restart: unless-stopped
 
     environment:
@@ -40,8 +40,8 @@ services:
 
   # ── Hono API ──────────────────────────────────────────────────────
   api:
-    image: ${IMAGE_REGISTRY:-ghcr.io}/${IMAGE_OWNER:-spesialis}/api:${IMAGE_TAG:-latest}
-    container_name: specialist-api
+    image: ${IMAGE_REGISTRY:-ghcr.io}/${IMAGE_OWNER:-ahlipanggilan}/api:${IMAGE_TAG:-latest}
+    container_name: ahlipanggilan-api
     restart: unless-stopped
 
     ports:
@@ -51,9 +51,9 @@ services:
       PORT: '3000'
       DATABASE_URL: postgres://${DATABASE_USER:-specialist}:${DATABASE_PASSWORD}@postgres:5432/${DATABASE_NAME:-specialist}
       JWT_SECRET: ${JWT_SECRET}
-      CORS_ORIGIN: ${CORS_ORIGIN:-https://spesialis.id}
-      APP_URL: ${APP_URL:-https://spesialis.id}
-      PUBLIC_API_URL: ${PUBLIC_API_URL:-https://spesialis.id/api}
+      CORS_ORIGIN: ${CORS_ORIGIN:-https://ahlipanggilan.id}
+      APP_URL: ${APP_URL:-https://ahlipanggilan.id}
+      PUBLIC_API_URL: ${PUBLIC_API_URL:-https://ahlipanggilan.id/api}
       SMTP_HOST: ${SMTP_HOST}
       SMTP_PORT: ${SMTP_PORT:-587}
       SMTP_USER: ${SMTP_USER}
@@ -96,8 +96,8 @@ services:
 
   # ── Astro Web ─────────────────────────────────────────────────────
   web:
-    image: ${IMAGE_REGISTRY:-ghcr.io}/${IMAGE_OWNER:-spesialis}/web:${IMAGE_TAG:-latest}
-    container_name: specialist-web
+    image: ${IMAGE_REGISTRY:-ghcr.io}/${IMAGE_OWNER:-ahlipanggilan}/web:${IMAGE_TAG:-latest}
+    container_name: ahlipanggilan-web
     restart: unless-stopped
 
     # Port 4321 is internal only — accessed via Nginx
@@ -107,8 +107,8 @@ services:
       NODE_ENV: production
       APP_ENV: production
       API_URL: http://api:3000
-      PUBLIC_API_URL: ${PUBLIC_API_URL:-https://spesialis.id/api}
-      SITE_URL: ${SITE_URL:-https://spesialis.id}
+      PUBLIC_API_URL: ${PUBLIC_API_URL:-https://ahlipanggilan.id/api}
+      SITE_URL: ${SITE_URL:-https://ahlipanggilan.id}
     depends_on:
       api:
         condition: service_started
@@ -139,14 +139,14 @@ services:
   # ── Nginx Reverse Proxy ───────────────────────────────────────────
   nginx:
     image: nginx:alpine
-    container_name: specialist-nginx
+    container_name: ahlipanggilan-nginx
     restart: unless-stopped
 
     ports:
       - '80:80'
       - '443:443'
     environment:
-      DOMAIN: ${DOMAIN:-spesialis.id}
+      DOMAIN: ${DOMAIN:-ahlipanggilan.id}
     volumes:
       # Mount as template — nginx:alpine entrypoint runs envsubst on *.template
       - ./infrastructure/docker/nginx/prod.conf:/etc/nginx/templates/default.conf.template:ro

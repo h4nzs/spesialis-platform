@@ -1,4 +1,4 @@
-# @specialist/database
+# @ahlipanggilan/database
 
 ## Purpose
 

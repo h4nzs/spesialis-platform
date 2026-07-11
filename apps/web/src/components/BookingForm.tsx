@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
-import { Button } from '@specialist/ui';
-import { createBrowserClient, formatCurrency } from '@specialist/shared';
-import { createGuestBookingSchema, createCustomerBookingSchema } from '@specialist/validation';
+import { Button } from '@ahlipanggilan/ui';
+import { createBrowserClient, formatCurrency } from '@ahlipanggilan/shared';
+import { createGuestBookingSchema, createCustomerBookingSchema } from '@ahlipanggilan/validation';
 
 function getEl(id: string): HTMLElement | null {
   if (typeof document === 'undefined') return null;
@@ -297,7 +297,7 @@ export function BookingForm({ serviceId, initialAuth }: BookingFormProps) {
             Tidak ingin ribet mengisi form?{' '}
             <a
               href={`https://wa.me/${whatsappPhone || getEl('app-settings')?.dataset.whatsappPhone}?text=${encodeURIComponent(
-                `Halo Spesialis, saya ingin bertanya tentang ${service?.name ?? 'layanan'}`,
+                `Halo Ahli Panggilan, saya ingin bertanya tentang ${service?.name ?? 'layanan'}`,
               )}`}
               target="_blank"
               rel="noopener noreferrer"

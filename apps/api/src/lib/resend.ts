@@ -10,7 +10,7 @@ export function getResend(): Resend {
   return _resend;
 }
 
-export const FROM_ADDRESS = process.env.RESEND_FROM ?? 'Spesialis <noreply@spesialis.id>';
+export const FROM_ADDRESS = process.env.RESEND_FROM ?? 'Ahli Panggilan <noreply@ahlipanggilan.id>';
 
 /** Whether Resend is configured (true) or we should fall back to nodemailer/Mailpit (false) */
 export const USE_RESEND = !!process.env.RESEND_API_KEY;

@@ -1,4 +1,4 @@
-# @specialist/types
+# @ahlipanggilan/types
 
 ## Purpose
 

@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
-import { createBrowserClient, formatDate } from '@specialist/shared';
-import { Badge, Card, EmptyState } from '@specialist/ui';
+import { createBrowserClient, formatDate } from '@ahlipanggilan/shared';
+import { Badge, Card, EmptyState } from '@ahlipanggilan/ui';
 
 interface Complaint {
   id: string;

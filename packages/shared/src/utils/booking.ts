@@ -1,4 +1,4 @@
-import type { OrderStatus } from '@specialist/types';
+import type { OrderStatus } from '@ahlipanggilan/types';
 import {
   ORDER_STATUS_TRANSITIONS,
   CANCELLABLE_BY_CUSTOMER,

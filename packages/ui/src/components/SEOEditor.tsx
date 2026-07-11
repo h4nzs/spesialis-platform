@@ -273,7 +273,7 @@ export function SEOEditor({
           <Input
             value={seo.canonicalUrl}
             onChange={(e) => update('canonicalUrl', e.target.value)}
-            placeholder="https://spesialis.id/halaman-ini"
+            placeholder="https://ahlipanggilan.id/halaman-ini"
             disabled={disabled}
           />
         </div>
@@ -299,7 +299,7 @@ export function SEOEditor({
               {seo.metaTitle || 'Meta Title akan tampil di sini'}
             </p>
             <p className="text-xs text-success-600 line-clamp-1">
-              {seo.canonicalUrl || 'https://spesialis.id/...'}
+              {seo.canonicalUrl || 'https://ahlipanggilan.id/...'}
             </p>
             <p className="text-xs text-text-muted line-clamp-2">
               {seo.metaDescription || 'Meta description akan tampil di sini...'}

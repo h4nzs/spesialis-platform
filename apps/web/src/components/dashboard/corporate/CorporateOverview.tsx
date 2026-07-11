@@ -8,9 +8,9 @@ import {
   getInvoiceBadge,
   getStatusLabel,
   getStatusColor,
-} from '@specialist/shared';
-import { Card, Grid, Skeleton, Badge, EmptyState } from '@specialist/ui';
-import type { OrderStatus } from '@specialist/types';
+} from '@ahlipanggilan/shared';
+import { Card, Grid, Skeleton, Badge, EmptyState } from '@ahlipanggilan/ui';
+import type { OrderStatus } from '@ahlipanggilan/types';
 
 // ── Types ──────────────────────────────────────────────────────
 

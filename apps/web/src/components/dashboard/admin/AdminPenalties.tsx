@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
-import { createBrowserClient, formatCurrency } from '@specialist/shared';
+import { createBrowserClient, formatCurrency } from '@ahlipanggilan/shared';
 import {
   Button,
   Input,
@@ -11,8 +11,8 @@ import {
   EmptyState,
   TableSkeleton,
   CSVExportButton,
-} from '@specialist/ui';
-import type { Column } from '@specialist/ui';
+} from '@ahlipanggilan/ui';
+import type { Column } from '@ahlipanggilan/ui';
 
 interface PenaltyItem {
   id: string;

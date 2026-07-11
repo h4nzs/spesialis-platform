@@ -3,9 +3,9 @@ import { eq, and, desc } from 'drizzle-orm';
 import { db, reviews, orders, customerProfiles } from '../lib/db.ts';
 import { authMiddleware } from '../middleware/auth.ts';
 import { validateBody } from '../middleware/validation.ts';
-import { createReviewSchema } from '@specialist/validation';
-import type { CreateReviewInput } from '@specialist/validation';
-import type { OrderStatus } from '@specialist/types';
+import { createReviewSchema } from '@ahlipanggilan/validation';
+import type { CreateReviewInput } from '@ahlipanggilan/validation';
+import type { OrderStatus } from '@ahlipanggilan/types';
 import { success, created, notFound, forbidden, conflict } from '../lib/response.ts';
 
 const router = new Hono();

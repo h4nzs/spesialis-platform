@@ -1,4 +1,4 @@
-# @specialist/shared
+# @ahlipanggilan/shared
 
 ## Purpose
 
@@ -59,30 +59,30 @@ Typed HTTP client untuk komunikasi dengan Hono API:
 
 ```ts
 // API Client (browser)
-import { createBrowserClient } from '@specialist/shared';
+import { createBrowserClient } from '@ahlipanggilan/shared';
 const api = createBrowserClient();
 const services = await api.get<Service[]>('/api/v1/services');
 const booking = await api.post<Order>('/api/v1/bookings', { body: {...} });
 
 // API Client (SSR)
-import { createServerClient } from '@specialist/shared';
+import { createServerClient } from '@ahlipanggilan/shared';
 const api = createServerClient(token, refreshToken);
 const orders = await api.getPaginated<Order>('/api/v1/bookings', {
   params: { page: 1, limit: 20, status: 'Pending Confirmation' },
 });
 
 // Constants
-import { canTransition, isAdminRole } from '@specialist/shared';
+import { canTransition, isAdminRole } from '@ahlipanggilan/shared';
 
 // Formatters
-import { formatCurrency, formatDate } from '@specialist/shared';
+import { formatCurrency, formatDate } from '@ahlipanggilan/shared';
 
 // Permission check
-import { hasPermission } from '@specialist/shared';
+import { hasPermission } from '@ahlipanggilan/shared';
 if (hasPermission(userRole, 'booking.confirm')) { ... }
 
 // Logger
-import { logger, createLogger } from '@specialist/shared';
+import { logger, createLogger } from '@ahlipanggilan/shared';
 logger.info('Booking created', { id: order.id });
 ```
 
@@ -91,5 +91,5 @@ logger.info('Booking created', { id: order.id });
 ## Development
 
 ```bash
-pnpm --filter @specialist/shared typecheck
+pnpm --filter @ahlipanggilan/shared typecheck
 ```

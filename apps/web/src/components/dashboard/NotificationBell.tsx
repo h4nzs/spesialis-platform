@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
-import { EmptyState } from '@specialist/ui';
-import { createBrowserClient, formatDate } from '@specialist/shared';
+import { EmptyState } from '@ahlipanggilan/ui';
+import { createBrowserClient, formatDate } from '@ahlipanggilan/shared';
 
 interface NotificationItem {
   id: string;
@@ -74,8 +74,6 @@ export function NotificationBell() {
       // silent
     }
   }
-
-  const unreadItems = notifications.filter((n) => !n.isRead);
 
   return (
     <div ref={ref} className="relative">

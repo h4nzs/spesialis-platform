@@ -1,4 +1,4 @@
-# @specialist/config
+# @ahlipanggilan/config
 
 ## Purpose
 

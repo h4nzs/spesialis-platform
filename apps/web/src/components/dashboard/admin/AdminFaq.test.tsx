@@ -10,7 +10,7 @@ const { mockGet, mockPost, mockPatch, mockDelete } = vi.hoisted(() => ({
   mockDelete: vi.fn(),
 }));
 
-vi.mock('@specialist/shared', () => ({
+vi.mock('@ahlipanggilan/shared', () => ({
   createBrowserClient: () => ({
     get: mockGet,
     post: mockPost,
@@ -19,7 +19,7 @@ vi.mock('@specialist/shared', () => ({
   }),
 }));
 
-vi.mock('@specialist/ui', () => ({
+vi.mock('@ahlipanggilan/ui', () => ({
   Modal: ({
     children,
     open,
@@ -151,6 +151,7 @@ vi.mock('@specialist/ui', () => ({
 
 // Mock the lazy-loaded FaqFormModal
 vi.mock('./FaqFormModal', () => {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
   const { useState } = require('react');
   const ModalComponent = ({
     open,
@@ -220,7 +221,7 @@ describe('AdminFaq', () => {
       data: [
         {
           id: 'f1',
-          question: 'Apa itu Spesialis?',
+          question: 'Apa itu Ahli Panggilan?',
           answer: 'Platform layanan jasa.',
           category: 'Umum',
           displayOrder: 1,
@@ -230,7 +231,7 @@ describe('AdminFaq', () => {
       ],
     });
     render(<AdminFaq />);
-    expect(await screen.findByText('Apa itu Spesialis?')).toBeInTheDocument();
+    expect(await screen.findByText('Apa itu Ahli Panggilan?')).toBeInTheDocument();
     expect(screen.getByText('Tambah FAQ')).toBeInTheDocument();
   });
 

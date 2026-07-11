@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { createBrowserClient } from '@specialist/shared';
+import { createBrowserClient } from '@ahlipanggilan/shared';
 import {
   Button,
   Input,
@@ -13,8 +13,8 @@ import {
   ConfirmDialog,
   Pagination,
   CSVExportButton,
-} from '@specialist/ui';
-import type { Column } from '@specialist/ui';
+} from '@ahlipanggilan/ui';
+import type { Column } from '@ahlipanggilan/ui';
 
 // ── Types ──────────────────────────────────────────────────────
 

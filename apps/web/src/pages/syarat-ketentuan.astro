@@ -10,7 +10,7 @@ interface CmsPage {
 
 let pageSlug = 'syarat-ketentuan'
 let pageTitle = 'Syarat & Ketentuan'
-let pageDescription = 'Syarat dan ketentuan penggunaan platform layanan jasa profesional Spesialis.'
+let pageDescription = 'Syarat dan ketentuan penggunaan platform layanan jasa profesional Ahli Panggilan.'
 let pageHtml = ''
 const apiUrl = import.meta.env.PUBLIC_API_URL ?? 'http://localhost:3000'
 
@@ -38,25 +38,25 @@ if (!useCms) {
     <section>
       <h2 class="text-h5 font-semibold text-text-primary">1. Layanan</h2>
       <p class="mt-2 text-text-primary leading-relaxed">
-        Spesialis adalah platform yang menghubungkan pelanggan dengan penyedia jasa profesional. Kami hanya menyediakan platform — pelaksanaan layanan dilakukan sepenuhnya oleh mitra penyedia jasa.
+        Ahli Panggilan adalah platform yang menghubungkan pelanggan dengan penyedia jasa profesional. Kami hanya menyediakan platform — pelaksanaan layanan dilakukan sepenuhnya oleh mitra penyedia jasa.
       </p>
     </section>
     <section>
       <h2 class="text-h5 font-semibold text-text-primary">2. Penggunaan Platform</h2>
       <p class="mt-2 text-text-primary leading-relaxed">
-        Dengan menggunakan platform Spesialis, Anda menyetujui untuk memberikan informasi yang akurat, tidak menyalahgunakan platform, dan mematuhi seluruh ketentuan yang berlaku.
+        Dengan menggunakan platform Ahli Panggilan, Anda menyetujui untuk memberikan informasi yang akurat, tidak menyalahgunakan platform, dan mematuhi seluruh ketentuan yang berlaku.
       </p>
     </section>
     <section>
       <h2 class="text-h5 font-semibold text-text-primary">3. Pembayaran</h2>
       <p class="mt-2 text-text-primary leading-relaxed">
-        Pembayaran dilakukan sesuai kesepakatan antara pelanggan dan penyedia jasa. Spesialis tidak memproses pembayaran secara langsung pada fase MVP. Semua transaksi dilakukan secara manual.
+        Pembayaran dilakukan sesuai kesepakatan antara pelanggan dan penyedia jasa. Ahli Panggilan tidak memproses pembayaran secara langsung pada fase MVP. Semua transaksi dilakukan secara manual.
       </p>
     </section>
     <section>
       <h2 class="text-h5 font-semibold text-text-primary">4. Pembatalan</h2>
       <p class="mt-2 text-text-primary leading-relaxed">
-        Pelanggan dapat membatalkan pesanan sebelum pekerjaan dimulai. Pembatalan dapat dilakukan melalui dashboard atau dengan menghubungi tim Spesialis.
+        Pelanggan dapat membatalkan pesanan sebelum pekerjaan dimulai. Pembatalan dapat dilakukan melalui dashboard atau dengan menghubungi tim Ahli Panggilan.
       </p>
     </section>
     <section>
@@ -76,18 +76,18 @@ if (!useCms) {
 ---
 
 <BaseLayout
-  title={`${pageTitle} - Spesialis`}
+  title={`${pageTitle} - Ahli Panggilan`}
   description={pageDescription}
   canonicalUrl="/syarat-ketentuan"
   jsonLd={{
     '@context': 'https://schema.org',
     '@type': 'WebPage',
-    name: `${pageTitle} - Spesialis`,
+    name: `${pageTitle} - Ahli Panggilan`,
     description: pageDescription,
     breadcrumb: {
       '@type': 'BreadcrumbList',
       itemListElement: [
-        { '@type': 'ListItem', position: 1, name: 'Beranda', item: 'https://spesialis.id' },
+        { '@type': 'ListItem', position: 1, name: 'Beranda', item: 'https://ahlipanggilan.id' },
         { '@type': 'ListItem', position: 2, name: pageTitle },
       ],
     },

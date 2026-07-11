@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { createBrowserClient } from '@specialist/shared';
+import { createBrowserClient } from '@ahlipanggilan/shared';
 import {
   Button,
   Input,
@@ -8,8 +8,8 @@ import {
   RichTextEditor,
   SEOEditor,
   SeoAnalyzerPanel,
-} from '@specialist/ui';
-import type { SeoData } from '@specialist/ui';
+} from '@ahlipanggilan/ui';
+import type { SeoData } from '@ahlipanggilan/ui';
 
 // ── Types ────────────────────────────────────────────────────────
 

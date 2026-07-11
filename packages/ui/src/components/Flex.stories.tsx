@@ -71,7 +71,7 @@ export const Wrapped: Story = {
   args: {
     direction: 'row',
     gap: 2,
-    wrap: 'true',
+    wrap: true,
     className: 'w-48',
     children: (
       <>

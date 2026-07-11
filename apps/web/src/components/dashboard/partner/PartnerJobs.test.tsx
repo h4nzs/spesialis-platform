@@ -5,7 +5,7 @@ import { PartnerJobs } from './PartnerJobs';
 const mockGet = vi.fn();
 const mockPost = vi.fn();
 
-vi.mock('@specialist/shared', () => ({
+vi.mock('@ahlipanggilan/shared', () => ({
   createBrowserClient: () => ({ get: mockGet, post: mockPost }),
   formatDate: (d: string) => d,
   getStatusLabel: (s: string) => s,

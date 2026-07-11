@@ -1,7 +1,14 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { createBrowserClient } from '@specialist/shared';
-import { Button, Table, Badge, EmptyState, TableSkeleton, CSVExportButton } from '@specialist/ui';
-import type { Column } from '@specialist/ui';
+import { createBrowserClient } from '@ahlipanggilan/shared';
+import {
+  Button,
+  Table,
+  Badge,
+  EmptyState,
+  TableSkeleton,
+  CSVExportButton,
+} from '@ahlipanggilan/ui';
+import type { Column } from '@ahlipanggilan/ui';
 
 interface ArticleItem {
   id: string;

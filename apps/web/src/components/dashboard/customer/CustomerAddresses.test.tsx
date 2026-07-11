@@ -7,7 +7,7 @@ const mockPost = vi.fn();
 const mockPatch = vi.fn();
 const mockDelete = vi.fn();
 
-vi.mock('@specialist/shared', () => ({
+vi.mock('@ahlipanggilan/shared', () => ({
   createBrowserClient: () => ({
     get: mockGet,
     post: mockPost,

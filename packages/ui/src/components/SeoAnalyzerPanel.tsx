@@ -5,8 +5,12 @@ import { SeoChecklist } from './SeoChecklist.tsx';
 import { SnippetPreview } from './SnippetPreview.tsx';
 import { ReadabilityScore } from './ReadabilityScore.tsx';
 import { cn } from '../utils/cn.ts';
-import { analyzeContent, checkReadability, getSnippetPreview } from '@specialist/shared';
-import type { SeoAnalysisResult, ReadabilityResult, SnippetPreviewData } from '@specialist/shared';
+import { analyzeContent, checkReadability, getSnippetPreview } from '@ahlipanggilan/shared';
+import type {
+  SeoAnalysisResult,
+  ReadabilityResult,
+  SnippetPreviewData,
+} from '@ahlipanggilan/shared';
 
 export interface SeoAnalyzerPanelProps {
   contentHtml: string;

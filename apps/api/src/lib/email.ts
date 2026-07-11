@@ -55,7 +55,7 @@ async function sendViaNodemailer(
   html: string,
 ): Promise<void> {
   await getTransporter().sendMail({
-    from: process.env.SMTP_FROM ?? 'noreply@spesialis.id',
+    from: process.env.SMTP_FROM ?? 'noreply@ahlipanggilan.id',
     to,
     subject,
     text,
@@ -104,8 +104,8 @@ export async function sendPasswordResetEmail(
   const resetUrl = `${APP_URL}/reset-password?token=${resetToken}`;
   await sendEmail(
     email,
-    'Reset Password — Spesialis',
-    `Halo ${fullName},\n\nKami menerima permintaan reset password untuk akun Spesialis Anda.\n\nKlik link berikut untuk mereset password Anda:\n${resetUrl}\n\nLink ini berlaku selama 7 hari.\n\nJika Anda tidak meminta reset password, abaikan email ini.\n\n— Tim Spesialis`,
+    'Reset Password — Ahli Panggilan',
+    `Halo ${fullName},\n\nKami menerima permintaan reset password untuk akun Ahli Panggilan Anda.\n\nKlik link berikut untuk mereset password Anda:\n${resetUrl}\n\nLink ini berlaku selama 7 hari.\n\nJika Anda tidak meminta reset password, abaikan email ini.\n\n— Tim Ahli Panggilan`,
     passwordResetHtml(fullName, resetUrl),
     'Password reset',
   );
@@ -120,7 +120,7 @@ export async function sendBookingConfirmationEmail(
   await sendEmail(
     email,
     `Booking Dikonfirmasi — #${bookingNumber}`,
-    `Halo ${fullName},\n\nBooking Anda dengan nomor ${bookingNumber} telah dikonfirmasi.\n\nTim kami akan segera menugaskan teknisi terbaik untuk membantu Anda.\n\nLacak status booking:\n${trackingUrl}\n\n— Tim Spesialis`,
+    `Halo ${fullName},\n\nBooking Anda dengan nomor ${bookingNumber} telah dikonfirmasi.\n\nTim kami akan segera menugaskan teknisi terbaik untuk membantu Anda.\n\nLacak status booking:\n${trackingUrl}\n\n— Tim Ahli Panggilan`,
     bookingConfirmationHtml(fullName, bookingNumber, trackingUrl),
     'Booking confirmation',
     bookingNumber,
@@ -136,7 +136,7 @@ export async function sendPartnerAssignedEmail(
   await sendEmail(
     email,
     `Pekerjaan Baru — #${bookingNumber}`,
-    `Halo ${fullName},\n\nAnda ditugaskan untuk pekerjaan baru:\n\nNomor Booking: ${bookingNumber}\n\nSilakan login ke dashboard untuk melihat detail dan mengonfirmasi:\n${dashboardUrl}\n\n— Tim Spesialis`,
+    `Halo ${fullName},\n\nAnda ditugaskan untuk pekerjaan baru:\n\nNomor Booking: ${bookingNumber}\n\nSilakan login ke dashboard untuk melihat detail dan mengonfirmasi:\n${dashboardUrl}\n\n— Tim Ahli Panggilan`,
     partnerAssignedHtml(fullName, bookingNumber, dashboardUrl),
     'Partner assigned',
     bookingNumber,
@@ -151,8 +151,8 @@ export async function sendPartnerVerifiedEmail(
 ): Promise<void> {
   const isApproved = status === 'Approved';
   const subject = isApproved
-    ? 'Verifikasi Partner Disetujui — Spesialis'
-    : 'Verifikasi Partner Ditolak — Spesialis';
+    ? 'Verifikasi Partner Disetujui — Ahli Panggilan'
+    : 'Verifikasi Partner Ditolak — Ahli Panggilan';
 
   await sendEmail(
     email,
@@ -161,7 +161,7 @@ export async function sendPartnerVerifiedEmail(
       isApproved
         ? 'Selamat! Akun mitra Anda telah diverifikasi dan disetujui. Anda sekarang dapat mulai menerima pekerjaan.'
         : 'Mohon maaf, verifikasi akun mitra Anda ditolak.'
-    }\n${note ? `\nCatatan: ${note}` : ''}\n\n${isApproved ? '\nSilakan login untuk mulai menerima pekerjaan:' : '\nSilakan hubungi admin untuk informasi lebih lanjut:'}\n${APP_URL}/login\n\n— Tim Spesialis`,
+    }\n${note ? `\nCatatan: ${note}` : ''}\n\n${isApproved ? '\nSilakan login untuk mulai menerima pekerjaan:' : '\nSilakan hubungi admin untuk informasi lebih lanjut:'}\n${APP_URL}/login\n\n— Tim Ahli Panggilan`,
     partnerVerifiedHtml(fullName, status, note),
     'Partner verification',
     status,
@@ -176,8 +176,8 @@ export async function sendVerificationEmail(
   const verifyUrl = `${APP_URL}/verify-email?token=${verificationToken}`;
   await sendEmail(
     email,
-    'Verifikasi Email — Spesialis',
-    `Halo ${fullName},\n\nTerima kasih telah mendaftar di Spesialis.\n\nSilakan verifikasi alamat email Anda dengan mengklik link berikut:\n${verifyUrl}\n\nLink ini berlaku selama 7 hari.\n\n— Tim Spesialis`,
+    'Verifikasi Email — Ahli Panggilan',
+    `Halo ${fullName},\n\nTerima kasih telah mendaftar di Ahli Panggilan.\n\nSilakan verifikasi alamat email Anda dengan mengklik link berikut:\n${verifyUrl}\n\nLink ini berlaku selama 7 hari.\n\n— Tim Ahli Panggilan`,
     verificationHtml(fullName, verifyUrl),
     'Verification',
   );
@@ -193,7 +193,9 @@ export async function sendPaymentVerifiedEmail(
   note: string | null,
 ): Promise<void> {
   const isPaid = status === 'Paid';
-  const subject = isPaid ? 'Pembayaran Dikonfirmasi — Spesialis' : 'Pembayaran Ditolak — Spesialis';
+  const subject = isPaid
+    ? 'Pembayaran Dikonfirmasi — Ahli Panggilan'
+    : 'Pembayaran Ditolak — Ahli Panggilan';
 
   await sendEmail(
     email,
@@ -202,7 +204,7 @@ export async function sendPaymentVerifiedEmail(
       isPaid
         ? 'Pembayaran Anda telah dikonfirmasi.'
         : 'Mohon maaf, pembayaran Anda tidak dapat diverifikasi.'
-    }\n\nDetail Pembayaran:\n  Booking: ${bookingNumber}\n  Jumlah: ${amount}\n  Metode: ${paymentMethod}\n  Status: ${status}\n${note ? `\nCatatan: ${note}` : ''}\n\n${isPaid ? '\nTerima kasih telah menggunakan layanan Spesialis.' : '\nSilakan hubungi admin untuk informasi lebih lanjut.'}\n\n— Tim Spesialis`,
+    }\n\nDetail Pembayaran:\n  Booking: ${bookingNumber}\n  Jumlah: ${amount}\n  Metode: ${paymentMethod}\n  Status: ${status}\n${note ? `\nCatatan: ${note}` : ''}\n\n${isPaid ? '\nTerima kasih telah menggunakan layanan Ahli Panggilan.' : '\nSilakan hubungi admin untuk informasi lebih lanjut.'}\n\n— Tim Ahli Panggilan`,
     paymentVerifiedHtml(fullName, bookingNumber, amount, paymentMethod, status, note),
     'Payment verification',
     bookingNumber,
@@ -226,7 +228,7 @@ export async function sendNewBookingToAdmin(
   await sendEmail(
     email,
     `Booking Baru — #${bookingNumber}`,
-    `Halo ${fullName},\n\nBooking baru telah dibuat dan menunggu konfirmasi.\n\nNomor Booking: ${bookingNumber}\nPelanggan: ${customerName}\nTelepon: ${customerPhone}\nTanggal: ${bookingDate}\nWaktu: ${bookingTime}\nAlamat: ${address}\n${notes ? `\nCatatan: ${notes}` : ''}\n\nSegera konfirmasi booking ini melalui dashboard admin.\n${adminUrl}\n\n— Tim Spesialis`,
+    `Halo ${fullName},\n\nBooking baru telah dibuat dan menunggu konfirmasi.\n\nNomor Booking: ${bookingNumber}\nPelanggan: ${customerName}\nTelepon: ${customerPhone}\nTanggal: ${bookingDate}\nWaktu: ${bookingTime}\nAlamat: ${address}\n${notes ? `\nCatatan: ${notes}` : ''}\n\nSegera konfirmasi booking ini melalui dashboard admin.\n${adminUrl}\n\n— Tim Ahli Panggilan`,
     newBookingAdminHtml(
       bookingNumber,
       customerName,
@@ -251,8 +253,8 @@ export async function sendNotificationEmail(
 ): Promise<void> {
   await sendEmail(
     email,
-    `${title} — Spesialis`,
-    `Halo ${fullName},\n\n${message}\n\n— Tim Spesialis`,
+    `${title} — Ahli Panggilan`,
+    `Halo ${fullName},\n\n${message}\n\n— Tim Ahli Panggilan`,
     notificationEmailHtml(fullName, title, message),
     'Notification',
     title,

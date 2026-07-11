@@ -14,7 +14,7 @@ vi.mock('resend', () => ({
 
 // Set RESEND_API_KEY so USE_RESEND is true when email.ts imports resend.ts
 process.env.RESEND_API_KEY = 're_test_key';
-process.env.RESEND_FROM = 'Test <test@spesialis.id>';
+process.env.RESEND_FROM = 'Test <test@ahlipanggilan.id>';
 process.env.APP_URL = 'http://localhost:4321';
 
 beforeEach(() => {
@@ -29,9 +29,9 @@ describe('sendPasswordResetEmail (Resend)', () => {
     expect(mockResendSend).toHaveBeenCalledTimes(1);
     expect(mockResendSend).toHaveBeenCalledWith(
       expect.objectContaining({
-        from: 'Test <test@spesialis.id>',
+        from: 'Test <test@ahlipanggilan.id>',
         to: 'user@test.com',
-        subject: 'Reset Password — Spesialis',
+        subject: 'Reset Password — Ahli Panggilan',
         text: expect.stringContaining('reset-token-123'),
       }),
     );
@@ -54,7 +54,7 @@ describe('sendBookingConfirmationEmail (Resend)', () => {
     expect(mockResendSend).toHaveBeenCalledWith(
       expect.objectContaining({
         to: 'user@test.com',
-        from: 'Test <test@spesialis.id>',
+        from: 'Test <test@ahlipanggilan.id>',
         subject: 'Booking Dikonfirmasi — #SP-2026-0001',
         text: expect.stringContaining('http://localhost/track/SP-2026-0001'),
       }),
@@ -105,7 +105,7 @@ describe('sendPartnerVerifiedEmail (Resend)', () => {
     expect(mockResendSend).toHaveBeenCalledWith(
       expect.objectContaining({
         to: 'partner@test.com',
-        subject: 'Verifikasi Partner Disetujui — Spesialis',
+        subject: 'Verifikasi Partner Disetujui — Ahli Panggilan',
       }),
     );
   });
@@ -122,7 +122,7 @@ describe('sendPartnerVerifiedEmail (Resend)', () => {
     expect(mockResendSend).toHaveBeenCalledWith(
       expect.objectContaining({
         to: 'partner@test.com',
-        subject: 'Verifikasi Partner Ditolak — Spesialis',
+        subject: 'Verifikasi Partner Ditolak — Ahli Panggilan',
         text: expect.stringContaining('Dokumen tidak lengkap'),
       }),
     );
@@ -137,7 +137,7 @@ describe('sendVerificationEmail (Resend)', () => {
     expect(mockResendSend).toHaveBeenCalledWith(
       expect.objectContaining({
         to: 'user@test.com',
-        subject: 'Verifikasi Email — Spesialis',
+        subject: 'Verifikasi Email — Ahli Panggilan',
         text: expect.stringContaining('http://localhost:4321/verify-email?token=verify-token-456'),
       }),
     );
@@ -160,7 +160,7 @@ describe('sendPaymentVerifiedEmail (Resend)', () => {
     expect(mockResendSend).toHaveBeenCalledWith(
       expect.objectContaining({
         to: 'user@test.com',
-        subject: 'Pembayaran Dikonfirmasi — Spesialis',
+        subject: 'Pembayaran Dikonfirmasi — Ahli Panggilan',
         text: expect.stringContaining('SP-2026-0003'),
       }),
     );
@@ -181,7 +181,7 @@ describe('sendPaymentVerifiedEmail (Resend)', () => {
     expect(mockResendSend).toHaveBeenCalledWith(
       expect.objectContaining({
         to: 'user@test.com',
-        subject: 'Pembayaran Ditolak — Spesialis',
+        subject: 'Pembayaran Ditolak — Ahli Panggilan',
         text: expect.stringContaining('Saldo tidak mencukupi'),
       }),
     );
@@ -201,7 +201,7 @@ describe('sendNotificationEmail (Resend)', () => {
     expect(mockResendSend).toHaveBeenCalledWith(
       expect.objectContaining({
         to: 'user@test.com',
-        subject: 'Pengingat Booking — Spesialis',
+        subject: 'Pengingat Booking — Ahli Panggilan',
         text: expect.stringContaining('Booking Anda akan segera dimulai.'),
       }),
     );

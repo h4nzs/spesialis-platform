@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useCallback, useMemo, Suspense } from 'react';
-import { createBrowserClient } from '@specialist/shared';
-import { Button, Table, Badge, EmptyState, TableSkeleton } from '@specialist/ui';
+import { createBrowserClient } from '@ahlipanggilan/shared';
+import { Button, Table, Badge, EmptyState, TableSkeleton } from '@ahlipanggilan/ui';
 import { LazyFallback } from '../../ui/LazyFallback';
-import type { Column } from '@specialist/ui';
+import type { Column } from '@ahlipanggilan/ui';
 
 interface FaqItem {
   id: string;

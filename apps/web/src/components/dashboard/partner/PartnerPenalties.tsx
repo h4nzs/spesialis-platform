@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
-import { createBrowserClient, formatCurrency, formatDate } from '@specialist/shared';
-import { Card, Table, Badge, EmptyState, Skeleton, CSVExportButton } from '@specialist/ui';
-import type { Column } from '@specialist/ui';
+import { createBrowserClient, formatCurrency, formatDate } from '@ahlipanggilan/shared';
+import { Card, Table, Badge, EmptyState, Skeleton, CSVExportButton } from '@ahlipanggilan/ui';
+import type { Column } from '@ahlipanggilan/ui';
 
 interface PenaltyItem {
   id: string;

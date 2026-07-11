@@ -3,8 +3,8 @@ import { eq, and, isNull } from 'drizzle-orm';
 import { db, addresses, customerProfiles } from '../lib/db.ts';
 import { authMiddleware } from '../middleware/auth.ts';
 import { validateBody } from '../middleware/validation.ts';
-import { createAddressSchema, updateAddressSchema } from '@specialist/validation';
-import type { CreateAddressInput, UpdateAddressInput } from '@specialist/validation';
+import { createAddressSchema, updateAddressSchema } from '@ahlipanggilan/validation';
+import type { CreateAddressInput, UpdateAddressInput } from '@ahlipanggilan/validation';
 import { success, created, notFound } from '../lib/response.ts';
 
 const router = new Hono();

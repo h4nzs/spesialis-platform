@@ -3,8 +3,8 @@ import { eq, and, desc, sql, isNull } from 'drizzle-orm';
 import { db, cmsPages } from '../../lib/db.ts';
 import { authMiddleware, requireRole } from '../../middleware/auth.ts';
 import { validateBody } from '../../middleware/validation.ts';
-import { createCmsPageSchema, updateCmsPageSchema } from '@specialist/validation';
-import type { CreateCmsPageInput, UpdateCmsPageInput } from '@specialist/validation';
+import { createCmsPageSchema, updateCmsPageSchema } from '@ahlipanggilan/validation';
+import type { CreateCmsPageInput, UpdateCmsPageInput } from '@ahlipanggilan/validation';
 import {
   success,
   created,

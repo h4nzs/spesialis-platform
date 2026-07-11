@@ -6,7 +6,7 @@ vi.mock('../lib/response.ts', () => ({
 }));
 
 import { validationError } from '../lib/response.ts';
-import type { ValidationError } from '@specialist/types';
+import type { ValidationError } from '@ahlipanggilan/types';
 
 function mockC(): any {
   const state: Record<string, unknown> = {};

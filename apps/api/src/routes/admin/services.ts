@@ -3,8 +3,8 @@ import { eq, and, asc, sql } from 'drizzle-orm';
 import { db, services, serviceCategories } from '../../lib/db.ts';
 import { authMiddleware, requireRole } from '../../middleware/auth.ts';
 import { validateBody } from '../../middleware/validation.ts';
-import { createServiceSchema, updateServiceSchema } from '@specialist/validation';
-import type { CreateServiceInput, UpdateServiceInput } from '@specialist/validation';
+import { createServiceSchema, updateServiceSchema } from '@ahlipanggilan/validation';
+import type { CreateServiceInput, UpdateServiceInput } from '@ahlipanggilan/validation';
 import {
   success,
   created,

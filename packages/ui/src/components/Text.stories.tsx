@@ -49,7 +49,7 @@ export const Lead: Story = {
 };
 
 export const Code: Story = {
-  args: { variant: 'code', children: 'npm install @specialist/ui' },
+  args: { variant: 'code', children: 'npm install @ahlipanggilan/ui' },
 };
 
 export const FullScale: Story = {

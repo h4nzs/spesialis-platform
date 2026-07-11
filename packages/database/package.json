@@ -1,5 +1,5 @@
 {
-  "name": "@specialist/database",
+  "name": "@ahlipanggilan/database",
   "version": "1.0.0",
   "private": true,
   "type": "module",
@@ -18,7 +18,7 @@
     "db:seed-pages": "tsx src/seed-cms-pages.ts"
   },
   "dependencies": {
-    "@specialist/types": "workspace:*",
+    "@ahlipanggilan/types": "workspace:*",
     "drizzle-orm": "^0.43.1",
     "postgres": "^3.4.5"
   },

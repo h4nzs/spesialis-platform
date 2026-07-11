@@ -99,9 +99,9 @@ jobs:
       - name: Create env file
         run: printf 'DATABASE_URL=%s\nJWT_SECRET=%s\n' "$DATABASE_URL" "$JWT_SECRET" > .env
       - name: Run migrations
-        run: pnpm --filter @specialist/database db:migrate
+        run: pnpm --filter @ahlipanggilan/database db:migrate
       - name: Seed data
-        run: pnpm --filter @specialist/api db:seed
+        run: pnpm --filter @ahlipanggilan/api db:seed
       - name: Install Playwright
         run: npx playwright install chromium
         working-directory: apps/web

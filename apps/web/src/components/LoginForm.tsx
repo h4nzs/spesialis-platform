@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { loginSchema } from '@specialist/validation';
-import { Button } from '@specialist/ui';
+import { loginSchema } from '@ahlipanggilan/validation';
+import { Button } from '@ahlipanggilan/ui';
 import { getApiClient, redirectToDashboard } from '../lib/auth.ts';
 
 interface FieldError {

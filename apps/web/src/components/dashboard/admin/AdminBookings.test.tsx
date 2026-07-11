@@ -13,7 +13,7 @@ const { mockGet, mockPost, mockDownloadCSV, mockDownloadBlob, mockGetAccessToken
   }),
 );
 
-vi.mock('@specialist/shared', () => ({
+vi.mock('@ahlipanggilan/shared', () => ({
   createBrowserClient: () => ({
     get: mockGet,
     post: mockPost,
@@ -27,7 +27,7 @@ vi.mock('@specialist/shared', () => ({
   downloadBlob: mockDownloadBlob,
 }));
 
-vi.mock('@specialist/ui', () => ({
+vi.mock('@ahlipanggilan/ui', () => ({
   Modal: ({
     children,
     open,

@@ -64,8 +64,8 @@ sudo usermod -aG docker deploy
 su - deploy
 
 # Clone repo
-git clone https://github.com/<org>/spesialis.git /home/deploy/spesialis
-cd /home/deploy/spesialis
+git clone https://github.com/<org>/ahlipanggilan.git /home/deploy/ahlipanggilan
+cd /home/deploy/ahlipanggilan
 
 # Buat environment file
 cp .env.prod.example .env.prod
@@ -82,15 +82,15 @@ docker compose -f docker-compose.prod.yml up -d nginx
 sudo apt install certbot -y
 sudo certbot certonly --webroot \
   -w /var/www/letsencrypt \
-  -d spesialis.id \
-  -d www.spesialis.id
+  -d ahlipanggilan.id \
+  -d www.ahlipanggilan.id
 
 # Verifikasi
-sudo ls -la /etc/letsencrypt/live/spesialis.id/
+sudo ls -la /etc/letsencrypt/live/ahlipanggilan.id/
 
 # Set auto-renewal hook untuk reload Nginx
 sudo sed -i 's/^#\(deploy-hook\)/\1/' /etc/letsencrypt/cli.ini || true
-echo 'deploy-hook = docker compose -f /home/deploy/spesialis/docker-compose.prod.yml exec -T nginx nginx -s reload' \
+echo 'deploy-hook = docker compose -f /home/deploy/ahlipanggilan/docker-compose.prod.yml exec -T nginx nginx -s reload' \
   | sudo tee -a /etc/letsencrypt/cli.ini > /dev/null
 
 # Test renewal
@@ -113,14 +113,14 @@ docker compose -f docker-compose.prod.yml logs -f
 
 ```bash
 # Health check API
-curl -f https://spesialis.id/api/v1/health
+curl -f https://ahlipanggilan.id/api/v1/health
 
 # Akses halaman utama
-curl -s -o /dev/null -w '%{http_code}' https://spesialis.id/
+curl -s -o /dev/null -w '%{http_code}' https://ahlipanggilan.id/
 # → 200
 
 # Cek SSL
-curl -sI https://spesialis.id/ | grep -i 'strict-transport\|server'
+curl -sI https://ahlipanggilan.id/ | grep -i 'strict-transport\|server'
 ```
 
 ### 5. Enable HSTS
@@ -181,12 +181,12 @@ Tag `latest` dan `commit-sha` memudahkan rollback.
 
 ### Konfigurasi GitHub Secrets
 
-| Secret        | Deskripsi                                         |
-| ------------- | ------------------------------------------------- |
-| `VPS_HOST`    | IP address atau domain VPS                        |
-| `VPS_USER`    | SSH username (e.g., `deploy`)                     |
-| `VPS_SSH_KEY` | Private SSH key (deploy key)                      |
-| `VPS_PATH`    | Path ke project di VPS (`/home/deploy/spesialis`) |
+| Secret        | Deskripsi                                             |
+| ------------- | ----------------------------------------------------- |
+| `VPS_HOST`    | IP address atau domain VPS                            |
+| `VPS_USER`    | SSH username (e.g., `deploy`)                         |
+| `VPS_SSH_KEY` | Private SSH key (deploy key)                          |
+| `VPS_PATH`    | Path ke project di VPS (`/home/deploy/ahlipanggilan`) |
 
 **Konfigurasi Variable** (Settings → Variables):
 
@@ -198,7 +198,7 @@ Tag `latest` dan `commit-sha` memudahkan rollback.
 
 ```bash
 # Di VPS
-ssh-keygen -t ed25519 -N "" -C "deploy@spesialis" -f ~/.ssh/deploy_key
+ssh-keygen -t ed25519 -N "" -C "deploy@ahlipanggilan" -f ~/.ssh/deploy_key
 cat ~/.ssh/deploy_key.pub >> ~/.ssh/authorized_keys
 
 # Copy private key → GitHub Secret VPS_SSH_KEY
@@ -213,10 +213,10 @@ Apabila deploy bermasalah, rollback ke versi sebelumnya:
 
 ```bash
 # Via SSH ke VPS
-cd /home/deploy/spesialis
+cd /home/deploy/ahlipanggilan
 
 # List image tags yang tersedia
-docker images --format 'table {{.Repository}}\t{{.Tag}}' | grep spesialis
+docker images --format 'table {{.Repository}}\t{{.Tag}}' | grep ahlipanggilan
 
 # Rollback ke SHA tertentu
 IMAGE_TAG=<previous-commit-sha> \
@@ -230,29 +230,29 @@ docker ps --format 'table {{.Names}}\t{{.Image}}'
 
 ## Environment Variables Reference
 
-| Variable               | Wajib | Default           | Deskripsi                          |
-| ---------------------- | ----- | ----------------- | ---------------------------------- |
-| `DOMAIN`               | ✅    | `spesialis.id`    | Domain utama                       |
-| `SITE_URL`             | ✅    | `https://...`     | Public site URL                    |
-| `PUBLIC_API_URL`       | ✅    | `https://.../api` | Public API URL                     |
-| `DATABASE_PASSWORD`    | ✅    | —                 | PostgreSQL password                |
-| `JWT_SECRET`           | ✅    | —                 | `openssl rand -hex 32`             |
-| `CORS_ORIGIN`          | ✅    | `https://...`     | Allowed CORS origins               |
-| `REVALIDATION_TOKEN`   | ✅    | —                 | `openssl rand -hex 16`             |
-| `SMTP_HOST`            | ✅    | —                 | SMTP server (email notifikasi)     |
-| `SMTP_USER`            | ⬜    | —                 | SMTP username                      |
-| `SMTP_PASS`            | ⬜    | —                 | SMTP password                      |
-| `SMTP_FROM`            | ✅    | —                 | Sender email address               |
-| `R2_ENDPOINT`          | ⬜    | —                 | Cloudflare R2 endpoint             |
-| `R2_BUCKET`            | ⬜    | —                 | R2 bucket name                     |
-| `R2_ACCESS_KEY`        | ⬜    | —                 | R2 access key                      |
-| `R2_SECRET_KEY`        | ⬜    | —                 | R2 secret key                      |
-| `WHATSAPP_API_KEY`     | ⬜    | —                 | Fonnte API key (WhatsApp)          |
-| `CLOUDFLARE_API_TOKEN` | ⬜    | —                 | Cloudflare API token (cache purge) |
-| `CLOUDFLARE_ZONE_ID`   | ⬜    | —                 | Cloudflare zone ID                 |
-| `IMAGE_REGISTRY`       | ⬜    | `ghcr.io`         | Container registry                 |
-| `IMAGE_OWNER`          | ⬜    | GitHub owner      | Registry owner                     |
-| `IMAGE_TAG`            | ⬜    | `latest`          | Image tag for deploy               |
+| Variable               | Wajib | Default            | Deskripsi                          |
+| ---------------------- | ----- | ------------------ | ---------------------------------- |
+| `DOMAIN`               | ✅    | `ahlipanggilan.id` | Domain utama                       |
+| `SITE_URL`             | ✅    | `https://...`      | Public site URL                    |
+| `PUBLIC_API_URL`       | ✅    | `https://.../api`  | Public API URL                     |
+| `DATABASE_PASSWORD`    | ✅    | —                  | PostgreSQL password                |
+| `JWT_SECRET`           | ✅    | —                  | `openssl rand -hex 32`             |
+| `CORS_ORIGIN`          | ✅    | `https://...`      | Allowed CORS origins               |
+| `REVALIDATION_TOKEN`   | ✅    | —                  | `openssl rand -hex 16`             |
+| `SMTP_HOST`            | ✅    | —                  | SMTP server (email notifikasi)     |
+| `SMTP_USER`            | ⬜    | —                  | SMTP username                      |
+| `SMTP_PASS`            | ⬜    | —                  | SMTP password                      |
+| `SMTP_FROM`            | ✅    | —                  | Sender email address               |
+| `R2_ENDPOINT`          | ⬜    | —                  | Cloudflare R2 endpoint             |
+| `R2_BUCKET`            | ⬜    | —                  | R2 bucket name                     |
+| `R2_ACCESS_KEY`        | ⬜    | —                  | R2 access key                      |
+| `R2_SECRET_KEY`        | ⬜    | —                  | R2 secret key                      |
+| `WHATSAPP_API_KEY`     | ⬜    | —                  | Fonnte API key (WhatsApp)          |
+| `CLOUDFLARE_API_TOKEN` | ⬜    | —                  | Cloudflare API token (cache purge) |
+| `CLOUDFLARE_ZONE_ID`   | ⬜    | —                  | Cloudflare zone ID                 |
+| `IMAGE_REGISTRY`       | ⬜    | `ghcr.io`          | Container registry                 |
+| `IMAGE_OWNER`          | ⬜    | GitHub owner       | Registry owner                     |
+| `IMAGE_TAG`            | ⬜    | `latest`           | Image tag for deploy               |
 
 ---
 

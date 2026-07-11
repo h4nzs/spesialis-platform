@@ -10,7 +10,7 @@ interface CmsPage {
 
 let pageSlug = 'kebijakan-privasi'
 let pageTitle = 'Kebijakan Privasi'
-let pageDescription = 'Kebijakan privasi platform layanan jasa profesional Spesialis. Bagaimana kami mengelola dan melindungi data pribadi Anda.'
+let pageDescription = 'Kebijakan privasi platform layanan jasa profesional Ahli Panggilan. Bagaimana kami mengelola dan melindungi data pribadi Anda.'
 let pageHtml = ''
 const apiUrl = import.meta.env.PUBLIC_API_URL ?? 'http://localhost:3000'
 
@@ -76,18 +76,18 @@ if (!useCms) {
 ---
 
 <BaseLayout
-  title={`${pageTitle} - Spesialis`}
+  title={`${pageTitle} - Ahli Panggilan`}
   description={pageDescription}
   canonicalUrl="/kebijakan-privasi"
   jsonLd={{
     '@context': 'https://schema.org',
     '@type': 'WebPage',
-    name: `${pageTitle} - Spesialis`,
+    name: `${pageTitle} - Ahli Panggilan`,
     description: pageDescription,
     breadcrumb: {
       '@type': 'BreadcrumbList',
       itemListElement: [
-        { '@type': 'ListItem', position: 1, name: 'Beranda', item: 'https://spesialis.id' },
+        { '@type': 'ListItem', position: 1, name: 'Beranda', item: 'https://ahlipanggilan.id' },
         { '@type': 'ListItem', position: 2, name: pageTitle },
       ],
     },

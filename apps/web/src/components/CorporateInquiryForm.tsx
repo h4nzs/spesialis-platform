@@ -1,7 +1,7 @@
 import { useState } from 'react';
-import { createBrowserClient } from '@specialist/shared';
-import { createCompanySchema } from '@specialist/validation';
-import { Button, Input, Card } from '@specialist/ui';
+import { createBrowserClient } from '@ahlipanggilan/shared';
+import { createCompanySchema } from '@ahlipanggilan/validation';
+import { Button, Input, Card } from '@ahlipanggilan/ui';
 
 export function CorporateInquiryForm() {
   const api = createBrowserClient();

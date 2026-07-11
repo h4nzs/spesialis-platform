@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
-import { createBrowserClient } from '@specialist/shared';
-import { Button, Input, Select, Pagination, TableSkeleton, ConfirmDialog } from '@specialist/ui';
+import { createBrowserClient } from '@ahlipanggilan/shared';
+import { Button, Input, Select, Pagination, TableSkeleton, ConfirmDialog } from '@ahlipanggilan/ui';
 
 // ── Types ──────────────────────────────────────────────────────
 
@@ -110,7 +110,7 @@ export function AdminMedia() {
       setInitialLoading(false);
       setRefreshing(false);
     }
-  }, [api, page, search, mediaType]);
+  }, [api, page, search, mediaType, initialLoading]);
 
   useEffect(() => {
     loadData();

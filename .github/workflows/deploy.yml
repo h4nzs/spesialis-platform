@@ -7,7 +7,7 @@
 #   VPS_HOST       — VPS IP address or domain
 #   VPS_USER       — SSH username (e.g., deploy)
 #   VPS_SSH_KEY    — SSH private key (deploy key with repo read access)
-#   VPS_PATH       — Path to project on VPS (e.g., /home/deploy/spesialis)
+#   VPS_PATH       — Path to project on VPS (e.g., /home/deploy/ahlipanggilan)
 #
 # Workflow:
 #   1. Build API + Web Docker images

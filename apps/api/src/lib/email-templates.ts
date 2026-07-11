@@ -7,7 +7,7 @@ function baseHtml(content: string): string {
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Spesialis</title>
+  <title>Ahli Panggilan</title>
 </head>
 <body style="margin:0;padding:0;background-color:#f3f4f6;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen,Ubuntu,sans-serif">
   <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#f3f4f6">
@@ -17,7 +17,7 @@ function baseHtml(content: string): string {
           <tr>
             <td style="padding:0 0 24px;text-align:center">
               <a href="${APP_URL}" style="text-decoration:none">
-                <span style="font-size:24px;font-weight:700;color:#2563eb;letter-spacing:-0.5px">Spesialis</span>
+                <span style="font-size:24px;font-weight:700;color:#2563eb;letter-spacing:-0.5px">Ahli Panggilan</span>
               </a>
             </td>
           </tr>
@@ -28,7 +28,7 @@ function baseHtml(content: string): string {
           </tr>
           <tr>
             <td style="padding:24px 16px 0;text-align:center;font-size:12px;color:#9ca3af;line-height:1.6">
-              <p style="margin:0 0 4px">Spesialis — Platform Layanan Jasa Profesional</p>
+              <p style="margin:0 0 4px">Ahli Panggilan — Platform Layanan Jasa Profesional</p>
               <p style="margin:0 0 4px">Email ini dikirim secara otomatis, harap tidak membalas langsung.</p>
               <p style="margin:0">${APP_URL}</p>
             </td>
@@ -59,7 +59,7 @@ export function passwordResetHtml(fullName: string, resetUrl: string): string {
 <h1 style="margin:0 0 8px;font-size:22px;font-weight:700;color:#111827">Reset Password</h1>
 <p style="margin:0 0 16px;font-size:15px;color:#6b7280;line-height:1.6">Halo ${fullName},</p>
 <p style="margin:0 0 16px;font-size:15px;color:#6b7280;line-height:1.6">
-  Kami menerima permintaan reset password untuk akun Spesialis Anda.
+  Kami menerima permintaan reset password untuk akun Ahli Panggilan Anda.
   Klik tombol di bawah untuk mereset password Anda.
 </p>
 ${buttonHtml(resetUrl, 'Reset Password')}
@@ -130,7 +130,7 @@ export function verificationHtml(fullName: string, verifyUrl: string): string {
 <h1 style="margin:0 0 8px;font-size:22px;font-weight:700;color:#111827">Verifikasi Email</h1>
 <p style="margin:0 0 16px;font-size:15px;color:#6b7280;line-height:1.6">Halo ${fullName},</p>
 <p style="margin:0 0 16px;font-size:15px;color:#6b7280;line-height:1.6">
-  Terima kasih telah mendaftar di Spesialis. Silakan verifikasi alamat email Anda dengan mengklik tombol di bawah.
+  Terima kasih telah mendaftar di Ahli Panggilan. Silakan verifikasi alamat email Anda dengan mengklik tombol di bawah.
 </p>
 ${buttonHtml(verifyUrl, 'Verifikasi Email')}
 <p style="margin:0 0 0;font-size:13px;color:#9ca3af;line-height:1.5">
@@ -218,7 +218,7 @@ export function paymentVerifiedHtml(
 </table>
 ${note ? `<p style="margin:0 0 16px;font-size:14px;color:#6b7280;font-style:italic;line-height:1.5">Catatan: ${note}</p>` : ''}
 <p style="margin:0 0 0;font-size:14px;color:#6b7280;line-height:1.5">
-  ${isPaid ? 'Terima kasih telah menggunakan layanan Spesialis.' : 'Silakan hubungi admin untuk informasi lebih lanjut.'}
+  ${isPaid ? 'Terima kasih telah menggunakan layanan Ahli Panggilan.' : 'Silakan hubungi admin untuk informasi lebih lanjut.'}
 </p>
 `);
 }

@@ -10,7 +10,7 @@
  * Konten diambil dari hardcoded fallback di file Astro masing-masing,
  * dengan Tailwind CSS classes dihapus karena .prose menangani styling.
  *
- * Cara pakai: pnpm --filter @specialist/database db:seed-pages
+ * Cara pakai: pnpm --filter @ahlipanggilan/database db:seed-pages
  */
 
 import { db } from './client.ts';
@@ -33,7 +33,7 @@ const PAGES = [
     status: 'Published',
     content: stripClasses(`
 <p>
-  Spesialis adalah platform layanan jasa profesional on-demand yang menghubungkan pelanggan
+  Ahli Panggilan adalah platform layanan jasa profesional on-demand yang menghubungkan pelanggan
   dengan teknisi dan profesional terpercaya di Indonesia. Kami hadir untuk mempermudah
   Anda menemukan tenaga ahli untuk kebutuhan rumah, kantor, dan bisnis.
 </p>
@@ -74,7 +74,7 @@ const PAGES = [
     `),
     meta: {
       description:
-        'Spesialis adalah platform layanan jasa profesional on-demand yang menghubungkan pelanggan dengan teknisi terpercaya di Indonesia.',
+        'Ahli Panggilan adalah platform layanan jasa profesional on-demand yang menghubungkan pelanggan dengan teknisi terpercaya di Indonesia.',
     },
   },
   {
@@ -86,22 +86,22 @@ const PAGES = [
 
 <h2>1. Layanan</h2>
 <p>
-  Spesialis adalah platform yang menghubungkan pelanggan dengan penyedia jasa profesional. Kami hanya menyediakan platform — pelaksanaan layanan dilakukan sepenuhnya oleh mitra penyedia jasa.
+  Ahli Panggilan adalah platform yang menghubungkan pelanggan dengan penyedia jasa profesional. Kami hanya menyediakan platform — pelaksanaan layanan dilakukan sepenuhnya oleh mitra penyedia jasa.
 </p>
 
 <h2>2. Penggunaan Platform</h2>
 <p>
-  Dengan menggunakan platform Spesialis, Anda menyetujui untuk memberikan informasi yang akurat, tidak menyalahgunakan platform, dan mematuhi seluruh ketentuan yang berlaku.
+  Dengan menggunakan platform Ahli Panggilan, Anda menyetujui untuk memberikan informasi yang akurat, tidak menyalahgunakan platform, dan mematuhi seluruh ketentuan yang berlaku.
 </p>
 
 <h2>3. Pembayaran</h2>
 <p>
-  Pembayaran dilakukan sesuai kesepakatan antara pelanggan dan penyedia jasa. Spesialis tidak memproses pembayaran secara langsung pada fase MVP. Semua transaksi dilakukan secara manual.
+  Pembayaran dilakukan sesuai kesepakatan antara pelanggan dan penyedia jasa. Ahli Panggilan tidak memproses pembayaran secara langsung pada fase MVP. Semua transaksi dilakukan secara manual.
 </p>
 
 <h2>4. Pembatalan</h2>
 <p>
-  Pelanggan dapat membatalkan pesanan sebelum pekerjaan dimulai. Pembatalan dapat dilakukan melalui dashboard atau dengan menghubungi tim Spesialis.
+  Pelanggan dapat membatalkan pesanan sebelum pekerjaan dimulai. Pembatalan dapat dilakukan melalui dashboard atau dengan menghubungi tim Ahli Panggilan.
 </p>
 
 <h2>5. Garansi</h2>
@@ -115,7 +115,8 @@ const PAGES = [
 </p>
     `),
     meta: {
-      description: 'Syarat dan ketentuan penggunaan platform layanan jasa profesional Spesialis.',
+      description:
+        'Syarat dan ketentuan penggunaan platform layanan jasa profesional Ahli Panggilan.',
     },
   },
   {
@@ -157,7 +158,7 @@ const PAGES = [
     `),
     meta: {
       description:
-        'Kebijakan privasi platform layanan jasa profesional Spesialis. Bagaimana kami mengelola dan melindungi data pribadi Anda.',
+        'Kebijakan privasi platform layanan jasa profesional Ahli Panggilan. Bagaimana kami mengelola dan melindungi data pribadi Anda.',
     },
   },
   {
@@ -168,7 +169,7 @@ const PAGES = [
 <div>
   <div>
     <h2>Email</h2>
-    <p><a href="mailto:hello@spesialis.id">hello@spesialis.id</a></p>
+    <p><a href="mailto:hello@ahlipanggilan.id">hello@ahlipanggilan.id</a></p>
   </div>
   <div>
     <h2>WhatsApp</h2>
@@ -189,7 +190,7 @@ const PAGES = [
     `),
     meta: {
       description:
-        'Hubungi tim Spesialis untuk pertanyaan, kritik, saran, atau kerjasama. Kami siap membantu Anda.',
+        'Hubungi tim Ahli Panggilan untuk pertanyaan, kritik, saran, atau kerjasama. Kami siap membantu Anda.',
     },
   },
 ];

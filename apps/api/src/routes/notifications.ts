@@ -3,7 +3,7 @@ import { eq, and, desc, sql } from 'drizzle-orm';
 import { db, notifications } from '../lib/db.ts';
 import { authMiddleware } from '../middleware/auth.ts';
 import { validateBody } from '../middleware/validation.ts';
-import { markNotificationReadSchema } from '@specialist/validation';
+import { markNotificationReadSchema } from '@ahlipanggilan/validation';
 
 import { success, successPaginated } from '../lib/response.ts';
 import { buildPaginationMeta } from '../lib/pagination.ts';

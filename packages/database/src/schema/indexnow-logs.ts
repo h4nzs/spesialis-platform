@@ -1,13 +1,4 @@
-import {
-  pgTable,
-  uuid,
-  varchar,
-  text,
-  integer,
-  boolean,
-  timestamp,
-  index,
-} from 'drizzle-orm/pg-core';
+import { pgTable, uuid, varchar, text, integer, timestamp, index } from 'drizzle-orm/pg-core';
 
 export const indexnowLogs = pgTable(
   'indexnow_logs',

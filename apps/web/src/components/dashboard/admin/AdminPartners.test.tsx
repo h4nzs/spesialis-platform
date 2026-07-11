@@ -5,11 +5,11 @@ import { AdminPartners } from './AdminPartners';
 const mockGet = vi.fn();
 const mockPost = vi.fn();
 
-vi.mock('@specialist/shared', () => ({
+vi.mock('@ahlipanggilan/shared', () => ({
   createBrowserClient: () => ({ get: mockGet, post: mockPost }),
 }));
 
-vi.mock('@specialist/ui', () => ({
+vi.mock('@ahlipanggilan/ui', () => ({
   Table: ({
     data,
     emptyMessage,

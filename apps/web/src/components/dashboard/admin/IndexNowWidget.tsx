@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
-import { createBrowserClient } from '@specialist/shared';
-import { Card, Skeleton } from '@specialist/ui';
+import { createBrowserClient } from '@ahlipanggilan/shared';
+import { Card, Skeleton } from '@ahlipanggilan/ui';
 
 interface IndexNowState {
   key: string;

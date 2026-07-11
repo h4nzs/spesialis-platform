@@ -24,7 +24,7 @@ import {
   convertGuestSchema,
   refreshTokenSchema,
   verifyEmailSchema,
-} from '@specialist/validation';
+} from '@ahlipanggilan/validation';
 import type {
   RegisterInput,
   LoginInput,
@@ -35,7 +35,7 @@ import type {
   ConvertGuestInput,
   RefreshTokenInput,
   VerifyEmailInput,
-} from '@specialist/validation';
+} from '@ahlipanggilan/validation';
 import { parseBody } from '../lib/parse-body.ts';
 import { omitUndefined } from '../lib/update.ts';
 import {
@@ -67,8 +67,7 @@ router.post('/register', rateLimit(10, 60_000), validateBody(registerSchema), as
   }
 
   const passwordHash = await hashPassword(password);
-
-  const { user, token, verificationToken } = await db.transaction(async (tx) => {
+  const { user, token } = await db.transaction(async (tx) => {
     const [createdUser] = await tx
       .insert(users)
       .values({
@@ -96,7 +95,7 @@ router.post('/register', rateLimit(10, 60_000), validateBody(registerSchema), as
       expiresAt: getRefreshTokenExpiry(),
     });
 
-    return { user: createdUser, token: jwtToken, verificationToken: vt };
+    return { user: createdUser, token: jwtToken };
   });
 
   setAuthCookies(c, token);

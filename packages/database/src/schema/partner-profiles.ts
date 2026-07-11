@@ -9,7 +9,7 @@ import {
   index,
 } from 'drizzle-orm/pg-core';
 import { users } from './users.ts';
-import { type PartnerAvailability, type PartnerVerificationStatus } from '@specialist/types';
+import { type PartnerAvailability, type PartnerVerificationStatus } from '@ahlipanggilan/types';
 
 export const partnerProfiles = pgTable(
   'partner_profiles',

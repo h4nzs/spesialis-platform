@@ -5,9 +5,9 @@ import {
   formatDate,
   getStatusLabel,
   getStatusColor,
-} from '@specialist/shared';
-import { Card, Grid, Skeleton, Badge, EmptyState } from '@specialist/ui';
-import type { OrderStatus } from '@specialist/types';
+} from '@ahlipanggilan/shared';
+import { Card, Grid, Skeleton, Badge, EmptyState } from '@ahlipanggilan/ui';
+import type { OrderStatus } from '@ahlipanggilan/types';
 
 // ── Types ──────────────────────────────────────────────────────
 
@@ -161,7 +161,8 @@ export function CustomerOverview() {
             {greeting}, {userName}
           </h2>
           <p className="mt-1 text-body text-text-secondary">
-            Selamat datang di dashboard Spesialis. Saatnya memesan layanan profesional pertama Anda.
+            Selamat datang di dashboard Ahli Panggilan. Saatnya memesan layanan profesional pertama
+            Anda.
           </p>
         </Card>
 
@@ -235,7 +236,7 @@ export function CustomerOverview() {
               {greeting}, {userName}
             </h2>
             <p className="mt-1 text-body text-text-secondary">
-              Berikut ringkasan aktivitas Anda di Spesialis.
+              Berikut ringkasan aktivitas Anda di Ahli Panggilan.
             </p>
           </div>
           <a

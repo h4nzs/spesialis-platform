@@ -1,5 +1,5 @@
 import { pgTable, uuid, varchar, timestamp, text, numeric, index } from 'drizzle-orm/pg-core';
-import { type PenaltyType, type PenaltyStatus } from '@specialist/types';
+import { type PenaltyType, type PenaltyStatus } from '@ahlipanggilan/types';
 import { partnerProfiles } from './partner-profiles.ts';
 import { orders } from './orders.ts';
 import { users } from './users.ts';

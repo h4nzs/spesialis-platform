@@ -23,7 +23,7 @@ Response:
     "slug": "tentang-kami",
     "content": "<h2>Visi Kami</h2><p>...</p>",
     "meta": {
-      "description": "Pelajari lebih lanjut tentang Spesialis"
+      "description": "Pelajari lebih lanjut tentang Ahli Panggilan"
     },
     "status": "Published",
     "createdAt": "2026-07-01T10:00:00Z",
@@ -78,8 +78,8 @@ Response:
   "data": [
     {
       "id": "uuid",
-      "question": "Apa itu Spesialis?",
-      "answer": "Spesialis adalah platform...",
+      "question": "Apa itu Ahli Panggilan?",
+      "answer": "Ahli Panggilan adalah platform...",
       "category": "umum",
       "displayOrder": 1
     }

@@ -1,4 +1,4 @@
-import type { PaginationMeta } from '@specialist/types';
+import type { PaginationMeta } from '@ahlipanggilan/types';
 
 /**
  * Build a PaginationMeta object from page, limit, and total count.

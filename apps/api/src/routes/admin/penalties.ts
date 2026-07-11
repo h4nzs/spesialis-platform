@@ -3,8 +3,8 @@ import { eq, desc, and } from 'drizzle-orm';
 import { db, partnerPenalties, partnerProfiles, orders } from '../../lib/db.ts';
 import { authMiddleware, requireRole } from '../../middleware/auth.ts';
 import { validateBody } from '../../middleware/validation.ts';
-import { imposePenaltySchema, updatePenaltyStatusSchema } from '@specialist/validation';
-import type { ImposePenaltyInput, UpdatePenaltyStatusInput } from '@specialist/validation';
+import { imposePenaltySchema, updatePenaltyStatusSchema } from '@ahlipanggilan/validation';
+import type { ImposePenaltyInput, UpdatePenaltyStatusInput } from '@ahlipanggilan/validation';
 import { success, notFound, created, serverError } from '../../lib/response.ts';
 import { createAuditLog } from '../../lib/audit.ts';
 

@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
-import { createBrowserClient } from '@specialist/shared';
-import { Card } from '@specialist/ui';
+import { createBrowserClient } from '@ahlipanggilan/shared';
+import { Card } from '@ahlipanggilan/ui';
 
 interface DispatcherDashboard {
   partners?: { available: number };

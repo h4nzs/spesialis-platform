@@ -4,7 +4,7 @@ import { db, services, reviews, orderItems } from '../lib/db.ts';
 import { success, successPaginated, notFound } from '../lib/response.ts';
 import { validateQuery } from '../middleware/validation.ts';
 import { buildPaginationMeta } from '../lib/pagination.ts';
-import { paginationQuerySchema } from '@specialist/validation';
+import { paginationQuerySchema } from '@ahlipanggilan/validation';
 
 const router = new Hono();
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;

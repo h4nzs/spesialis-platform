@@ -21,7 +21,7 @@ function help() {
 Spesialis CLI
 
 Usage:
-  spesialis <command> [options]
+  ahlipanggilan <command> [options]
 
 Commands:
   db:generate              Generate migration from schema (drizzle-kit)
@@ -44,19 +44,19 @@ async function main() {
 
   switch (cmd) {
     case 'db:generate':
-      runFilter('@specialist/database', 'db:generate');
+      runFilter('@ahlipanggilan/database', 'db:generate');
       break;
 
     case 'db:migrate':
-      runFilter('@specialist/database', 'db:migrate');
+      runFilter('@ahlipanggilan/database', 'db:migrate');
       break;
 
     case 'db:push':
-      runFilter('@specialist/database', 'db:push');
+      runFilter('@ahlipanggilan/database', 'db:push');
       break;
 
     case 'db:seed':
-      runFilter('@specialist/api', 'db:seed');
+      runFilter('@ahlipanggilan/api', 'db:seed');
       break;
 
     case 'generate': {
@@ -64,7 +64,7 @@ async function main() {
       if (type === 'resource') {
         await generateResource(process.argv[4]);
       } else {
-        console.error('Usage: spesialis generate resource <name>');
+        console.error('Usage: ahlipanggilan generate resource <name>');
         process.exit(1);
       }
       break;
@@ -102,7 +102,7 @@ function toKebabCase(s) {
 
 async function generateResource(name) {
   if (!name) {
-    console.error('Usage: spesialis generate resource <name>');
+    console.error('Usage: ahlipanggilan generate resource <name>');
     process.exit(1);
   }
 
@@ -167,7 +167,7 @@ export { router as ${camel}Router };
   const testContent = `import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { Hono } from 'hono';
 import type { Context } from 'hono';
-import type { UserRole } from '@specialist/types';
+import type { UserRole } from '@ahlipanggilan/types';
 import { ${camel}Router } from './${kebab}.ts';
 import { setTestEnv, makeChain, insertChain, updateChain } from '../test-utils.ts';
 

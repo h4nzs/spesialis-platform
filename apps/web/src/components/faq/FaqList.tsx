@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { createBrowserClient } from '@specialist/shared';
+import { createBrowserClient } from '@ahlipanggilan/shared';
 
 interface FaqItem {
   q: string;
@@ -8,8 +8,8 @@ interface FaqItem {
 
 const FALLBACK_FAQS: FaqItem[] = [
   {
-    q: 'Apa itu Spesialis?',
-    a: 'Spesialis adalah platform layanan jasa profesional on-demand yang menghubungkan Anda dengan teknisi dan profesional terpercaya untuk kebutuhan rumah, kantor, dan bisnis.',
+    q: 'Apa itu Ahli Panggilan?',
+    a: 'Ahli Panggilan adalah platform layanan jasa profesional on-demand yang menghubungkan Anda dengan teknisi dan profesional terpercaya untuk kebutuhan rumah, kantor, dan bisnis.',
   },
   {
     q: 'Bagaimana cara memesan layanan?',
@@ -36,7 +36,7 @@ const FALLBACK_FAQS: FaqItem[] = [
     a: 'Daftar melalui halaman Daftar Mitra, lengkapi data diri dan dokumen yang diperlukan. Setelah diverifikasi oleh admin, Anda dapat mulai menerima pekerjaan.',
   },
   {
-    q: 'Apakah Spesialis melayani area Jabodetabek saja?',
+    q: 'Apakah Ahli Panggilan melayani area Jabodetabek saja?',
     a: 'Saat ini kami fokus melayani area Jabodetabek dan Bandung. Ke depannya kami akan memperluas jangkauan ke kota-kota lain di Indonesia.',
   },
 ];

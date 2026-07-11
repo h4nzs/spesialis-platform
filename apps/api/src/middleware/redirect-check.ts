@@ -1,5 +1,5 @@
 import type { Context, NotFoundHandler } from 'hono';
-import { eq, and, or, sql } from 'drizzle-orm';
+import { eq, and, sql } from 'drizzle-orm';
 import { db, redirects, pageErrors } from '../lib/db.ts';
 
 /**

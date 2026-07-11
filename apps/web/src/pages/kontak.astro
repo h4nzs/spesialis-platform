@@ -28,7 +28,7 @@ const internationalPhone = `+${whatsappPhone.slice(0, 2)} ${whatsappPhone.slice(
 // Fetch page content from CMS API (cms_pages)
 let pageSlug = 'kontak'
 let pageTitle = 'Hubungi Kami'
-let pageDescription = 'Hubungi tim Spesialis untuk pertanyaan, kritik, saran, atau kerjasama. Kami siap membantu Anda.'
+let pageDescription = 'Hubungi tim Ahli Panggilan untuk pertanyaan, kritik, saran, atau kerjasama. Kami siap membantu Anda.'
 let pageHtml = ''
 let useCms = false
 
@@ -54,7 +54,7 @@ if (!useCms) {
       <div class="rounded-lg border border-border-default bg-bg-surface p-6">
         <h2 class="font-semibold text-text-primary">Email</h2>
         <p class="mt-2 text-body-sm text-text-secondary">
-          <a href="mailto:hello@spesialis.id" class="text-primary hover:text-primary-hover transition-colors">hello@spesialis.id</a>
+          <a href="mailto:hello@ahlipanggilan.id" class="text-primary hover:text-primary-hover transition-colors">hello@ahlipanggilan.id</a>
         </p>
       </div>
       <div class="rounded-lg border border-border-default bg-bg-surface p-6">
@@ -80,7 +80,7 @@ if (!useCms) {
 ---
 
 <BaseLayout
-  title={useCms ? `${pageTitle} - Spesialis` : 'Kontak - Spesialis'}
+  title={useCms ? `${pageTitle} - Ahli Panggilan` : 'Kontak - Ahli Panggilan'}
   description={pageDescription}
   canonicalUrl="/kontak"
   jsonLd={{
@@ -89,18 +89,18 @@ if (!useCms) {
       {
         '@type': 'BreadcrumbList',
         itemListElement: [
-          { '@type': 'ListItem', position: 1, name: 'Beranda', item: 'https://spesialis.id' },
+          { '@type': 'ListItem', position: 1, name: 'Beranda', item: 'https://ahlipanggilan.id' },
           { '@type': 'ListItem', position: 2, name: 'Kontak' },
         ],
       },
       {
         '@type': 'LocalBusiness',
-        name: 'Spesialis',
-        url: 'https://spesialis.id',
-        logo: 'https://spesialis.id/favicon.svg',
-        image: 'https://spesialis.id/og-default.png',
+        name: 'Ahli Panggilan',
+        url: 'https://ahlipanggilan.id',
+        logo: 'https://ahlipanggilan.id/favicon.svg',
+        image: 'https://ahlipanggilan.id/og-default.png',
         description: 'Platform layanan jasa profesional on-demand di Indonesia.',
-        email: 'hello@spesialis.id',
+        email: 'hello@ahlipanggilan.id',
         telephone: internationalPhone,
         areaServed: { '@type': 'Country', name: 'Indonesia' },
         openingHoursSpecification: [

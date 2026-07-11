@@ -61,11 +61,11 @@ const ARTICLE_FIELDS: SchemaField[] = [
     hint: 'URL gambar utama artikel',
   },
   { key: 'description', label: 'Description', placeholder: 'Ringkasan artikel', type: 'textarea' },
-  { key: 'publisherName', label: 'Publisher Name', placeholder: 'Spesialis', type: 'text' },
+  { key: 'publisherName', label: 'Publisher Name', placeholder: 'Ahli Panggilan', type: 'text' },
   {
     key: 'publisherLogo',
     label: 'Publisher Logo URL',
-    placeholder: 'https://spesialis.id/logo.png',
+    placeholder: 'https://ahlipanggilan.id/logo.png',
     type: 'url',
   },
 ];
@@ -86,7 +86,7 @@ const FAQ_FIELDS: SchemaField[] = [
 const SERVICE_FIELDS: SchemaField[] = [
   { key: 'name', label: 'Service Name', placeholder: 'Nama layanan', type: 'text', required: true },
   { key: 'description', label: 'Description', placeholder: 'Deskripsi layanan', type: 'textarea' },
-  { key: 'providerName', label: 'Provider Name', placeholder: 'Spesialis', type: 'text' },
+  { key: 'providerName', label: 'Provider Name', placeholder: 'Ahli Panggilan', type: 'text' },
   { key: 'serviceType', label: 'Service Type', placeholder: 'Home Cleaning', type: 'text' },
   { key: 'priceRange', label: 'Price Range', placeholder: 'Rp50,000 - Rp500,000', type: 'text' },
   {
@@ -99,7 +99,13 @@ const SERVICE_FIELDS: SchemaField[] = [
 ];
 
 const LOCAL_BUSINESS_FIELDS: SchemaField[] = [
-  { key: 'name', label: 'Business Name', placeholder: 'Spesialis', type: 'text', required: true },
+  {
+    key: 'name',
+    label: 'Business Name',
+    placeholder: 'Ahli Panggilan',
+    type: 'text',
+    required: true,
+  },
   { key: 'description', label: 'Description', placeholder: 'Deskripsi bisnis', type: 'textarea' },
   {
     key: 'address',
@@ -109,7 +115,7 @@ const LOCAL_BUSINESS_FIELDS: SchemaField[] = [
     required: true,
   },
   { key: 'telephone', label: 'Phone', placeholder: '+62812-3456-7890', type: 'text' },
-  { key: 'email', label: 'Email', placeholder: 'info@spesialis.id', type: 'text' },
+  { key: 'email', label: 'Email', placeholder: 'info@ahlipanggilan.id', type: 'text' },
   {
     key: 'openingHours',
     label: 'Opening Hours',
@@ -123,19 +129,19 @@ const LOCAL_BUSINESS_FIELDS: SchemaField[] = [
 
 const BREADCRUMB_FIELDS: SchemaField[] = [
   { key: 'item1Name', label: 'Item 1 Name', placeholder: 'Beranda', type: 'text', required: true },
-  { key: 'item1Url', label: 'Item 1 URL', placeholder: 'https://spesialis.id/', type: 'url' },
+  { key: 'item1Url', label: 'Item 1 URL', placeholder: 'https://ahlipanggilan.id/', type: 'url' },
   { key: 'item2Name', label: 'Item 2 Name', placeholder: 'Layanan', type: 'text' },
   {
     key: 'item2Url',
     label: 'Item 2 URL',
-    placeholder: 'https://spesialis.id/services',
+    placeholder: 'https://ahlipanggilan.id/services',
     type: 'url',
   },
   { key: 'item3Name', label: 'Item 3 Name', placeholder: 'Cuci AC', type: 'text' },
   {
     key: 'item3Url',
     label: 'Item 3 URL',
-    placeholder: 'https://spesialis.id/services/cuci-ac',
+    placeholder: 'https://ahlipanggilan.id/services/cuci-ac',
     type: 'url',
   },
   { key: 'item4Name', label: 'Item 4 Name', placeholder: '', type: 'text' },
@@ -148,34 +154,34 @@ const ORGANIZATION_FIELDS: SchemaField[] = [
   {
     key: 'name',
     label: 'Organization Name',
-    placeholder: 'Spesialis',
+    placeholder: 'Ahli Panggilan',
     type: 'text',
     required: true,
   },
   {
     key: 'url',
     label: 'Website URL',
-    placeholder: 'https://spesialis.id',
+    placeholder: 'https://ahlipanggilan.id',
     type: 'url',
     required: true,
   },
-  { key: 'logo', label: 'Logo URL', placeholder: 'https://spesialis.id/logo.png', type: 'url' },
+  { key: 'logo', label: 'Logo URL', placeholder: 'https://ahlipanggilan.id/logo.png', type: 'url' },
   {
     key: 'sameAs1',
     label: 'Social Link 1',
-    placeholder: 'https://facebook.com/spesialis',
+    placeholder: 'https://facebook.com/ahlipanggilan',
     type: 'url',
   },
   {
     key: 'sameAs2',
     label: 'Social Link 2',
-    placeholder: 'https://instagram.com/spesialis',
+    placeholder: 'https://instagram.com/ahlipanggilan',
     type: 'url',
   },
   {
     key: 'sameAs3',
     label: 'Social Link 3',
-    placeholder: 'https://twitter.com/spesialis',
+    placeholder: 'https://twitter.com/ahlipanggilan',
     type: 'url',
   },
   { key: 'sameAs4', label: 'Social Link 4', placeholder: '', type: 'url' },

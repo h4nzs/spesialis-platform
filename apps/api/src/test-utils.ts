@@ -1,6 +1,6 @@
 import { vi } from 'vitest';
 import type { Context } from 'hono';
-import type { UserRole } from '@specialist/types';
+import type { UserRole } from '@ahlipanggilan/types';
 
 export type ApiTestResponse<T = unknown> = {
   success: boolean;

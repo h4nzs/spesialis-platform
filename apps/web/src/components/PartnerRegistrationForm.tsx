@@ -1,7 +1,7 @@
 import { useState } from 'react';
-import { createBrowserClient } from '@specialist/shared';
-import { Button, Input, Card } from '@specialist/ui';
-import { partnerRegistrationSchema } from '@specialist/validation';
+import { createBrowserClient } from '@ahlipanggilan/shared';
+import { Button, Input, Card } from '@ahlipanggilan/ui';
+import { partnerRegistrationSchema } from '@ahlipanggilan/validation';
 
 export function PartnerRegistrationForm() {
   const api = createBrowserClient();

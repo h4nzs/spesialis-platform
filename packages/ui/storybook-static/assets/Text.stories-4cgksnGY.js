@@ -40,7 +40,7 @@ e(() => {
         children: `Temukan mitra terbaik untuk kebutuhan profesional Anda.`,
       },
     }),
-    (g = { args: { variant: `code`, children: `npm install @specialist/ui` } }),
+    (g = { args: { variant: `code`, children: `npm install @ahlipanggilan/ui` } }),
     (_ = {
       name: `Full Scale`,
       parameters: { layout: `padded` },
@@ -230,7 +230,7 @@ e(() => {
           originalSource: `{
   args: {
     variant: 'code',
-    children: 'npm install @specialist/ui'
+    children: 'npm install @ahlipanggilan/ui'
   }
 }`,
           ...g.parameters?.docs?.source,

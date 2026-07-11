@@ -9,7 +9,7 @@ const { mockGet, mockDelete, mockDownloadCSV } = vi.hoisted(() => ({
   mockDownloadCSV: vi.fn(),
 }));
 
-vi.mock('@specialist/shared', () => ({
+vi.mock('@ahlipanggilan/shared', () => ({
   createBrowserClient: () => ({
     get: mockGet,
     delete: mockDelete,
@@ -17,7 +17,7 @@ vi.mock('@specialist/shared', () => ({
   downloadCSV: mockDownloadCSV,
 }));
 
-vi.mock('@specialist/ui', () => ({
+vi.mock('@ahlipanggilan/ui', () => ({
   Button: ({ children, onClick }: { children: React.ReactNode; onClick?: () => void }) => (
     <button type="button" onClick={onClick}>
       {children}

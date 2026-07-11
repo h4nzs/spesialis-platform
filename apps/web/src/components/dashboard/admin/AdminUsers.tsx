@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { createBrowserClient } from '@specialist/shared';
+import { createBrowserClient } from '@ahlipanggilan/shared';
 import {
   Button,
   Input,
@@ -10,8 +10,8 @@ import {
   EmptyState,
   CSVExportButton,
   TableSkeleton,
-} from '@specialist/ui';
-import type { Column } from '@specialist/ui';
+} from '@ahlipanggilan/ui';
+import type { Column } from '@ahlipanggilan/ui';
 
 interface UserItem {
   id: string;

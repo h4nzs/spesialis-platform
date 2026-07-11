@@ -4,8 +4,8 @@ import { Textarea } from './Textarea.tsx';
 import { Select } from './Select.tsx';
 import { Button } from './Button.tsx';
 import { cn } from '../utils/cn.ts';
-import { SCHEMA_TEMPLATES, getSchemaTemplate } from '@specialist/shared';
-import type { SchemaTemplateType, SchemaField } from '@specialist/shared';
+import { SCHEMA_TEMPLATES, getSchemaTemplate } from '@ahlipanggilan/shared';
+import type { SchemaTemplateType, SchemaField } from '@ahlipanggilan/shared';
 
 // ── Types ──────────────────────────────────────────────────────
 

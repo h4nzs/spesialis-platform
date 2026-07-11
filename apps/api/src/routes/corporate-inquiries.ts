@@ -3,7 +3,10 @@ import { eq, desc, sql, and } from 'drizzle-orm';
 import { db, corporateInquiries } from '../lib/db.ts';
 import { authMiddleware, requireRole } from '../middleware/auth.ts';
 import { validateBody } from '../middleware/validation.ts';
-import { createCorporateInquirySchema, updateCorporateInquirySchema } from '@specialist/validation';
+import {
+  createCorporateInquirySchema,
+  updateCorporateInquirySchema,
+} from '@ahlipanggilan/validation';
 import { success, created, notFound, serverError, successPaginated } from '../lib/response.ts';
 import { buildPaginationMeta } from '../lib/pagination.ts';
 import { omitUndefined } from '../lib/update.ts';

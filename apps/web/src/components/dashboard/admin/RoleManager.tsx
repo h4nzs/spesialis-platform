@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
-import { createBrowserClient, SEO_PERMISSION_KEYS, STAFF_ROLES } from '@specialist/shared';
-import { Card, Button } from '@specialist/ui';
-import type { UserRole } from '@specialist/types';
+import { createBrowserClient, SEO_PERMISSION_KEYS, STAFF_ROLES } from '@ahlipanggilan/shared';
+import { Card, Button } from '@ahlipanggilan/ui';
+import type { UserRole } from '@ahlipanggilan/types';
 
 interface PermissionState {
   [permKey: string]: {

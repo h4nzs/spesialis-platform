@@ -1,5 +1,5 @@
 import { sql } from 'drizzle-orm';
-import { db } from '@specialist/database';
+import { db } from '@ahlipanggilan/database';
 import {
   users,
   customerProfiles,
@@ -24,9 +24,9 @@ import {
   articleCategories,
   articles,
   faq,
-} from '@specialist/database';
+} from '@ahlipanggilan/database';
 import { hashPassword } from '../lib/auth.ts';
-import type { OrderStatus, PaymentMethod, PaymentStatus } from '@specialist/types';
+import type { OrderStatus, PaymentMethod, PaymentStatus } from '@ahlipanggilan/types';
 
 async function seed() {
   console.log('🌱 Seeding database...\n');
@@ -52,7 +52,7 @@ async function seed() {
   const [superAdmin] = await db
     .insert(users)
     .values({
-      email: 'admin@spesialis.id',
+      email: 'admin@ahlipanggilan.id',
       phone: '6281234567890',
       passwordHash: adminPassword,
       role: 'super_admin',
@@ -63,7 +63,7 @@ async function seed() {
   const [_admin] = await db
     .insert(users)
     .values({
-      email: 'admin2@spesialis.id',
+      email: 'admin2@ahlipanggilan.id',
       phone: '6281234567893',
       passwordHash: adminPassword,
       role: 'admin',
@@ -74,7 +74,7 @@ async function seed() {
   const [_dispatcher] = await db
     .insert(users)
     .values({
-      email: 'dispatcher@spesialis.id',
+      email: 'dispatcher@ahlipanggilan.id',
       phone: '6281234567894',
       passwordHash: adminPassword,
       role: 'dispatcher',
@@ -85,7 +85,7 @@ async function seed() {
   const [_finance] = await db
     .insert(users)
     .values({
-      email: 'finance@spesialis.id',
+      email: 'finance@ahlipanggilan.id',
       phone: '6281234567895',
       passwordHash: adminPassword,
       role: 'finance',
@@ -96,7 +96,7 @@ async function seed() {
   const [_contentMgr] = await db
     .insert(users)
     .values({
-      email: 'content@spesialis.id',
+      email: 'content@ahlipanggilan.id',
       phone: '6281234567896',
       passwordHash: adminPassword,
       role: 'content_manager',
@@ -107,7 +107,7 @@ async function seed() {
   const [partnerUser1] = await db
     .insert(users)
     .values({
-      email: 'partner@spesialis.id',
+      email: 'partner@ahlipanggilan.id',
       phone: '6281234567891',
       passwordHash: partnerPassword,
       role: 'partner',
@@ -118,7 +118,7 @@ async function seed() {
   const [partnerUser2] = await db
     .insert(users)
     .values({
-      email: 'partner2@spesialis.id',
+      email: 'partner2@ahlipanggilan.id',
       phone: '6281234567897',
       passwordHash: partnerPassword,
       role: 'partner',
@@ -129,7 +129,7 @@ async function seed() {
   const [customerUser1] = await db
     .insert(users)
     .values({
-      email: 'customer@spesialis.id',
+      email: 'customer@ahlipanggilan.id',
       phone: '6281234567892',
       passwordHash: customerPassword,
       role: 'customer',
@@ -140,7 +140,7 @@ async function seed() {
   const [customerUser2] = await db
     .insert(users)
     .values({
-      email: 'customer2@spesialis.id',
+      email: 'customer2@ahlipanggilan.id',
       phone: '6281234567898',
       passwordHash: customerPassword,
       role: 'customer',
@@ -151,7 +151,7 @@ async function seed() {
   const [corporateUser] = await db
     .insert(users)
     .values({
-      email: 'corporate@spesialis.id',
+      email: 'corporate@ahlipanggilan.id',
       phone: '6281234567899',
       passwordHash: customerPassword,
       role: 'corporate',
@@ -1038,20 +1038,20 @@ async function seed() {
     {
       entityType: 'Service',
       entityId: svcCuciAC!.id,
-      metaTitle: 'Cuci AC Standar - Spesialis',
+      metaTitle: 'Cuci AC Standar - Ahli Panggilan',
       metaDescription:
         'Pembersihan AC standar untuk rumah. Teknisi berpengalaman, garansi layanan.',
     },
     {
       entityType: 'Service',
       entityId: svcCatInterior!.id,
-      metaTitle: 'Cat Interior Profesional - Spesialis',
+      metaTitle: 'Cat Interior Profesional - Ahli Panggilan',
       metaDescription: 'Jasa pengecatan interior rumah dan kantor. Hasil rapi, cat berkualitas.',
     },
     {
       entityType: 'ServiceCategory',
       entityId: acCat!.id,
-      metaTitle: 'Service AC Profesional - Spesialis',
+      metaTitle: 'Service AC Profesional - Ahli Panggilan',
       metaDescription:
         'Layanan service AC: cuci, isi freon, bongkar pasang. Teknisi bersertifikat.',
     },
@@ -1106,7 +1106,7 @@ async function seed() {
         'Pelajari cara merawat AC dengan benar agar tetap dingin, hemat listrik, dan awet digunakan bertahun-tahun.',
       content:
         'AC adalah investasi penting untuk kenyamanan rumah. Dengan perawatan rutin, AC dapat bertahan lebih lama dan tetap efisien.\n\n## 1. Bersihkan Filter Secara Rutin\nFilter AC yang kotor membuat kinerja AC berat dan tagihan listrik membengkak. Bersihkan filter setiap 2 minggu sekali.\n\n## 2. Periksa Freon\nFreon yang berkurang akan membuat AC tidak dingin. Segera hubungi teknisi jika AC mulai terasa kurang dingin.\n\n## 3. Servis Berkala\nLakukan servis besar setiap 3-6 bulan sekali oleh teknisi profesional. Ini termasuk pembersihan evaporator, kondensor, dan pengecekan komponen lainnya.\n\n## 4. Atur Suhu Ideal\nSuhu AC yang ideal adalah 24-26°C. Setiap derajat lebih rendah meningkatkan konsumsi listrik hingga 6%.',
-      authorName: 'Tim Spesialis',
+      authorName: 'Tim Ahli Panggilan',
       status: 'Published',
       isFeatured: true,
       publishedAt: new Date(),
@@ -1119,8 +1119,8 @@ async function seed() {
       summary:
         'Saluran air mampet? Coba 5 cara mudah ini sebelum memanggil teknisi plumbing profesional.',
       content:
-        'Saluran air mampet adalah masalah rumah tangga yang paling umum. Sebelum panik, coba langkah-langkah berikut:\n\n## 1. Gunakan Air Panas\nTuangkan air panas secara perlahan ke saluran yang tersumbat. Air panas dapat melarutkan lemak dan sabun yang menumpuk.\n\n## 2. Baking Soda dan Cuka\nCampurkan 1/2 cangkir baking soda dengan 1/2 cangkir cuka. Tuang ke saluran dan tunggu 15 menit, lalu siram dengan air panas.\n\n## 3. Gunakan Plunger\nAlat sederhana ini sangat efektif untuk mengatasi sumbatan ringan di wastafel atau kloset.\n\nJika semua cara di atas tidak berhasil, segera hubungi teknisi plumbing profesional Spesialis.',
-      authorName: 'Tim Spesialis',
+        'Saluran air mampet adalah masalah rumah tangga yang paling umum. Sebelum panik, coba langkah-langkah berikut:\n\n## 1. Gunakan Air Panas\nTuangkan air panas secara perlahan ke saluran yang tersumbat. Air panas dapat melarutkan lemak dan sabun yang menumpuk.\n\n## 2. Baking Soda dan Cuka\nCampurkan 1/2 cangkir baking soda dengan 1/2 cangkir cuka. Tuang ke saluran dan tunggu 15 menit, lalu siram dengan air panas.\n\n## 3. Gunakan Plunger\nAlat sederhana ini sangat efektif untuk mengatasi sumbatan ringan di wastafel atau kloset.\n\nJika semua cara di atas tidak berhasil, segera hubungi teknisi plumbing profesional Ahli Panggilan.',
+      authorName: 'Tim Ahli Panggilan',
       status: 'Published',
       isFeatured: true,
       publishedAt: new Date(),
@@ -1133,8 +1133,8 @@ async function seed() {
       summary:
         'Renovasi selesai? Berikut panduan lengkap membersihkan debu dan kotoran pasca renovasi.',
       content:
-        '<p>Setelah renovasi, rumah biasanya dipenuhi debu halus dan sisa material. Berikut cara membersihkannya secara efektif:</p>\n\n<h2>1. Bersihkan dari Atas ke Bawah</h2>\n<p>Mulai dari langit-langit, dinding, lalu lantai. Cara ini mencegah debu jatuh ke area yang sudah dibersihkan.</p>\n\n<h2>2. Gunakan Vacuum Cleaner HEPA</h2>\n<p>Debu konstruksi sangat halus dan sulit dibersihkan dengan sapu biasa. Vacuum dengan filter <strong>HEPA</strong> mampu menangkap partikel mikroskopis hingga 0.3 mikron.</p>\n\n<h2>3. Lap Semua Permukaan</h2>\n<p>Gunakan kain microfiber basah untuk mengelap semua permukaan — dinding, jendela, furnitur, dan lantai. Ganti air lap secara rutin agar tidak menyebarkan debu kembali.</p>\n\n<h2>4. Cuci Semua Tekstil</h2>\n<p>Cuci gorden, karpet, dan sarung bantal yang mungkin terpapar debu renovasi. Gunakan air hangat untuk hasil maksimal.</p>\n\n<p>Butuh bantuan? Pesan layanan <a href="/services/cleaning" target="_blank" rel="noopener noreferrer">cleaning profesional</a> dari Spesialis!</p>',
-      authorName: 'Tim Spesialis',
+        '<p>Setelah renovasi, rumah biasanya dipenuhi debu halus dan sisa material. Berikut cara membersihkannya secara efektif:</p>\n\n<h2>1. Bersihkan dari Atas ke Bawah</h2>\n<p>Mulai dari langit-langit, dinding, lalu lantai. Cara ini mencegah debu jatuh ke area yang sudah dibersihkan.</p>\n\n<h2>2. Gunakan Vacuum Cleaner HEPA</h2>\n<p>Debu konstruksi sangat halus dan sulit dibersihkan dengan sapu biasa. Vacuum dengan filter <strong>HEPA</strong> mampu menangkap partikel mikroskopis hingga 0.3 mikron.</p>\n\n<h2>3. Lap Semua Permukaan</h2>\n<p>Gunakan kain microfiber basah untuk mengelap semua permukaan — dinding, jendela, furnitur, dan lantai. Ganti air lap secara rutin agar tidak menyebarkan debu kembali.</p>\n\n<h2>4. Cuci Semua Tekstil</h2>\n<p>Cuci gorden, karpet, dan sarung bantal yang mungkin terpapar debu renovasi. Gunakan air hangat untuk hasil maksimal.</p>\n\n<p>Butuh bantuan? Pesan layanan <a href="/services/cleaning" target="_blank" rel="noopener noreferrer">cleaning profesional</a> dari Ahli Panggilan!</p>',
+      authorName: 'Tim Ahli Panggilan',
       status: 'Published',
       isFeatured: false,
       publishedAt: new Date(),
@@ -1147,8 +1147,8 @@ async function seed() {
       summary:
         'Instalasi listrik yang salah bisa berbahaya. Simak panduan keamanan instalasi listrik rumah tinggal.',
       content:
-        '<p>Instalasi listrik yang baik adalah investasi keamanan jangka panjang untuk rumah Anda. Berikut hal-hal penting yang perlu diperhatikan:</p>\n\n<h2>1. Gunakan Kabel Berkualitas SNI</h2>\n<p>Jangan tergiur kabel murah. Kabel berkualitas <strong>SNI</strong> menjamin keamanan dan ketahanan terhadap panas berlebih. Kabel bermutu rendah bisa menjadi penyebab <em>korsleting</em> dan kebakaran.</p>\n\n<h2>2. Pasang MCB yang Sesuai</h2>\n<p>MCB (<em>Miniature Circuit Breaker</em>) harus disesuaikan dengan total daya yang terpakai. Jangan menggunakan MCB dengan kapasitas terlalu besar karena risiko korsleting tidak terdeteksi.</p>\n\n<ul>\n  <li><p>MCB 6A untuk daya 1.300 VA</p></li>\n  <li><p>MCB 10A untuk daya 2.200 VA</p></li>\n  <li><p>MCB 16A untuk daya 3.500 VA</p></li>\n</ul>\n\n<h2>3. Pastikan Grounding yang Baik</h2>\n<p>Instalasi <em>grounding</em> harus terpasang dengan benar untuk mengalirkan kebocoran arus ke tanah. Tanpa grounding, risiko tersengat listrik sangat tinggi.</p>\n\n<h2>4. Hindari Sambungan Tersembunyi</h2>\n<p>Sambungan kabel sebaiknya berada di dalam <strong>kotak sambungan</strong> yang mudah diakses. Jangan menanam sambungan di dalam dinding tanpa pengaman.</p>\n\n<blockquote>\n  <p>⚠️ Selalu gunakan jasa teknisi listrik bersertifikat untuk instalasi listrik rumah Anda. Hubungi Spesialis untuk layanan perbaikan listrik profesional.</p>\n</blockquote>',
-      authorName: 'Tim Spesialis',
+        '<p>Instalasi listrik yang baik adalah investasi keamanan jangka panjang untuk rumah Anda. Berikut hal-hal penting yang perlu diperhatikan:</p>\n\n<h2>1. Gunakan Kabel Berkualitas SNI</h2>\n<p>Jangan tergiur kabel murah. Kabel berkualitas <strong>SNI</strong> menjamin keamanan dan ketahanan terhadap panas berlebih. Kabel bermutu rendah bisa menjadi penyebab <em>korsleting</em> dan kebakaran.</p>\n\n<h2>2. Pasang MCB yang Sesuai</h2>\n<p>MCB (<em>Miniature Circuit Breaker</em>) harus disesuaikan dengan total daya yang terpakai. Jangan menggunakan MCB dengan kapasitas terlalu besar karena risiko korsleting tidak terdeteksi.</p>\n\n<ul>\n  <li><p>MCB 6A untuk daya 1.300 VA</p></li>\n  <li><p>MCB 10A untuk daya 2.200 VA</p></li>\n  <li><p>MCB 16A untuk daya 3.500 VA</p></li>\n</ul>\n\n<h2>3. Pastikan Grounding yang Baik</h2>\n<p>Instalasi <em>grounding</em> harus terpasang dengan benar untuk mengalirkan kebocoran arus ke tanah. Tanpa grounding, risiko tersengat listrik sangat tinggi.</p>\n\n<h2>4. Hindari Sambungan Tersembunyi</h2>\n<p>Sambungan kabel sebaiknya berada di dalam <strong>kotak sambungan</strong> yang mudah diakses. Jangan menanam sambungan di dalam dinding tanpa pengaman.</p>\n\n<blockquote>\n  <p>⚠️ Selalu gunakan jasa teknisi listrik bersertifikat untuk instalasi listrik rumah Anda. Hubungi Ahli Panggilan untuk layanan perbaikan listrik profesional.</p>\n</blockquote>',
+      authorName: 'Tim Ahli Panggilan',
       status: 'Published',
       isFeatured: false,
       tags: ['listrik', 'instalasi', 'keamanan', 'rumah'],
@@ -1195,7 +1195,7 @@ async function seed() {
       displayOrder: 1,
     },
     {
-      question: 'Apa saja area layanan Spesialis?',
+      question: 'Apa saja area layanan Ahli Panggilan?',
       answer:
         'Saat ini kami melayani area Jabodetabek dan Bandung. Kami terus memperluas jangkauan ke kota-kota lainnya.',
       category: 'Layanan',
@@ -1213,7 +1213,12 @@ async function seed() {
 
   // ─── System Settings ─────────────────────────────────────────────
   await db.insert(systemSettings).values([
-    { category: 'general', key: 'site_name', value: 'Spesialis', description: 'Nama platform' },
+    {
+      category: 'general',
+      key: 'site_name',
+      value: 'Ahli Panggilan',
+      description: 'Nama platform',
+    },
     {
       category: 'general',
       key: 'site_description',
@@ -1419,16 +1424,16 @@ async function seed() {
   console.log('  ✅ Seed complete!');
   console.log('═══════════════════════════════════════════');
   console.log('\n  Accounts:');
-  console.log('    admin@spesialis.id       / password123 (super_admin)');
-  console.log('    admin2@spesialis.id      / password123 (admin)');
-  console.log('    dispatcher@spesialis.id  / password123 (dispatcher)');
-  console.log('    finance@spesialis.id     / password123 (finance)');
-  console.log('    content@spesialis.id     / password123 (content_manager)');
-  console.log('    partner@spesialis.id     / password123 (partner - AC & Listrik)');
-  console.log('    partner2@spesialis.id    / password123 (partner - Plumbing & Cleaning)');
-  console.log('    customer@spesialis.id    / password123 (customer)');
-  console.log('    customer2@spesialis.id   / password123 (customer)');
-  console.log('    corporate@spesialis.id   / password123 (corporate)');
+  console.log('    admin@ahlipanggilan.id       / password123 (super_admin)');
+  console.log('    admin2@ahlipanggilan.id      / password123 (admin)');
+  console.log('    dispatcher@ahlipanggilan.id  / password123 (dispatcher)');
+  console.log('    finance@ahlipanggilan.id     / password123 (finance)');
+  console.log('    content@ahlipanggilan.id     / password123 (content_manager)');
+  console.log('    partner@ahlipanggilan.id     / password123 (partner - AC & Listrik)');
+  console.log('    partner2@ahlipanggilan.id    / password123 (partner - Plumbing & Cleaning)');
+  console.log('    customer@ahlipanggilan.id    / password123 (customer)');
+  console.log('    customer2@ahlipanggilan.id   / password123 (customer)');
+  console.log('    corporate@ahlipanggilan.id   / password123 (corporate)');
   console.log('\n  Data:');
   console.log('    5 categories, 14 services');
   console.log('    10 orders across all lifecycle stages');

@@ -1,4 +1,4 @@
-import type { OrderStatus } from '@specialist/types';
+import type { OrderStatus } from '@ahlipanggilan/types';
 import { db, orderStatusHistory } from './db.ts';
 
 /**

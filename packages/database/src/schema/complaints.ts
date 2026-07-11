@@ -1,5 +1,5 @@
 import { pgTable, uuid, varchar, timestamp, text, index } from 'drizzle-orm/pg-core';
-import { type ComplaintStatus } from '@specialist/types';
+import { type ComplaintStatus } from '@ahlipanggilan/types';
 import { orders } from './orders.ts';
 import { customerProfiles } from './customer-profiles.ts';
 import { users } from './users.ts';

@@ -29,7 +29,7 @@ import {
   addSkillSchema,
   createPartnerDocumentSchema,
   paginationQuerySchema,
-} from '@specialist/validation';
+} from '@ahlipanggilan/validation';
 import type {
   PartnerRegistrationInput,
   UpdatePartnerInput,
@@ -37,8 +37,8 @@ import type {
   AddSkillInput,
   CreatePartnerDocumentInput,
   VerifyPartnerInput,
-} from '@specialist/validation';
-import type { PartnerAvailability, PartnerVerificationStatus } from '@specialist/types';
+} from '@ahlipanggilan/validation';
+import type { PartnerAvailability, PartnerVerificationStatus } from '@ahlipanggilan/types';
 import {
   success,
   successPaginated,

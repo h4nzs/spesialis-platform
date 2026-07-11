@@ -9,7 +9,7 @@ const { mockGet, mockPost, mockPatch } = vi.hoisted(() => ({
   mockPatch: vi.fn(),
 }));
 
-vi.mock('@specialist/shared', () => ({
+vi.mock('@ahlipanggilan/shared', () => ({
   createBrowserClient: () => ({
     get: mockGet,
     post: mockPost,
@@ -18,7 +18,7 @@ vi.mock('@specialist/shared', () => ({
   }),
 }));
 
-vi.mock('@specialist/ui', () => ({
+vi.mock('@ahlipanggilan/ui', () => ({
   Modal: ({
     children,
     open,

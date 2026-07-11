@@ -3,12 +3,12 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import { RegisterForm } from '../components/RegisterForm.tsx';
 ---
 
-<BaseLayout title="Daftar - Spesialis" description="Buat akun Spesialis untuk memesan layanan jasa profesional, menyimpan alamat, dan melacak booking." noindex={true}>
+<BaseLayout title="Daftar - Ahli Panggilan" description="Buat akun Ahli Panggilan untuk memesan layanan jasa profesional, menyimpan alamat, dan melacak booking." noindex={true}>
   <div class="mx-auto flex min-h-[60vh] max-w-md items-center px-4 py-16 sm:px-6">
     <div class="w-full">
       <h1 class="text-center text-h4 font-bold text-text-primary">Daftar</h1>
       <p class="mt-2 text-center text-sm text-text-muted">
-        Buat akun Spesialis untuk mulai memesan layanan
+        Buat akun Ahli Panggilan untuk mulai memesan layanan
       </p>
       <div class="mt-8">
         <RegisterForm client:load />

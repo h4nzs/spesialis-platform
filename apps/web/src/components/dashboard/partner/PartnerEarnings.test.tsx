@@ -4,13 +4,13 @@ import { PartnerEarnings } from './PartnerEarnings';
 
 const mockGet = vi.fn();
 
-vi.mock('@specialist/shared', () => ({
+vi.mock('@ahlipanggilan/shared', () => ({
   createBrowserClient: () => ({ get: mockGet }),
   formatDate: (d: string) => d,
   getStatusLabel: (s: string) => s,
 }));
 
-vi.mock('@specialist/ui', () => ({
+vi.mock('@ahlipanggilan/ui', () => ({
   Card: ({ children, padding: _padding }: { children: React.ReactNode; padding?: string }) => (
     <div>{children}</div>
   ),

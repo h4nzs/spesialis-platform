@@ -24,7 +24,7 @@ export async function pingIndexNow(
   urls: string[],
   key: string,
   keyLocation: string,
-  host: string = 'https://spesialis.id',
+  host: string = 'https://ahlipanggilan.id',
 ): Promise<PingResult[]> {
   if (!urls.length || !key) return [];
 

@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { createBrowserClient, formatDate, formatRating } from '@specialist/shared';
+import { createBrowserClient, formatDate, formatRating } from '@ahlipanggilan/shared';
 import {
   Button,
   Textarea,
@@ -9,8 +9,8 @@ import {
   EmptyState,
   TableSkeleton,
   CSVExportButton,
-} from '@specialist/ui';
-import type { Column } from '@specialist/ui';
+} from '@ahlipanggilan/ui';
+import type { Column } from '@ahlipanggilan/ui';
 
 interface ReviewItem {
   id: string;

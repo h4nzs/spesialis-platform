@@ -37,7 +37,7 @@ export const WithAction: Story = {
   args: {
     icon: INBOX_ICON,
     title: 'Belum ada pesanan',
-    description: 'Pesan layanan pertama Anda sekarang untuk mulai menggunakan spesialis.',
+    description: 'Pesan layanan pertama Anda sekarang untuk mulai menggunakan ahlipanggilan.',
     action: <Button>Booking Sekarang</Button>,
   },
 };

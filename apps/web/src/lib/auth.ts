@@ -1,4 +1,4 @@
-import { createBrowserClient, type ApiClient } from '@specialist/shared';
+import { createBrowserClient, type ApiClient } from '@ahlipanggilan/shared';
 
 let clientInstance: ApiClient | null = null;
 

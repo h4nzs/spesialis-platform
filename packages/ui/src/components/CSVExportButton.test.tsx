@@ -4,7 +4,7 @@ import { CSVExportButton } from './CSVExportButton';
 
 const mockDownloadCSV = vi.hoisted(() => vi.fn());
 
-vi.mock('@specialist/shared', () => ({
+vi.mock('@ahlipanggilan/shared', () => ({
   downloadCSV: mockDownloadCSV,
 }));
 

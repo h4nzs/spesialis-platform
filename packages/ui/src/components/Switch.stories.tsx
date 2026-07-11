@@ -42,5 +42,5 @@ export const DisabledOn: Story = {
 };
 
 export const WithoutLabel: Story = {
-  args: { label: undefined, checked: true },
+  args: { checked: true },
 };

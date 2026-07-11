@@ -1,5 +1,5 @@
 import { cn } from '../utils/cn.ts';
-import type { ReadabilityResult } from '@specialist/shared';
+import type { ReadabilityResult } from '@ahlipanggilan/shared';
 
 export interface ReadabilityScoreProps {
   result: ReadabilityResult;

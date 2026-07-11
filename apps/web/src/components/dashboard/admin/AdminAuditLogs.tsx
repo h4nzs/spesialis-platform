@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { createBrowserClient, formatDate } from '@specialist/shared';
+import { createBrowserClient, formatDate } from '@ahlipanggilan/shared';
 import {
   Table,
   Pagination,
@@ -8,9 +8,9 @@ import {
   EmptyState,
   TableSkeleton,
   CSVExportButton,
-} from '@specialist/ui';
-import type { Column } from '@specialist/ui';
-import type { PaginationMeta, AuditAction } from '@specialist/types';
+} from '@ahlipanggilan/ui';
+import type { Column } from '@ahlipanggilan/ui';
+import type { PaginationMeta, AuditAction } from '@ahlipanggilan/types';
 
 interface AuditLogItem {
   id: string;

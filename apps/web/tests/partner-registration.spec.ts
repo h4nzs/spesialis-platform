@@ -146,7 +146,7 @@ test.describe('Partner Registration - E2E-012', () => {
   test('E2E-012: Admin can verify the new partner', async ({ request }) => {
     // Login as admin
     const adminLoginRes = await request.post(`${API_URL}/api/v1/auth/login`, {
-      data: { email: 'admin@spesialis.id', password: 'password123' },
+      data: { email: 'admin@ahlipanggilan.id', password: 'password123' },
     });
     expect(adminLoginRes.status()).toBe(200);
     const adminBody = (await adminLoginRes.json()) as { data: { token: string } };

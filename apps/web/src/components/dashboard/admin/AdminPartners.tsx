@@ -1,7 +1,14 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { createBrowserClient } from '@specialist/shared';
-import { Table, Button, Modal, EmptyState, CSVExportButton, TableSkeleton } from '@specialist/ui';
-import type { Column } from '@specialist/ui';
+import { createBrowserClient } from '@ahlipanggilan/shared';
+import {
+  Table,
+  Button,
+  Modal,
+  EmptyState,
+  CSVExportButton,
+  TableSkeleton,
+} from '@ahlipanggilan/ui';
+import type { Column } from '@ahlipanggilan/ui';
 
 interface PartnerItem {
   id: string;

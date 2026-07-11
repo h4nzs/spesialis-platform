@@ -1,7 +1,7 @@
 import { useState } from 'react';
-import { createBrowserClient } from '@specialist/shared';
-import { createComplaintSchema } from '@specialist/validation';
-import { Button, Input, Textarea, Card } from '@specialist/ui';
+import { createBrowserClient } from '@ahlipanggilan/shared';
+import { createComplaintSchema } from '@ahlipanggilan/validation';
+import { Button, Input, Textarea, Card } from '@ahlipanggilan/ui';
 
 export function ComplaintForm() {
   const api = createBrowserClient();

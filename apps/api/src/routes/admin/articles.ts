@@ -8,13 +8,13 @@ import {
   updateArticleSchema,
   createArticleCategorySchema,
   updateArticleCategorySchema,
-} from '@specialist/validation';
+} from '@ahlipanggilan/validation';
 import type {
   CreateArticleCategoryInput,
   UpdateArticleCategoryInput,
   CreateArticleInput,
   UpdateArticleInput,
-} from '@specialist/validation';
+} from '@ahlipanggilan/validation';
 import {
   success,
   created,

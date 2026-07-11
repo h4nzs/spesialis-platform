@@ -9,7 +9,7 @@ const { mockGet, mockPatch, mockDownloadCSV } = vi.hoisted(() => ({
   mockDownloadCSV: vi.fn(),
 }));
 
-vi.mock('@specialist/shared', () => ({
+vi.mock('@ahlipanggilan/shared', () => ({
   createBrowserClient: () => ({ get: mockGet, patch: mockPatch }),
   downloadCSV: mockDownloadCSV,
 }));

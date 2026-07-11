@@ -324,21 +324,21 @@ importers:
 
   apps/api:
     dependencies:
+      '@ahlipanggilan/database':
+        specifier: workspace:*
+        version: link:../../packages/database
+      '@ahlipanggilan/shared':
+        specifier: workspace:*
+        version: link:../../packages/shared
+      '@ahlipanggilan/types':
+        specifier: workspace:*
+        version: link:../../packages/types
+      '@ahlipanggilan/validation':
+        specifier: workspace:*
+        version: link:../../packages/validation
       '@hono/node-server':
         specifier: ^2.0.6
         version: 2.0.6(hono@4.12.27)
-      '@specialist/database':
-        specifier: workspace:*
-        version: link:../../packages/database
-      '@specialist/shared':
-        specifier: workspace:*
-        version: link:../../packages/shared
-      '@specialist/types':
-        specifier: workspace:*
-        version: link:../../packages/types
-      '@specialist/validation':
-        specifier: workspace:*
-        version: link:../../packages/validation
       dotenv:
         specifier: ^17.4.2
         version: 17.4.2
@@ -394,6 +394,18 @@ importers:
 
   apps/web:
     dependencies:
+      '@ahlipanggilan/shared':
+        specifier: workspace:*
+        version: link:../../packages/shared
+      '@ahlipanggilan/types':
+        specifier: workspace:*
+        version: link:../../packages/types
+      '@ahlipanggilan/ui':
+        specifier: workspace:*
+        version: link:../../packages/ui
+      '@ahlipanggilan/validation':
+        specifier: workspace:*
+        version: link:../../packages/validation
       '@astrojs/node':
         specifier: ^11.0.2
         version: 11.0.2(astro@7.0.3(@emnapi/core@1.11.1)(@emnapi/runtime@1.11.1)(@types/node@26.0.1)(ioredis@5.11.1)(jiti@2.7.0)(tsx@4.22.4)(yaml@2.9.0))
@@ -403,18 +415,6 @@ importers:
       '@fontsource-variable/inter':
         specifier: ^5.2.8
         version: 5.2.8
-      '@specialist/shared':
-        specifier: workspace:*
-        version: link:../../packages/shared
-      '@specialist/types':
-        specifier: workspace:*
-        version: link:../../packages/types
-      '@specialist/ui':
-        specifier: workspace:*
-        version: link:../../packages/ui
-      '@specialist/validation':
-        specifier: workspace:*
-        version: link:../../packages/validation
       astro:
         specifier: ^7.0.3
         version: 7.0.3(@emnapi/core@1.11.1)(@emnapi/runtime@1.11.1)(@types/node@26.0.1)(ioredis@5.11.1)(jiti@2.7.0)(tsx@4.22.4)(yaml@2.9.0)
@@ -484,7 +484,7 @@ importers:
 
   packages/database:
     dependencies:
-      '@specialist/types':
+      '@ahlipanggilan/types':
         specifier: workspace:*
         version: link:../types
       drizzle-orm:
@@ -512,7 +512,7 @@ importers:
 
   packages/shared:
     devDependencies:
-      '@specialist/types':
+      '@ahlipanggilan/types':
         specifier: workspace:*
         version: link:../types
       typescript:
@@ -530,6 +530,9 @@ importers:
 
   packages/ui:
     dependencies:
+      '@ahlipanggilan/shared':
+        specifier: workspace:*
+        version: link:../shared
       '@dnd-kit/core':
         specifier: ^6.3.1
         version: 6.3.1(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
@@ -539,9 +542,6 @@ importers:
       '@dnd-kit/utilities':
         specifier: ^3.2.2
         version: 3.2.2(react@19.1.0)
-      '@specialist/shared':
-        specifier: workspace:*
-        version: link:../shared
       '@tiptap/extension-image':
         specifier: ^3.27.3
         version: 3.27.3(@tiptap/core@3.27.3(@tiptap/pm@3.27.3))
@@ -622,7 +622,7 @@ importers:
         specifier: ^4.4.3
         version: 4.4.3
     devDependencies:
-      '@specialist/types':
+      '@ahlipanggilan/types':
         specifier: workspace:*
         version: link:../types
       typescript:

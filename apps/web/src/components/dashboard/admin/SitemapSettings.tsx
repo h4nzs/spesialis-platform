@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
-import { createBrowserClient } from '@specialist/shared';
-import { Input, Select, Button } from '@specialist/ui';
+import { createBrowserClient } from '@ahlipanggilan/shared';
+import { Input, Select, Button } from '@ahlipanggilan/ui';
 
 // ── Types ──────────────────────────────────────────────────────
 

@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
-import { createBrowserClient, formatCurrency } from '@specialist/shared';
-import { Card, EmptyState } from '@specialist/ui';
+import { createBrowserClient, formatCurrency } from '@ahlipanggilan/shared';
+import { Card, EmptyState } from '@ahlipanggilan/ui';
 
 interface RevenueMonth {
   month: string;

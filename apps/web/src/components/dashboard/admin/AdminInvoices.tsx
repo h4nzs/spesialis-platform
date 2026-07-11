@@ -5,7 +5,7 @@ import {
   formatDate,
   getInvoiceBadge,
   INVOICE_STATUS_CHANGE_OPTIONS,
-} from '@specialist/shared';
+} from '@ahlipanggilan/shared';
 import {
   Button,
   Input,
@@ -17,8 +17,8 @@ import {
   CSVExportButton,
   TableSkeleton,
   Textarea,
-} from '@specialist/ui';
-import type { Column } from '@specialist/ui';
+} from '@ahlipanggilan/ui';
+import type { Column } from '@ahlipanggilan/ui';
 
 // ── Types ──────────────────────────────────────────────────────
 
@@ -249,7 +249,7 @@ export function AdminInvoices() {
       setInitialLoading(false);
       setRefreshing(false);
     }
-  }, [companyFilter, statusFilter, page, api]);
+  }, [companyFilter, statusFilter, page, api, initialLoading]);
 
   useEffect(() => {
     loadData();

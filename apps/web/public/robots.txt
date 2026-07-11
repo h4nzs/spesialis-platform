@@ -7,4 +7,4 @@ Disallow: /forgot-password
 Disallow: /reset-password
 Disallow: /verify-email
 
-Sitemap: https://spesialis.id/sitemap.xml
+Sitemap: https://ahlipanggilan.id/sitemap.xml

@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { createBrowserClient } from '@specialist/shared';
-import { Button, Select, Table, EmptyState, TableSkeleton } from '@specialist/ui';
-import type { Column } from '@specialist/ui';
+import { createBrowserClient } from '@ahlipanggilan/shared';
+import { Button, Select, Table, EmptyState, TableSkeleton } from '@ahlipanggilan/ui';
+import type { Column } from '@ahlipanggilan/ui';
 
 // ── Types ──────────────────────────────────────────────────────
 

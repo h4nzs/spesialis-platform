@@ -9,7 +9,7 @@ import type {
   PartnerAvailability,
   PartnerVerificationStatus,
   CompanyStatus,
-} from '@specialist/types';
+} from '@ahlipanggilan/types';
 
 // ─── Order Status ────────────────────────────────────────────────
 export const ORDER_STATUSES: Record<OrderStatus, OrderStatus> = {

@@ -1,7 +1,7 @@
 import { sign, verify } from 'hono/jwt';
 import { argon2id } from 'hash-wasm';
 import { randomUUID, createHash } from 'node:crypto';
-import type { UserRole } from '@specialist/types';
+import type { UserRole } from '@ahlipanggilan/types';
 
 const JWT_SECRET: string =
   process.env.JWT_SECRET ??

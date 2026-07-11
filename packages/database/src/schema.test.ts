@@ -50,6 +50,10 @@ const TABLE_NAMES = [
   'invoices',
   'faq',
   'corporateInquiries',
+  'cmsPages',
+  'redirects',
+  'pageErrors',
+  'indexnowLogs',
 ] as const;
 
 const RELATION_NAMES = [
@@ -78,6 +82,8 @@ const RELATION_NAMES = [
   'contractsRelations',
   'invoicesRelations',
   'partnerPenaltiesRelations',
+  'cmsPagesRelations',
+  'indexnowLogsRelations',
 ] as const;
 
 // Tables that support soft-delete (have deletedAt timestamp column)
@@ -115,14 +121,14 @@ const TYPED_TABLES: Record<string, Record<string, string>> = {
 // ── Tests ────────────────────────────────────────────────────────────────────
 
 describe('schema exports', () => {
-  it('exports all 33 tables', () => {
+  it('exports all 37 tables', () => {
     for (const name of TABLE_NAMES) {
       expect(schema).toHaveProperty(name);
       expect(schema[name as keyof typeof schema]).toBeDefined();
     }
   });
 
-  it('exports only the expected 33 tables (no extra)', () => {
+  it('exports only the expected 37 tables (no extra)', () => {
     const allKeys = Object.keys(schema).filter((k) => !k.endsWith('Relations') && k !== 'default');
     expect(allKeys.length).toBe(TABLE_NAMES.length);
     for (const key of allKeys) {
@@ -130,7 +136,7 @@ describe('schema exports', () => {
     }
   });
 
-  it('exports all 25 relations', () => {
+  it('exports all 27 relations', () => {
     for (const name of RELATION_NAMES) {
       expect(schema).toHaveProperty(name);
       expect(schema[name as keyof typeof schema]).toBeDefined();
@@ -190,7 +196,7 @@ describe('typed columns ($type)', () => {
 });
 
 describe('relation exports', () => {
-  it('all 25 relation exports are defined', () => {
+  it('all 27 relation exports are defined', () => {
     for (const name of RELATION_NAMES) {
       expect(schema).toHaveProperty(name);
       expect(schema[name as keyof typeof schema]).toBeDefined();

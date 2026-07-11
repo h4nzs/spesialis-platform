@@ -191,7 +191,10 @@ test.describe('Article Creation & Rendering', () => {
     const h1 = page.locator('h1');
     const exists = (await h1.count()) > 0;
 
-    test.skip(!exists, 'Seed data not loaded — run `pnpm --filter @specialist/api db:seed` first');
+    test.skip(
+      !exists,
+      'Seed data not loaded — run `pnpm --filter @ahlipanggilan/api db:seed` first',
+    );
 
     await expect(h1).toContainText('Cara Merawat AC', { timeout: 10000 });
 
@@ -210,7 +213,10 @@ test.describe('Article Creation & Rendering', () => {
     const h1 = page.locator('h1');
     const exists = (await h1.count()) > 0;
 
-    test.skip(!exists, 'Seed data not loaded — run `pnpm --filter @specialist/api db:seed` first');
+    test.skip(
+      !exists,
+      'Seed data not loaded — run `pnpm --filter @ahlipanggilan/api db:seed` first',
+    );
 
     await expect(h1).toContainText('Tips Membersihkan Rumah', { timeout: 10000 });
 

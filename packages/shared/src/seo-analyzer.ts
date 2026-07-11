@@ -35,52 +35,6 @@ export interface SnippetPreviewData {
   descriptionTooLong: boolean;
 }
 
-// ── Constants ──────────────────────────────────────────────────
-
-const TRANSITION_WORDS = [
-  'selain itu',
-  'disamping',
-  'meskipun',
-  'namun',
-  'tetapi',
-  'akan tetapi',
-  'oleh karena itu',
-  'dengan demikian',
-  'sementara itu',
-  'sementara',
-  'pertama',
-  'kedua',
-  'ketiga',
-  'selanjutnya',
-  'kemudian',
-  'setelah itu',
-  'sebelumnya',
-  'akhirnya',
-  'sebagai contoh',
-  'misalnya',
-  'seperti',
-  'dalam hal ini',
-  'pada dasarnya',
-  'secara umum',
-  'sebaliknya',
-  'di satu sisi',
-  'di sisi lain',
-  'selain',
-  'kecuali',
-  'khususnya',
-  'terutama',
-  'setidaknya',
-  'paling tidak',
-  'singkatnya',
-  'kesimpulannya',
-  'oleh sebab itu',
-  'dengan kata lain',
-  'berdasarkan',
-  'mengingat',
-  'sehubungan',
-  'terkait',
-];
-
 // ── Helpers ────────────────────────────────────────────────────
 
 function stripHtml(html: string): string {
@@ -137,19 +91,6 @@ function countWords(text: string): number {
   return cleaned.split(/\s+/).length;
 }
 
-function countSentences(text: string): number {
-  const cleaned = stripHtml(text).trim();
-  if (!cleaned) return 0;
-  return cleaned.split(/[.!?]+/).filter(Boolean).length || 1;
-}
-
-function countPassiveVoice(sentence: string): number {
-  // Indonesian passive voice patterns: di-, ter-, ke-an, etc.
-  const passivePatterns = /\b(di|ter|ke)\w+/gi;
-  const matches = sentence.match(passivePatterns);
-  return matches?.length ?? 0;
-}
-
 // ── Main analysis functions ───────────────────────────────────
 
 export function analyzeContent(
@@ -160,7 +101,6 @@ export function analyzeContent(
   metaTitle: string,
 ): SeoAnalysisResult {
   const text = stripHtml(contentHtml);
-  const textLower = text.toLowerCase();
   const kwLower = keyword.toLowerCase();
   const checks: SeoCheck[] = [];
   const wordCount = countWords(text);
@@ -443,7 +383,7 @@ export function getSnippetPreview(
   return {
     title: metaTitle || '(Meta title akan tampil di sini)',
     description: metaDescription || '(Meta description akan tampil di sini)',
-    url: url || 'https://spesialis.id/...',
+    url: url || 'https://ahlipanggilan.id/...',
     titleTooLong: metaTitle.length > TITLE_MAX,
     descriptionTooLong: metaDescription.length > DESC_MAX,
   };

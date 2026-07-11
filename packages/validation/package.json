@@ -1,5 +1,5 @@
 {
-  "name": "@specialist/validation",
+  "name": "@ahlipanggilan/validation",
   "version": "1.0.0",
   "private": true,
   "type": "module",
@@ -15,7 +15,7 @@
     "zod": "^4.4.3"
   },
   "devDependencies": {
-    "@specialist/types": "workspace:*",
+    "@ahlipanggilan/types": "workspace:*",
     "typescript": "^6.0.3",
     "vitest": "^4.1.9"
   }

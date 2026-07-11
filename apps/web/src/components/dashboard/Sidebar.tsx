@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import type { UserRole } from '@specialist/types';
+import type { UserRole } from '@ahlipanggilan/types';
 import { forceLogout } from '../../lib/auth.ts';
 
 interface NavItem {
@@ -244,7 +244,7 @@ export function Sidebar({ role, currentPath }: { role: UserRole; currentPath?: s
             S
           </div>
           <div className="min-w-0">
-            <p className="truncate text-body-sm font-semibold text-text-primary">Spesialis</p>
+            <p className="truncate text-body-sm font-semibold text-text-primary">Ahli Panggilan</p>
             <p className="text-caption capitalize text-text-muted">{role}</p>
           </div>
         </div>

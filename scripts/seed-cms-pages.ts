@@ -168,7 +168,7 @@ const PAGES = [
 <div>
   <div>
     <h2>Email</h2>
-    <p><a href="mailto:hello@spesialis.id">hello@spesialis.id</a></p>
+    <p><a href="mailto:hello@ahlipanggilan.id">hello@ahlipanggilan.id</a></p>
   </div>
   <div>
     <h2>WhatsApp</h2>

@@ -770,7 +770,7 @@ Gunakan lang sesuai bahasa.
 
 # Accessible Components
 
-Semua komponen @specialist/ui wajib memiliki:
+Semua komponen @ahlipanggilan/ui wajib memiliki:
 
 Keyboard Support
 

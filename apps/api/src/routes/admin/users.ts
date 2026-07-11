@@ -1,11 +1,11 @@
 import { Hono } from 'hono';
 import { eq, and, or, like, sql, desc, isNull } from 'drizzle-orm';
-import type { UserRole, UserStatus } from '@specialist/types';
+import type { UserRole, UserStatus } from '@ahlipanggilan/types';
 import { db, users } from '../../lib/db.ts';
 import { authMiddleware, requireRole } from '../../middleware/auth.ts';
 import { validateBody } from '../../middleware/validation.ts';
-import { updateUserStatusSchema, updateUserRoleSchema } from '@specialist/validation';
-import { success, successPaginated, notFound, error, forbidden } from '../../lib/response.ts';
+import { updateUserStatusSchema, updateUserRoleSchema } from '@ahlipanggilan/validation';
+import { success, successPaginated, notFound, forbidden } from '../../lib/response.ts';
 import { buildPaginationMeta } from '../../lib/pagination.ts';
 import { createAuditLog } from '../../lib/audit.ts';
 

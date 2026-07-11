@@ -1,5 +1,5 @@
 {
-  "name": "spesialis-platform",
+  "name": "ahlipanggilan-platform",
   "private": true,
   "version": "0.1.0",
   "description": "",
@@ -15,7 +15,7 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "prepare": "husky",
-    "cli": "node packages/cli/bin/spesialis.mjs",
+    "cli": "node packages/cli/bin/ahlipanggilan.mjs",
     "start": "bash scripts/start.sh dev",
     "start:prod": "bash scripts/start.sh prod",
     "start:seed": "bash scripts/start.sh dev --seed",

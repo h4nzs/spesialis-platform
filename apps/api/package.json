@@ -1,5 +1,5 @@
 {
-  "name": "@specialist/api",
+  "name": "@ahlipanggilan/api",
   "private": true,
   "version": "1.0.0",
   "type": "module",
@@ -14,10 +14,10 @@
   },
   "dependencies": {
     "@hono/node-server": "^2.0.6",
-    "@specialist/database": "workspace:*",
-    "@specialist/shared": "workspace:*",
-    "@specialist/types": "workspace:*",
-    "@specialist/validation": "workspace:*",
+    "@ahlipanggilan/database": "workspace:*",
+    "@ahlipanggilan/shared": "workspace:*",
+    "@ahlipanggilan/types": "workspace:*",
+    "@ahlipanggilan/validation": "workspace:*",
     "dotenv": "^17.4.2",
     "drizzle-orm": "^0.43.1",
     "hash-wasm": "^4.12.0",

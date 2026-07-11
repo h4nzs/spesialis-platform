@@ -1,5 +1,5 @@
 import { pgTable, uuid, varchar, timestamp, integer } from 'drizzle-orm/pg-core';
-import { type CompanyStatus } from '@specialist/types';
+import { type CompanyStatus } from '@ahlipanggilan/types';
 
 export const companies = pgTable('companies', {
   id: uuid('id').defaultRandom().primaryKey(),

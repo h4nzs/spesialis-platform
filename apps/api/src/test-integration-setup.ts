@@ -9,7 +9,7 @@ let container: StartedPostgreSqlContainer | null = null;
 
 beforeAll(async () => {
   container = await new PostgreSqlContainer('postgres:18')
-    .withDatabase('specialist_test')
+    .withDatabase('ahlipanggilan_test')
     .withUsername('specialist')
     .withPassword('specialist')
     .start();

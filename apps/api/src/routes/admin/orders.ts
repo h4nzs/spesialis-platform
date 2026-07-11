@@ -7,8 +7,8 @@ import {
   discountOrderSchema,
   updateInternalNotesSchema,
   updateOrderTagsSchema,
-} from '@specialist/validation';
-import type { UpdateOrderTagsInput } from '@specialist/validation';
+} from '@ahlipanggilan/validation';
+import type { UpdateOrderTagsInput } from '@ahlipanggilan/validation';
 import { success, notFound } from '../../lib/response.ts';
 import { omitUndefined } from '../../lib/update.ts';
 import { createAuditLog } from '../../lib/audit.ts';

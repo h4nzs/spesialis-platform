@@ -1,4 +1,4 @@
-import type { UserRole } from '@specialist/types';
+import type { UserRole } from '@ahlipanggilan/types';
 import { isAdminRole, isStaffRole, ADMIN_ROLES, ROLES } from '../constants.ts';
 
 /**

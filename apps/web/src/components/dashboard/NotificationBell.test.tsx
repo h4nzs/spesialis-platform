@@ -6,7 +6,7 @@ import { NotificationBell } from './NotificationBell';
 const mockGet = vi.fn();
 const mockPatch = vi.fn();
 
-vi.mock('@specialist/shared', () => ({
+vi.mock('@ahlipanggilan/shared', () => ({
   createBrowserClient: () => ({ get: mockGet, patch: mockPatch }),
   formatDate: (d: string) => d,
 }));

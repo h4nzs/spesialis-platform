@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { Hono } from 'hono';
 import type { Context } from 'hono';
-import type { UserRole } from '@specialist/types';
+import type { UserRole } from '@ahlipanggilan/types';
 import { adminSettingsRouter } from './settings.ts';
 import { errorHandler } from '../../middleware/error-handler.ts';
 import { setTestEnv, makeChain, insertChain, updateChain } from '../../test-utils.ts';
@@ -83,7 +83,7 @@ describe('GET /api/v1/admin/settings', () => {
   it('200 grouped', async () => {
     mockDb.select.mockReturnValue(
       makeChain([
-        { key: 'site_name', value: 'Spesialis', category: 'general', description: null },
+        { key: 'site_name', value: 'Ahli Panggilan', category: 'general', description: null },
         { key: 'max_upload', value: '10', category: 'media', description: 'MB' },
       ]),
     );
@@ -124,7 +124,7 @@ describe('PATCH /api/v1/admin/settings', () => {
       headers: a(),
       body: JSON.stringify({
         settings: [
-          { key: 'site_name', value: 'Spesialis Baru' },
+          { key: 'site_name', value: 'Ahli Panggilan Baru' },
           { key: 'new_key', value: 'new_val', category: 'custom', description: 'test' },
         ],
       }),

@@ -69,7 +69,7 @@ export const Empty: Story = {
 
 export const SingleRow: Story = {
   args: {
-    data: [sampleUsers[0]],
+    data: sampleUsers.slice(0, 1),
     columns,
     keyExtractor: (item: SampleUser) => item.id,
   },

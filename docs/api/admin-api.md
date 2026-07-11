@@ -149,7 +149,7 @@ Body:
 
 `DELETE /cms-pages/:id` — Soft delete CMS page.
 
-Default seed: 4 system pages (tentang-kami, syarat-ketentuan, kebijakan-privasi, kontak) via `pnpm --filter @specialist/database db:seed-pages`.
+Default seed: 4 system pages (tentang-kami, syarat-ketentuan, kebijakan-privasi, kontak) via `pnpm --filter @ahlipanggilan/database db:seed-pages`.
 
 ---
 
@@ -226,13 +226,13 @@ Body (upsert schema):
 {
   "entityType": "Service | Article | ServiceCategory | CmsPage",
   "entityId": "uuid",
-  "metaTitle": "Judul Halaman - Spesialis",
+  "metaTitle": "Judul Halaman - Ahli Panggilan",
   "metaDescription": "Deskripsi meta halaman...",
-  "canonicalUrl": "https://spesialis.id/services/ac-cleaning",
+  "canonicalUrl": "https://ahlipanggilan.id/services/ac-cleaning",
   "robots": "index, follow",
   "ogTitle": "OpenGraph Title",
   "ogDescription": "OpenGraph Description",
-  "ogImage": "https://spesialis.id/images/og.jpg",
+  "ogImage": "https://ahlipanggilan.id/images/og.jpg",
   "schemaJson": { "@type": "Service", ... }
 }
 ```
@@ -311,7 +311,7 @@ Response:
   "success": true,
   "data": {
     "key": "uuid-key",
-    "keyLocation": "https://spesialis.id/uuid-key.txt",
+    "keyLocation": "https://ahlipanggilan.id/uuid-key.txt",
     "enabled": true
   }
 }

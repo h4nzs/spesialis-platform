@@ -35,7 +35,7 @@ function getClient(): Database {
  *
  * Usage is identical to a plain `drizzle()` client:
  * ```ts
- * import { db } from '@specialist/database';
+ * import { db } from '@ahlipanggilan/database';
  * const users = await db.select().from(users);
  * ```
  */

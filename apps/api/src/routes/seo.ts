@@ -1,11 +1,11 @@
 import { Hono } from 'hono';
 import { eq, and } from 'drizzle-orm';
 import { db, seoMetadata } from '../lib/db.ts';
-import { authMiddleware, requireRole } from '../middleware/auth.ts';
+import { authMiddleware } from '../middleware/auth.ts';
 import { requirePermission } from '../middleware/seo-permissions.ts';
 import { validateBody } from '../middleware/validation.ts';
-import { upsertSeoSchema } from '@specialist/validation';
-import type { UpsertSeoInput } from '@specialist/validation';
+import { upsertSeoSchema } from '@ahlipanggilan/validation';
+import type { UpsertSeoInput } from '@ahlipanggilan/validation';
 import { success, created, notFound } from '../lib/response.ts';
 
 const router = new Hono();

@@ -1,10 +1,10 @@
 {
-  "name": "@specialist/cli",
+  "name": "@ahlipanggilan/cli",
   "private": true,
   "version": "1.0.0",
   "type": "module",
   "bin": {
-    "spesialis": "./bin/spesialis.mjs"
+    "ahlipanggilan": "./bin/ahlipanggilan.mjs"
   },
   "devDependencies": {}
 }

@@ -1,8 +1,8 @@
 import type { Context, Next } from 'hono';
-import type { UserRole } from '@specialist/types';
+import type { UserRole } from '@ahlipanggilan/types';
 import { eq } from 'drizzle-orm';
 import { db, systemSettings } from '../lib/db.ts';
-import type { PermissionMap } from '@specialist/shared';
+import type { PermissionMap } from '@ahlipanggilan/shared';
 import { forbidden } from '../lib/response.ts';
 
 const DEFAULT_SEO_PERMISSIONS: PermissionMap = {

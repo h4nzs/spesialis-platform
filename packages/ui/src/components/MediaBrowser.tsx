@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
-import { createBrowserClient } from '@specialist/shared';
+import { createBrowserClient } from '@ahlipanggilan/shared';
 import { Modal } from './Modal.tsx';
 import { Select } from './Select.tsx';
 import { Pagination } from './Pagination.tsx';

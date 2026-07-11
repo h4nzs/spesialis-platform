@@ -25,7 +25,7 @@ try {
 ---
 
 <BaseLayout
-  title="Layanan - Spesialis"
+  title="Layanan - Ahli Panggilan"
   description="Pilih layanan jasa profesional yang Anda butuhkan — AC, plumbing, listrik, cleaning, CCTV, dan lainnya. Harga transparan, teknisi berpengalaman."
   canonicalUrl="/services"
   jsonLd={{
@@ -34,7 +34,7 @@ try {
       {
         '@type': 'BreadcrumbList',
         itemListElement: [
-          { '@type': 'ListItem', position: 1, name: 'Beranda', item: 'https://spesialis.id' },
+          { '@type': 'ListItem', position: 1, name: 'Beranda', item: 'https://ahlipanggilan.id' },
           { '@type': 'ListItem', position: 2, name: 'Layanan' },
         ],
       },
@@ -43,7 +43,7 @@ try {
         itemListElement: services.map((s, i) => ({
           '@type': 'ListItem',
           position: i + 1,
-          url: `https://spesialis.id/services/${s.slug}`,
+          url: `https://ahlipanggilan.id/services/${s.slug}`,
           name: s.name,
         })),
       },

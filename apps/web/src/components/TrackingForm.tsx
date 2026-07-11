@@ -1,12 +1,12 @@
 import { useState } from 'react';
-import { Button, Badge } from '@specialist/ui';
+import { Button, Badge } from '@ahlipanggilan/ui';
 import {
   createBrowserClient,
   formatCurrency,
   getStatusLabel,
   getStatusColor,
-} from '@specialist/shared';
-import type { OrderStatus } from '@specialist/types';
+} from '@ahlipanggilan/shared';
+import type { OrderStatus } from '@ahlipanggilan/types';
 
 interface TimelineEntry {
   fromStatus: OrderStatus | null;

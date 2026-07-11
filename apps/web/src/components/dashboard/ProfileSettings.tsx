@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
-import { createBrowserClient } from '@specialist/shared';
-import { updateProfileSchema, changePasswordSchema } from '@specialist/validation';
-import { Input, Button } from '@specialist/ui';
+import { createBrowserClient } from '@ahlipanggilan/shared';
+import { updateProfileSchema, changePasswordSchema } from '@ahlipanggilan/validation';
+import { Input, Button } from '@ahlipanggilan/ui';
 
 interface UserProfile {
   id: string;

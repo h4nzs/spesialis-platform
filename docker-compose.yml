@@ -1,28 +1,28 @@
 services:
   postgres:
     image: postgres:18
-    container_name: specialist-postgres
+    container_name: ahlipanggilan-postgres
     restart: unless-stopped
 
     environment:
-      POSTGRES_DB: specialist
-      POSTGRES_USER: specialist
-      POSTGRES_PASSWORD: specialist
+      POSTGRES_DB: ahlipanggilan
+      POSTGRES_USER: ahlipanggilan
+      POSTGRES_PASSWORD: ahlipanggilan
     ports:
       - '5432:5432'
     volumes:
       - postgres_data:/var/lib/postgresql
     networks:
-      - specialist
+      - ahlipanggilan
     healthcheck:
-      test: ['CMD-SHELL', 'pg_isready -U specialist']
+      test: ['CMD-SHELL', 'pg_isready -U ahlipanggilan']
       interval: 10s
       timeout: 5s
       retries: 5
 
   redis:
     image: redis:8-alpine
-    container_name: specialist-redis
+    container_name: ahlipanggilan-redis
     restart: unless-stopped
     profiles:
       - cache
@@ -32,7 +32,7 @@ services:
     volumes:
       - redis_data:/data
     networks:
-      - specialist
+      - ahlipanggilan
     healthcheck:
       test: ['CMD', 'redis-cli', 'ping']
       interval: 10s
@@ -40,7 +40,7 @@ services:
       retries: 5
 
   api:
-    container_name: specialist-api
+    container_name: ahlipanggilan-api
     restart: unless-stopped
     build:
       context: .
@@ -55,15 +55,15 @@ services:
       - .env
     environment:
       APP_ENV: development
-      DATABASE_URL: postgres://specialist:specialist@postgres:5432/specialist
+      DATABASE_URL: postgres://ahlipanggilan:ahlipanggilan@postgres:5432/ahlipanggilan
     depends_on:
       postgres:
         condition: service_healthy
     networks:
-      - specialist
+      - ahlipanggilan
 
   web:
-    container_name: specialist-web
+    container_name: ahlipanggilan-web
     restart: unless-stopped
     build:
       context: .
@@ -82,11 +82,11 @@ services:
       api:
         condition: service_started
     networks:
-      - specialist
+      - ahlipanggilan
 
   nginx:
     image: nginx:alpine
-    container_name: specialist-nginx
+    container_name: ahlipanggilan-nginx
     restart: unless-stopped
     ports:
       - '80:80'
@@ -96,11 +96,11 @@ services:
       - web
       - api
     networks:
-      - specialist
+      - ahlipanggilan
 
   mailpit:
     image: axllent/mailpit:latest
-    container_name: specialist-mailpit
+    container_name: ahlipanggilan-mailpit
     restart: unless-stopped
     profiles:
       - mail
@@ -109,23 +109,23 @@ services:
       - '1025:1025'
       - '8025:8025'
     networks:
-      - specialist
+      - ahlipanggilan
 
   test-db:
     image: postgres:18
-    container_name: specialist-test-db
+    container_name: ahlipanggilan-test-db
     profiles:
       - test
     environment:
-      POSTGRES_DB: specialist_test
-      POSTGRES_USER: specialist
-      POSTGRES_PASSWORD: specialist
+      POSTGRES_DB: ahlipanggilan_test
+      POSTGRES_USER: ahlipanggilan
+      POSTGRES_PASSWORD: ahlipanggilan
     ports:
       - '5433:5432'
     networks:
-      - specialist
+      - ahlipanggilan
     healthcheck:
-      test: ['CMD-SHELL', 'pg_isready -U specialist -d specialist_test']
+      test: ['CMD-SHELL', 'pg_isready -U ahlipanggilan -d ahlipanggilan_test']
       interval: 10s
       timeout: 5s
       retries: 5
@@ -136,5 +136,5 @@ volumes:
   uploads_data:
 
 networks:
-  specialist:
+  ahlipanggilan:
     driver: bridge

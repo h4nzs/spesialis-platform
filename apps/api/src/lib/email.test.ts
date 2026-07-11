@@ -10,7 +10,7 @@ vi.mock('nodemailer', () => ({
 
 vi.mock('../lib/resend.ts', () => ({
   getResend: vi.fn(),
-  FROM_ADDRESS: 'Spesialis <noreply@spesialis.id>',
+  FROM_ADDRESS: 'Ahli Panggilan <noreply@ahlipanggilan.id>',
   USE_RESEND: false,
 }));
 
@@ -30,7 +30,7 @@ describe('sendPasswordResetEmail', () => {
     expect(mockSendMail).toHaveBeenCalledWith(
       expect.objectContaining({
         to: 'user@test.com',
-        subject: 'Reset Password — Spesialis',
+        subject: 'Reset Password — Ahli Panggilan',
         text: expect.stringContaining('reset-token-123'),
       }),
     );
@@ -45,7 +45,7 @@ describe('sendPasswordResetEmail', () => {
 
     expect(mockSendMail).toHaveBeenCalledWith(
       expect.objectContaining({
-        subject: 'Reset Password — Spesialis',
+        subject: 'Reset Password — Ahli Panggilan',
       }),
     );
   });
@@ -99,7 +99,7 @@ describe('sendPartnerVerifiedEmail', () => {
     expect(mockSendMail).toHaveBeenCalledWith(
       expect.objectContaining({
         to: 'partner@test.com',
-        subject: 'Verifikasi Partner Disetujui — Spesialis',
+        subject: 'Verifikasi Partner Disetujui — Ahli Panggilan',
       }),
     );
   });
@@ -116,7 +116,7 @@ describe('sendPartnerVerifiedEmail', () => {
     expect(mockSendMail).toHaveBeenCalledWith(
       expect.objectContaining({
         to: 'partner@test.com',
-        subject: 'Verifikasi Partner Ditolak — Spesialis',
+        subject: 'Verifikasi Partner Ditolak — Ahli Panggilan',
         text: expect.stringContaining('Dokumen tidak lengkap'),
       }),
     );
@@ -132,7 +132,7 @@ describe('sendVerificationEmail', () => {
     expect(mockSendMail).toHaveBeenCalledWith(
       expect.objectContaining({
         to: 'user@test.com',
-        subject: 'Verifikasi Email — Spesialis',
+        subject: 'Verifikasi Email — Ahli Panggilan',
         text: expect.stringContaining('http://localhost:4321/verify-email?token=verify-token-456'),
       }),
     );
@@ -155,7 +155,7 @@ describe('sendPaymentVerifiedEmail', () => {
     expect(mockSendMail).toHaveBeenCalledWith(
       expect.objectContaining({
         to: 'user@test.com',
-        subject: 'Pembayaran Dikonfirmasi — Spesialis',
+        subject: 'Pembayaran Dikonfirmasi — Ahli Panggilan',
         text: expect.stringContaining('SP-2026-0003'),
       }),
     );
@@ -176,7 +176,7 @@ describe('sendPaymentVerifiedEmail', () => {
     expect(mockSendMail).toHaveBeenCalledWith(
       expect.objectContaining({
         to: 'user@test.com',
-        subject: 'Pembayaran Ditolak — Spesialis',
+        subject: 'Pembayaran Ditolak — Ahli Panggilan',
         text: expect.stringContaining('Saldo tidak mencukupi'),
       }),
     );
@@ -196,7 +196,7 @@ describe('sendNotificationEmail', () => {
     expect(mockSendMail).toHaveBeenCalledWith(
       expect.objectContaining({
         to: 'user@test.com',
-        subject: 'Pengingat Booking — Spesialis',
+        subject: 'Pengingat Booking — Ahli Panggilan',
         text: expect.stringContaining('Booking Anda akan segera dimulai.'),
       }),
     );

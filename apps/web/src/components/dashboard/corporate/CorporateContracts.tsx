@@ -5,9 +5,9 @@ import {
   formatDateRange,
   getContractStatusBadge,
   isExpiringSoon,
-} from '@specialist/shared';
-import { Badge, Table, EmptyState, CSVExportButton, TableSkeleton } from '@specialist/ui';
-import type { Column } from '@specialist/ui';
+} from '@ahlipanggilan/shared';
+import { Badge, Table, EmptyState, CSVExportButton, TableSkeleton } from '@ahlipanggilan/ui';
+import type { Column } from '@ahlipanggilan/ui';
 
 // ── Types ──────────────────────────────────────────────────────
 

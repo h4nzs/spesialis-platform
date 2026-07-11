@@ -4,12 +4,12 @@ import { CustomerComplaints } from './CustomerComplaints';
 
 const mockGet = vi.fn();
 
-vi.mock('@specialist/shared', () => ({
+vi.mock('@ahlipanggilan/shared', () => ({
   createBrowserClient: () => ({ get: mockGet }),
   formatDate: (d: string) => d,
 }));
 
-vi.mock('@specialist/ui', () => ({
+vi.mock('@ahlipanggilan/ui', () => ({
   Card: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
   Badge: ({ children, variant: _variant }: { children: React.ReactNode; variant?: string }) => (
     <span>{children}</span>

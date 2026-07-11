@@ -24,7 +24,7 @@ Response:
       "id": "uuid",
       "entityType": "Service",
       "entityId": "uuid",
-      "metaTitle": "Cuci AC Standar - Spesialis",
+      "metaTitle": "Cuci AC Standar - Ahli Panggilan",
       "metaDescription": "Pembersihan AC standar untuk rumah.",
       "canonicalUrl": null,
       "robots": null,
@@ -56,16 +56,16 @@ Body:
 {
   "entityType": "Service",
   "entityId": "uuid",
-  "metaTitle": "Judul Halaman - Spesialis",
+  "metaTitle": "Judul Halaman - Ahli Panggilan",
   "metaDescription": "Deskripsi meta halaman...",
-  "canonicalUrl": "https://spesialis.id/services/ac-cleaning",
+  "canonicalUrl": "https://ahlipanggilan.id/services/ac-cleaning",
   "robots": "index, follow",
   "ogTitle": "OpenGraph Title",
   "ogDescription": "OpenGraph Description",
-  "ogImage": "https://spesialis.id/images/og.jpg",
+  "ogImage": "https://ahlipanggilan.id/images/og.jpg",
   "twitterTitle": "Twitter Title",
   "twitterDescription": "Twitter Description",
-  "twitterImage": "https://spesialis.id/images/twitter.jpg",
+  "twitterImage": "https://ahlipanggilan.id/images/twitter.jpg",
   "schemaJson": { "@type": "Service", "name": "..." }
 }
 ```

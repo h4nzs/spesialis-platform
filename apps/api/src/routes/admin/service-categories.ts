@@ -3,12 +3,15 @@ import { eq, asc } from 'drizzle-orm';
 import { db, serviceCategories } from '../../lib/db.ts';
 import { authMiddleware, requireRole } from '../../middleware/auth.ts';
 import { validateBody } from '../../middleware/validation.ts';
-import { createServiceCategorySchema, updateServiceCategorySchema } from '@specialist/validation';
+import {
+  createServiceCategorySchema,
+  updateServiceCategorySchema,
+} from '@ahlipanggilan/validation';
 import type {
   CreateServiceCategoryInput,
   UpdateServiceCategoryInput,
-} from '@specialist/validation';
-import { slugSchema } from '@specialist/validation';
+} from '@ahlipanggilan/validation';
+import { slugSchema } from '@ahlipanggilan/validation';
 import { success, created, error, notFound } from '../../lib/response.ts';
 import { omitUndefined } from '../../lib/update.ts';
 

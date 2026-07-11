@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { forgotPasswordSchema } from '@specialist/validation';
-import { Button } from '@specialist/ui';
+import { forgotPasswordSchema } from '@ahlipanggilan/validation';
+import { Button } from '@ahlipanggilan/ui';
 import { getApiClient } from '../lib/auth.ts';
 
 interface FieldError {

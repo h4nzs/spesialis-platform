@@ -22,8 +22,8 @@ const CF_ZONE_ID = typeof process !== 'undefined' ? (process.env.CLOUDFLARE_ZONE
 
 const SITE_URL =
   typeof process !== 'undefined'
-    ? (process.env.SITE_URL ?? 'https://spesialis.id')
-    : 'https://spesialis.id';
+    ? (process.env.SITE_URL ?? 'https://ahlipanggilan.id')
+    : 'https://ahlipanggilan.id';
 
 // ── Collection-to-URL mapping ────────────────────────────────────────────
 // Maps CMS content types to the URL paths they affect.

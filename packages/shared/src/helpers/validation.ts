@@ -1,4 +1,4 @@
-import type { ValidationError } from '@specialist/types';
+import type { ValidationError } from '@ahlipanggilan/types';
 
 /**
  * Map issue dari Zod hasil parse ke format ValidationError yang konsisten.

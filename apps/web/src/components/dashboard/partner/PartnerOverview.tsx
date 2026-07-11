@@ -4,9 +4,9 @@ import {
   formatDate,
   getStatusLabel,
   formatCurrency,
-} from '@specialist/shared';
-import { Card, Grid, Skeleton, Badge, Button, EmptyState } from '@specialist/ui';
-import type { OrderStatus } from '@specialist/types';
+} from '@ahlipanggilan/shared';
+import { Card, Grid, Skeleton, Badge, Button, EmptyState } from '@ahlipanggilan/ui';
+import type { OrderStatus } from '@ahlipanggilan/types';
 
 // ── Types ──────────────────────────────────────────────────────
 
@@ -230,7 +230,7 @@ export function PartnerOverview() {
             <h2 className="text-h4 text-text-primary">
               {greeting}, {userName}
             </h2>
-            <p className="mt-1 text-body text-text-secondary">Dashboard Mitra Spesialis</p>
+            <p className="mt-1 text-body text-text-secondary">Dashboard Mitra Ahli Panggilan</p>
           </div>
 
           {/* Availability toggle */}

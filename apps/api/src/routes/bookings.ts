@@ -1,7 +1,7 @@
 import { Hono } from 'hono';
 import type { Context } from 'hono';
 import { eq, and, desc, sql } from 'drizzle-orm';
-import type { OrderStatus } from '@specialist/types';
+import type { OrderStatus } from '@ahlipanggilan/types';
 import {
   db,
   orders,
@@ -25,8 +25,8 @@ import {
   assignPartnerSchema,
   rejectAssignmentSchema,
   cancelBookingSchema,
-} from '@specialist/validation';
-import { canTransition } from '@specialist/shared';
+} from '@ahlipanggilan/validation';
+import { canTransition } from '@ahlipanggilan/shared';
 import {
   success,
   successPaginated,

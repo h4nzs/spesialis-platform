@@ -8,7 +8,7 @@ const { mockGet, mockDownloadCSV } = vi.hoisted(() => ({
   mockDownloadCSV: vi.fn(),
 }));
 
-vi.mock('@specialist/shared', () => ({
+vi.mock('@ahlipanggilan/shared', () => ({
   createBrowserClient: () => ({ get: mockGet }),
   formatCurrency: (n: number | string) => {
     const num = typeof n === 'string' ? Number(n) : n;
@@ -18,7 +18,7 @@ vi.mock('@specialist/shared', () => ({
   downloadCSV: mockDownloadCSV,
 }));
 
-vi.mock('@specialist/ui', () => ({
+vi.mock('@ahlipanggilan/ui', () => ({
   Card: ({ children, padding: _padding }: { children: React.ReactNode; padding?: string }) => (
     <div>{children}</div>
   ),

@@ -1,6 +1,6 @@
 import type { Context } from 'hono';
 import type { ContentfulStatusCode } from 'hono/utils/http-status';
-import type { PaginationMeta, ValidationError } from '@specialist/types';
+import type { PaginationMeta, ValidationError } from '@ahlipanggilan/types';
 import { setCookie, deleteCookie } from 'hono/cookie';
 
 const COOKIE_OPTIONS = {

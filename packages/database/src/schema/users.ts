@@ -1,5 +1,5 @@
 import { pgTable, uuid, varchar, timestamp, text } from 'drizzle-orm/pg-core';
-import { type UserRole, type UserStatus } from '@specialist/types';
+import { type UserRole, type UserStatus } from '@ahlipanggilan/types';
 
 export const users = pgTable('users', {
   id: uuid('id').defaultRandom().primaryKey(),

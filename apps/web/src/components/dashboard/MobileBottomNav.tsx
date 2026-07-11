@@ -1,4 +1,4 @@
-import type { UserRole } from '@specialist/types';
+import type { UserRole } from '@ahlipanggilan/types';
 
 interface NavItem {
   href: string;

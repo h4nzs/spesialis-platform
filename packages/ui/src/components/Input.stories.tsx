@@ -46,5 +46,5 @@ export const Email: Story = {
 };
 
 export const WithoutLabel: Story = {
-  args: { label: undefined, placeholder: 'Cari...' },
+  args: { placeholder: 'Cari...' },
 };

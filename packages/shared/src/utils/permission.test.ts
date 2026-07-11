@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import type { UserRole } from '@specialist/types';
+import type { UserRole } from '@ahlipanggilan/types';
 import type { PermissionMap } from './permission.ts';
 import {
   hasPermission,

@@ -142,7 +142,7 @@ Platform mendukung IndexNow protocol untuk notifikasi konten baru ke search engi
 Fitur:
 
 - Auto-generate API key (UUID v4)
-- Key location: `https://spesialis.id/{key}.txt`
+- Key location: `https://ahlipanggilan.id/{key}.txt`
 - Auto-ping saat artikel dipublish
 - Dashboard log: success/error rate, timestamps, URLs
 - Toggle enable/disable
@@ -189,7 +189,7 @@ Automatic 404 tracking:
 
 # SEO Analyzer (Shared Utility)
 
-Package: `@specialist/shared` — file: `src/seo-analyzer.ts`
+Package: `@ahlipanggilan/shared` — file: `src/seo-analyzer.ts`
 
 | Function          | Description                                       |
 | ----------------- | ------------------------------------------------- |
