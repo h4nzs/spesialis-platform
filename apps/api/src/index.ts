@@ -62,15 +62,16 @@ app.use(
   '*',
   secureHeaders({
     contentSecurityPolicy: {
+      // The API serves JSON responses only (no HTML with inline scripts/styles).
+      // A strict CSP here is defense-in-depth: even if a route were misconfigured
+      // to return text/html, the browser would refuse to execute any inline
+      // content. No 'unsafe-inline' or 'unsafe-eval' needed.
       defaultSrc: ["'self'"],
-      // 'unsafe-inline' required for Tailwind's style injection.
-      // 'unsafe-eval' required for Vite/Astro dev tooling & source maps.
-      // TODO: Remove 'unsafe-eval' in production build with proper CSP hashes/nonces.
-      scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'"],
-      styleSrc: ["'self'", "'unsafe-inline'"],
+      scriptSrc: ["'self'"],
+      styleSrc: ["'self'"],
       imgSrc: ["'self'", 'data:', 'https:'],
       fontSrc: ["'self'", 'https:', 'data:'],
-      connectSrc: ["'self'", process.env.CORS_ORIGIN ?? ''],
+      connectSrc: ["'self'", ...CORS_ORIGIN],
       frameSrc: ["'none'"],
       objectSrc: ["'none'"],
       baseUri: ["'self'"],
@@ -83,7 +84,11 @@ app.use(
 app.use(
   '*',
   cors({
-    origin: CORS_ORIGIN,
+    origin: (origin) => {
+      if (!origin) return origin;
+      if (CORS_ORIGIN.includes(origin)) return origin;
+      return null;
+    },
     credentials: true,
   }),
 );

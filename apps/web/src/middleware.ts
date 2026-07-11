@@ -44,7 +44,7 @@ export const onRequest = defineMiddleware(async ({ locals, request }, next) => {
     return next();
   }
 
-  const payload = verifyAccessToken(token, jwtSecret);
+  const payload = await verifyAccessToken(token, jwtSecret);
 
   if (!payload) {
     locals.auth = null;

@@ -1,4 +1,4 @@
-FROM node:24-alpine
+FROM node:24-slim
 
 WORKDIR /app
 
@@ -7,9 +7,15 @@ COPY package.json pnpm-workspace.yaml pnpm-lock.yaml ./
 COPY packages/ ./packages/
 COPY apps/web/ ./apps/web/
 
+ENV CI=true
+
+# Install ALL dependencies (including devDependencies needed for build)
 RUN corepack enable && \
-    pnpm install --frozen-lockfile --no-optional && \
-    pnpm --filter web build
+    pnpm install --frozen-lockfile
+
+# Production build — ensures React uses jsx-runtime not jsx-dev-runtime
+ENV NODE_ENV=production
+RUN pnpm --filter web build
 
 EXPOSE 4321
 

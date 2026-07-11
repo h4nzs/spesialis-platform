@@ -15,6 +15,7 @@ import {
 } from '../../lib/response.ts';
 import { buildPaginationMeta } from '../../lib/pagination.ts';
 import { omitUndefined } from '../../lib/update.ts';
+import { invalidateCollectionCache } from '../../lib/cache.ts';
 
 const router = new Hono();
 
@@ -99,6 +100,10 @@ router.post(
       .returning();
 
     if (!record) return serverError(c, 'Gagal membuat halaman');
+
+    // Invalidate CMS cache so public endpoints reflect the new page
+    invalidateCollectionCache('cms_pages');
+
     return created(c, record, 'Halaman berhasil dibuat');
   },
 );
@@ -134,6 +139,9 @@ router.patch(
       .where(eq(cmsPages.id, id))
       .returning();
 
+    // Invalidate CMS cache — content or status may have changed
+    invalidateCollectionCache('cms_pages');
+
     return success(c, record, 'Halaman berhasil diperbarui');
   },
 );
@@ -149,6 +157,10 @@ router.delete('/:id', authMiddleware, requireRole('admin', 'super_admin'), async
   if (!page) return notFound(c, 'Halaman tidak ditemukan');
 
   await db.update(cmsPages).set({ deletedAt: new Date() }).where(eq(cmsPages.id, id));
+
+  // Invalidate CMS cache after deletion
+  invalidateCollectionCache('cms_pages');
+
   return success(c, null, 'Halaman berhasil dihapus');
 });
 

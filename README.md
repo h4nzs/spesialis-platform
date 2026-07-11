@@ -241,6 +241,53 @@ pnpm cli help                     # Show all commands
 
 ---
 
+## How to Deploy
+
+First time on your VPS:
+
+```bash
+# 1. Clone and configure
+git clone <repo> && cd spesialis
+cp .env.prod.example .env.prod && nano .env.prod   # fill in secrets
+
+# 2. Get SSL certificates
+docker compose -f docker-compose.prod.yml up -d nginx   # starts HTTP-only for ACME
+sudo certbot certonly --webroot -w /var/www/letsencrypt -d spesialis.id
+
+# 3. Start the full stack
+docker compose -f docker-compose.prod.yml --env-file .env.prod up -d
+
+# 4. Once HTTPS works, uncomment the HSTS line in prod.conf
+# Then: docker compose restart nginx
+```
+
+---
+
+## Prerequisites
+
+Before it'll run, you need to configure these in GitHub:
+Secrets (Settings → Secrets and variables → Actions → Secrets):
+┌─────────────┬────────────────────────┐
+│ Name │ Value │
+├─────────────┼────────────────────────┤
+│ VPS_HOST │ VPS IP or domain │
+│ VPS_USER │ SSH username │
+│ VPS_SSH_KEY │ Private SSH key │
+│ VPS_PATH │ Path to project on VPS │
+└─────────────┴────────────────────────┘
+Variable (Settings → Secrets and variables → Actions → Variables):
+┌─────────────┬───────┐
+│ Name │ Value │
+├─────────────┼───────┤
+│ VPS_ENABLED │ true │
+└─────────────┴───────┘
+And on the VPS, you'll need:
+// bash
+git clone <repo> /home/deploy/spesialis
+cp .env.prod.example .env.prod # fill in your secrets
+
+# Get SSL certs (as described earlier)
+
 ## License
 
 Private Repository.

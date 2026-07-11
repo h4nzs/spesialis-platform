@@ -26,6 +26,7 @@ import {
 import { buildPaginationMeta } from '../../lib/pagination.ts';
 import { omitUndefined } from '../../lib/update.ts';
 import { notifyArticlePublished } from '../../lib/indexnow.ts';
+import { invalidateCollectionCache } from '../../lib/cache.ts';
 
 const router = new Hono();
 
@@ -272,6 +273,9 @@ router.post(
       notifyArticlePublished(created_article.slug).catch(() => {});
     }
 
+    // Invalidate CMS cache so public endpoints reflect the new article
+    invalidateCollectionCache('cms_articles');
+
     return created(c, created_article, 'Artikel berhasil dibuat');
   },
 );
@@ -339,6 +343,9 @@ router.patch(
       notifyArticlePublished(updated.slug).catch(() => {});
     }
 
+    // Invalidate CMS cache — content or status may have changed
+    invalidateCollectionCache('cms_articles');
+
     return success(c, updated, 'Artikel berhasil diperbarui');
   },
 );
@@ -354,6 +361,10 @@ router.delete('/:id', authMiddleware, requireRole('admin', 'super_admin'), async
   if (!article) return notFound(c, 'Artikel tidak ditemukan');
 
   await db.update(articles).set({ deletedAt: new Date() }).where(eq(articles.id, id));
+
+  // Invalidate CMS cache after deletion
+  invalidateCollectionCache('cms_articles');
+
   return success(c, null, 'Artikel berhasil dihapus');
 });
 

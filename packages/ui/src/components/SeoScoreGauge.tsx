@@ -39,38 +39,39 @@ export function SeoScoreGauge({ score, size = 100, className }: SeoScoreGaugePro
       aria-valuemax={100}
       aria-label={`SEO Score: ${score} dari 100 — ${getScoreLabel(score)}`}
     >
-      <svg width={size} height={size} viewBox="0 0 80 80" className="transform -rotate-90">
-        {/* Background circle */}
-        <circle
-          cx="40"
-          cy="40"
-          r={RADIUS}
-          fill="none"
-          stroke={bgColor}
-          strokeWidth={STROKE_WIDTH}
-        />
-        {/* Score arc */}
-        <circle
-          cx="40"
-          cy="40"
-          r={RADIUS}
-          fill="none"
-          stroke={color}
-          strokeWidth={STROKE_WIDTH}
-          strokeDasharray={CIRCUMFERENCE}
-          strokeDashoffset={offset}
-          strokeLinecap="round"
-          className="transition-all duration-700 ease-out"
-          style={{ transition: 'stroke-dashoffset 0.7s ease-out, stroke 0.3s ease' }}
-        />
-        {/* Score text */}
+      <svg width={size} height={size} viewBox="0 0 80 80">
+        {/* Rotate only the circles so the arc starts at top (12 o'clock) */}
+        <g transform="rotate(-90, 40, 40)">
+          {/* Background circle */}
+          <circle
+            cx="40"
+            cy="40"
+            r={RADIUS}
+            fill="none"
+            stroke={bgColor}
+            strokeWidth={STROKE_WIDTH}
+          />
+          {/* Score arc */}
+          <circle
+            cx="40"
+            cy="40"
+            r={RADIUS}
+            fill="none"
+            stroke={color}
+            strokeWidth={STROKE_WIDTH}
+            strokeDasharray={CIRCUMFERENCE}
+            strokeDashoffset={offset}
+            strokeLinecap="round"
+            className="transition-all duration-700 ease-out"
+            style={{ transition: 'stroke-dashoffset 0.7s ease-out, stroke 0.3s ease' }}
+          />
+        </g>
+        {/* Score text — NOT rotated, stays upright at center */}
         <text
           x="40"
           y="40"
           textAnchor="middle"
           dominantBaseline="central"
-          className="fill-current text-2xl font-bold"
-          transform="rotate(90, 40, 40)"
           style={{ fontSize: '20px', fontWeight: 700, fill: color }}
         >
           {score}

@@ -47,6 +47,7 @@ services:
       dockerfile: infrastructure/docker/api/Dockerfile
     volumes:
       - .:/app
+      - /app/node_modules
       - uploads_data:/app/uploads
     ports:
       - '3000:3000'
@@ -69,6 +70,9 @@ services:
       dockerfile: infrastructure/docker/web/Dockerfile
     volumes:
       - .:/app
+      - /app/node_modules
+      - /app/apps/web/dist
+      - /app/apps/web/node_modules/.astro
     ports:
       - '4321:4321'
     environment:

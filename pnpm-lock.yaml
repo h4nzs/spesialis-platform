@@ -418,6 +418,9 @@ importers:
       astro:
         specifier: ^7.0.3
         version: 7.0.3(@emnapi/core@1.11.1)(@emnapi/runtime@1.11.1)(@types/node@26.0.1)(ioredis@5.11.1)(jiti@2.7.0)(tsx@4.22.4)(yaml@2.9.0)
+      hono:
+        specifier: ^4.12.27
+        version: 4.12.27
       lucide-react:
         specifier: ^1.23.0
         version: 1.23.0(react@19.1.0)

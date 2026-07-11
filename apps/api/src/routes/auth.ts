@@ -251,7 +251,7 @@ router.post('/refresh', rateLimit(20, 60_000), validateBody(refreshTokenSchema),
   return success(c, { token, refreshToken: newRefreshToken });
 });
 
-router.post('/logout', authMiddleware, async (c) => {
+router.post('/logout', authMiddleware, rateLimit(10, 60_000), async (c) => {
   const userId = c.get('userId');
 
   await db
@@ -485,34 +485,40 @@ router.patch('/change-password', authMiddleware, validateBody(changePasswordSche
   return success(c, null, 'Password berhasil diubah');
 });
 
-router.delete('/account', authMiddleware, validateBody(deleteAccountSchema), async (c) => {
-  const userId = c.get('userId');
-  const { password } = c.get('validated') as DeleteAccountInput;
+router.delete(
+  '/account',
+  authMiddleware,
+  rateLimit(5, 60_000),
+  validateBody(deleteAccountSchema),
+  async (c) => {
+    const userId = c.get('userId');
+    const { password } = c.get('validated') as DeleteAccountInput;
 
-  const [user] = await db
-    .select({ id: users.id, passwordHash: users.passwordHash })
-    .from(users)
-    .where(eq(users.id, userId))
-    .limit(1);
+    const [user] = await db
+      .select({ id: users.id, passwordHash: users.passwordHash })
+      .from(users)
+      .where(eq(users.id, userId))
+      .limit(1);
 
-  if (!user) return notFound(c, 'User tidak ditemukan');
+    if (!user) return notFound(c, 'User tidak ditemukan');
 
-  const valid = await verifyPassword(user.passwordHash, password);
-  if (!valid) return forbidden(c, 'Password salah');
+    const valid = await verifyPassword(user.passwordHash, password);
+    if (!valid) return forbidden(c, 'Password salah');
 
-  await db.transaction(async (tx) => {
-    await tx
-      .update(users)
-      .set({ status: 'deleted', deletedAt: new Date() })
-      .where(eq(users.id, userId));
-    await tx
-      .update(refreshTokens)
-      .set({ revoked: true })
-      .where(and(eq(refreshTokens.userId, userId), eq(refreshTokens.revoked, false)));
-  });
+    await db.transaction(async (tx) => {
+      await tx
+        .update(users)
+        .set({ status: 'deleted', deletedAt: new Date() })
+        .where(eq(users.id, userId));
+      await tx
+        .update(refreshTokens)
+        .set({ revoked: true })
+        .where(and(eq(refreshTokens.userId, userId), eq(refreshTokens.revoked, false)));
+    });
 
-  clearAuthCookies(c);
-  return success(c, null, 'Akun berhasil dihapus');
-});
+    clearAuthCookies(c);
+    return success(c, null, 'Akun berhasil dihapus');
+  },
+);
 
 export { router as authRouter };

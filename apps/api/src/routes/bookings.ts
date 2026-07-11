@@ -1,6 +1,6 @@
 import { Hono } from 'hono';
 import type { Context } from 'hono';
-import { eq, and, desc, inArray, sql } from 'drizzle-orm';
+import { eq, and, desc, sql } from 'drizzle-orm';
 import type { OrderStatus } from '@specialist/types';
 import {
   db,
@@ -10,7 +10,6 @@ import {
   assignments,
   customerProfiles,
   addresses,
-  services,
   partnerProfiles,
   users,
   companyUsers,
@@ -45,6 +44,8 @@ import { buildPaginationMeta } from '../lib/pagination.ts';
 import { createNotification, notifyAdmins } from '../lib/notification.ts';
 import { APP_URL, sendBookingConfirmationEmail, sendPartnerAssignedEmail } from '../lib/email.ts';
 import { sendWhatsApp } from '../lib/whatsapp.ts';
+import { generateBookingNumber } from '../lib/booking-number.ts';
+import { createOrderTransaction } from '../lib/create-order.ts';
 import { parseBody } from '../lib/parse-body.ts';
 import { omitUndefined } from '../lib/update.ts';
 import { validateBody } from '../middleware/validation.ts';
@@ -78,17 +79,10 @@ async function createGuestBooking(c: Context) {
   } = parsed.data;
 
   try {
-    const result = await db.transaction(async (tx) => {
-      // Generate booking number inside transaction — prevents race condition
-      const year = new Date().getFullYear();
-      const prefix = `SP-${year}-`;
-      const [seq] = await tx.execute(sql`
-        SELECT COALESCE(MAX(CAST(SUBSTRING(booking_number, 9) AS INTEGER)), 0) + 1 AS next
-        FROM orders WHERE booking_number LIKE ${prefix + '%'}
-      `);
-      const row = seq as { next: number } | undefined;
-      const bookingNumber = `${prefix}${String(Number(row?.next ?? 1)).padStart(6, '0')}`;
+    const bookingNumber = await generateBookingNumber();
 
+    const result = await db.transaction(async (tx) => {
+      // ── 1. Create guest customer profile ────────────────
       const [profile] = await tx
         .insert(customerProfiles)
         .values({
@@ -99,6 +93,7 @@ async function createGuestBooking(c: Context) {
 
       if (!profile) throw new Error('Gagal membuat profil');
 
+      // ── 2. Create address from inline data ──────────────
       const [addressRecord] = await tx
         .insert(addresses)
         .values({
@@ -121,94 +116,22 @@ async function createGuestBooking(c: Context) {
 
       if (!addressRecord) throw new Error('Gagal membuat alamat');
 
-      const serviceIds = orderItemsData.map((i) => i.serviceId);
-      const prices = serviceIds.length
-        ? await tx
-            .select({ id: services.id, name: services.name, price: services.basePrice })
-            .from(services)
-            .where(inArray(services.id, serviceIds))
-        : [];
-      const priceLookup = new Map(
-        prices.map((s) => [s.id, { name: s.name, price: Number(s.price ?? 0) }]),
-      );
-      const basePrice = orderItemsData.reduce(
-        (sum, item) => sum + (priceLookup.get(item.serviceId)?.price ?? 0) * item.quantity,
-        0,
-      );
-
-      const [order] = await tx
-        .insert(orders)
-        .values({
-          bookingNumber,
-          customerId: profile.id,
-          addressId: addressRecord.id,
-          status: 'Pending Confirmation',
-          bookingDate,
-          bookingTime,
-          basePrice: String(basePrice),
-          discountAmount: '0',
-          notes: notes ?? null,
-        })
-        .returning({ id: orders.id });
-
-      if (!order) throw new Error('Gagal membuat booking');
-
-      for (const item of orderItemsData) {
-        const [svc] = await tx
-          .select({
-            name: services.name,
-            price: services.basePrice,
-          })
-          .from(services)
-          .where(eq(services.id, item.serviceId))
-          .limit(1);
-
-        const snapName = svc?.name ?? '';
-        const unitPrice = item.quantity > 0 ? Number(svc?.price ?? 0) : 0;
-
-        await tx.insert(orderItems).values({
-          orderId: order.id,
-          serviceId: item.serviceId,
-          serviceNameSnapshot: snapName,
-          quantity: item.quantity,
-          unitPrice: String(unitPrice),
-          subtotal: String(unitPrice * item.quantity),
-        });
-      }
-
-      // Attach media inside transaction
-      if (mediaIds?.length) {
-        const existing = await tx
-          .select({ id: media.id })
-          .from(media)
-          .where(inArray(media.id, mediaIds));
-
-        const found = new Set(existing.map((m) => m.id));
-        const invalid = mediaIds.filter((id) => !found.has(id));
-        if (invalid.length > 0) {
-          throw new Error(`Media tidak ditemukan: ${invalid.join(', ')}`);
-        }
-
-        await tx
-          .insert(orderMedia)
-          .values(mediaIds.map((mediaId) => ({ orderId: order.id, mediaId })));
-      }
-
-      // Record status history inside transaction
-      await tx.insert(orderStatusHistory).values({
-        orderId: order.id,
-        fromStatus: null,
-        toStatus: 'Pending Confirmation',
+      // ── 3. Delegate order / items / media / history ────
+      const orderResult = await createOrderTransaction({
+        bookingNumber,
+        customerId: profile.id,
+        addressId: addressRecord.id,
+        bookingDate,
+        bookingTime,
+        notes,
+        items: orderItemsData,
+        mediaIds,
         changedBy: null,
-        note: null,
+        mediaOwnershipUserId: null,
+        tx, // reuse the outer transaction
       });
 
-      const items = orderItemsData.map((i) => ({
-        name: priceLookup.get(i.serviceId)?.name ?? 'Layanan',
-        qty: i.quantity,
-      }));
-
-      return { bookingNumber, orderId: order.id, addressRecord, items };
+      return { ...orderResult, addressRecord };
     });
 
     // Notifications — outside transaction, non-critical
@@ -279,6 +202,7 @@ async function createCustomerBooking(c: Context) {
     mediaIds,
   } = parsed.data;
 
+  // ── Fetch customer profile, user info, and validate address ──
   const [profile] = await db
     .select({ id: customerProfiles.id, fullName: customerProfiles.fullName })
     .from(customerProfiles)
@@ -306,107 +230,20 @@ async function createCustomerBooking(c: Context) {
   if (!addr) return error(c, 'ADDRESS_NOT_FOUND', 'Alamat tidak ditemukan', 404);
 
   try {
-    const result = await db.transaction(async (tx) => {
-      // Generate booking number inside transaction — prevents race condition
-      const year = new Date().getFullYear();
-      const prefix = `SP-${year}-`;
-      const [seq] = await tx.execute(sql`
-        SELECT COALESCE(MAX(CAST(SUBSTRING(booking_number, 9) AS INTEGER)), 0) + 1 AS next
-        FROM orders WHERE booking_number LIKE ${prefix + '%'}
-      `);
-      const row = seq as { next: number } | undefined;
-      const bookingNumber = `${prefix}${String(Number(row?.next ?? 1)).padStart(6, '0')}`;
+    const bookingNumber = await generateBookingNumber();
 
-      const serviceIds = orderItemsData.map((i) => i.serviceId);
-      const prices = serviceIds.length
-        ? await tx
-            .select({ id: services.id, name: services.name, price: services.basePrice })
-            .from(services)
-            .where(inArray(services.id, serviceIds))
-        : [];
-      const priceLookup = new Map(
-        prices.map((s) => [s.id, { name: s.name, price: Number(s.price ?? 0) }]),
-      );
-      const basePrice = orderItemsData.reduce(
-        (sum, item) => sum + (priceLookup.get(item.serviceId)?.price ?? 0) * item.quantity,
-        0,
-      );
-
-      const [order] = await tx
-        .insert(orders)
-        .values({
-          bookingNumber,
-          customerId: profile.id,
-          addressId,
-          status: 'Pending Confirmation',
-          bookingDate,
-          bookingTime,
-          basePrice: String(basePrice),
-          discountAmount: '0',
-          notes: notes ?? null,
-        })
-        .returning({ id: orders.id });
-
-      if (!order) throw new Error('Gagal membuat booking');
-
-      for (const item of orderItemsData) {
-        const svc = priceLookup.get(item.serviceId);
-        const snapName = svc?.name ?? '';
-        const unitPrice = (svc?.price ?? 0) * item.quantity;
-
-        await tx.insert(orderItems).values({
-          orderId: order.id,
-          serviceId: item.serviceId,
-          serviceNameSnapshot: snapName,
-          quantity: item.quantity,
-          unitPrice: String(unitPrice),
-          subtotal: String(unitPrice),
-        });
-      }
-
-      // Attach media inside transaction
-      if (mediaIds?.length) {
-        const [user] = await tx
-          .select({ id: users.id })
-          .from(users)
-          .where(eq(users.id, userId))
-          .limit(1);
-
-        const existing = await tx
-          .select({ id: media.id })
-          .from(media)
-          .where(
-            user
-              ? and(inArray(media.id, mediaIds), eq(media.uploadedBy, user.id))
-              : inArray(media.id, mediaIds),
-          );
-
-        const found = new Set(existing.map((m) => m.id));
-        const invalid = mediaIds.filter((id) => !found.has(id));
-        if (invalid.length > 0) {
-          throw new Error(`Media tidak ditemukan: ${invalid.join(', ')}`);
-        }
-
-        await tx
-          .insert(orderMedia)
-          .values(mediaIds.map((mediaId) => ({ orderId: order.id, mediaId })));
-      }
-
-      // Record status history inside transaction
-      await tx.insert(orderStatusHistory).values({
-        orderId: order.id,
-        fromStatus: null,
-        toStatus: 'Pending Confirmation',
-        changedBy: userId,
-        note: null,
-      });
-
-      const items = orderItemsData.map((i) => ({
-        name: priceLookup.get(i.serviceId)?.name ?? 'Layanan',
-        qty: i.quantity,
-      }));
-
-      return { bookingNumber, orderId: order.id, items };
+    // ── Core order creation (single, shared helper) ────────────
+    const result = await createOrderTransaction({
+      bookingNumber,
+      customerId: profile.id,
+      addressId,
+      bookingDate,
+      bookingTime,
+      notes,
+      items: orderItemsData,
+      mediaIds,
+      changedBy: userId,
+      mediaOwnershipUserId: userId,
     });
 
     // Notifications — outside transaction, non-critical

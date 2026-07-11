@@ -1,4 +1,4 @@
-import { createHmac, timingSafeEqual } from 'node:crypto';
+import { verify } from 'hono/jwt';
 
 export interface JwtPayload {
   sub: string;
@@ -8,59 +8,31 @@ export interface JwtPayload {
 }
 
 /**
- * Verify and decode a JWT (HS256) locally using Node's built-in crypto module.
+ * Verify and decode a JWT (HS256) using Hono's JWT library.
+ *
+ * Hono uses the `jose` library under the hood, which handles all JWT
+ * edge cases (algorithm negotiation, Base64URL encoding, signature
+ * verification, expiry) correctly. This avoids fragile custom crypto.
  *
  * This avoids an HTTP round-trip to the API on every page load.
  *
  * @returns The decoded payload if valid, or null if the token is malformed,
  *          expired, or has an invalid signature.
  */
-export function verifyAccessToken(token: string, secret: string): JwtPayload | null {
-  const parts = token.split('.');
-  if (parts.length !== 3) return null;
-
-  const [headerB64, payloadB64, signatureB64] = parts;
-  if (!headerB64 || !payloadB64 || !signatureB64) return null;
-
+export async function verifyAccessToken(token: string, secret: string): Promise<JwtPayload | null> {
   try {
-    // Verify HMAC-SHA256 signature
-    const signature = createHmac('sha256', secret).update(`${headerB64}.${payloadB64}`).digest();
-
-    const decodedSignature = Buffer.from(
-      signatureB64.replace(/-/g, '+').replace(/_/g, '/'),
-      'base64',
-    );
-
-    if (
-      signature.length !== decodedSignature.length ||
-      !timingSafeEqual(signature, decodedSignature)
-    ) {
-      return null;
-    }
-
-    // Decode payload
-    const payloadJson = Buffer.from(
-      payloadB64.replace(/-/g, '+').replace(/_/g, '/'),
-      'base64',
-    ).toString('utf-8');
-
-    const payload = JSON.parse(payloadJson) as JwtPayload;
+    const payload = await verify(token, secret, 'HS256');
 
     // Validate required fields
     if (!payload.sub || !payload.email || !payload.role) {
       return null;
     }
 
-    // Check expiry
-    if (payload.exp && payload.exp < Math.floor(Date.now() / 1000)) {
-      return null;
-    }
-
     return {
-      sub: payload.sub,
-      email: payload.email,
-      role: payload.role,
-      exp: payload.exp,
+      sub: payload.sub as string,
+      email: payload.email as string,
+      role: payload.role as string,
+      exp: payload.exp as number,
     };
   } catch {
     return null;

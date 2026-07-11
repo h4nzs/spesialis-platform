@@ -1,0 +1,179 @@
+# =============================================================================
+# Specialist Platform — Production Deployment
+# =============================================================================
+# Usage:
+#   1. cp .env.prod.example .env.prod && nano .env.prod   # configure secrets
+#   2. docker compose -f docker-compose.prod.yml up -d     # start stack
+#   3. docker compose -f docker-compose.prod.yml logs -f   # monitor startup
+#
+# CI/CD: after building images, push to registry, then on VPS:
+#   docker compose -f docker-compose.prod.yml pull && docker compose up -d
+# =============================================================================
+
+services:
+  # ── PostgreSQL ─────────────────────────────────────────────────────
+  postgres:
+    image: postgres:18
+    container_name: specialist-postgres
+    restart: unless-stopped
+
+    environment:
+      POSTGRES_DB: specialist
+      POSTGRES_USER: ${DATABASE_USER:-specialist}
+      POSTGRES_PASSWORD: ${DATABASE_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - specialist
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U ${DATABASE_USER:-specialist}']
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+        reservations:
+          memory: 256M
+
+  # ── Hono API ──────────────────────────────────────────────────────
+  api:
+    image: ${IMAGE_REGISTRY:-ghcr.io}/${IMAGE_OWNER:-spesialis}/api:${IMAGE_TAG:-latest}
+    container_name: specialist-api
+    restart: unless-stopped
+
+    ports:
+      - '127.0.0.1:3000:3000'   # Only expose to Nginx (same host)
+    environment:
+      NODE_ENV: production
+      PORT: '3000'
+      DATABASE_URL: postgres://${DATABASE_USER:-specialist}:${DATABASE_PASSWORD}@postgres:5432/${DATABASE_NAME:-specialist}
+      JWT_SECRET: ${JWT_SECRET}
+      CORS_ORIGIN: ${CORS_ORIGIN:-https://spesialis.id}
+      APP_URL: ${APP_URL:-https://spesialis.id}
+      PUBLIC_API_URL: ${PUBLIC_API_URL:-https://spesialis.id/api}
+      SMTP_HOST: ${SMTP_HOST}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_USER: ${SMTP_USER}
+      SMTP_PASS: ${SMTP_PASS}
+      SMTP_FROM: ${SMTP_FROM}
+      RESEND_API_KEY: ${RESEND_API_KEY}
+      RESEND_FROM: ${RESEND_FROM}
+      R2_ENDPOINT: ${R2_ENDPOINT}
+      R2_BUCKET: ${R2_BUCKET}
+      R2_ACCESS_KEY: ${R2_ACCESS_KEY}
+      R2_SECRET_KEY: ${R2_SECRET_KEY}
+      WHATSAPP_API_URL: ${WHATSAPP_API_URL}
+      WHATSAPP_API_KEY: ${WHATSAPP_API_KEY}
+      CLOUDFLARE_API_TOKEN: ${CLOUDFLARE_API_TOKEN}
+      CLOUDFLARE_ZONE_ID: ${CLOUDFLARE_ZONE_ID}
+      REVALIDATION_TOKEN: ${REVALIDATION_TOKEN}
+      ASTRO_URL: http://web:4321
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - specialist
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost:3000/api/v1/health']
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+        reservations:
+          memory: 256M
+    logging:
+      driver: 'json-file'
+      options:
+        max-size: '10m'
+        max-file: '3'
+
+  # ── Astro Web ─────────────────────────────────────────────────────
+  web:
+    image: ${IMAGE_REGISTRY:-ghcr.io}/${IMAGE_OWNER:-spesialis}/web:${IMAGE_TAG:-latest}
+    container_name: specialist-web
+    restart: unless-stopped
+
+    # Port 4321 is internal only — accessed via Nginx
+    expose:
+      - '4321'
+    environment:
+      NODE_ENV: production
+      APP_ENV: production
+      API_URL: http://api:3000
+      PUBLIC_API_URL: ${PUBLIC_API_URL:-https://spesialis.id/api}
+      SITE_URL: ${SITE_URL:-https://spesialis.id}
+    depends_on:
+      api:
+        condition: service_started
+    networks:
+      - specialist
+    healthcheck:
+      test:
+        [
+          'CMD-SHELL',
+          'node -e "fetch(\"http://localhost:4321/\").then(r => process.exit(r.ok?0:1)).catch(() => process.exit(1))"',
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+        reservations:
+          memory: 256M
+    logging:
+      driver: 'json-file'
+      options:
+        max-size: '10m'
+        max-file: '3'
+
+  # ── Nginx Reverse Proxy ───────────────────────────────────────────
+  nginx:
+    image: nginx:alpine
+    container_name: specialist-nginx
+    restart: unless-stopped
+
+    ports:
+      - '80:80'
+      - '443:443'
+    environment:
+      DOMAIN: ${DOMAIN:-spesialis.id}
+    volumes:
+      # Mount as template — nginx:alpine entrypoint runs envsubst on *.template
+      - ./infrastructure/docker/nginx/prod.conf:/etc/nginx/templates/default.conf.template:ro
+      - /etc/letsencrypt:/etc/letsencrypt:ro
+      - /var/www/letsencrypt:/var/www/letsencrypt:ro
+      - nginx_cache:/var/cache/nginx
+    depends_on:
+      - web
+      - api
+    networks:
+      - specialist
+    deploy:
+      resources:
+        limits:
+          memory: 128M
+        reservations:
+          memory: 64M
+    logging:
+      driver: 'json-file'
+      options:
+        max-size: '10m'
+        max-file: '3'
+
+volumes:
+  postgres_data:
+  nginx_cache:
+
+networks:
+  specialist:
+    driver: bridge

@@ -307,7 +307,18 @@ export class ApiClient {
     params?: Record<string, string | number | boolean | undefined | null>,
   ): URL {
     const cleanPath = path.startsWith('/') ? path : `/${path}`;
-    const url = new URL(`${this.baseUrl}${cleanPath}`);
+    const fullPath = `${this.baseUrl}${cleanPath}`;
+
+    let url: URL;
+    try {
+      url = new URL(fullPath);
+    } catch {
+      // Relative URL — prepend current origin so requests go through
+      // the same host (Nginx in production, Vite proxy in development).
+      const origin =
+        typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000';
+      url = new URL(fullPath, origin);
+    }
 
     if (params) {
       for (const [key, value] of Object.entries(params)) {
@@ -401,10 +412,20 @@ function getDefaultApiUrl(): string {
   try {
     const nodeProcess = (globalThis as { process?: { env: Record<string, string | undefined> } })
       .process;
-    const url = nodeProcess?.env?.PUBLIC_API_URL;
+    let url = nodeProcess?.env?.PUBLIC_API_URL;
+    if (url) return url;
+    // Docker Compose sets API_URL=http://api:3000 for internal container
+    // communication. Use it as fallback so SSR fetches reach the API.
+    url = nodeProcess?.env?.API_URL;
     if (url) return url;
   } catch {
     // process not available
+  }
+
+  // Browser: use relative path so requests go through Nginx (same origin,
+  // no CORS issues). SSR: direct access to API container.
+  if (typeof window !== 'undefined') {
+    return '';
   }
 
   return 'http://localhost:3000';

@@ -1,7 +1,7 @@
 import type { APIRoute } from 'astro';
 
 const SITE = 'https://spesialis.id';
-const API_BASE = process.env.PUBLIC_API_URL ?? 'http://localhost:3000';
+const API_BASE = process.env.PUBLIC_API_URL ?? process.env.API_URL ?? 'http://localhost:3000';
 
 interface SitemapConfig {
   staticPages: { priority: string; changefreq: string };
