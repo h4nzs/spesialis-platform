@@ -14,7 +14,7 @@ vi.mock('@ahlipanggilan/ui', () => ({
   }: {
     children: React.ReactNode;
     onClick?: () => void;
-    type?: string;
+    type?: 'button' | 'submit' | 'reset';
   }) => (
     <button type={type ?? 'button'} onClick={onClick}>
       {children}

@@ -42,7 +42,12 @@ describe('AdminOverview', () => {
   });
 
   it('shows quick action links', async () => {
-    mockGet.mockResolvedValue({});
+    mockGet.mockResolvedValue({
+      orders: { total: 100, active: 25, waitingAssignment: 5, today: 10 },
+      partners: { available: 8, pendingVerification: 3 },
+      revenue: { total: 50000000 },
+      complaints: { total: 12, open: 4 },
+    });
     render(<AdminOverview />);
     expect(await screen.findByText('Aksi Cepat')).toBeInTheDocument();
     expect(screen.getByText('Kelola Booking')).toHaveAttribute('href', '/dashboard/admin/bookings');

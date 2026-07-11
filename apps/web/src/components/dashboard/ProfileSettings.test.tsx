@@ -45,22 +45,18 @@ vi.mock('@ahlipanggilan/ui', () => ({
     </button>
   ),
   TableSkeleton: () => <div data-testid="table-skeleton" />,
-  Card: ({ children, ..._props }: { children: React.ReactNode; [key: string]: unknown }) => (
-    <div>{children}</div>
-  ),
+  Card: ({ children }: { children: React.ReactNode }) => <>{children}</>,
   Grid: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
-  Badge: ({ children, ..._props }: { children: React.ReactNode; [key: string]: unknown }) => (
-    <span>{children}</span>
-  ),
+  Badge: ({ children }: { children: React.ReactNode }) => <>{children}</>,
   Modal: ({
     children,
     open,
-    _onClose,
+
     title,
   }: {
     children: React.ReactNode;
     open: boolean;
-    _onClose?: () => void;
+
     title?: string;
   }) =>
     open ? (
@@ -74,17 +70,11 @@ vi.mock('@ahlipanggilan/ui', () => ({
       Export CSV
     </button>
   ),
-  EmptyState: ({
-    title,
-    children,
-    ..._props
-  }: {
-    title?: string;
-    children?: React.ReactNode;
-    [key: string]: unknown;
-  }) => <div>{title ?? children}</div>,
-  Pagination: ({ ..._props }: { [key: string]: unknown }) => <div />,
-  ConfirmDialog: ({ ..._props }: { [key: string]: unknown }) => null,
+  EmptyState: ({ title, children }: { title?: string; children?: React.ReactNode }) => (
+    <div>{title ?? children}</div>
+  ),
+  Pagination: (_props: { [key: string]: unknown }) => <div />,
+  ConfirmDialog: (_props: { [key: string]: unknown }) => null,
   Spinner: () => <div aria-hidden="true" />,
 }));
 
