@@ -155,9 +155,19 @@ vi.mock('@ahlipanggilan/ui', () => ({
     <div>{children}</div>
   ),
   Grid: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
-  CSVExportButton: ({ onClick }: { onClick?: () => void }) => (
-    <button type="button" onClick={onClick}>
-      Export CSV
+  CSVExportButton: ({
+    onClick,
+    loading,
+    loadingLabel,
+    disabled,
+  }: {
+    onClick?: () => void;
+    loading?: boolean;
+    loadingLabel?: string;
+    disabled?: boolean;
+  }) => (
+    <button type="button" onClick={onClick} disabled={disabled || loading}>
+      {loading ? (loadingLabel ?? 'Loading...') : 'Export CSV'}
     </button>
   ),
   ConfirmDialog: ({ ..._props }: { [key: string]: unknown }) => null,

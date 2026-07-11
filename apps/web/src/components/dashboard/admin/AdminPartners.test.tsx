@@ -62,12 +62,12 @@ vi.mock('@ahlipanggilan/ui', () => ({
   Modal: ({
     children,
     open,
-    onClose,
+    _onClose,
     title,
   }: {
     children: React.ReactNode;
     open: boolean;
-    onClose?: () => void;
+    _onClose?: () => void;
     title?: string;
   }) =>
     open ? (
@@ -163,7 +163,7 @@ describe('AdminPartners', () => {
     });
   });
 
-  it('calls post API when Tolak is clicked', async () => {
+  it('calls post API when Tolak is clicked and confirmed', async () => {
     mockGet.mockResolvedValue([
       {
         id: 'p2',
@@ -178,9 +178,14 @@ describe('AdminPartners', () => {
     render(<AdminPartners />);
     expect(await screen.findByText('Tolak')).toBeInTheDocument();
     screen.getByText('Tolak').click();
+    // Tolak opens a reject modal; click the modal button to actually submit
+    await waitFor(() => {
+      expect(screen.getByText('Tolak Partner')).toBeInTheDocument();
+    });
+    screen.getByText('Tolak Partner').click();
     await waitFor(() => {
       expect(mockPost).toHaveBeenCalledWith('/api/v1/partners/p2/verify', {
-        body: { verificationStatus: 'Rejected' },
+        body: { verificationStatus: 'Rejected', note: undefined },
       });
     });
   });

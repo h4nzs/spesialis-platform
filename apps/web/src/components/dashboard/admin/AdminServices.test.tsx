@@ -154,8 +154,31 @@ vi.mock('@ahlipanggilan/ui', () => ({
     <div>{children}</div>
   ),
   Grid: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
-  CSVExportButton: ({ onClick }: { onClick?: () => void }) => (
-    <button type="button" onClick={onClick}>
+  CSVExportButton: ({
+    data,
+    columns,
+    filename,
+    ..._props
+  }: {
+    data?: Record<string, unknown>[];
+    columns?: { key: string; label?: string; format?: (v: unknown) => string }[];
+    filename?: string;
+    [key: string]: unknown;
+  }) => (
+    <button
+      type="button"
+      onClick={() => {
+        const headers = (columns ?? []).map(
+          (c: { label?: string; key?: string }) => c.label ?? c.key ?? '',
+        );
+        const rows = (data ?? []).map((row: Record<string, unknown>) =>
+          (columns ?? []).map((col: { key: string; format?: (v: unknown) => string }) =>
+            col.format ? col.format(row[col.key]) : String(row[col.key] ?? ''),
+          ),
+        );
+        mockDownloadCSV(headers, rows, filename ?? 'export.csv');
+      }}
+    >
       Export CSV
     </button>
   ),

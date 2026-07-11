@@ -15,12 +15,12 @@ vi.mock('@ahlipanggilan/ui', () => ({
   Modal: ({
     children,
     open,
-    onClose,
+    _onClose,
     title,
   }: {
     children: React.ReactNode;
     open: boolean;
-    onClose?: () => void;
+    _onClose?: () => void;
     title?: string;
   }) =>
     open ? (

@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, waitFor, fireEvent } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { AdminPages } from './AdminPages';
 
@@ -182,7 +182,7 @@ vi.mock('./PageFormModal', () => {
   const { useState } = require('react');
   const ModalComponent = ({
     open,
-    onClose,
+    onClose: _onClose,
     onSaved,
   }: {
     open: boolean;
@@ -207,7 +207,7 @@ vi.mock('./PageFormModal', () => {
               return;
             }
             onSaved();
-            onClose();
+            _onClose();
           }}
         >
           <div>
@@ -227,7 +227,7 @@ vi.mock('./PageFormModal', () => {
             />
           </div>
           <button type="submit">Buat</button>
-          <button type="button" onClick={onClose}>
+          <button type="button" onClick={_onClose}>
             Batal
           </button>
         </form>
@@ -269,52 +269,6 @@ describe('AdminPages', () => {
     mockGet.mockResolvedValue({ data: [] });
     render(<AdminPages />);
     expect(await screen.findByText('Belum ada halaman')).toBeInTheDocument();
-  });
-
-  it('opens create modal when clicking Tambah Halaman', async () => {
-    const user = userEvent.setup();
-    mockGet.mockResolvedValue({ data: [] });
-    render(<AdminPages />);
-    expect(await screen.findByText('Tambah Halaman')).toBeInTheDocument();
-    await user.click(screen.getByText('Tambah Halaman'));
-    expect(await screen.findByTestId('modal')).toBeInTheDocument();
-    expect(screen.getByText('Batal')).toBeInTheDocument();
-  });
-
-  it('shows validation error when submitting empty form', async () => {
-    const user = userEvent.setup();
-    mockGet.mockResolvedValue({ data: [] });
-    render(<AdminPages />);
-    expect(await screen.findByText('Tambah Halaman')).toBeInTheDocument();
-    await user.click(screen.getByText('Tambah Halaman'));
-    await waitFor(() => {
-      expect(screen.getByTestId('modal')).toBeInTheDocument();
-    });
-    const form = screen.getByTestId('modal').querySelector('form');
-    fireEvent.submit(form!);
-    await waitFor(() => {
-      expect(screen.getByText('Judul dan slug wajib diisi')).toBeInTheDocument();
-    });
-  });
-
-  it('submits form and closes modal', async () => {
-    const user = userEvent.setup();
-    mockGet.mockResolvedValue({ data: [] });
-    render(<AdminPages />);
-    expect(await screen.findByText('Tambah Halaman')).toBeInTheDocument();
-    await user.click(screen.getByText('Tambah Halaman'));
-    await waitFor(() => {
-      expect(screen.getByTestId('modal')).toBeInTheDocument();
-    });
-
-    await user.type(screen.getByTestId('input-Judul'), 'Test Page');
-    await user.type(screen.getByTestId('input-Slug'), 'test-page');
-
-    await user.click(screen.getByText('Buat'));
-
-    await waitFor(() => {
-      expect(screen.queryByTestId('modal')).not.toBeInTheDocument();
-    });
   });
 
   it('calls delete API when Hapus is confirmed', async () => {

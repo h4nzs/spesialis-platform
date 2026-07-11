@@ -167,7 +167,7 @@ vi.mock('./FaqFormModal', () => {
   const { useState } = require('react');
   const ModalComponent = ({
     open,
-    onClose,
+    onClose: _onClose,
     onSaved,
   }: {
     open: boolean;
@@ -191,7 +191,7 @@ vi.mock('./FaqFormModal', () => {
               return;
             }
             onSaved();
-            onClose();
+            _onClose();
           }}
         >
           <div>
@@ -207,7 +207,7 @@ vi.mock('./FaqFormModal', () => {
             <textarea data-testid="rte-Jawaban" />
           </div>
           <button type="submit">Buat</button>
-          <button type="button" onClick={onClose}>
+          <button type="button" onClick={_onClose}>
             Batal
           </button>
         </form>

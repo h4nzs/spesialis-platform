@@ -59,12 +59,12 @@ vi.mock('@ahlipanggilan/ui', () => ({
   Modal: ({
     children,
     open,
-    onClose,
+    _onClose,
     title,
   }: {
     children: React.ReactNode;
     open: boolean;
-    onClose?: () => void;
+    _onClose?: () => void;
     title?: string;
   }) =>
     open ? (
@@ -73,8 +73,25 @@ vi.mock('@ahlipanggilan/ui', () => ({
         {children}
       </div>
     ) : null,
-  CSVExportButton: ({ onClick }: { onClick?: () => void }) => (
-    <button type="button" onClick={onClick}>
+  CSVExportButton: ({
+    data,
+    columns,
+    filename,
+  }: {
+    data: Record<string, unknown>[];
+    columns: { key: string; label: string; format?: (v: unknown) => string }[];
+    filename: string;
+  }) => (
+    <button
+      type="button"
+      onClick={() => {
+        const headers = columns.map((c) => c.label);
+        const rows = data.map((item) =>
+          columns.map((c) => (c.format ? c.format(item[c.key]) : String(item[c.key] ?? ''))),
+        );
+        mockDownloadCSV(headers, rows, filename);
+      }}
+    >
       Export CSV
     </button>
   ),

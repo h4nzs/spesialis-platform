@@ -6,42 +6,38 @@ vi.mock('@ahlipanggilan/ui', () => ({}));
 
 beforeEach(() => {
   vi.clearAllMocks();
-  localStorage.clear();
 });
 
-function mockFetchResponse(data: unknown) {
-  return vi.spyOn(global, 'fetch').mockResolvedValue({
-    ok: true,
-    json: () => Promise.resolve({ data: { user: data } }),
-  } as Response);
-}
-
 describe('AuthNav', () => {
-  it('shows login/register when no token', () => {
-    render(<AuthNav />);
-    expect(screen.getByText('Masuk')).toBeInTheDocument();
-    expect(screen.getByText('Daftar')).toBeInTheDocument();
+  it('shows login/register when no user', () => {
+    const { container } = render(<AuthNav />);
+    expect(container.textContent).toContain('Masuk');
+    expect(container.textContent).toContain('Daftar');
   });
 
-  it('shows dashboard link when token exists and user loaded', async () => {
-    localStorage.setItem('ahlipanggilan_access_token', 'token-123');
-    mockFetchResponse({ role: 'customer' });
-    render(<AuthNav />);
-    expect(await screen.findByText('Dashboard')).toBeInTheDocument();
+  it('shows dashboard link for customer role', () => {
+    render(<AuthNav initialAuth={{ userId: 'u1', userEmail: 'a@b.com', userRole: 'customer' }} />);
+    expect(screen.getByText('Dashboard')).toBeInTheDocument();
+    expect(screen.getByText('Dashboard')).toHaveAttribute('href', '/dashboard/customer');
   });
 
-  it('shows login/register when token exists but API fails', async () => {
-    localStorage.setItem('ahlipanggilan_access_token', 'token-123');
-    globalThis.fetch = vi.fn().mockRejectedValue(new Error('API error')) as unknown as typeof fetch;
-    render(<AuthNav />);
-    expect(await screen.findByText('Masuk')).toBeInTheDocument();
+  it('shows admin panel for admin role', () => {
+    render(<AuthNav initialAuth={{ userId: 'u1', userEmail: 'a@b.com', userRole: 'admin' }} />);
+    expect(screen.getByText('Admin Panel')).toBeInTheDocument();
+    expect(screen.getByText('Admin Panel')).toHaveAttribute('href', '/dashboard/admin');
   });
 
-  it('links dashboard to correct URL per role', async () => {
-    localStorage.setItem('ahlipanggilan_access_token', 'token-123');
-    mockFetchResponse({ role: 'admin' });
-    render(<AuthNav />);
-    const link = await screen.findByText('Dashboard');
-    expect(link).toHaveAttribute('href', '/dashboard/admin');
+  it('shows dashboard link for partner role', () => {
+    render(<AuthNav initialAuth={{ userId: 'u1', userEmail: 'a@b.com', userRole: 'partner' }} />);
+    expect(screen.getByText('Dashboard')).toBeInTheDocument();
+    expect(screen.getByText('Dashboard')).toHaveAttribute('href', '/dashboard/partner');
+  });
+
+  it('shows admin panel for super_admin role', () => {
+    render(
+      <AuthNav initialAuth={{ userId: 'u1', userEmail: 'a@b.com', userRole: 'super_admin' }} />,
+    );
+    expect(screen.getByText('Admin Panel')).toBeInTheDocument();
+    expect(screen.getByText('Admin Panel')).toHaveAttribute('href', '/dashboard/admin');
   });
 });

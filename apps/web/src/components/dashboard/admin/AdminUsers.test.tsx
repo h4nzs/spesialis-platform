@@ -120,8 +120,31 @@ vi.mock('@ahlipanggilan/ui', () => ({
     <div>{children}</div>
   ),
   Grid: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
-  CSVExportButton: ({ onClick }: { onClick?: () => void }) => (
-    <button type="button" onClick={onClick}>
+  CSVExportButton: ({
+    data,
+    columns,
+    filename,
+    ..._props
+  }: {
+    data?: Record<string, unknown>[];
+    columns?: { key: string; label?: string; format?: (v: unknown) => string }[];
+    filename?: string;
+    [key: string]: unknown;
+  }) => (
+    <button
+      type="button"
+      onClick={() => {
+        const headers = (columns ?? []).map(
+          (c: { label?: string; key?: string }) => c.label ?? c.key ?? '',
+        );
+        const rows = (data ?? []).map((row: Record<string, unknown>) =>
+          (columns ?? []).map((col: { key: string; format?: (v: unknown) => string }) =>
+            col.format ? col.format(row[col.key]) : String(row[col.key] ?? ''),
+          ),
+        );
+        mockDownloadCSV(headers, rows, filename ?? 'export.csv');
+      }}
+    >
       Export CSV
     </button>
   ),
@@ -144,72 +167,66 @@ describe('AdminUsers', () => {
   });
 
   it('shows user list when loaded', async () => {
-    mockGet.mockResolvedValueOnce({
-      data: [
-        {
-          id: 'u1',
-          email: 'user@test.com',
-          phone: '08123456789',
-          role: 'customer',
-          status: 'active',
-          emailVerifiedAt: '2026-01-01',
-          lastLoginAt: null,
-          createdAt: '2026-01-01',
-        },
-      ],
-    });
+    mockGet.mockResolvedValueOnce([
+      {
+        id: 'u1',
+        email: 'user@test.com',
+        phone: '08123456789',
+        role: 'customer',
+        status: 'active',
+        emailVerifiedAt: '2026-01-01',
+        lastLoginAt: null,
+        createdAt: '2026-01-01',
+      },
+    ]);
     render(<AdminUsers />);
     expect(await screen.findByText('user@test.com')).toBeInTheDocument();
   });
 
   it('shows empty state', async () => {
-    mockGet.mockResolvedValueOnce({ data: [] });
+    mockGet.mockResolvedValueOnce([]);
     render(<AdminUsers />);
     expect(await screen.findByText('Tidak ada user ditemukan')).toBeInTheDocument();
   });
 
   it('shows search input and filter selects', async () => {
-    mockGet.mockResolvedValueOnce({ data: [] });
+    mockGet.mockResolvedValueOnce([]);
     render(<AdminUsers />);
     expect(await screen.findByPlaceholderText('Cari email atau nomor HP...')).toBeInTheDocument();
     expect(screen.getByText('Cari')).toBeInTheDocument();
   });
 
   it('shows Ubah Status button per row', async () => {
-    mockGet.mockResolvedValueOnce({
-      data: [
-        {
-          id: 'u1',
-          email: 'user@test.com',
-          phone: '',
-          role: 'partner',
-          status: 'active',
-          emailVerifiedAt: null,
-          lastLoginAt: null,
-          createdAt: '2026-01-01',
-        },
-      ],
-    });
+    mockGet.mockResolvedValueOnce([
+      {
+        id: 'u1',
+        email: 'user@test.com',
+        phone: '',
+        role: 'partner',
+        status: 'active',
+        emailVerifiedAt: null,
+        lastLoginAt: null,
+        createdAt: '2026-01-01',
+      },
+    ]);
     render(<AdminUsers />);
     expect(await screen.findByText('Ubah Status')).toBeInTheDocument();
   });
 
   it('shows status modal with current status', async () => {
     const user = userEvent.setup();
-    mockGet.mockResolvedValueOnce({
-      data: [
-        {
-          id: 'u1',
-          email: 'user@test.com',
-          phone: '',
-          role: 'customer',
-          status: 'active',
-          emailVerifiedAt: null,
-          lastLoginAt: null,
-          createdAt: '2026-01-01',
-        },
-      ],
-    });
+    mockGet.mockResolvedValueOnce([
+      {
+        id: 'u1',
+        email: 'user@test.com',
+        phone: '',
+        role: 'customer',
+        status: 'active',
+        emailVerifiedAt: null,
+        lastLoginAt: null,
+        createdAt: '2026-01-01',
+      },
+    ]);
     render(<AdminUsers />);
     const btn = await screen.findByText('Ubah Status');
     await user.click(btn);
@@ -221,7 +238,7 @@ describe('AdminUsers', () => {
 
   it('calls get API with search term on form submit', async () => {
     const user = userEvent.setup();
-    mockGet.mockResolvedValueOnce({ data: [] });
+    mockGet.mockResolvedValueOnce([]);
     render(<AdminUsers />);
     expect(await screen.findByPlaceholderText('Cari email atau nomor HP...')).toBeInTheDocument();
 
@@ -241,20 +258,18 @@ describe('AdminUsers', () => {
 
   it('calls patch API when status is updated and Simpan is clicked', async () => {
     const user = userEvent.setup();
-    mockGet.mockResolvedValueOnce({
-      data: [
-        {
-          id: 'u1',
-          email: 'user@test.com',
-          phone: '081',
-          role: 'customer',
-          status: 'active',
-          emailVerifiedAt: null,
-          lastLoginAt: null,
-          createdAt: '2026-01-01',
-        },
-      ],
-    });
+    mockGet.mockResolvedValueOnce([
+      {
+        id: 'u1',
+        email: 'user@test.com',
+        phone: '081',
+        role: 'customer',
+        status: 'active',
+        emailVerifiedAt: null,
+        lastLoginAt: null,
+        createdAt: '2026-01-01',
+      },
+    ]);
     mockPatch.mockResolvedValue(undefined);
     render(<AdminUsers />);
     const btn = await screen.findByText('Ubah Status');
@@ -278,20 +293,18 @@ describe('AdminUsers', () => {
 
   it('does not call patch API when status is unchanged', async () => {
     const user = userEvent.setup();
-    mockGet.mockResolvedValueOnce({
-      data: [
-        {
-          id: 'u1',
-          email: 'user@test.com',
-          phone: '',
-          role: 'customer',
-          status: 'active',
-          emailVerifiedAt: null,
-          lastLoginAt: null,
-          createdAt: '2026-01-01',
-        },
-      ],
-    });
+    mockGet.mockResolvedValueOnce([
+      {
+        id: 'u1',
+        email: 'user@test.com',
+        phone: '',
+        role: 'customer',
+        status: 'active',
+        emailVerifiedAt: null,
+        lastLoginAt: null,
+        createdAt: '2026-01-01',
+      },
+    ]);
     mockPatch.mockResolvedValue(undefined);
     render(<AdminUsers />);
     const btn = await screen.findByText('Ubah Status');
@@ -309,20 +322,18 @@ describe('AdminUsers', () => {
 
   it('closes modal on Batal and does not call API', async () => {
     const user = userEvent.setup();
-    mockGet.mockResolvedValueOnce({
-      data: [
-        {
-          id: 'u1',
-          email: 'user@test.com',
-          phone: '',
-          role: 'customer',
-          status: 'active',
-          emailVerifiedAt: null,
-          lastLoginAt: null,
-          createdAt: '2026-01-01',
-        },
-      ],
-    });
+    mockGet.mockResolvedValueOnce([
+      {
+        id: 'u1',
+        email: 'user@test.com',
+        phone: '',
+        role: 'customer',
+        status: 'active',
+        emailVerifiedAt: null,
+        lastLoginAt: null,
+        createdAt: '2026-01-01',
+      },
+    ]);
     render(<AdminUsers />);
     const btn = await screen.findByText('Ubah Status');
     await user.click(btn);
@@ -342,20 +353,18 @@ describe('AdminUsers', () => {
 
   describe('CSV export', () => {
     beforeEach(() => {
-      mockGet.mockResolvedValue({
-        data: [
-          {
-            id: 'u1',
-            email: 'user@test.com',
-            phone: '08123456789',
-            role: 'customer',
-            status: 'active',
-            emailVerifiedAt: '2026-01-01',
-            lastLoginAt: null,
-            createdAt: '2026-01-01',
-          },
-        ],
-      });
+      mockGet.mockResolvedValue([
+        {
+          id: 'u1',
+          email: 'user@test.com',
+          phone: '08123456789',
+          role: 'customer',
+          status: 'active',
+          emailVerifiedAt: '2026-01-01',
+          lastLoginAt: null,
+          createdAt: '2026-01-01',
+        },
+      ]);
     });
 
     it('renders Export CSV button when data loaded', async () => {
@@ -365,7 +374,7 @@ describe('AdminUsers', () => {
 
     it('does not render Export CSV button when no users', async () => {
       mockGet.mockReset();
-      mockGet.mockResolvedValue({ data: [] });
+      mockGet.mockResolvedValue([]);
       render(<AdminUsers />);
       expect(await screen.findByText('Tidak ada user ditemukan')).toBeInTheDocument();
       expect(screen.queryByText('Export CSV')).not.toBeInTheDocument();

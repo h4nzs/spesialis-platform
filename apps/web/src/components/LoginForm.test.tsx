@@ -2,6 +2,19 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { LoginForm } from './LoginForm';
 
+vi.mock('@ahlipanggilan/validation', () => ({
+  loginSchema: {
+    safeParse: (data: { email: string; password: string }) => {
+      if (!data.email || !data.email.includes('@'))
+        return {
+          success: false,
+          error: { issues: [{ path: ['email'], message: 'Invalid email address' }] },
+        };
+      return { success: true, data };
+    },
+  },
+}));
+
 vi.mock('@ahlipanggilan/ui', () => ({
   Button: ({
     children,

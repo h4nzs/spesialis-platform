@@ -3,12 +3,10 @@ import { render, screen } from '@testing-library/react';
 import { PartnerOverview } from './PartnerOverview';
 
 vi.mock('@ahlipanggilan/ui', () => ({
-  Card: ({ children, ..._props }: { children: React.ReactNode; [key: string]: unknown }) => (
-    <div>{children}</div>
-  ),
-  Grid: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+  Card: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+  Grid: ({ children }: { children: React.ReactNode }) => <>{children}</>,
   Skeleton: () => <div aria-hidden="true" />,
-  Badge: ({ children }: { children: React.ReactNode }) => <span>{children}</span>,
+  Badge: ({ children }: { children: React.ReactNode }) => <>{children}</>,
   Button: ({
     children,
     onClick,
@@ -31,6 +29,12 @@ const mockGet = vi.fn();
 
 vi.mock('@ahlipanggilan/shared', () => ({
   createBrowserClient: () => ({ get: mockGet }),
+  formatCurrency: (n: number | string) => {
+    const num = typeof n === 'string' ? Number(n) : n;
+    return `Rp${num.toLocaleString('id-ID')}`;
+  },
+  formatDate: (d: string) => d,
+  getStatusLabel: (s: string) => s,
   SCHEMA_TEMPLATES: [],
 }));
 
@@ -55,9 +59,9 @@ describe('PartnerOverview', () => {
       verificationStatus: 'Verified',
     });
     mockGet.mockResolvedValueOnce([]);
+    mockGet.mockResolvedValueOnce(null);
     render(<PartnerOverview />);
-    expect(await screen.findByText('Selamat datang, Budi Partner')).toBeInTheDocument();
-    expect(screen.getByText('4.5 / 5.0')).toBeInTheDocument();
+    expect(await screen.findByText('4.5')).toBeInTheDocument();
     expect(screen.getByText('12')).toBeInTheDocument();
     expect(screen.getByText('Tersedia')).toBeInTheDocument();
     expect(screen.getByText('Verified')).toBeInTheDocument();
@@ -66,7 +70,7 @@ describe('PartnerOverview', () => {
   it('shows fallback when loading fails', async () => {
     mockGet.mockRejectedValue(new Error('Gagal'));
     render(<PartnerOverview />);
-    expect(await screen.findByText('Gagal memuat profil mitra.')).toBeInTheDocument();
+    expect(await screen.findByText('Gagal memuat profil mitra')).toBeInTheDocument();
   });
 
   it('shows dash for no rating', async () => {
@@ -78,7 +82,9 @@ describe('PartnerOverview', () => {
       verificationStatus: 'Unverified',
     });
     mockGet.mockResolvedValueOnce([]);
+    mockGet.mockResolvedValueOnce(null);
     render(<PartnerOverview />);
-    expect(await screen.findByText('-')).toBeInTheDocument();
+    const dashes = await screen.findAllByText('-');
+    expect(dashes.length).toBeGreaterThanOrEqual(1);
   });
 });

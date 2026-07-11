@@ -2,6 +2,19 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { RegisterForm } from './RegisterForm';
 
+vi.mock('@ahlipanggilan/validation', () => ({
+  registerSchema: {
+    safeParse: (data: { fullName: string; email: string; phone: string; password: string }) => {
+      if (!data.fullName)
+        return {
+          success: false,
+          error: { issues: [{ path: ['fullName'], message: 'Nama lengkap wajib diisi' }] },
+        };
+      return { success: true, data };
+    },
+  },
+}));
+
 vi.mock('@ahlipanggilan/ui', () => ({
   Button: ({
     children,
@@ -42,7 +55,7 @@ describe('RegisterForm', () => {
   it('shows validation errors for empty submit', () => {
     render(<RegisterForm />);
     fireEvent.click(screen.getByRole('button', { name: 'Daftar' }));
-    expect(screen.getByText(/nama lengkap/i)).toBeInTheDocument();
+    expect(screen.getByText(/Nama lengkap wajib diisi/i)).toBeInTheDocument();
   });
 
   it('shows loading state when submitting', () => {
