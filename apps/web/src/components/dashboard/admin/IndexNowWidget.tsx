@@ -97,7 +97,7 @@ export function IndexNowWidget() {
   }
 
   const stats = logsData?.stats;
-  const recentLogs = logsData?.logs.slice(0, 8) ?? [];
+  const recentLogs = logsData?.logs?.slice(0, 8) ?? [];
   const hasKey = config?.key && config.key.length > 0;
 
   return (

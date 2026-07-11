@@ -10,6 +10,10 @@ vi.mock('@ahlipanggilan/shared', () => ({
   SCHEMA_TEMPLATES: [],
 }));
 
+vi.mock('./IndexNowWidget.tsx', () => ({
+  IndexNowWidget: () => null,
+}));
+
 beforeEach(() => {
   vi.clearAllMocks();
 });

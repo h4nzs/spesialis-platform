@@ -196,7 +196,7 @@ test.describe('Article Creation & Rendering', () => {
       'Seed data not loaded — run `pnpm --filter @ahlipanggilan/api db:seed` first',
     );
 
-    await expect(h1).toContainText('Cara Merawat AC', { timeout: 10000 });
+    await expect(h1.first()).toContainText('Cara Merawat AC', { timeout: 10000 });
 
     // Markdown headings → <h2>
     const prose = page.locator('.prose');
