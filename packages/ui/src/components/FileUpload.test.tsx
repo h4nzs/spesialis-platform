@@ -5,7 +5,7 @@ import { FileUpload } from './FileUpload';
 describe('FileUpload', () => {
   it('renders upload button', () => {
     render(<FileUpload />);
-    expect(screen.getByText('Klik untuk upload')).toBeInTheDocument();
+    expect(screen.getByText('Drag & drop atau klik untuk upload')).toBeInTheDocument();
   });
 
   it('renders with label', () => {
@@ -42,7 +42,7 @@ describe('FileUpload', () => {
     render(<FileUpload />);
     const input = screen.getByTestId('file-input') as HTMLInputElement;
     input.click = clickSpy;
-    fireEvent.click(screen.getByText('Klik untuk upload'));
+    fireEvent.click(screen.getByText('Drag & drop atau klik untuk upload'));
     expect(clickSpy).toHaveBeenCalled();
   });
 });

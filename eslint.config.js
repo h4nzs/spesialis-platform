@@ -11,6 +11,7 @@ export default [
       '**/migrations/**',
       '**/*.config.*',
       '**/coverage/**',
+      '**/storybook-static/**',
       '**/.pnpm-store/**',
     ],
   },

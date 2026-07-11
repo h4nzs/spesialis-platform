@@ -42,7 +42,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      packages: write  # needed to push to GHCR
+      packages: write # needed to push to GHCR
 
     steps:
       - name: Checkout
@@ -83,7 +83,6 @@ jobs:
             ${{ env.IMAGE_REGISTRY }}/${{ env.IMAGE_OWNER }}/web:${{ env.IMAGE_TAG }}
           cache-from: type=gha,scope=web
           cache-to: type=gha,mode=max,scope=web
-
 
   # ── Deploy to VPS ─────────────────────────────────────────────────
   deploy:

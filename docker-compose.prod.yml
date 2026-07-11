@@ -45,7 +45,7 @@ services:
     restart: unless-stopped
 
     ports:
-      - '127.0.0.1:3000:3000'   # Only expose to Nginx (same host)
+      - '127.0.0.1:3000:3000' # Only expose to Nginx (same host)
     environment:
       NODE_ENV: production
       PORT: '3000'

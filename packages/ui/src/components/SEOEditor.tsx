@@ -118,9 +118,9 @@ export function SEOEditor({
   const update = useCallback(
     (key: keyof SeoData, val: string) => {
       if (!onChange) return;
-      onChange({ ...seo, [key]: val });
+      onChange({ ...DEFAULT_SEO, ...value, [key]: val });
     },
-    [seo, onChange],
+    [value, onChange],
   );
 
   const handleOgUploadClick = useCallback(() => {

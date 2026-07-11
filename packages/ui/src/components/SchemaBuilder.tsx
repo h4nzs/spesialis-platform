@@ -186,15 +186,6 @@ export function SchemaBuilder({ value, onChange, className }: SchemaBuilderProps
   // ── Render field by type ────────────────────────────────────
   function renderField(field: SchemaField) {
     const value = fieldValues[field.key] ?? '';
-    const commonProps = {
-      key: field.key,
-      label: field.label,
-      value,
-      onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
-        handleFieldChange(field.key, e.target.value),
-      placeholder: field.placeholder,
-      hint: field.hint,
-    };
 
     if (field.type === 'textarea') {
       return (
