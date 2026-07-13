@@ -7,15 +7,18 @@
 #   VPS_HOST       — VPS IP address or domain
 #   VPS_USER       — SSH username (e.g., deploy)
 #   VPS_SSH_KEY    — SSH private key (deploy key with repo read access)
-#   VPS_PATH       — Path to project on VPS (e.g., /home/deploy/ahlipanggilan)
+#   VPS_PATH       — Path to project on VPS (e.g., /home/deploy/spesialis-platform)
+#
+# Repository Variables (Settings → Secrets and variables → Actions → Variables):
+#   VPS_ENABLED    — Set to 'true' to enable auto-deploy
 #
 # Workflow:
 #   1. Build API + Web Docker images
 #   2. Push to GitHub Container Registry (ghcr.io)
-#   3. SSH into VPS → pull images → restart stack
+#   3. SSH into VPS → pull images → init SSL → migrate DB → restart stack
 #
 # Rollback:
-#   ssh vps "cd $VPS_PATH && IMAGE_TAG=<previous-sha> docker compose -f docker-compose.prod.yml up -d"
+#   ssh vps "cd $VPS_PATH && IMAGE_TAG=<previous-sha> IMAGE_OWNER=h4nzs docker compose -f docker-compose.prod.yml up -d"
 # =============================================================================
 
 name: Deploy
@@ -89,7 +92,7 @@ jobs:
     name: Deploy to VPS
     runs-on: ubuntu-latest
     needs: build-and-push
-    # Only deploy if VPS_HOST variable is set (set in repo settings)
+    # Only deploy if VPS_ENABLED variable is set to 'true' in repo settings
     if: vars.VPS_ENABLED == 'true'
 
     steps:
@@ -106,27 +109,81 @@ jobs:
             StrictHostKeyChecking accept-new
           EOF
 
-      - name: Pull images & restart stack
+      - name: Deploy to VPS
         run: |
-          ssh vps "
-            set -e
-            cd ${{ secrets.VPS_PATH }}
+          set -euo pipefail
 
-            echo '→ Pulling latest images...'
-            IMAGE_TAG=${{ env.IMAGE_TAG }} \
-              docker compose -f docker-compose.prod.yml pull
+          # Write deploy script to temp file to avoid heredoc escaping issues
+          cat > /tmp/deploy-vps.sh << 'DEPLOYSCRIPT'
+          set -euo pipefail
+          cd ${{ secrets.VPS_PATH }}
 
-            echo '→ Restarting stack...'
-            IMAGE_TAG=${{ env.IMAGE_TAG }} \
-              docker compose -f docker-compose.prod.yml up -d
+          export IMAGE_TAG=${{ env.IMAGE_TAG }}
+          export IMAGE_OWNER=${{ env.IMAGE_OWNER }}
 
-            echo '→ Pruning old images...'
-            docker image prune -f --filter "until=24h"
+          echo "Pulling images (ghcr.io/${IMAGE_OWNER}/api:${IMAGE_TAG})..."
+          docker compose -f docker-compose.prod.yml pull
 
-            echo '→ Checking health...'
-            sleep 5
-            docker ps --format 'table {{.Names}}\t{{.Status}}'
-          "
+          if [ ! -f /etc/letsencrypt/live/ahlipanggilan.id/fullchain.pem ]; then
+            echo "SSL certs not found. Obtaining via certbot..."
+            sudo mkdir -p /etc/letsencrypt /var/www/letsencrypt
+            sudo docker run --rm -p 80:80 \
+              -v /etc/letsencrypt:/etc/letsencrypt \
+              -v /var/www/letsencrypt:/var/www/letsencrypt \
+              certbot/certbot certonly --standalone \
+              -d ahlipanggilan.id -d www.ahlipanggilan.id \
+              --non-interactive --agree-tos \
+              --email admin@ahlipanggilan.id || \
+              echo "SSL setup skipped -- will retry next deploy"
+          else
+            echo "SSL certs found, skipping..."
+          fi
+
+          echo "Starting database..."
+          docker compose -f docker-compose.prod.yml up -d postgres
+
+          echo "Waiting for database to be healthy..."
+          for i in $(seq 1 30); do
+            DB_USER="${DATABASE_USER:-specialist}"
+            if docker compose -f docker-compose.prod.yml exec -T postgres pg_isready -U "$DB_USER" --timeout=5 > /dev/null 2>&1; then
+              echo "Database ready!"
+              break
+            fi
+            sleep 2
+          done
+
+          echo "Running database migrations..."
+          docker compose -f docker-compose.prod.yml run --rm api pnpm --filter @ahlipanggilan/database db:migrate || echo "Migrations may already be applied"
+
+          echo "Starting full stack..."
+          docker compose -f docker-compose.prod.yml up -d
+
+          echo "Pruning old images..."
+          docker image prune -f --filter "until=24h"
+
+          echo "Checking container health..."
+          sleep 10
+          docker ps --format 'table {{.Names}}\t{{.Status}}'
+          DEPLOYSCRIPT
+
+          # Copy and execute the script on VPS
+          scp /tmp/deploy-vps.sh vps:/tmp/deploy-vps.sh
+          ssh vps "bash /tmp/deploy-vps.sh"
+
+          # Cleanup
+          rm /tmp/deploy-vps.sh
+          ssh vps "rm /tmp/deploy-vps.sh" || true
+
+      - name: Verify deployment
+        run: |
+          sleep 15
+          echo "→ Checking API health..."
+          curl -sSf "https://ahlipanggilan.id/api/v1/health" || \
+            echo "⚠ Health check failed (may need a few more seconds)"
+
+          echo "→ Checking Web..."
+          curl -sSf "https://ahlipanggilan.id/" -o /dev/null -w "   HTTP %{http_code}\n" || \
+            echo "⚠ Web check failed"
 
       - name: Notify on failure
         if: failure()

@@ -40,7 +40,7 @@ services:
 
   # ── Hono API ──────────────────────────────────────────────────────
   api:
-    image: ${IMAGE_REGISTRY:-ghcr.io}/${IMAGE_OWNER:-ahlipanggilan}/api:${IMAGE_TAG:-latest}
+    image: ${IMAGE_REGISTRY:-ghcr.io}/${IMAGE_OWNER:-h4nzs}/api:${IMAGE_TAG:-latest}
     container_name: ahlipanggilan-api
     restart: unless-stopped
 
@@ -96,7 +96,7 @@ services:
 
   # ── Astro Web ─────────────────────────────────────────────────────
   web:
-    image: ${IMAGE_REGISTRY:-ghcr.io}/${IMAGE_OWNER:-ahlipanggilan}/web:${IMAGE_TAG:-latest}
+    image: ${IMAGE_REGISTRY:-ghcr.io}/${IMAGE_OWNER:-h4nzs}/web:${IMAGE_TAG:-latest}
     container_name: ahlipanggilan-web
     restart: unless-stopped
 
