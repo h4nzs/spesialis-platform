@@ -50,7 +50,7 @@ export function AdminCoverageAreas() {
   }
 
   async function handleDelete(item: CoverageAreaItem) {
-    if (!confirm(`Hapus area layanan \"${item.city}\"?`)) return;
+    if (!confirm(`Hapus area layanan "${item.city}"?`)) return;
     try {
       await api.delete(`/api/v1/admin/coverage-areas/${item.id}`);
       await loadData();
