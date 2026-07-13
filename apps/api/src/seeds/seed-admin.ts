@@ -57,6 +57,11 @@ async function main() {
     })
     .returning({ id: users.id, email: users.email, role: users.role });
 
+  if (!user) {
+    console.error('  ❌ Failed to create user — no row returned');
+    process.exit(1);
+  }
+
   console.log(`  ✅ Super admin created:`);
   console.log(`     Email: ${user.email}`);
   console.log(`     Password: ${password}`);
