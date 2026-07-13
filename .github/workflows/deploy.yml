@@ -118,6 +118,12 @@ jobs:
           set -euo pipefail
           cd ${{ secrets.VPS_PATH }}
 
+          # Sync repository code (docker-compose, nginx config, etc.)
+          echo "Syncing latest code from GitHub..."
+          git fetch origin main
+          git reset --hard origin/main
+          git clean -fd
+
           export IMAGE_TAG=${{ env.IMAGE_TAG }}
           export IMAGE_OWNER=${{ env.IMAGE_OWNER }}
 
