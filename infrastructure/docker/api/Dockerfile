@@ -16,4 +16,5 @@ EXPOSE 3000
 
 # Production: run without file watcher (no hot-reload)
 # Uses tsx to execute TypeScript directly — no build step needed
-CMD ["pnpm", "--filter", "@ahlipanggilan/api", "start"]
+# Uses start:prod to avoid --env-file flag (env vars come from docker-compose)
+CMD ["pnpm", "--filter", "@ahlipanggilan/api", "start:prod"]

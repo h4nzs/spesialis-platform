@@ -8,6 +8,7 @@
     "lint": "eslint .",
     "dev": "tsx watch --env-file=../../.env src/index.ts",
     "start": "tsx --env-file=../../.env src/index.ts",
+    "start:prod": "tsx src/index.ts",
     "db:seed": "tsx --env-file=../../.env src/seeds/index.ts",
     "test": "vitest run",
     "test:integration": "vitest run --config vitest.integration.config.ts"
