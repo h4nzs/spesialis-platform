@@ -107,6 +107,7 @@ services:
     environment:
       NODE_ENV: production
       APP_ENV: production
+      JWT_SECRET: ${JWT_SECRET}
       API_URL: http://api:3000
       PUBLIC_API_URL: ${PUBLIC_API_URL:-https://ahlipanggilan.id/api}
       SITE_URL: ${SITE_URL:-https://ahlipanggilan.id}
