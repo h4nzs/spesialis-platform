@@ -40,8 +40,8 @@ let services: ServiceItem[] = []
 let articles: ArticleItem[] = []
 try {
   const [servicesRes, articlesRes] = await Promise.all([
-    fetch(`${import.meta.env.API_URL ?? import.meta.env.PUBLIC_API_URL ?? 'http://localhost:3000'}/api/v1/services?limit=12`),
-    fetch(`${import.meta.env.API_URL ?? import.meta.env.PUBLIC_API_URL ?? 'http://localhost:3000'}/api/v1/cms/articles?limit=3`),
+    fetch(`${process.env.API_URL ?? process.env.PUBLIC_API_URL ?? 'http://localhost:3000'}/api/v1/services?limit=12`),
+    fetch(`${process.env.API_URL ?? process.env.PUBLIC_API_URL ?? 'http://localhost:3000'}/api/v1/cms/articles?limit=3`),
   ])
   if (servicesRes.ok) {
     const json = await servicesRes.json()
