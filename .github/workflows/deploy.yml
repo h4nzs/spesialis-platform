@@ -124,6 +124,14 @@ jobs:
           git reset --hard origin/main
           git clean -fd -e .env.prod
 
+          # Save previous deployment tag for rollback
+          PREVIOUS_TAG=$(docker inspect ahlipanggilan-api --format '{{.Config.Image}}' 2>/dev/null | sed 's|.*:||' || echo "")
+          if [ -n "$PREVIOUS_TAG" ]; then
+            echo "Previous deployment: $PREVIOUS_TAG"
+          else
+            echo "No previous deployment found (first deploy)"
+          fi
+
           export IMAGE_TAG=${{ env.IMAGE_TAG }}
           export IMAGE_OWNER=${{ env.IMAGE_OWNER }}
 
@@ -238,15 +246,82 @@ jobs:
             echo "WARNING: Database is not healthy — skipping migrations"
           fi
 
+          ROLLBACK_OCCURRED=false
+
           echo "Starting full stack..."
           docker compose -f docker-compose.prod.yml $COMPOSE_ENV_FILE up -d
 
-          echo "Pruning old images..."
+          # ── Health check & auto-rollback ──────────────────────────
+          echo "Checking API health (waiting for startup)..."
+
+          DEPLOY_SUCCESS=false
+          for i in $(seq 1 10); do
+            if curl -sf http://localhost:3000/api/v1/health >/dev/null 2>&1; then
+              DEPLOY_SUCCESS=true
+              break
+            fi
+            sleep 3
+          done
+
+          if [ "$DEPLOY_SUCCESS" = true ]; then
+            echo "✅ API health check passed — deployment successful!"
+          else
+            echo "⚠️ API health check FAILED"
+            echo "=== API LOGS ==="
+            docker logs ahlipanggilan-api --tail 30 2>/dev/null || echo "(no logs)"
+            echo "================"
+          fi
+
+          if [ "$DEPLOY_SUCCESS" = false ] && [ -n "$PREVIOUS_TAG" ] && [ "$PREVIOUS_TAG" != "$IMAGE_TAG" ]; then
+            echo "↩ Rolling back to previous deployment: $PREVIOUS_TAG"
+            export IMAGE_TAG=$PREVIOUS_TAG
+            docker compose -f docker-compose.prod.yml $COMPOSE_ENV_FILE up -d
+
+            ROLLBACK_OK=false
+            for i in $(seq 1 10); do
+              if curl -sf http://localhost:3000/api/v1/health >/dev/null 2>&1; then
+                ROLLBACK_OK=true
+                break
+              fi
+              sleep 3
+            done
+
+            if [ "$ROLLBACK_OK" = true ]; then
+              echo "✅ Rollback successful — API is healthy with $PREVIOUS_TAG"
+              echo "⚠️  NOTE: Database migrations have been applied and will NOT be undone."
+              echo "   If the old code fails due to schema changes, restore the backup manually:"
+              echo "   docker compose -f docker-compose.prod.yml \$COMPOSE_ENV_FILE exec -T postgres psql -U specialist specialist < db-backups/pre-migrate-<timestamp>.sql"
+              ROLLBACK_OCCURRED=true
+            else
+              echo "❌ Rollback ALSO FAILED — manual intervention required"
+              echo "   Previous tag: $PREVIOUS_TAG"
+              echo "   Failed tag: ${{ env.IMAGE_TAG }}"
+              echo "=== API LOGS (after rollback) ==="
+              docker logs ahlipanggilan-api --tail 30 2>/dev/null || true
+              echo "================================"
+            fi
+          elif [ "$DEPLOY_SUCCESS" = false ]; then
+            echo "❌ New deployment failed and no previous version to roll back to"
+            echo "   This appears to be the first deployment"
+          fi
+
+          # ── Cleanup ────────────────────────────────────────────────
+          echo "Pruning old images (older than 24h)..."
           docker image prune -f --filter "until=24h"
 
-          echo "Checking container health..."
-          sleep 10
+          echo "=== Final container status ==="
           docker ps --format 'table {{.Names}}\t{{.Status}}'
+
+          # Signal failure to GitHub Actions if rollback happened
+          if [ "$ROLLBACK_OCCURRED" = true ]; then
+            echo ""
+            echo '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'
+            echo '  ROLLBACK OCCURRED - New deployment FAILED'
+            echo '  The site is running the PREVIOUS version.'
+            echo '  Check the deploy logs for details.'
+            echo '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'
+            exit 1
+          fi
           DEPLOYSCRIPT
 
           # Copy and execute the script on VPS

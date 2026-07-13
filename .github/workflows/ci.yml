@@ -50,6 +50,8 @@ jobs:
         run: pnpm lint
       - name: Typecheck
         run: pnpm typecheck
+      - name: Build
+        run: pnpm build
 
   unit-test:
     name: Unit Tests
@@ -71,6 +73,7 @@ jobs:
   e2e-test:
     name: E2E Tests
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     services:
       postgres:
         image: postgres:17
