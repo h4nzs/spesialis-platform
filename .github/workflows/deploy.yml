@@ -122,7 +122,7 @@ jobs:
           echo "Syncing latest code from GitHub..."
           git fetch origin main
           git reset --hard origin/main
-          git clean -fd
+          git clean -fd -e .env.prod
 
           export IMAGE_TAG=${{ env.IMAGE_TAG }}
           export IMAGE_OWNER=${{ env.IMAGE_OWNER }}
@@ -172,12 +172,27 @@ jobs:
             docker logs ahlipanggilan-postgres --tail 50 2>/dev/null || echo "(no logs)"
             echo "======================"
 
-            echo "Resetting volume for clean start..."
-            docker compose -f docker-compose.prod.yml $COMPOSE_ENV_FILE down
-            docker volume rm spesialis-platform_postgres_data 2>/dev/null || true
+            # Cek apakah volume berisi data sebelum reset
+            VOL_HAS_DATA=false
+            if docker volume inspect spesialis-platform_postgres_data >/dev/null 2>&1; then
+              VOL_PATH=$(docker volume inspect spesialis-platform_postgres_data --format '{{.Mountpoint}}' 2>/dev/null || echo "")
+              if [ -n "$VOL_PATH" ] && [ -d "$VOL_PATH" ] && [ "$(ls -A "$VOL_PATH" 2>/dev/null)" ]; then
+                VOL_HAS_DATA=true
+              fi
+            fi
 
-            echo "Restarting database with clean volume..."
-            docker compose -f docker-compose.prod.yml $COMPOSE_ENV_FILE up -d postgres
+            if [ "$VOL_HAS_DATA" = true ]; then
+              echo "WARNING: Database volume contains existing data — NOT resetting automatically"
+              echo "Manual intervention required to fix postgres"
+              echo "  SSH to VPS and run: docker compose -f docker-compose.prod.yml --env-file .env.prod up -d postgres"
+            else
+              echo "Volume is empty or doesn't exist — safe to reset"
+              docker compose -f docker-compose.prod.yml $COMPOSE_ENV_FILE down
+              docker volume rm spesialis-platform_postgres_data 2>/dev/null || true
+
+              echo "Restarting database with clean volume..."
+              docker compose -f docker-compose.prod.yml $COMPOSE_ENV_FILE up -d postgres
+            fi
 
             for i in $(seq 1 20); do
               HEALTH=$(docker inspect --format='{{.State.Health.Status}}' ahlipanggilan-postgres 2>/dev/null || echo "missing")
@@ -204,6 +219,19 @@ jobs:
           fi
 
           if [ "$DB_READY" = true ]; then
+            # Backup sebelum migration
+            echo "Backing up database before migration..."
+            BACKUP_DIR="${{ secrets.VPS_PATH }}/db-backups"
+            mkdir -p "$BACKUP_DIR"
+            BACKUP_FILE="$BACKUP_DIR/pre-migrate-$(date +%Y%m%d-%H%M%S).sql"
+            docker compose -f docker-compose.prod.yml $COMPOSE_ENV_FILE exec -T postgres \
+              pg_dump -U specialist specialist > "$BACKUP_FILE" && \
+              echo "Backup saved: $BACKUP_FILE" || \
+              echo "WARNING: Backup failed — continuing anyway"
+
+            # Bersihkan backup lebih dari 7 hari
+            find "$BACKUP_DIR" -name "*.sql" -mtime +7 -delete 2>/dev/null || true
+
             echo "Running database migrations..."
             docker compose -f docker-compose.prod.yml $COMPOSE_ENV_FILE run --rm api pnpm --filter @ahlipanggilan/database db:migrate
           else
