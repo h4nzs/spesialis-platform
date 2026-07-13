@@ -11,6 +11,7 @@
     "start:prod": "tsx src/index.ts",
     "db:seed": "tsx --env-file=../../.env src/seeds/index.ts",
     "db:seed-data": "tsx --env-file=../../.env src/seeds/seed-data.ts",
+    "db:seed-data:prod": "tsx src/seeds/seed-data.ts",
     "test": "vitest run",
     "test:integration": "vitest run --config vitest.integration.config.ts"
   },
