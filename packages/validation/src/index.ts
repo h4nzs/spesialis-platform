@@ -168,3 +168,6 @@ export type { CreateCmsPageInput, UpdateCmsPageInput } from './cms-pages.ts';
 
 export { createRedirectSchema, updateRedirectSchema } from './redirect.ts';
 export type { CreateRedirectInput, UpdateRedirectInput } from './redirect.ts';
+
+export { createCoverageAreaSchema, updateCoverageAreaSchema } from './coverage-area.ts';
+export type { CreateCoverageAreaInput, UpdateCoverageAreaInput } from './coverage-area.ts';

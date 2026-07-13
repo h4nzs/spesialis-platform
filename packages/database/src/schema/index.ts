@@ -35,6 +35,7 @@ export { cmsPages } from './cms-pages.ts';
 export { redirects } from './redirects.ts';
 export { pageErrors } from './page-errors.ts';
 export { indexnowLogs } from './indexnow-logs.ts';
+export { coverageAreas } from './coverage-areas.ts';
 
 export { indexnowLogsRelations } from './relations.ts';
 

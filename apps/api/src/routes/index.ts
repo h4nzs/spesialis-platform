@@ -36,6 +36,7 @@ import { publicRouter } from './public.ts';
 import { adminCmsPagesRouter } from './admin/cms-pages.ts';
 import { adminRedirectsRouter } from './admin/redirects.ts';
 import { adminPageErrorsRouter } from './admin/page-errors.ts';
+import { adminCoverageAreasRouter } from './admin/coverage-areas.ts';
 import { sitemapSettingsRouter } from './sitemap-settings.ts';
 import { indexnowRouter } from './indexnow.ts';
 
@@ -83,6 +84,7 @@ router.route('/public', publicRouter);
 router.route('/admin/cms-pages', adminCmsPagesRouter);
 router.route('/admin/redirects', adminRedirectsRouter);
 router.route('/admin/page-errors', adminPageErrorsRouter);
+router.route('/admin/coverage-areas', adminCoverageAreasRouter);
 router.route('/sitemap-settings', sitemapSettingsRouter);
 router.route('/indexnow', indexnowRouter);
 

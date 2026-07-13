@@ -5,16 +5,30 @@
  * User problem: "Does this service cover my area?"
  * Goal: Answer location question before user reaches FAQ.
  * Visual: Simple list of cities. No map (would need JS).
+ *
+ * Data fetched from API at SSR time — admin can manage via dashboard.
  */
 
-const areas = [
-  { city: 'Jakarta', note: 'Pusat, Selatan, Barat, Timur, Utara' },
-  { city: 'Bandung', note: 'Kota dan sekitarnya' },
-  { city: 'Tangerang', note: 'Kota dan sekitarnya' },
-  { city: 'Bekasi', note: 'Kota dan sekitarnya' },
-  { city: 'Depok', note: 'Kota dan sekitarnya' },
-  { city: 'Bogor', note: 'Kota dan sekitarnya' },
-];
+interface CoverageArea {
+  id: string;
+  city: string;
+  note: string | null;
+  displayOrder: number;
+  isActive: string;
+}
+
+const apiUrl = process.env.API_URL ?? process.env.PUBLIC_API_URL ?? 'http://localhost:3000';
+
+let areas: CoverageArea[] = [];
+try {
+  const res = await fetch(`${apiUrl}/api/v1/public/coverage-areas`);
+  if (res.ok) {
+    const json = await res.json();
+    areas = json.data ?? [];
+  }
+} catch {
+  // silent — fallback to empty state
+}
 ---
 
 <section class="bg-bg-section">
@@ -27,23 +41,54 @@ const areas = [
       </p>
     </div>
 
-    <div class="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-      {
-        areas.map((area) => (
-          <div class="flex items-center gap-4 rounded-lg border border-border-default bg-bg-surface px-5 py-4">
-            <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary-50 text-primary-600" aria-hidden="true">
-              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/>
-                <circle cx="12" cy="10" r="3"/>
-              </svg>
+    {
+      areas.length > 0 ? (
+        <div class="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {
+            areas
+              .filter((a) => a.isActive === 'true')
+              .map((area) => (
+                <div class="flex items-center gap-4 rounded-lg border border-border-default bg-bg-surface px-5 py-4">
+                  <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary-50 text-primary-600" aria-hidden="true">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/>
+                      <circle cx="12" cy="10" r="3"/>
+                    </svg>
+                  </div>
+                  <div>
+                    <p class="text-body font-semibold text-text-primary">{area.city}</p>
+                    {area.note && <p class="text-caption text-text-muted">{area.note}</p>}
+                  </div>
+                </div>
+              ))
+          }
+        </div>
+      ) : (
+        <div class="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <!-- Static fallback if API is unavailable -->
+          {[
+            { city: 'Jakarta', note: 'Pusat, Selatan, Barat, Timur, Utara' },
+            { city: 'Bandung', note: 'Kota dan sekitarnya' },
+            { city: 'Tangerang', note: 'Kota dan sekitarnya' },
+            { city: 'Bekasi', note: 'Kota dan sekitarnya' },
+            { city: 'Depok', note: 'Kota dan sekitarnya' },
+            { city: 'Bogor', note: 'Kota dan sekitarnya' },
+          ].map((area) => (
+            <div class="flex items-center gap-4 rounded-lg border border-border-default bg-bg-surface px-5 py-4">
+              <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary-50 text-primary-600" aria-hidden="true">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/>
+                  <circle cx="12" cy="10" r="3"/>
+                </svg>
+              </div>
+              <div>
+                <p class="text-body font-semibold text-text-primary">{area.city}</p>
+                <p class="text-caption text-text-muted">{area.note}</p>
+              </div>
             </div>
-            <div>
-              <p class="text-body font-semibold text-text-primary">{area.city}</p>
-              <p class="text-caption text-text-muted">{area.note}</p>
-            </div>
-          </div>
-        ))
-      }
-    </div>
+          ))}
+        </div>
+      )
+    }
   </div>
 </section>
