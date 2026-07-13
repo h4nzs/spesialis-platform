@@ -3,14 +3,11 @@ export const prerender = false;
 
 import BaseLayout from '../layouts/BaseLayout.astro'
 import Hero from '../components/homepage/Hero.astro'
+import QuickServiceCategories from '../components/homepage/QuickServiceCategories.astro'
+import WhyChooseUs from '../components/homepage/WhyChooseUs.astro'
 import FeaturedServices from '../components/homepage/FeaturedServices.astro'
-import ServiceGrid from '../components/homepage/ServiceGrid.astro'
-import Benefits from '../components/homepage/Benefits.astro'
-import Statistics from '../components/homepage/Statistics.astro'
 import Process from '../components/homepage/Process.astro'
 import Testimonials from '../components/homepage/Testimonials.astro'
-import Coverage from '../components/homepage/Coverage.astro'
-import PartnerCTA from '../components/homepage/PartnerCTA.astro'
 import CorporateCTA from '../components/homepage/CorporateCTA.astro'
 import LatestArticles from '../components/homepage/LatestArticles.astro'
 import FAQSection from '../components/homepage/FAQSection.astro'
@@ -114,43 +111,34 @@ try {
     ],
   }}
 >
-  <!-- 1. Hero + HeroSearch -->
+  <!-- 1. Hero — Two-column layout -->
   <Hero totalServices={services.length} />
 
-  <!-- 2. Featured Services (curated) -->
+  <!-- 2. Quick Service Categories — Icon grid shortcuts -->
+  <QuickServiceCategories />
+
+  <!-- 3. Why Choose Us — Split layout: stats + benefits -->
+  <WhyChooseUs totalServices={services.length} />
+
+  <!-- 4. Featured Services (curated) -->
   <FeaturedServices services={services} />
 
-  <!-- 3. All Services Grid -->
-  <ServiceGrid services={services} />
-
-  <!-- 4. Why Choose Us -->
-  <Benefits />
-
-  <!-- 5. Statistics (trust evidence after benefits) -->
-  <Statistics />
-
-  <!-- 6. How It Works -->
+  <!-- 5. How It Works -->
   <Process />
 
-  <!-- 7. Testimonials -->
+  <!-- 6. Testimonials -->
   <Testimonials />
 
-  <!-- 8. Coverage Area -->
-  <Coverage />
-
-  <!-- 9. Partner CTA -->
-  <PartnerCTA />
-
-  <!-- 10. Corporate CTA -->
+  <!-- 7. Corporate Trust -->
   <CorporateCTA />
 
-  <!-- 11. Latest Articles -->
+  <!-- 8. Latest Articles -->
   <LatestArticles articles={articles} />
 
-  <!-- 12. FAQ -->
+  <!-- 9. FAQ -->
   <FAQSection />
 
-  <!-- 13. Final CTA -->
+  <!-- 10. Final CTA -->
   <FinalCTA />
 
 </BaseLayout>

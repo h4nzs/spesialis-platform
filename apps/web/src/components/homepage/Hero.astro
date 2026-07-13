@@ -4,8 +4,9 @@
  *
  * User problem: "I need a professional service urgently."
  * Goal: Communicate identity + drive to CTA within 5 seconds.
- * Visual: Typography-driven. No gradient blobs, no floating elements.
- *   Trust markers build credibility immediately.
+ * Visual: Two-column layout. Left 45% — headline, subtitle, CTAs, trust indicators.
+ *   Right 55% — abstract hero illustration with floating stat cards.
+ *   Clean, professional, no gradients or blobs.
  *
  * CMS: title → headline, content → subtitle
  */
@@ -23,75 +24,121 @@ interface Props {
 
 const { totalServices = 50, totalPartners = 100, totalCities = 5, section } = Astro.props as Props;
 
-const headline = section?.title ?? 'Layanan Profesional\n        <span class="text-primary-500">Tanpa Ribet</span>'
-const subtitle = section?.content ?? 'Temukan teknisi dan profesional terpercaya untuk kebutuhan rumah, kantor, dan bisnis Anda. Booking dalam hitungan menit.'
+const headline =
+  section?.title ??
+  'Layanan Profesional <span class="text-primary-500">Tanpa Ribet</span>';
+const subtitle =
+  section?.content ??
+  'Temukan teknisi dan profesional terpercaya untuk kebutuhan rumah, kantor, dan bisnis Anda. Booking dalam hitungan menit.';
 ---
 
-<section class="bg-bg-page">
-  <div class="container-page py-20 md:py-28">
-    <div class="mx-auto max-w-3xl text-center">
-      <!-- Overline label -->
-      <p class="text-overline text-primary-500 tracking-widest">
-        LAYANAN PROFESIONAL ON-DEMAND
-      </p>
+<section class="relative overflow-hidden bg-bg-page">
+  <!-- Full background hero image -->
+  <img
+    src="/hero-home.jpg"
+    alt=""
+    class="absolute inset-0 h-full w-full object-cover object-top"
+    loading="eager"
+  />
+  <!-- Left-to-right fade: solid bg → transparent, so image visible on right side -->
+  <div class="absolute inset-0 bg-gradient-to-r from-[var(--color-bg-page)] via-[var(--color-bg-page)]/80 to-transparent lg:via-[var(--color-bg-page)]/30" aria-hidden="true" />
 
-      <!-- Headline -->
-      <h1 class="mt-6 text-display-xl text-balance text-text-primary" set:html={headline} />
+  <div class="relative z-10 container-page py-16 md:py-24 lg:py-32">
+    <div class="grid items-center gap-12 lg:grid-cols-11 lg:gap-16">
+      <!-- ── Left Column (45%) ────────────────────────────────────── -->
+      <div class="lg:col-span-5">
+        <!-- Overline -->
+        <p class="text-caption font-semibold uppercase tracking-[0.2em] text-primary-500">
+          LAYANAN PROFESIONAL ON-DEMAND
+        </p>
 
-      <!-- Subtitle -->
-      <p class="mt-4 text-body-lg text-text-secondary text-pretty max-w-xl mx-auto">
-        {subtitle}
-      </p>
+        <!-- Headline -->
+        <h1 class="mt-5 text-display-xl text-balance text-text-primary leading-[1.1]" set:html={headline} />
 
-      <!-- Search bar -->
-      <div class="mt-8 mx-auto max-w-lg">
-        <form action="/services" method="GET" role="search" class="relative">
-          <label for="hero-search" class="sr-only">Cari layanan</label>
-          <input
-            id="hero-search"
-            type="search"
-            name="q"
-            placeholder="Cari layanan... Misal: AC, plumbing, listrik"
-            class="h-12 w-full rounded-md border border-border-default bg-bg-surface pl-10 pr-4 text-body text-text-primary outline-none transition-colors duration-150 ease-out focus:border-primary-500 focus:ring-1 focus:ring-primary-500 placeholder:text-text-muted"
-          />
-          <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-text-muted" aria-hidden="true">
+        <!-- Subtitle -->
+        <p class="mt-5 max-w-lg text-body-lg text-text-secondary text-pretty leading-relaxed">
+          {subtitle}
+        </p>
+
+        <!-- CTA Buttons -->
+        <div class="mt-8 flex flex-col gap-3 sm:flex-row">
+          <a
+            href="/services"
+            class="inline-flex h-12 items-center justify-center rounded-lg bg-primary-500 px-7 text-body font-semibold text-white shadow-xs transition-all duration-150 ease-out hover:bg-primary-600 hover:shadow-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-500"
+          >
+            Booking Sekarang
+          </a>
+          <a
+            href="/services"
+            class="inline-flex h-12 items-center justify-center rounded-lg border border-border-default bg-bg-surface px-7 text-body font-medium text-text-primary shadow-xs transition-all duration-150 ease-out hover:bg-bg-section hover:shadow-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-500"
+          >
+            Lihat Layanan
+          </a>
+        </div>
+
+        <!-- Trust Indicators -->
+        <div class="mt-10 flex flex-wrap items-center gap-x-6 gap-y-3 border-t border-border-default pt-6">
+          <div class="flex items-center gap-2">
+            <div class="flex h-7 w-7 items-center justify-center rounded-full bg-success-50 text-success-600" aria-hidden="true">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="20 6 9 17 4 12"/>
+              </svg>
+            </div>
+            <span class="text-body-sm text-text-secondary">Profesional Terverifikasi</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <div class="flex h-7 w-7 items-center justify-center rounded-full bg-primary-50 text-primary-600" aria-hidden="true">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+              </svg>
+            </div>
+            <span class="text-body-sm text-text-secondary">24/7 Siap Bantu</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <div class="flex h-7 w-7 items-center justify-center rounded-full bg-warning-50 text-warning-600" aria-hidden="true">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+              </svg>
+            </div>
+            <span class="text-body-sm text-text-secondary">Harga Transparan</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Right Column (55%) — Floating Stat Cards (desktop only) ── -->
+      <div class="hidden lg:flex lg:col-span-6 lg:flex-wrap lg:items-end lg:self-end lg:justify-center lg:gap-4 lg:pb-12">
+        <div class="flex items-center gap-3 rounded-lg border border-border-default bg-white px-4 py-3 shadow-sm">
+          <div class="flex h-9 w-9 items-center justify-center rounded-lg bg-primary-50 text-primary-600" aria-hidden="true">
             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <circle cx="11" cy="11" r="8"/>
-              <path d="m21 21-4.3-4.3"/>
+              <rect width="7" height="9" x="3" y="3"/><rect width="7" height="5" x="14" y="3"/><rect width="7" height="9" x="14" y="12"/><rect width="7" height="5" x="3" y="16"/>
             </svg>
           </div>
-        </form>
-      </div>
-
-      <!-- CTA Buttons -->
-      <div class="mt-8 flex flex-col items-center justify-center gap-4 sm:flex-row">
-        <a
-          href="/services"
-          class="inline-flex h-12 min-w-[200px] items-center justify-center rounded-md bg-primary-500 px-8 text-body font-semibold text-white shadow-xs transition-all duration-150 ease-out hover:bg-primary-600 hover:shadow-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-500"
-        >
-          Booking Sekarang
-        </a>
-        <a
-          href="/tracking"
-          class="inline-flex h-12 min-w-[200px] items-center justify-center rounded-md border border-border-default bg-bg-surface px-8 text-body font-medium text-text-primary shadow-xs transition-all duration-150 ease-out hover:bg-bg-section hover:shadow-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-500"
-        >
-          Lacak Booking
-        </a>
-      </div>
-
-      <!-- Trust markers -->
-      <div class="mt-16 grid grid-cols-3 gap-6 border-t border-border-default pt-10">
-        <div class="text-center">
-          <p class="text-h3 font-bold text-text-primary">{totalServices}+</p>
-          <p class="mt-1 text-body-sm text-text-secondary">Layanan</p>
+          <div>
+            <p class="text-h5 font-bold text-text-primary leading-none">{totalServices}+</p>
+            <p class="text-caption text-text-muted">Layanan</p>
+          </div>
         </div>
-        <div class="text-center">
-          <p class="text-h3 font-bold text-text-primary">{totalPartners}+</p>
-          <p class="mt-1 text-body-sm text-text-secondary">Mitra Terverifikasi</p>
+        <div class="flex items-center gap-3 rounded-lg border border-border-default bg-white px-4 py-3 shadow-sm">
+          <div class="flex h-9 w-9 items-center justify-center rounded-lg bg-success-50 text-success-600" aria-hidden="true">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+            </svg>
+          </div>
+          <div>
+            <p class="text-h5 font-bold text-text-primary leading-none">{totalPartners}+</p>
+            <p class="text-caption text-text-muted">Mitra</p>
+          </div>
         </div>
-        <div class="text-center">
-          <p class="text-h3 font-bold text-text-primary">{totalCities}</p>
-          <p class="mt-1 text-body-sm text-text-secondary">Kota</p>
+        <div class="flex items-center gap-3 rounded-lg border border-border-default bg-white px-4 py-3 shadow-sm">
+          <div class="flex h-9 w-9 items-center justify-center rounded-lg bg-warning-50 text-warning-600" aria-hidden="true">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/>
+            </svg>
+          </div>
+          <div>
+            <p class="text-h5 font-bold text-text-primary leading-none">{totalCities}</p>
+            <p class="text-caption text-text-muted">Kota</p>
+          </div>
         </div>
       </div>
     </div>

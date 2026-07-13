@@ -1,0 +1,107 @@
+---
+/**
+ * Quick Service Categories Section
+ *
+ * User problem: "What kind of services do they offer? Let me browse by category."
+ * Goal: Quick visual navigation to popular service types.
+ * Visual: Horizontal grid of icon + label cards. Compact, easy to scan.
+ *   Functions as shortcut navigation, not marketing cards.
+ *
+ * Data is a curated list of popular service types — links to /services?q=keyword
+ * (No API dependency — presentation only)
+ */
+
+interface CategoryItem {
+  label: string;
+  keyword: string;
+  icon: string;
+}
+
+const categories: CategoryItem[] = [
+  {
+    label: 'AC',
+    keyword: 'AC',
+    icon: 'snowflake',
+  },
+  {
+    label: 'Plumbing',
+    keyword: 'plumbing',
+    icon: 'droplets',
+  },
+  {
+    label: 'Listrik',
+    keyword: 'listrik',
+    icon: 'zap',
+  },
+  {
+    label: 'Cleaning',
+    keyword: 'cleaning',
+    icon: 'sparkles',
+  },
+  {
+    label: 'Cat',
+    keyword: 'cat',
+    icon: 'paintbrush',
+  },
+  {
+    label: 'Kunci',
+    keyword: 'kunci',
+    icon: 'key',
+  },
+  {
+    label: 'Tukang',
+    keyword: 'tukang',
+    icon: 'hammer',
+  },
+  {
+    label: 'Lainnya',
+    keyword: '',
+    icon: 'arrow-right',
+  },
+];
+
+const iconSVGs: Record<string, string> = {
+  snowflake:
+    '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m10 20-1.25-2.5L6 18"/><path d="M10 4 8.75 6.5 6 6"/><path d="m14 20 1.25-2.5L18 18"/><path d="m14 4 1.25 2.5L18 6"/><path d="m17 21-3-6h-4"/><path d="m17 3-3 6 1.5 3"/><path d="M2 12h6.5l1.5-3.5L12 12"/><path d="M22 12h-6.5L14 8.5 12 12"/><path d="M12 12v8"/><path d="M12 4v4"/></svg>',
+  droplets:
+    '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22a7 7 0 0 0 7-7c0-2-1-3.9-3-5.5s-3.5-4-4-6.5c-.5 2.5-2 4.9-4 6.5C6 11.1 5 13 5 15a7 7 0 0 0 7 7z"/></svg>',
+  zap: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>',
+  sparkles:
+    '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"/></svg>',
+  paintbrush:
+    '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18.37 2.63 14 7l-1.59-1.59a2 2 0 0 0-2.82 0L8 7l9 9 1.59-1.59a2 2 0 0 0 0-2.82L17 10l4.37-4.37a2.12 2.12 0 1 0-3-3Z"/><path d="M9 8c-2 3-4 3.5-7 4l8 10c2-1 6-5 6-7"/><path d="M14.5 17.5 4.5 15"/></svg>',
+  key: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="7.5" cy="15.5" r="5.5"/><path d="m21 2-9.6 9.6"/><path d="m15.5 7.5 3 3L22 7l-3-3"/></svg>',
+  hammer:
+    '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 12a6 6 0 0 0-6-6H5.5l-3 3 3 3H9a6 6 0 0 1 6 6v5h4v-5a10 10 0 0 0-4-6Z"/></svg>',
+  'arrow-right':
+    '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>',
+};
+---
+
+<section class="bg-bg-section">
+  <div class="container-page py-12 md:py-16">
+    <div class="mx-auto max-w-4xl">
+      <p class="text-caption font-semibold uppercase tracking-widest text-text-muted text-center">
+        CARI LAYANAN
+      </p>
+      <div class="mt-6 grid grid-cols-4 gap-3 sm:grid-cols-4 md:grid-cols-8">
+        {
+          categories.map((cat) => {
+            const href = cat.keyword ? `/services?q=${encodeURIComponent(cat.keyword)}` : '/services';
+            return (
+              <a
+                href={href}
+                class="flex flex-col items-center gap-2 rounded-lg border border-border-default bg-bg-surface px-3 py-4 text-center transition-all duration-150 ease-out hover:border-primary-200 hover:shadow-xs hover:-translate-y-0.5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-500"
+              >
+                <div class="flex h-10 w-10 items-center justify-center rounded-full bg-primary-50 text-primary-600" aria-hidden="true">
+                  <span set:html={iconSVGs[cat.icon]} />
+                </div>
+                <span class="text-caption font-medium text-text-primary">{cat.label}</span>
+              </a>
+            );
+          })
+        }
+      </div>
+    </div>
+  </div>
+</section>

@@ -1,0 +1,438 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro'
+
+const benefits = [
+  {
+    title: 'Pendapatan Tambahan',
+    description: 'Dapatkan penghasilan dari setiap pekerjaan yang Anda selesaikan. Atur jadwal sendiri, kerja sesuai waktu luang.',
+    icon: 'wallet',
+  },
+  {
+    title: 'Jadwal Fleksibel',
+    description: 'Tentukan sendiri kapan Anda ingin bekerja. Ambil pekerjaan yang sesuai dengan keahlian dan jadwal Anda.',
+    icon: 'clock',
+  },
+  {
+    title: 'Jangkauan Luas',
+    description: 'Dapatkan akses ke ribuan pelanggan potensial di Jabodetabek dan Bandung yang membutuhkan jasa Anda.',
+    icon: 'users',
+  },
+  {
+    title: 'Dukungan Penuh',
+    description: 'Tim admin kami siap membantu proses booking, komunikasi dengan pelanggan, dan menangani komplain.',
+    icon: 'headset',
+  },
+];
+
+const steps = [
+  {
+    number: 1,
+    title: 'Daftar & Verifikasi',
+    description: 'Isi data diri dan unggah dokumen yang diperlukan. Tim kami akan memverifikasi dalam 1x24 jam.',
+  },
+  {
+    number: 2,
+    title: 'Lengkapi Profil',
+    description: 'Atur keahlian, tarif, dan jadwal ketersediaan Anda. Semakin lengkap profil, semakin banyak peluang.',
+  },
+  {
+    number: 3,
+    title: 'Terima Pekerjaan',
+    description: 'Dapatkan notifikasi pekerjaan yang sesuai dengan keahlian dan lokasi Anda. Konfirmasi atau tolak dengan mudah.',
+  },
+  {
+    number: 4,
+    title: 'Selesaikan & Dibayar',
+    description: 'Kerjakan sesuai standar kualitas kami. Setelah selesai, pendapatan akan dicatat dan dicairkan secara rutin.',
+  },
+];
+
+const testimonials = [
+  {
+    quote: 'Sejak bergabung, pesanan terus mengalir. Penghasilan saya jadi lebih stabil dan saya bisa atur jadwal sendiri.',
+    name: 'Agus Prasetyo',
+    role: 'Teknisi AC',
+    location: 'Jakarta',
+    rating: 5,
+  },
+  {
+    quote: 'Proses verifikasi cepat, tim admin komunikatif, dan pelanggannya jelas. Sangat cocok untuk teknisi mandiri.',
+    name: 'Doni Firmansyah',
+    role: 'Tukang Listrik',
+    location: 'Bandung',
+    rating: 5,
+  },
+  {
+    quote: 'Awalnya ragu, tapi setelah 3 bulan penghasilan saya naik 40%. Sistemnya transparan, cocok buat saya.',
+    name: 'Hendra Gunawan',
+    role: 'Teknisi Plumbing',
+    location: 'Tangerang',
+    rating: 5,
+  },
+];
+
+const faqs = [
+  {
+    q: 'Siapa yang bisa mendaftar sebagai mitra?',
+    a: 'Siapa pun yang memiliki keahlian di bidang jasa profesional — teknisi AC, listrik, plumbing, cleaning, cat, kunci, dan lainnya — dapat mendaftar sebagai mitra.',
+  },
+  {
+    q: 'Apakah ada biaya pendaftaran?',
+    a: 'Tidak ada biaya pendaftaran sama sekali. Pendaftaran mitra 100% gratis. Kami hanya mengambil komisi dari setiap pekerjaan yang selesai.',
+  },
+  {
+    q: 'Dokumen apa saja yang diperlukan?',
+    a: 'Dokumen dasar: KTP, foto profil, dan foto portfolio pekerjaan. Untuk beberapa kategori, mungkin diperlukan sertifikat keahlian atau dokumen pendukung lainnya.',
+  },
+  {
+    q: 'Bagaimana sistem pembayarannya?',
+    a: 'Pendapatan Anda akan dicatat di dashboard. Pencairan dilakukan secara rutin ke rekening bank atau e-wallet yang Anda daftarkan.',
+  },
+  {
+    q: 'Apakah ada target pekerjaan?',
+    a: 'Tidak ada target minimum. Anda bebas menentukan sendiri berapa banyak pekerjaan yang ingin Anda ambil. Semakin aktif, semakin besar penghasilan.',
+  },
+  {
+    q: 'Bagaimana jika ada komplain dari pelanggan?',
+    a: 'Tim admin kami akan menangani komplain dan mediasi. Mitra yang terbukti melanggar standar kualitas akan mendapatkan penalti atau sanksi sesuai kebijakan.',
+  },
+];
+
+function starSVG(filled: boolean): string {
+  return filled
+    ? '<svg class="inline-block h-4 w-4 text-warning-500" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>'
+    : '<svg class="inline-block h-4 w-4 text-neutral-200" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>';
+}
+
+const iconSVGs: Record<string, string> = {
+  wallet:
+    '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4Z"/></svg>',
+  clock:
+    '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>',
+  users:
+    '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>',
+  headset:
+    '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11h3a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-5Zm0 0a9 9 0 1 1 18 0m0 0v5a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3Z"/><path d="M21 16v2a4 4 0 0 1-4 4h-5"/></svg>',
+};
+---
+
+<BaseLayout
+  title="Daftar Mitra - Bergabung Menjadi Teknisi Ahli Panggilan"
+  description="Daftar menjadi mitra teknisi Ahli Panggilan. Dapatkan penghasilan tambahan, jadwal fleksibel, dan dukungan penuh dari tim kami. Gratis daftar."
+  canonicalUrl="/partner"
+  jsonLd={{
+    '@context': 'https://schema.org',
+    '@graph': [
+      {
+        '@type': 'BreadcrumbList',
+        itemListElement: [
+          { '@type': 'ListItem', position: 1, name: 'Beranda', item: 'https://ahlipanggilan.id' },
+          { '@type': 'ListItem', position: 2, name: 'Daftar Mitra' },
+        ],
+      },
+      {
+        '@type': 'Service',
+        name: 'Mitra Ahli Panggilan',
+        description: 'Program kemitraan untuk teknisi dan profesional jasa. Daftar gratis, jadwal fleksibel, pendapatan tambahan.',
+        provider: { '@type': 'Organization', name: 'Ahli Panggilan' },
+        areaServed: { '@type': 'City', name: 'Jabodetabek dan Bandung' },
+        offers: {
+          '@type': 'Offer',
+          price: '0',
+          priceCurrency: 'IDR',
+          description: 'Pendaftaran mitra gratis tanpa biaya',
+        },
+      },
+      {
+        '@type': 'FAQPage',
+        mainEntity: faqs.map((faq) => ({
+          '@type': 'Question',
+          name: faq.q,
+          acceptedAnswer: { '@type': 'Answer', text: faq.a },
+        })),
+      },
+    ],
+  }}
+>
+  <!-- ═══════════════════════════════════════════════════════════
+       Hero Section
+       ═══════════════════════════════════════════════════════════ -->
+  <section class="relative overflow-hidden bg-bg-page">
+    <!-- Full background hero image -->
+    <img
+      src="/hero-partner.png"
+      alt=""
+      class="absolute inset-0 h-full w-full object-cover object-top"
+      loading="eager"
+    />
+    <!-- Left-to-right fade: solid bg → transparent -->
+    <div class="absolute inset-0 bg-gradient-to-r from-[var(--color-bg-page)] via-[var(--color-bg-page)]/80 to-transparent lg:via-[var(--color-bg-page)]/30" aria-hidden="true" />
+
+    <div class="relative z-10 container-page py-16 md:py-24 lg:py-32">
+      <div class="grid items-center gap-12 lg:grid-cols-11 lg:gap-16">
+        <!-- Left Column -->
+        <div class="lg:col-span-5">
+          <p class="text-caption font-semibold uppercase tracking-[0.2em] text-primary-500">
+            MITRA TEKNISI
+          </p>
+          <h1 class="mt-5 text-display-xl text-balance text-text-primary leading-[1.1]">
+            Bergabung Menjadi <span class="text-primary-500">Mitra Profesional</span>
+          </h1>
+          <p class="mt-5 max-w-lg text-body-lg text-text-secondary text-pretty leading-relaxed">
+            Dapatkan penghasilan tambahan, atur jadwal sendiri, dan kembangkan bisnis jasa Anda bersama platform terpercaya di Indonesia.
+          </p>
+          <div class="mt-8 flex flex-col gap-3 sm:flex-row">
+            <a
+              href="/register/partner"
+              class="inline-flex h-12 items-center justify-center rounded-lg bg-primary-500 px-7 text-body font-semibold text-white shadow-xs transition-all duration-150 ease-out hover:bg-primary-600 hover:shadow-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-500"
+            >
+              Daftar Mitra Gratis
+            </a>
+            <a
+              href="#benefits"
+              class="inline-flex h-12 items-center justify-center rounded-lg border border-border-default bg-bg-surface px-7 text-body font-medium text-text-primary shadow-xs transition-all duration-150 ease-out hover:bg-bg-section hover:shadow-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-500"
+            >
+              Pelajari Lebih Lanjut
+            </a>
+          </div>
+
+          <!-- Trust indicators -->
+          <div class="mt-10 flex flex-wrap items-center gap-x-6 gap-y-3 border-t border-border-default pt-6">
+            <div class="flex items-center gap-2">
+              <div class="flex h-7 w-7 items-center justify-center rounded-full bg-success-50 text-success-600" aria-hidden="true">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+              </div>
+              <span class="text-body-sm text-text-secondary">Daftar Gratis</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <div class="flex h-7 w-7 items-center justify-center rounded-full bg-primary-50 text-primary-600" aria-hidden="true">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="12 6 12 12 16 14"/></svg>
+              </div>
+              <span class="text-body-sm text-text-secondary">Fleksibel</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <div class="flex h-7 w-7 items-center justify-center rounded-full bg-warning-50 text-warning-600" aria-hidden="true">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+              </div>
+              <span class="text-body-sm text-text-secondary">Terverifikasi</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <div class="flex h-7 w-7 items-center justify-center rounded-full bg-secondary-50 text-secondary-600" aria-hidden="true">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              </div>
+              <span class="text-body-sm text-text-secondary">Cair Setiap Minggu</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right Column — Floating Stat Cards (desktop only) -->
+        <div class="hidden lg:flex lg:col-span-6 lg:flex-wrap lg:items-end lg:self-end lg:justify-center lg:gap-4 lg:pb-12">
+          <div class="flex items-center gap-3 rounded-lg border border-border-default bg-white px-4 py-3 shadow-sm">
+            <div class="flex h-9 w-9 items-center justify-center rounded-lg bg-success-50 text-success-600" aria-hidden="true">
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            </div>
+            <div>
+              <p class="text-h5 font-bold text-text-primary leading-none">100+</p>
+              <p class="text-caption text-text-muted">Mitra</p>
+            </div>
+          </div>
+          <div class="flex items-center gap-3 rounded-lg border border-border-default bg-white px-4 py-3 shadow-sm">
+            <div class="flex h-9 w-9 items-center justify-center rounded-lg bg-primary-50 text-primary-600" aria-hidden="true">
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+            </div>
+            <div>
+              <p class="text-h5 font-bold text-text-primary leading-none">5</p>
+              <p class="text-caption text-text-muted">Kota</p>
+            </div>
+          </div>
+          <div class="flex items-center gap-3 rounded-lg border border-border-default bg-white px-4 py-3 shadow-sm">
+            <div class="flex h-9 w-9 items-center justify-center rounded-lg bg-secondary-50 text-secondary-600" aria-hidden="true">
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            </div>
+            <div>
+              <p class="text-h5 font-bold text-text-primary leading-none">Gratis</p>
+              <p class="text-caption text-text-muted">Daftar</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════════
+       Benefits Section — "Kenapa Bergabung?"
+       ═══════════════════════════════════════════════════════════ -->
+  <section class="bg-bg-section" id="benefits">
+    <div class="container-page py-16 md:py-24">
+      <div class="mx-auto max-w-2xl text-center">
+        <p class="text-overline text-primary-500 tracking-widest">KEUNTUNGAN</p>
+        <h2 class="mt-3 text-h2 text-text-primary">Kenapa Bergabung Bersama Kami?</h2>
+        <p class="mt-3 text-body-lg text-text-secondary text-pretty">
+          Kami menyediakan platform, Anda fokus pada keahlian. Semua sudah dipermudah.
+        </p>
+      </div>
+
+      <div class="mt-14 grid gap-6 sm:grid-cols-2">
+        {
+          benefits.map((b) => (
+            <div class="flex gap-5 rounded-xl border border-border-default bg-bg-surface p-6 md:p-8 transition-shadow duration-150 ease-out hover:shadow-xs">
+              <div class="mt-1 flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-primary-50 text-primary-600" aria-hidden="true">
+                <span set:html={iconSVGs[b.icon]} />
+              </div>
+              <div class="min-w-0">
+                <h3 class="text-h5 text-text-primary">{b.title}</h3>
+                <p class="mt-2 text-body text-text-secondary leading-relaxed">{b.description}</p>
+              </div>
+            </div>
+          ))
+        }
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════════
+       How It Works Section
+       ═══════════════════════════════════════════════════════════ -->
+  <section class="bg-bg-page">
+    <div class="container-page py-16 md:py-24">
+      <div class="mx-auto max-w-2xl text-center">
+        <p class="text-overline text-primary-500 tracking-widest">CARA BERGABUNG</p>
+        <h2 class="mt-3 text-h2 text-text-primary">4 Langkah Mudah</h2>
+        <p class="mt-3 text-body-lg text-text-secondary text-pretty">
+          Hanya 4 langkah untuk mulai mendapatkan penghasilan sebagai mitra teknisi.
+        </p>
+      </div>
+
+      <div class="mt-14 grid gap-10 sm:grid-cols-2 lg:grid-cols-4">
+        {
+          steps.map((step) => (
+            <div class="flex flex-col items-center text-center">
+              <div class="flex h-12 w-12 items-center justify-center rounded-full bg-primary-500 text-h5 font-bold text-white">
+                {step.number}
+              </div>
+              <h3 class="mt-5 text-h5 text-text-primary">{step.title}</h3>
+              <p class="mt-2 max-w-xs text-body text-text-secondary leading-relaxed">{step.description}</p>
+            </div>
+          ))
+        }
+      </div>
+
+      <div class="mt-12 text-center">
+        <a
+          href="/register/partner"
+          class="inline-flex h-12 items-center justify-center rounded-lg bg-primary-500 px-8 text-body font-semibold text-white shadow-xs transition-all duration-150 ease-out hover:bg-primary-600 hover:shadow-sm"
+        >
+          Daftar Sekarang
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════════
+       Testimonials Section
+       ═══════════════════════════════════════════════════════════ -->
+  <section class="bg-bg-section">
+    <div class="container-page py-16 md:py-24">
+      <div class="mx-auto max-w-2xl text-center">
+        <p class="text-overline text-primary-500 tracking-widest">TESTIMONI MITRA</p>
+        <h2 class="mt-3 text-h2 text-text-primary">Apa Kata Mereka</h2>
+        <p class="mt-3 text-body-lg text-text-secondary text-pretty">
+          Dengarkan cerita dari mitra yang sudah bergabung dan merasakan manfaatnya.
+        </p>
+      </div>
+
+      <div class="mt-12 grid gap-6 md:grid-cols-3">
+        {
+          testimonials.map((t) => (
+            <div class="flex flex-col rounded-xl border border-border-default bg-bg-surface p-6 md:p-8">
+              <div class="flex gap-0.5" role="img" aria-label={`${t.rating} dari 5 bintang`}>
+                {[1, 2, 3, 4, 5].map((star) => <span set:html={starSVG(star <= t.rating)} />)}
+              </div>
+              <blockquote class="mt-4 flex-1 text-body text-text-secondary leading-relaxed">
+                &ldquo;{t.quote}&rdquo;
+              </blockquote>
+              <div class="mt-6 border-t border-border-default pt-4">
+                <p class="text-body-sm font-semibold text-text-primary">{t.name}</p>
+                <p class="text-caption text-text-muted">{t.role} &middot; {t.location}</p>
+              </div>
+            </div>
+          ))
+        }
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════════
+       FAQ Section
+       ═══════════════════════════════════════════════════════════ -->
+  <section class="bg-bg-page">
+    <div class="container-page py-16 md:py-24">
+      <div class="mx-auto max-w-2xl text-center">
+        <p class="text-overline text-primary-500 tracking-widest">FAQ</p>
+        <h2 class="mt-3 text-h2 text-text-primary">Pertanyaan Umum Mitra</h2>
+        <p class="mt-3 text-body-lg text-text-secondary text-pretty">
+          Temukan jawaban untuk pertanyaan yang sering diajukan calon mitra.
+        </p>
+      </div>
+
+      <div class="mx-auto mt-12 max-w-2xl space-y-3">
+        {
+          faqs.map((faq) => (
+            <details class="group rounded-xl border border-border-default bg-bg-surface transition-shadow duration-150 ease-out hover:shadow-xs">
+              <summary class="flex cursor-pointer items-center justify-between px-6 py-4 text-body font-medium text-text-primary select-none">
+                {faq.q}
+                <span class="ml-4 shrink-0 text-text-muted transition-transform duration-150 ease-out group-open:rotate-180" aria-hidden="true">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="m6 9 6 6 6-6"/>
+                  </svg>
+                </span>
+              </summary>
+              <div class="border-t border-border-default px-6 py-4 text-body text-text-secondary leading-relaxed">
+                {faq.a}
+              </div>
+            </details>
+          ))
+        }
+      </div>
+
+      <div class="mt-8 text-center">
+        <p class="text-body-sm text-text-secondary">
+          Masih punya pertanyaan?{' '}
+          <a href="/kontak" class="font-medium text-primary-600 hover:text-primary-700 transition-colors duration-150">
+            Hubungi kami
+          </a>
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════════
+       Final CTA
+       ═══════════════════════════════════════════════════════════ -->
+  <section class="bg-primary-900">
+    <div class="container-page py-20 md:py-28">
+      <div class="mx-auto max-w-2xl text-center">
+        <h2 class="text-h2 text-white text-balance">
+          Siap Memulai Perjalanan Baru?
+        </h2>
+        <p class="mt-4 text-body-lg text-primary-200 text-pretty">
+          Ribuan teknisi sudah bergabung dan mendapatkan penghasilan. Kini giliran Anda.
+        </p>
+        <div class="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
+          <a
+            href="/register/partner"
+            class="inline-flex h-12 min-w-[220px] items-center justify-center rounded-lg bg-white px-8 text-body font-semibold text-primary-700 shadow-sm transition-all duration-150 ease-out hover:bg-primary-50 hover:shadow-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+          >
+            Daftar Gratis Sekarang
+          </a>
+          <a
+            href="/services"
+            class="inline-flex h-12 min-w-[220px] items-center justify-center rounded-lg border border-primary-400 px-8 text-body font-medium text-primary-200 transition-all duration-150 ease-out hover:border-primary-300 hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+          >
+            Lihat Layanan
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
