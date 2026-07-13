@@ -54,6 +54,7 @@ const TABLE_NAMES = [
   'redirects',
   'pageErrors',
   'indexnowLogs',
+  'coverageAreas',
 ] as const;
 
 const RELATION_NAMES = [
@@ -121,14 +122,14 @@ const TYPED_TABLES: Record<string, Record<string, string>> = {
 // ── Tests ────────────────────────────────────────────────────────────────────
 
 describe('schema exports', () => {
-  it('exports all 37 tables', () => {
+  it('exports all 38 tables', () => {
     for (const name of TABLE_NAMES) {
       expect(schema).toHaveProperty(name);
       expect(schema[name as keyof typeof schema]).toBeDefined();
     }
   });
 
-  it('exports only the expected 37 tables (no extra)', () => {
+  it('exports only the expected 38 tables (no extra)', () => {
     const allKeys = Object.keys(schema).filter((k) => !k.endsWith('Relations') && k !== 'default');
     expect(allKeys.length).toBe(TABLE_NAMES.length);
     for (const key of allKeys) {

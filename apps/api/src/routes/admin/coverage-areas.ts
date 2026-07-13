@@ -1,5 +1,5 @@
 import { Hono } from 'hono';
-import { eq, and, asc, sql, isNull } from 'drizzle-orm';
+import { eq, asc } from 'drizzle-orm';
 import { db, coverageAreas } from '../../lib/db.ts';
 import { authMiddleware, requireRole } from '../../middleware/auth.ts';
 import { validateBody } from '../../middleware/validation.ts';
