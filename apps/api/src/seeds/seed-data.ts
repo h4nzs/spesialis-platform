@@ -281,24 +281,26 @@ async function seedData() {
     .where(eq(services.slug, 'cat-interior'))
     .limit(1);
 
-  await db.insert(seoMetadata).values(
-    [
-      ...seoEntries,
-      svcCuciAC && {
-        entityType: 'Service',
-        entityId: svcCuciAC.id,
-        metaTitle: 'Cuci AC Standar - Ahli Panggilan',
-        metaDescription:
-          'Pembersihan AC standar untuk rumah. Teknisi berpengalaman, garansi layanan.',
-      },
-      svcCatInterior && {
-        entityType: 'Service',
-        entityId: svcCatInterior.id,
-        metaTitle: 'Cat Interior Profesional - Ahli Panggilan',
-        metaDescription: 'Jasa pengecatan interior rumah dan kantor. Hasil rapi, cat berkualitas.',
-      },
-    ].filter(Boolean),
-  );
+  const seoValues = [...seoEntries];
+  if (svcCuciAC) {
+    seoValues.push({
+      entityType: 'Service',
+      entityId: svcCuciAC.id,
+      metaTitle: 'Cuci AC Standar - Ahli Panggilan',
+      metaDescription:
+        'Pembersihan AC standar untuk rumah. Teknisi berpengalaman, garansi layanan.',
+    });
+  }
+  if (svcCatInterior) {
+    seoValues.push({
+      entityType: 'Service',
+      entityId: svcCatInterior.id,
+      metaTitle: 'Cat Interior Profesional - Ahli Panggilan',
+      metaDescription: 'Jasa pengecatan interior rumah dan kantor. Hasil rapi, cat berkualitas.',
+    });
+  }
+
+  await db.insert(seoMetadata).values(seoValues);
 
   console.log('  ✓ 7 SEO metadata entries created');
 
