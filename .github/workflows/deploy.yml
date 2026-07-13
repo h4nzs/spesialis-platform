@@ -121,8 +121,10 @@ jobs:
           export IMAGE_TAG=${{ env.IMAGE_TAG }}
           export IMAGE_OWNER=${{ env.IMAGE_OWNER }}
 
+          export COMPOSE_ENV_FILE="--env-file .env.prod"
+
           echo "Pulling images (ghcr.io/${IMAGE_OWNER}/api:${IMAGE_TAG})..."
-          docker compose -f docker-compose.prod.yml pull
+          docker compose -f docker-compose.prod.yml $COMPOSE_ENV_FILE pull
 
           if [ ! -f /etc/letsencrypt/live/ahlipanggilan.id/fullchain.pem ]; then
             echo "SSL certs not found. Obtaining via certbot..."
@@ -140,12 +142,11 @@ jobs:
           fi
 
           echo "Starting database..."
-          docker compose -f docker-compose.prod.yml up -d postgres
+          docker compose -f docker-compose.prod.yml $COMPOSE_ENV_FILE up -d postgres
 
           echo "Waiting for database to be healthy..."
           for i in $(seq 1 30); do
-            DB_USER="${DATABASE_USER:-specialist}"
-            if docker compose -f docker-compose.prod.yml exec -T postgres pg_isready -U "$DB_USER" --timeout=5 > /dev/null 2>&1; then
+            if docker compose -f docker-compose.prod.yml $COMPOSE_ENV_FILE exec -T postgres pg_isready -U specialist --timeout=5 > /dev/null 2>&1; then
               echo "Database ready!"
               break
             fi
@@ -153,10 +154,10 @@ jobs:
           done
 
           echo "Running database migrations..."
-          docker compose -f docker-compose.prod.yml run --rm api pnpm --filter @ahlipanggilan/database db:migrate || echo "Migrations may already be applied"
+          docker compose -f docker-compose.prod.yml $COMPOSE_ENV_FILE run --rm api pnpm --filter @ahlipanggilan/database db:migrate || echo "Migrations may already be applied"
 
           echo "Starting full stack..."
-          docker compose -f docker-compose.prod.yml up -d
+          docker compose -f docker-compose.prod.yml $COMPOSE_ENV_FILE up -d
 
           echo "Pruning old images..."
           docker image prune -f --filter "until=24h"
