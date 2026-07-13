@@ -145,16 +145,40 @@ jobs:
           docker compose -f docker-compose.prod.yml $COMPOSE_ENV_FILE up -d postgres
 
           echo "Waiting for database to be healthy..."
+          DB_READY=false
           for i in $(seq 1 30); do
-            if docker compose -f docker-compose.prod.yml $COMPOSE_ENV_FILE exec -T postgres pg_isready -U specialist --timeout=5 > /dev/null 2>&1; then
+            if docker compose -f docker-compose.prod.yml $COMPOSE_ENV_FILE exec -T postgres pg_isready -U specialist --timeout=5 2>&1; then
               echo "Database ready!"
+              DB_READY=true
               break
             fi
+            echo "   Waiting... ($i/30)"
             sleep 2
           done
 
-          echo "Running database migrations..."
-          docker compose -f docker-compose.prod.yml $COMPOSE_ENV_FILE run --rm api pnpm --filter @ahlipanggilan/database db:migrate || echo "Migrations may already be applied"
+          # If database never became healthy, reset volume (first-deploy fix)
+          if [ "$DB_READY" = false ]; then
+            echo "Database never became healthy — resetting volume..."
+            docker compose -f docker-compose.prod.yml $COMPOSE_ENV_FILE down
+            docker volume rm spesialis-platform_postgres_data 2>/dev/null || true
+            echo "Restarting database with clean volume..."
+            docker compose -f docker-compose.prod.yml $COMPOSE_ENV_FILE up -d postgres
+            for i in $(seq 1 30); do
+              if docker compose -f docker-compose.prod.yml $COMPOSE_ENV_FILE exec -T postgres pg_isready -U specialist --timeout=5 2>&1; then
+                echo "Database ready after reset!"
+                DB_READY=true
+                break
+              fi
+              sleep 2
+            done
+          fi
+
+          if [ "$DB_READY" = true ]; then
+            echo "Running database migrations..."
+            docker compose -f docker-compose.prod.yml $COMPOSE_ENV_FILE run --rm api pnpm --filter @ahlipanggilan/database db:migrate
+          else
+            echo "WARNING: Database is not healthy — skipping migrations"
+          fi
 
           echo "Starting full stack..."
           docker compose -f docker-compose.prod.yml $COMPOSE_ENV_FILE up -d
