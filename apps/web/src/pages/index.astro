@@ -1,4 +1,6 @@
 ---
+export const prerender = false;
+
 import BaseLayout from '../layouts/BaseLayout.astro'
 import Hero from '../components/homepage/Hero.astro'
 import FeaturedServices from '../components/homepage/FeaturedServices.astro'
@@ -38,8 +40,8 @@ let services: ServiceItem[] = []
 let articles: ArticleItem[] = []
 try {
   const [servicesRes, articlesRes] = await Promise.all([
-    fetch(`${import.meta.env.PUBLIC_API_URL ?? 'http://localhost:3000'}/api/v1/services?limit=12`),
-    fetch(`${import.meta.env.PUBLIC_API_URL ?? 'http://localhost:3000'}/api/v1/cms/articles?limit=3`),
+    fetch(`${import.meta.env.API_URL ?? import.meta.env.PUBLIC_API_URL ?? 'http://localhost:3000'}/api/v1/services?limit=12`),
+    fetch(`${import.meta.env.API_URL ?? import.meta.env.PUBLIC_API_URL ?? 'http://localhost:3000'}/api/v1/cms/articles?limit=3`),
   ])
   if (servicesRes.ok) {
     const json = await servicesRes.json()
