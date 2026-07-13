@@ -1,7 +1,7 @@
 # =============================================================================
-# Deploy — Build, Push, and Deploy to VPS
+# Deploy — Build, Push, and Deploy to VPS (triggered by CI success)
 # =============================================================================
-# Runs after CI passes on main branch pushes.
+# Runs ONLY after CI passes on main branch, via workflow_run trigger.
 #
 # Prerequisites (set in GitHub → Settings → Secrets and variables → Actions):
 #   VPS_HOST       — VPS IP address or domain
@@ -13,9 +13,10 @@
 #   VPS_ENABLED    — Set to 'true' to enable auto-deploy
 #
 # Workflow:
-#   1. Build API + Web Docker images
-#   2. Push to GitHub Container Registry (ghcr.io)
-#   3. SSH into VPS → pull images → init SSL → migrate DB → restart stack
+#   1. Wait for CI to complete successfully
+#   2. Build API + Web Docker images
+#   3. Push to GitHub Container Registry (ghcr.io)
+#   4. SSH into VPS → pull images → init SSL → migrate DB → restart stack
 #
 # Rollback:
 #   ssh vps "cd $VPS_PATH && IMAGE_TAG=<previous-sha> IMAGE_OWNER=h4nzs docker compose -f docker-compose.prod.yml up -d"
@@ -24,32 +25,38 @@
 name: Deploy
 
 on:
-  push:
+  workflow_run:
+    workflows: ["CI"]
+    types: [completed]
     branches: [main]
 
 concurrency:
-  group: deploy-${{ github.ref }}
-  cancel-in-progress: true
+  group: deploy-production
+  cancel-in-progress: false
 
 env:
   NODE_VERSION: '24'
   PNPM_VERSION: '11.10.0'
   IMAGE_REGISTRY: ghcr.io
   IMAGE_OWNER: ${{ github.repository_owner }}
-  IMAGE_TAG: ${{ github.sha }}
 
 jobs:
   # ── Build & Push ──────────────────────────────────────────────────
   build-and-push:
     name: Build & Push Images
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
     permissions:
       contents: read
       packages: write # needed to push to GHCR
+    env:
+      IMAGE_TAG: ${{ github.event.workflow_run.head_sha }}
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -94,6 +101,8 @@ jobs:
     needs: build-and-push
     # Only deploy if VPS_ENABLED variable is set to 'true' in repo settings
     if: vars.VPS_ENABLED == 'true'
+    env:
+      IMAGE_TAG: ${{ github.event.workflow_run.head_sha }}
 
     steps:
       - name: Configure SSH
