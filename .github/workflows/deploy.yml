@@ -146,31 +146,55 @@ jobs:
 
           echo "Waiting for database to be healthy..."
           DB_READY=false
-          for i in $(seq 1 30); do
-            if docker compose -f docker-compose.prod.yml $COMPOSE_ENV_FILE exec -T postgres pg_isready -U specialist --timeout=5 2>&1; then
-              echo "Database ready!"
+          for i in $(seq 1 20); do
+            HEALTH=$(docker inspect --format='{{.State.Health.Status}}' ahlipanggilan-postgres 2>/dev/null || echo "missing")
+            STATUS=$(docker inspect --format='{{.State.Status}}' ahlipanggilan-postgres 2>/dev/null || echo "missing")
+            if [ "$HEALTH" = "healthy" ]; then
+              echo "Database healthy!"
               DB_READY=true
               break
             fi
-            echo "   Waiting... ($i/30)"
-            sleep 2
+            echo "   Postgres: $STATUS / health: $HEALTH"
+            sleep 3
           done
 
-          # If database never became healthy, reset volume (first-deploy fix)
+          # If database never became healthy, check logs & reset volume
           if [ "$DB_READY" = false ]; then
-            echo "Database never became healthy — resetting volume..."
+            STATUS=$(docker inspect --format='{{.State.Status}}' ahlipanggilan-postgres 2>/dev/null || echo "missing")
+            echo "Postgres container status: $STATUS"
+            echo "=== POSTGRES LOGS ==="
+            docker logs ahlipanggilan-postgres --tail 50 2>/dev/null || echo "(no logs)"
+            echo "======================"
+
+            echo "Resetting volume for clean start..."
             docker compose -f docker-compose.prod.yml $COMPOSE_ENV_FILE down
             docker volume rm spesialis-platform_postgres_data 2>/dev/null || true
+
             echo "Restarting database with clean volume..."
             docker compose -f docker-compose.prod.yml $COMPOSE_ENV_FILE up -d postgres
-            for i in $(seq 1 30); do
-              if docker compose -f docker-compose.prod.yml $COMPOSE_ENV_FILE exec -T postgres pg_isready -U specialist --timeout=5 2>&1; then
-                echo "Database ready after reset!"
+
+            for i in $(seq 1 20); do
+              HEALTH=$(docker inspect --format='{{.State.Health.Status}}' ahlipanggilan-postgres 2>/dev/null || echo "missing")
+              STATUS=$(docker inspect --format='{{.State.Status}}' ahlipanggilan-postgres 2>/dev/null || echo "missing")
+              if [ "$HEALTH" = "healthy" ]; then
+                echo "Database healthy after reset!"
                 DB_READY=true
                 break
               fi
-              sleep 2
+              if [ "$STATUS" = "exited" ] || [ "$STATUS" = "missing" ]; then
+                echo "Postgres exited after reset — dumping logs"
+                docker logs ahlipanggilan-postgres --tail 30 2>/dev/null || true
+                break
+              fi
+              echo "   Postgres: $STATUS / health: $HEALTH"
+              sleep 3
             done
+
+            if [ "$DB_READY" = false ]; then
+              echo "=== POSTGRES LOGS (final) ==="
+              docker logs ahlipanggilan-postgres --tail 50 2>/dev/null || true
+              echo "============================="
+            fi
           fi
 
           if [ "$DB_READY" = true ]; then
