@@ -10,7 +10,7 @@ export const auditLogs = pgTable(
       .notNull(),
     action: varchar('action', { length: 100 }).notNull(),
     entity: varchar('entity', { length: 100 }).notNull(),
-    entityId: uuid('entity_id').notNull(),
+    entityId: text('entity_id').notNull(),
     oldValue: jsonb('old_value'),
     newValue: jsonb('new_value'),
     ipAddress: inet('ip_address'),
