@@ -126,8 +126,8 @@ jobs:
 
           if [ ! -f /etc/letsencrypt/live/ahlipanggilan.id/fullchain.pem ]; then
             echo "SSL certs not found. Obtaining via certbot..."
-            sudo mkdir -p /etc/letsencrypt /var/www/letsencrypt
-            sudo docker run --rm -p 80:80 \
+            # Docker auto-creates bind mount dirs; deploy user is in docker group
+            docker run --rm -p 80:80 \
               -v /etc/letsencrypt:/etc/letsencrypt \
               -v /var/www/letsencrypt:/var/www/letsencrypt \
               certbot/certbot certonly --standalone \
