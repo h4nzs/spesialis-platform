@@ -79,7 +79,7 @@ export function AdminOverview() {
   if (loading) {
     return (
       <div className="space-y-6">
-        <Grid cols={4} gap={4}>
+        <Grid cols={4} gap={4} className="grid-cols-2">
           {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
             <Card key={i} padding="lg">
               <Skeleton variant="text" className="w-1/2" />
@@ -95,7 +95,7 @@ export function AdminOverview() {
 
   return (
     <div className="space-y-6">
-      <Grid cols={4} gap={4}>
+      <Grid cols={4} gap={4} className="grid-cols-2">
         {statCards.map((card) => (
           <Card key={card.key} padding="lg" className="space-y-2">
             <p className="text-body-sm text-text-secondary">{card.label}</p>

@@ -13,3 +13,54 @@ Production setup needed:
 - Testing coverage: Masih rendah — Vitest ada di  api ,  shared ,  validation  tapi coverage minim
 - Notifications: WhatsApp dan email sudah ada, tapi push notification belum
 - Monitoring & observability masih dasar
+
+─────────────────────────────────────────────
+📧 PESAN UNTUK SUPPORT NEVACLOUD — 13 Juli 2026
+─────────────────────────────────────────────
+
+Subjek: Gangguan jaringan — 2 VPS tidak bisa diakses via SSH (No route to host)
+
+Kepada Tim Support NevaCloud,
+
+Saya mengalami gangguan pada 2 VPS yang semuanya terlihat running di dashboard NevaCloud, namun tidak bisa diakses sama sekali via SSH.
+
+Detail VPS 1:
+- IP: 202.155.18.245
+- Port: 22
+- Status di dashboard: Running
+- Error SSH: No route to host
+
+Detail VPS 2:
+- IP: (isi IP VPS kedua)
+- Status di dashboard: Running
+- Error SSH: No route to host
+
+Kondisi saat ini:
+| Pengecekan | Hasil |
+|------------|-------|
+| Dashboard NevaCloud | ✅ Kedua VPS terlihat Running |
+| SSH via terminal | ❌ No route to host — koneksi tidak sampai |
+| Ping ke IP VPS | ❌ Tidak ada response (packet loss 100%) |
+| Ping ke domain via Cloudflare | ✅ Berhasil (tapi itu hanya reach Cloudflare edge, bukan server asli) |
+
+Kendala yang ditimbulkan:
+- Website ahlipanggilan.id yang di-host di VPS 1 tidak bisa diakses untuk konten dinamis
+- Cloudflare return Error 523 (Origin unreachable)
+- Semua layanan di kedua VPS lumpuh total karena tidak bisa dimasuki SSH
+
+Kronologi:
+- Terakhir bisa akses normal: 13 Juli 2026 sore
+- Gangguan mulai terasa sekitar pukul 17:43 WIB
+- Tidak ada perubahan konfigurasi firewall/network dari saya sebelum gangguan terjadi
+
+Mohon bantuan untuk:
+1. Cek apakah ada network outage / routing problem di sisi NevaCloud untuk IP range ini
+2. Cek status fisik/server kedua VPS — apakah benar-benar running atau hang
+3. Informasikan estimasi waktu perbaikan
+
+Terima kasih.
+
+Regards,
+[Nama Anda]
+— Customer NevaCloud
+— Email: [email Anda]

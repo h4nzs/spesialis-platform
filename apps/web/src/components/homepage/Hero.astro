@@ -33,13 +33,17 @@ const subtitle =
 ---
 
 <section class="relative overflow-hidden bg-bg-page">
-  <!-- Full background hero image -->
-  <img
-    src="/hero-home.jpg"
-    alt=""
-    class="absolute inset-0 h-full w-full object-cover object-top"
-    loading="eager"
-  />
+  <!-- Full background hero image — WebP with JPEG fallback -->
+  <picture>
+    <source srcset="/hero-home.webp" type="image/webp" />
+    <img
+      src="/hero-home.jpg"
+      alt=""
+      class="absolute inset-0 h-full w-full object-cover object-top"
+      loading="eager"
+      fetchpriority="high"
+    />
+  </picture>
   <!-- Left-to-right fade: solid bg → transparent, so image visible on right side -->
   <div class="absolute inset-0 bg-gradient-to-r from-[var(--color-bg-page)] via-[var(--color-bg-page)]/80 to-transparent lg:via-[var(--color-bg-page)]/30" aria-hidden="true" />
 
