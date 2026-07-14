@@ -21,7 +21,7 @@ export interface Props {
 
 const {
   title = 'Ahli Panggilan - Layanan Profesional',
-  description = 'Platform layanan jasa profesional on-demand. Booking teknisi dan profesional terpercaya untuk kebutuhan rumah, kantor, dan bisnis Anda.',
+  description = 'Perusahaan penyedia layanan jasa profesional. Booking layanan perbaikan dan perawatan untuk kebutuhan rumah, kantor, dan bisnis Anda.',
   ogImage = '/og-default.png',
   ogImageAlt,
   ogType = 'website',
@@ -151,8 +151,10 @@ const showWa = whatsappPhone && waPages.some(
     <main id="main-content">
       <slot />
     </main>
-    <Footer />
-    {showWa && <WhatsAppFloating phoneNumber={whatsappPhone} />}
+    <div id="global-footer-area">
+      <Footer />
+      {showWa && <WhatsAppFloating phoneNumber={whatsappPhone} />}
+    </div>
     <div id="app-settings" data-whatsapp-phone={whatsappPhone || ''} style="display:none"></div>
   </body>
 </html>

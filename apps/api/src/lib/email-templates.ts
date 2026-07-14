@@ -28,7 +28,7 @@ function baseHtml(content: string): string {
           </tr>
           <tr>
             <td style="padding:24px 16px 0;text-align:center;font-size:12px;color:#9ca3af;line-height:1.6">
-              <p style="margin:0 0 4px">Ahli Panggilan — Platform Layanan Jasa Profesional</p>
+              <p style="margin:0 0 4px">Ahli Panggilan — Perusahaan Layanan Jasa Profesional</p>
               <p style="margin:0 0 4px">Email ini dikirim secara otomatis, harap tidak membalas langsung.</p>
               <p style="margin:0">${APP_URL}</p>
             </td>

@@ -33,6 +33,45 @@ export function ServiceList({ searchQuery }: { searchQuery?: string }) {
       });
   }, [searchQuery]);
 
+  const header = searchQuery ? (
+    <div className="mb-6 flex flex-wrap items-center gap-2 rounded-lg border border-border-default bg-bg-surface p-3">
+      <span className="text-body-sm text-text-muted">Pencarian:</span>
+      <span className="inline-flex items-center gap-1.5 rounded-full bg-primary-50 px-3 py-1 text-body-sm font-medium text-primary-700">
+        <svg
+          className="h-3.5 w-3.5"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+          stroke-width="2"
+          aria-hidden="true"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"
+          />
+        </svg>
+        {searchQuery}
+      </span>
+      <a
+        href="/services"
+        className="ml-auto inline-flex items-center gap-1.5 rounded-lg border border-border-default bg-bg-page px-3 py-1.5 text-body-sm font-medium text-text-primary transition-colors hover:bg-bg-section"
+      >
+        <svg
+          className="h-3.5 w-3.5"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+          stroke-width="2"
+          aria-hidden="true"
+        >
+          <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+        Tampilkan Semua
+      </a>
+    </div>
+  ) : null;
+
   if (loading) {
     return (
       <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
@@ -60,36 +99,46 @@ export function ServiceList({ searchQuery }: { searchQuery?: string }) {
 
   if (services.length === 0) {
     return (
-      <div className="rounded-md border border-border-default bg-bg-surface px-6 py-8 text-center">
-        <p className="text-text-muted">Belum ada layanan tersedia</p>
-      </div>
+      <>
+        {header}
+        <div className="rounded-md border border-border-default bg-bg-surface px-6 py-8 text-center">
+          <p className="text-text-muted">
+            {searchQuery
+              ? `Tidak ada layanan untuk pencarian "${searchQuery}"`
+              : 'Belum ada layanan tersedia'}
+          </p>
+        </div>
+      </>
     );
   }
 
   return (
-    <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-      {services.map((service) => (
-        <a
-          key={service.id}
-          href={`/services/${service.slug}`}
-          className="block rounded-lg border border-border-default bg-bg-surface p-6 transition-shadow hover:shadow-md"
-        >
-          <h3 className="text-h5 font-semibold text-text-primary">{service.name}</h3>
-          <p className="mt-2 text-sm text-text-muted">
-            {service.shortDescription ?? 'Tidak ada deskripsi'}
-          </p>
-          <div className="mt-4 flex items-center justify-between">
-            <span className="text-body-sm font-medium text-primary-500">
-              {formatCurrency(service.basePrice)}
-            </span>
-            {service.estimatedDuration && (
-              <span className="text-caption text-text-muted">
-                &plusmn;{service.estimatedDuration} menit
+    <>
+      {header}
+      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        {services.map((service) => (
+          <a
+            key={service.id}
+            href={`/services/${service.slug}`}
+            className="block rounded-lg border border-border-default bg-bg-surface p-6 transition-shadow hover:shadow-md"
+          >
+            <h3 className="text-h5 font-semibold text-text-primary">{service.name}</h3>
+            <p className="mt-2 text-sm text-text-muted">
+              {service.shortDescription ?? 'Tidak ada deskripsi'}
+            </p>
+            <div className="mt-4 flex items-center justify-between">
+              <span className="text-body-sm font-medium text-primary-500">
+                {formatCurrency(service.basePrice)}
               </span>
-            )}
-          </div>
-        </a>
-      ))}
-    </div>
+              {service.estimatedDuration && (
+                <span className="text-caption text-text-muted">
+                  &plusmn;{service.estimatedDuration} menit
+                </span>
+              )}
+            </div>
+          </a>
+        ))}
+      </div>
+    </>
   );
 }

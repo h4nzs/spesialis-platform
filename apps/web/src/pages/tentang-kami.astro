@@ -12,7 +12,7 @@ interface CmsPage {
 // Fallback to hardcoded content when CMS is unreachable
 let pageSlug = 'tentang-kami'
 let pageTitle = 'Tentang Kami'
-let pageDescription = 'Ahli Panggilan adalah platform layanan jasa profesional on-demand yang menghubungkan pelanggan dengan teknisi terpercaya di Indonesia.'
+let pageDescription = 'Ahli Panggilan adalah perusahaan penyedia layanan jasa profesional yang siap membantu kebutuhan rumah, kantor, dan bisnis Anda.'
 let pageHtml = ''
 const apiUrl = process.env.API_URL ?? process.env.PUBLIC_API_URL ?? 'http://localhost:3000'
 
@@ -37,21 +37,21 @@ try {
 if (!useCms) {
   pageHtml = `
     <p class="text-text-primary leading-relaxed">
-      Ahli Panggilan adalah platform layanan jasa profesional on-demand yang menghubungkan pelanggan
-      dengan teknisi dan profesional terpercaya di Indonesia. Kami hadir untuk mempermudah
-      Anda menemukan tenaga ahli untuk kebutuhan rumah, kantor, dan bisnis.
+      Ahli Panggilan adalah perusahaan penyedia layanan jasa profesional yang siap membantu
+      kebutuhan rumah, kantor, dan bisnis Anda. Kami memiliki tim teknisi dan profesional
+      berpengalaman yang siap memberikan solusi terbaik.
     </p>
 
     <h2 class="text-h4 font-semibold text-text-primary">Visi</h2>
     <p class="text-text-primary leading-relaxed">
-      Menjadi platform layanan jasa profesional terpercaya yang mendukung pertumbuhan ekonomi
+      Menjadi perusahaan penyedia layanan jasa profesional terpercaya yang mendukung pertumbuhan ekonomi
       lokal dan meningkatkan kualitas hidup masyarakat Indonesia.
     </p>
 
     <h2 class="text-h4 font-semibold text-text-primary">Misi</h2>
     <ul class="list-disc pl-6 space-y-2 text-text-primary leading-relaxed">
       <li>Menyediakan akses mudah ke layanan jasa profesional berkualitas.</li>
-      <li>Memberdayakan mitra teknisi lokal melalui platform yang adil dan transparan.</li>
+      <li>Memberdayakan tenaga ahli lokal melalui sistem kerja yang adil dan transparan.</li>
       <li>Menjamin kepuasan pelanggan melalui layanan yang cepat, terpercaya, dan bergaransi.</li>
       <li>Mendukung pertumbuhan bisnis perusahaan melalui solusi maintenance dan outsourcing.</li>
     </ul>
@@ -64,7 +64,7 @@ if (!useCms) {
       </div>
       <div class="rounded-lg border border-border-default bg-bg-surface p-4">
         <h3 class="font-semibold text-text-primary">Terpercaya</h3>
-        <p class="mt-1 text-body-sm text-text-secondary">Setiap mitra telah diverifikasi dan berpengalaman.</p>
+        <p class="mt-1 text-body-sm text-text-secondary">Setiap teknisi telah diverifikasi dan berpengalaman.</p>
       </div>
       <div class="rounded-lg border border-border-default bg-bg-surface p-4">
         <h3 class="font-semibold text-text-primary">Cepat</h3>
@@ -89,7 +89,7 @@ if (!useCms) {
     name: 'Ahli Panggilan',
     url: 'https://ahlipanggilan.id',
     logo: 'https://ahlipanggilan.id/favicon.svg',
-    description: 'Platform layanan jasa profesional on-demand di Indonesia.',
+    description: 'Perusahaan penyedia layanan jasa profesional di Indonesia.',
     foundingDate: '2025',
     founder: { '@type': 'Organization', name: 'Ahli Panggilan' },
     sameAs: [],

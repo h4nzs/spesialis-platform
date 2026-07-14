@@ -1,5 +1,5 @@
 import { Hono } from 'hono';
-import { eq, and, asc, desc, inArray, sql } from 'drizzle-orm';
+import { eq, and, asc, desc, inArray, sql, ilike, or } from 'drizzle-orm';
 import { db, services, reviews, orderItems } from '../lib/db.ts';
 import { success, successPaginated, notFound } from '../lib/response.ts';
 import { validateQuery } from '../middleware/validation.ts';
@@ -14,10 +14,19 @@ router.get('/', validateQuery(paginationQuerySchema), async (c) => {
 
   const categoryId = c.req.query('categoryId');
   const featured = c.req.query('featured');
+  const q = c.req.query('q');
 
-  const conditions: ReturnType<typeof eq>[] = [eq(services.isActive, true)];
+  const conditions: import('drizzle-orm').SQL[] = [eq(services.isActive, true)];
   if (categoryId) conditions.push(eq(services.categoryId, categoryId));
   if (featured === 'true') conditions.push(eq(services.isFeatured, true));
+  if (q) {
+    const pattern = `%${q}%`;
+    const searchCondition = or(
+      ilike(services.name, pattern),
+      ilike(services.shortDescription, pattern),
+    );
+    if (searchCondition) conditions.push(searchCondition);
+  }
 
   const items = await db
     .select({

@@ -14,6 +14,8 @@ Production setup needed:
 - Notifications: WhatsApp dan email sudah ada, tapi push notification belum
 - Monitoring & observability masih dasar
 
+dinamis faq mitra dab corp
+
 ─────────────────────────────────────────────
 📧 PESAN UNTUK SUPPORT NEVACLOUD — 13 Juli 2026
 ─────────────────────────────────────────────

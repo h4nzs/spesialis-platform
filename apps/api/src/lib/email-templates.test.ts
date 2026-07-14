@@ -19,7 +19,7 @@ function assertBaseHtml(html: string) {
   expect(html).toContain('<!DOCTYPE html>');
   expect(html).toContain('<html lang="id">');
   expect(html).toContain('<title>Ahli Panggilan</title>');
-  expect(html).toContain('Ahli Panggilan — Platform Layanan Jasa Profesional');
+  expect(html).toContain('Ahli Panggilan — Perusahaan Layanan Jasa Profesional');
   expect(html).toContain('Email ini dikirim secara otomatis');
   expect(html).toContain(TEST_APP_URL);
 }

@@ -1,107 +1,99 @@
 ---
 /**
- * Why Choose Us Section — "Mengapa Memilih Kami"
+ * Why Choose Us Section — Referensi Style
  *
- * User problem: "Why should I use this platform?"
- * Goal: Build trust through numbers (statistics) + value propositions (benefits).
- * Visual: Split layout — left column shows hard stats, right column shows benefit items.
- *   No excessive decoration. Clean typography-driven hierarchy.
+ * Visual: Dua kolom.
+ *   Kiri: dark blue gradient card (why-card) dengan title + 4 stats (2x2 grid)
+ *   Kanan: feature grid (2x2) — 4 card dengan icon circle + title + description
  */
 
 interface Props {
   totalServices?: number;
   totalPartners?: number;
   totalCities?: number;
-  /** CMS section data — falls back to hardcoded defaults */
-  section?: {
-    title: string | null;
-    content: string | null;
-  };
 }
 
-const { totalServices = 50, totalPartners = 100, totalCities = 5, section } = Astro.props as Props;
-
-const sectionTitle = section?.title ?? 'Mengapa Memilih Kami';
-const sectionSubtitle =
-  section?.content ??
-  'Kami hadir untuk memberikan pengalaman layanan jasa yang berbeda — lebih cepat, lebih transparan, lebih terpercaya.';
+const { totalServices = 50, totalPartners = 100, totalCities = 5 } = Astro.props as Props;
 
 const stats = [
-  { value: '1.000+', label: 'Pesanan Selesai', color: 'text-primary-500' },
-  { value: `${totalPartners}+`, label: 'Mitra Terverifikasi', color: 'text-success-600' },
-  { value: '4.8', label: 'Rating Rata-rata', suffix: '/5.0', color: 'text-warning-600' },
-  { value: `${totalCities}`, label: 'Kota Tersedia', color: 'text-secondary-500' },
+  { value: '50.000+', label: 'Order Selesai', icon: 'check' },
+  { value: `${totalPartners}+`, label: 'Spesialis Aktif', icon: 'users' },
+  { value: `${totalCities}`, label: 'Kota Layanan', icon: 'map' },
+  { value: '4.8', label: 'Rating Pelanggan', icon: 'star' },
 ];
 
 const benefits = [
   {
-    title: 'Teknisi Berpengalaman',
-    description: 'Setiap mitra telah melewati proses verifikasi dan memiliki pengalaman di bidangnya.',
-    icon: 'users',
+    title: 'Profesional & Terverifikasi',
+    description: 'Semua mitra melalui proses seleksi ketat dan terpercaya.',
+    icon: 'shield',
+    iconBg: 'bg-blue-100 text-blue-600',
   },
   {
-    title: 'Harga Transparan',
-    description: 'Estimasi harga jelas di awal. Tidak ada biaya tersembunyi atau kejutan.',
-    icon: 'badge-check',
+    title: 'Cepat & Tepat Waktu',
+    description: 'Ahli datang sesuai jadwal yang Anda pilih.',
+    icon: 'clock',
+    iconBg: 'bg-orange-100 text-orange-600',
   },
   {
-    title: 'Cepat & Mudah',
-    description: 'Booking dalam hitungan menit. Tanpa perlu antre, tanpa telepon bolak-balik.',
-    icon: 'zap',
+    title: 'Harga Jelas & Transparan',
+    description: 'Estimasi harga di awal, tanpa biaya tambahan.',
+    icon: 'tag',
+    iconBg: 'bg-green-100 text-green-600',
   },
   {
     title: 'Garansi Layanan',
-    description: 'Setiap layanan dilindungi garansi. Jika tidak sesuai, kami siap tindak lanjut.',
-    icon: 'shield',
+    description: 'Kepuasan Anda adalah prioritas kami.',
+    icon: 'headphones',
+    iconBg: 'bg-purple-100 text-purple-500',
   },
 ];
 
 const iconSVGs: Record<string, string> = {
-  users: '<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>',
-  'badge-check': '<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3.85 8.62a4 4 0 0 1 4.78-4.77 4 4 0 0 1 6.74 0 4 4 0 0 1 4.78 4.78 4 4 0 0 1 0 6.74 4 4 0 0 1-4.77 4.78 4 4 0 0 1-6.75 0 4 4 0 0 1-4.78-4.77 4 4 0 0 1 0-6.76Z"/><path d="m9 12 2 2 4-4"/></svg>',
-  zap: '<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>',
-  shield: '<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/></svg>',
+  check: '<svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>',
+  users: '<svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>',
+  map: '<svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0z"/><circle cx="12" cy="10" r="3"/></svg>',
+  star: '<svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="currentColor" stroke="none"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>',
+  shield: '<svg xmlns="http://www.w3.org/2000/svg" width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>',
+  clock: '<svg xmlns="http://www.w3.org/2000/svg" width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>',
+  tag: '<svg xmlns="http://www.w3.org/2000/svg" width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41 11 3.83A2 2 0 0 0 9.61 3H4a1 1 0 0 0-1 1v5.61a2 2 0 0 0 .83 1.39l9.58 9.58a2 2 0 0 0 2.83 0l4.35-4.35a2 2 0 0 0 0-2.82Z"/><circle cx="7.5" cy="7.5" r="1.3"/></svg>',
+  headphones: '<svg xmlns="http://www.w3.org/2000/svg" width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 18v-6a9 9 0 0 1 18 0v6"/><path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"/></svg>',
 };
 ---
 
-<section class="bg-bg-page">
-  <div class="container-page py-16 md:py-24">
-    <!-- Section header -->
-    <div class="mx-auto max-w-2xl text-center">
-      <p class="text-overline text-primary-500 tracking-widest">KENAPA PILIH KAMI</p>
-      <h2 class="mt-3 text-h2 text-text-primary">{sectionTitle}</h2>
-      <p class="mt-3 text-body-lg text-text-secondary text-pretty">{sectionSubtitle}</p>
-    </div>
-
-    <!-- Split layout: Stats (left) + Benefits (right) -->
-    <div class="mt-14 grid gap-10 lg:grid-cols-2 lg:gap-16">
-      <!-- Left: Statistics -->
-      <div class="grid grid-cols-2 gap-6">
-        {
-          stats.map((s) => (
-            <div class="flex flex-col items-center rounded-xl border border-border-default bg-bg-surface p-6 text-center">
-              <p class="text-display font-bold text-balance leading-none">
-                <span class={s.color}>{s.value}</span>
-                {s.suffix && <span class="text-h3 text-text-muted">{s.suffix}</span>}
-              </p>
-              <p class="mt-2 text-body-sm text-text-secondary">{s.label}</p>
-            </div>
-          ))
-        }
+<section class="bg-bg-section">
+  <div class="container-page py-6 md:py-8">
+    <div class="grid gap-5 md:grid-cols-5 md:gap-5">
+      <!-- ── Left: Dark Blue Card (mengisi 2 kolom) ──────────────── -->
+      <div class="flex flex-col justify-between gap-6 rounded-2xl bg-gradient-to-br from-primary-800 to-primary-950 p-6 md:col-span-2 md:p-7">
+        <h3 class="text-xl font-extrabold text-white leading-snug">
+          Mengapa Memilih<br />Ahli Panggilan?
+        </h3>
+        <div class="grid grid-cols-2 gap-x-4 gap-y-5">
+          {
+            stats.map((s) => (
+              <div class="flex flex-col gap-1">
+                <div class="flex items-center gap-1.5 text-lg font-extrabold text-white leading-none">
+                  <span class="shrink-0 text-orange-400" aria-hidden="true" set:html={iconSVGs[s.icon]} />
+                  {s.value}
+                </div>
+                <span class="text-xs font-medium text-blue-200/80 leading-tight">{s.label}</span>
+              </div>
+            ))
+          }
+        </div>
       </div>
 
-      <!-- Right: Benefits -->
-      <div class="flex flex-col justify-center gap-5">
+      <!-- ── Right: Feature Grid (mengisi 3 kolom) ──────────────── -->
+      <div class="grid grid-cols-2 gap-3 md:col-span-3">
         {
           benefits.map((b) => (
-            <div class="flex items-start gap-4 rounded-xl border border-border-default bg-bg-surface p-5 transition-shadow duration-150 ease-out hover:shadow-xs">
-              <div class="mt-0.5 flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-primary-50 text-primary-600" aria-hidden="true">
+            <div class="flex flex-col rounded-xl border border-border-default bg-bg-surface p-4 md:p-5 shadow-xs">
+              <div class={`mb-3 flex h-10 w-10 items-center justify-center rounded-lg ${b.iconBg}`} aria-hidden="true">
                 <span set:html={iconSVGs[b.icon]} />
               </div>
-              <div class="min-w-0">
-                <h3 class="text-h5 text-text-primary">{b.title}</h3>
-                <p class="mt-1 text-body text-text-secondary leading-relaxed">{b.description}</p>
-              </div>
+              <h4 class="text-sm font-extrabold text-text-primary leading-snug">{b.title}</h4>
+              <p class="mt-1 text-xs text-text-secondary leading-relaxed">{b.description}</p>
             </div>
           ))
         }

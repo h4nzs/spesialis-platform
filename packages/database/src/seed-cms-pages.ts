@@ -33,21 +33,21 @@ const PAGES = [
     status: 'Published',
     content: stripClasses(`
 <p>
-  Ahli Panggilan adalah platform layanan jasa profesional on-demand yang menghubungkan pelanggan
-  dengan teknisi dan profesional terpercaya di Indonesia. Kami hadir untuk mempermudah
-  Anda menemukan tenaga ahli untuk kebutuhan rumah, kantor, dan bisnis.
+  Ahli Panggilan adalah perusahaan penyedia layanan jasa profesional yang siap membantu
+  kebutuhan rumah, kantor, dan bisnis Anda. Kami memiliki tim teknisi dan profesional
+  berpengalaman yang siap memberikan solusi terbaik.
 </p>
 
 <h2>Visi</h2>
 <p>
-  Menjadi platform layanan jasa profesional terpercaya yang mendukung pertumbuhan ekonomi
+  Menjadi perusahaan penyedia layanan jasa profesional terpercaya yang mendukung pertumbuhan ekonomi
   lokal dan meningkatkan kualitas hidup masyarakat Indonesia.
 </p>
 
 <h2>Misi</h2>
 <ul>
   <li>Menyediakan akses mudah ke layanan jasa profesional berkualitas.</li>
-  <li>Memberdayakan mitra teknisi lokal melalui platform yang adil dan transparan.</li>
+  <li>Memberdayakan tenaga ahli lokal melalui sistem kerja yang adil dan transparan.</li>
   <li>Menjamin kepuasan pelanggan melalui layanan yang cepat, terpercaya, dan bergaransi.</li>
   <li>Mendukung pertumbuhan bisnis perusahaan melalui solusi maintenance dan outsourcing.</li>
 </ul>
@@ -60,7 +60,7 @@ const PAGES = [
   </div>
   <div>
     <h3>Terpercaya</h3>
-    <p>Setiap mitra telah diverifikasi dan berpengalaman.</p>
+    <p>Setiap teknisi telah diverifikasi dan berpengalaman.</p>
   </div>
   <div>
     <h3>Cepat</h3>
@@ -74,7 +74,7 @@ const PAGES = [
     `),
     meta: {
       description:
-        'Ahli Panggilan adalah platform layanan jasa profesional on-demand yang menghubungkan pelanggan dengan teknisi terpercaya di Indonesia.',
+        'Ahli Panggilan adalah perusahaan penyedia layanan jasa profesional yang siap membantu kebutuhan rumah, kantor, dan bisnis Anda.',
     },
   },
   {
@@ -86,12 +86,12 @@ const PAGES = [
 
 <h2>1. Layanan</h2>
 <p>
-  Ahli Panggilan adalah platform yang menghubungkan pelanggan dengan penyedia jasa profesional. Kami hanya menyediakan platform — pelaksanaan layanan dilakukan sepenuhnya oleh mitra penyedia jasa.
+  Ahli Panggilan adalah perusahaan penyedia layanan jasa profesional. Kami menyediakan layanan — pelaksanaan dilakukan sepenuhnya oleh tim teknisi internal kami.
 </p>
 
-<h2>2. Penggunaan Platform</h2>
+<h2>2. Penggunaan Layanan</h2>
 <p>
-  Dengan menggunakan platform Ahli Panggilan, Anda menyetujui untuk memberikan informasi yang akurat, tidak menyalahgunakan platform, dan mematuhi seluruh ketentuan yang berlaku.
+  Dengan menggunakan layanan Ahli Panggilan, Anda menyetujui untuk memberikan informasi yang akurat, tidak menyalahgunakan layanan, dan mematuhi seluruh ketentuan yang berlaku.
 </p>
 
 <h2>3. Pembayaran</h2>
@@ -115,8 +115,7 @@ const PAGES = [
 </p>
     `),
     meta: {
-      description:
-        'Syarat dan ketentuan penggunaan platform layanan jasa profesional Ahli Panggilan.',
+      description: 'Syarat dan ketentuan penggunaan layanan Ahli Panggilan.',
     },
   },
   {
@@ -143,7 +142,7 @@ const PAGES = [
 
 <h2>4. Berbagi Data</h2>
 <p>
-  Data Anda hanya dibagikan dengan mitra penyedia jasa yang ditugaskan untuk pesanan Anda. Kami tidak menjual data Anda kepada pihak ketiga.
+  Data Anda hanya digunakan oleh tim kami untuk memproses pesanan Anda. Kami tidak menjual data Anda kepada pihak ketiga.
 </p>
 
 <h2>5. Hak Anda</h2>
@@ -158,7 +157,7 @@ const PAGES = [
     `),
     meta: {
       description:
-        'Kebijakan privasi platform layanan jasa profesional Ahli Panggilan. Bagaimana kami mengelola dan melindungi data pribadi Anda.',
+        'Kebijakan privasi layanan Ahli Panggilan. Bagaimana kami mengelola dan melindungi data pribadi Anda.',
     },
   },
   {

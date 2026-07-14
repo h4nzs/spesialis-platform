@@ -1188,9 +1188,9 @@ async function seed() {
       displayOrder: 2,
     },
     {
-      question: 'Bagaimana cara menjadi mitra?',
+      question: 'Bagaimana cara bergabung dengan tim?',
       answer:
-        'Kunjungi halaman Daftar Mitra, isi data diri lengkap dengan KTP dan foto profil. Tim kami akan melakukan verifikasi, dan setelah disetujui Anda dapat mulai menerima pekerjaan.',
+        'Kunjungi halaman Daftar Mitra, isi data diri lengkap dengan KTP dan foto profil. Tim kami akan melakukan verifikasi, dan setelah disetujui Anda dapat mulai bergabung.',
       category: 'Mitra',
       displayOrder: 1,
     },
@@ -1217,13 +1217,13 @@ async function seed() {
       category: 'general',
       key: 'site_name',
       value: 'Ahli Panggilan',
-      description: 'Nama platform',
+      description: 'Nama perusahaan',
     },
     {
       category: 'general',
       key: 'site_description',
-      value: 'Platform layanan jasa profesional on-demand',
-      description: 'Deskripsi platform',
+      value: 'Perusahaan penyedia layanan jasa profesional',
+      description: 'Deskripsi perusahaan',
     },
     {
       category: 'booking',
@@ -1247,7 +1247,7 @@ async function seed() {
       category: 'commission',
       key: 'platform_fee_percent',
       value: '10',
-      description: 'Komisi platform (%)',
+      description: 'Komisi perusahaan (%)',
     },
     {
       category: 'commission',

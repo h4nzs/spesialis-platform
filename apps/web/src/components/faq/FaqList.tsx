@@ -9,11 +9,11 @@ interface FaqItem {
 const FALLBACK_FAQS: FaqItem[] = [
   {
     q: 'Apa itu Ahli Panggilan?',
-    a: 'Ahli Panggilan adalah platform layanan jasa profesional on-demand yang menghubungkan Anda dengan teknisi dan profesional terpercaya untuk kebutuhan rumah, kantor, dan bisnis.',
+    a: 'Ahli Panggilan adalah perusahaan penyedia layanan jasa profesional yang siap membantu kebutuhan rumah, kantor, dan bisnis Anda. Kami memiliki tim teknisi dan profesional berpengalaman di berbagai bidang.',
   },
   {
     q: 'Bagaimana cara memesan layanan?',
-    a: 'Pilih layanan yang Anda butuhkan, isi form booking dengan detail alamat dan jadwal, lalu admin kami akan mengonfirmasi dan menugaskan mitra teknisi.',
+    a: 'Pilih layanan yang Anda butuhkan, isi form booking dengan detail alamat dan jadwal, lalu admin kami akan mengonfirmasi dan menugaskan tim teknisi.',
   },
   {
     q: 'Apakah saya perlu membuat akun untuk booking?',
@@ -32,8 +32,8 @@ const FALLBACK_FAQS: FaqItem[] = [
     a: 'Setiap layanan dilengkapi garansi. Jika ada ketidaksesuaian, Anda dapat mengajukan komplain melalui dashboard dan tim kami akan segera menindaklanjuti.',
   },
   {
-    q: 'Bagaimana cara menjadi mitra teknisi?',
-    a: 'Daftar melalui halaman Daftar Mitra, lengkapi data diri dan dokumen yang diperlukan. Setelah diverifikasi oleh admin, Anda dapat mulai menerima pekerjaan.',
+    q: 'Bagaimana cara bergabung dengan tim kami?',
+    a: 'Daftar melalui halaman Daftar Mitra, lengkapi data diri dan dokumen yang diperlukan. Setelah diverifikasi oleh admin, Anda dapat mulai bergabung.',
   },
   {
     q: 'Apakah Ahli Panggilan melayani area Jabodetabek saja?',

@@ -10,7 +10,7 @@ const serviceId = Astro.url.searchParams.get('serviceId')
 
 <BaseLayout
   title="Booking - Ahli Panggilan"
-  description="Pesan layanan jasa profesional online. Isi form booking untuk memesan teknisi terpercaya."
+  description="Pesan layanan jasa profesional online. Isi form booking untuk memesan layanan terpercaya."
   canonicalUrl={serviceId ? `/book?serviceId=${serviceId}` : '/book'}
   jsonLd={{
     '@context': 'https://schema.org',
@@ -27,7 +27,7 @@ const serviceId = Astro.url.searchParams.get('serviceId')
       {
         '@type': 'WebPage',
         name: 'Booking - Ahli Panggilan',
-        description: 'Pesan layanan jasa profesional online. Booking teknisi terpercaya untuk AC, plumbing, listrik, cleaning, dan lainnya.',
+        description: 'Pesan layanan jasa profesional online. Booking layanan AC, plumbing, listrik, cleaning, dan lainnya.',
         url: 'https://ahlipanggilan.id/book',
         breadcrumb: { '@id': 'https://ahlipanggilan.id/book#breadcrumb' },
       },
