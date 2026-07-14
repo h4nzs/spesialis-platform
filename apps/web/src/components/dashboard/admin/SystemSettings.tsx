@@ -4,6 +4,8 @@ import { Input, Button } from '@ahlipanggilan/ui';
 
 export function SystemSettings() {
   const api = useMemo(() => createBrowserClient(), []);
+  const [siteName, setSiteName] = useState('');
+  const [siteDescription, setSiteDescription] = useState('');
   const [whatsappPhone, setWhatsappPhone] = useState('');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -12,8 +14,16 @@ export function SystemSettings() {
 
   useEffect(() => {
     api
-      .get<Record<string, Array<{ key: string; value: string }>>>('/api/v1/admin/settings')
+      .get<Record<string, Array<{ key: string; value: string; description: string | null }>>>(
+        '/api/v1/admin/settings',
+      )
       .then((data) => {
+        const general = data.general ?? [];
+        const name = general.find((s) => s.key === 'site_name');
+        const desc = general.find((s) => s.key === 'site_description');
+        if (name) setSiteName(name.value);
+        if (desc) setSiteDescription(desc.value);
+
         const whatsapp = data.whatsapp ?? [];
         const phone = whatsapp.find((s) => s.key === 'whatsapp_phone_number');
         if (phone) setWhatsappPhone(phone.value);
@@ -35,6 +45,18 @@ export function SystemSettings() {
       await api.patch('/api/v1/admin/settings', {
         body: {
           settings: [
+            {
+              key: 'site_name',
+              value: siteName.trim(),
+              category: 'general',
+              description: 'Nama perusahaan',
+            },
+            {
+              key: 'site_description',
+              value: siteDescription.trim(),
+              category: 'general',
+              description: 'Deskripsi perusahaan',
+            },
             {
               key: 'whatsapp_phone_number',
               value: whatsappPhone.trim(),
@@ -58,10 +80,33 @@ export function SystemSettings() {
   }
 
   return (
-    <section>
+    <>
       <hr className="border-border-default" />
-      <h2 className="mb-4 mt-8 text-lg font-semibold text-text-primary">Pengaturan WhatsApp</h2>
+      <h2 className="mb-4 mt-8 text-lg font-semibold text-text-primary">Pengaturan Umum</h2>
       <form onSubmit={handleSubmit} className="max-w-md space-y-4">
+        <div className="space-y-4">
+          <Input
+            label="Nama Perusahaan"
+            placeholder="Ahli Panggilan"
+            value={siteName}
+            onChange={(e) => setSiteName(e.target.value)}
+          />
+          <div>
+            <label className="mb-1 block text-sm font-medium text-text-primary">
+              Deskripsi Perusahaan
+            </label>
+            <textarea
+              className="w-full rounded-lg border border-border-default bg-bg-surface px-3 py-2 text-sm text-text-primary placeholder:text-text-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-500"
+              rows={3}
+              placeholder="Deskripsi singkat tentang perusahaan"
+              value={siteDescription}
+              onChange={(e) => setSiteDescription(e.target.value)}
+            />
+          </div>
+        </div>
+
+        <hr className="border-border-default" />
+        <h2 className="mb-4 mt-8 text-lg font-semibold text-text-primary">Pengaturan WhatsApp</h2>
         <Input
           label="Nomor WhatsApp"
           placeholder="6281234567890"
@@ -73,11 +118,11 @@ export function SystemSettings() {
           internasional tanpa tanda + (contoh: 6281234567890).
         </p>
         {error && <p className="text-sm text-danger-500">{error}</p>}
-        {success && <p className="text-sm text-success-500">Nomor WhatsApp berhasil disimpan</p>}
+        {success && <p className="text-sm text-success-500">Pengaturan berhasil disimpan</p>}
         <Button type="submit" disabled={saving}>
-          {saving ? 'Menyimpan...' : 'Simpan'}
+          {saving ? 'Menyimpan...' : 'Simpan Semua'}
         </Button>
       </form>
-    </section>
+    </>
   );
 }
