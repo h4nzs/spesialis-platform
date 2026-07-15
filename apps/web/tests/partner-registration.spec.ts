@@ -25,7 +25,9 @@ test.describe('Partner Registration - E2E-012', () => {
 
   test('E2E-012: Registration form has all required fields', async ({ page }) => {
     await page.goto('/register/partner');
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
+    // Tunggu form field muncul — formulir render lepas dari fetch API kategorinya
+    await page.getByRole('button', { name: /Daftar sebagai Mitra/ }).waitFor({ timeout: 15000 });
 
     // Verify key input fields are present
     const nameInput = page.locator('input[name="fullName"], input[placeholder*="Nama"]').first();
