@@ -18,11 +18,12 @@
     "test:integration": "vitest run --config vitest.integration.config.ts"
   },
   "dependencies": {
-    "@hono/node-server": "^2.0.6",
     "@ahlipanggilan/database": "workspace:*",
     "@ahlipanggilan/shared": "workspace:*",
     "@ahlipanggilan/types": "workspace:*",
     "@ahlipanggilan/validation": "workspace:*",
+    "@aws-sdk/client-s3": "^3.1087.0",
+    "@hono/node-server": "^2.0.6",
     "dotenv": "^17.4.2",
     "drizzle-orm": "^0.43.1",
     "hash-wasm": "^4.12.0",
