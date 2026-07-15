@@ -5,7 +5,10 @@ import { PartnerRegistrationForm } from './PartnerRegistrationForm';
 const mockPost = vi.fn();
 
 vi.mock('@ahlipanggilan/shared', () => ({
-  createBrowserClient: () => ({ post: mockPost }),
+  createBrowserClient: () => ({
+    post: mockPost,
+    get: vi.fn().mockResolvedValue([]),
+  }),
   SCHEMA_TEMPLATES: [],
 }));
 
