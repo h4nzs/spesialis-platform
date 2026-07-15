@@ -387,7 +387,7 @@ describe('AdminServices', () => {
         body: expect.objectContaining({
           name: 'New Service',
           slug: 'new-service',
-          basePrice: 250000,
+          basePrice: '250000',
           categoryId: 'c1',
         }),
       });
@@ -440,7 +440,7 @@ describe('AdminServices', () => {
       expect(mockDownloadCSV).toHaveBeenCalledTimes(1);
       expect(mockDownloadCSV).toHaveBeenCalledWith(
         ['Nama', 'Slug', 'Kategori', 'Harga', 'Status', 'Featured'],
-        [['Service 1', 'service-1', 'Cat 1', 'Rp150.000', 'Aktif', 'Tidak']],
+        [['Service 1', 'service-1', 'Cat 1', '150000', 'Aktif', 'Tidak']],
         'layanan-export.csv',
       );
     });
