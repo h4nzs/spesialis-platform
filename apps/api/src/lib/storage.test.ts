@@ -2,6 +2,13 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 vi.mock('node:fs', () => ({ existsSync: vi.fn() }));
 vi.mock('node:fs/promises', () => ({ writeFile: vi.fn(), mkdir: vi.fn(), unlink: vi.fn() }));
+vi.mock('@aws-sdk/client-s3', () => ({
+  S3Client: vi.fn(() => ({
+    send: vi.fn(),
+  })),
+  PutObjectCommand: vi.fn(),
+  DeleteObjectCommand: vi.fn(),
+}));
 
 import { existsSync } from 'node:fs';
 import { writeFile, mkdir, unlink } from 'node:fs/promises';

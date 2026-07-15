@@ -314,16 +314,6 @@ export function AdminServices() {
         emptyState={<EmptyState title="Belum ada layanan" />}
       />
 
-      {/* MediaBrowser */}
-      <MediaBrowser
-        open={showMediaBrowser}
-        onClose={() => setShowMediaBrowser(false)}
-        onSelect={(url) => {
-          setForm((f) => ({ ...f, thumbnail: url }));
-          setShowMediaBrowser(false);
-        }}
-      />
-
       <Modal
         open={showModal}
         onClose={() => setShowModal(false)}
@@ -465,6 +455,16 @@ export function AdminServices() {
           </div>
         </form>
       </Modal>
+
+      {/* MediaBrowser — ditempatkan setelah Modal agar z-index lebih tinggi */}
+      <MediaBrowser
+        open={showMediaBrowser}
+        onClose={() => setShowMediaBrowser(false)}
+        onSelect={(url) => {
+          setForm((f) => ({ ...f, thumbnail: url }));
+          setShowMediaBrowser(false);
+        }}
+      />
     </div>
   );
 }

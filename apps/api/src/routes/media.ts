@@ -12,6 +12,8 @@ import {
   isAllowedMimeType,
   isWithinSizeLimit,
   UPLOAD_DIR,
+  getR2PublicUrl,
+  type StorageDisk,
 } from '../lib/storage.ts';
 import {
   success,
@@ -50,6 +52,7 @@ router.get('/', authMiddleware, async (c) => {
       size: media.size,
       width: media.width,
       height: media.height,
+      disk: media.disk,
       url: sql<string>`'/api/v1/media/' || ${media.id} || '/file'`,
       createdAt: media.createdAt,
     })
@@ -106,7 +109,7 @@ router.post('/upload', authMiddleware, async (c) => {
     const [record] = await db
       .insert(media)
       .values({
-        disk: 'Local',
+        disk: stored.disk,
         path: stored.path,
         filename: stored.filename,
         mimeType: stored.mimeType,
@@ -164,6 +167,17 @@ router.get('/:id/file', async (c) => {
 
   if (!record) return notFound(c, 'Media tidak ditemukan');
 
+  // R2: redirect to public URL
+  if (record.disk === 'Cloudflare R2' || (record.disk as StorageDisk) === 'Cloudflare R2') {
+    try {
+      const publicUrl = getR2PublicUrl(record.filename);
+      return c.redirect(publicUrl, 302);
+    } catch {
+      // Fall through to local filesystem attempt
+    }
+  }
+
+  // Local filesystem
   try {
     const filePath = join(UPLOAD_DIR, record.filename);
     const buffer = await readFile(filePath);
@@ -191,7 +205,7 @@ router.delete('/:id', authMiddleware, async (c) => {
     return forbidden(c, 'Tidak dapat menghapus media milik user lain');
   }
 
-  await deleteFile(record.path);
+  await deleteFile(record.path, record.disk as StorageDisk);
   await db.delete(media).where(eq(media.id, mediaId));
 
   return success(c, null, 'Media berhasil dihapus');
