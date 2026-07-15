@@ -5,6 +5,7 @@ import BaseLayout from '../layouts/BaseLayout.astro'
 import Hero from '../components/homepage/Hero.astro'
 import QuickServiceCategories from '../components/homepage/QuickServiceCategories.astro'
 import WhyChooseUs from '../components/homepage/WhyChooseUs.astro'
+import Statistics from '../components/homepage/Statistics.astro'
 import FeaturedServices from '../components/homepage/FeaturedServices.astro'
 import Process from '../components/homepage/Process.astro'
 import Testimonials from '../components/homepage/Testimonials.astro'
@@ -19,9 +20,14 @@ interface ServiceItem {
   name: string;
   slug: string;
   shortDescription: string | null;
-  basePrice: number;
+  basePrice: string;
   estimatedDuration: number | null;
   isFeatured: boolean | null;
+}
+
+interface CoverageArea {
+  id: string;
+  city: string;
 }
 
 interface ArticleItem {
@@ -33,13 +39,15 @@ interface ArticleItem {
   publishedAt: string | null;
 }
 
-// SSR: fetch services and articles from Hono API (business logic) + CMS API (public content)
+// SSR: fetch services, articles, and coverage areas from Hono API + CMS API
 let services: ServiceItem[] = []
 let articles: ArticleItem[] = []
+let totalCities = 0
 try {
-  const [servicesRes, articlesRes] = await Promise.all([
+  const [servicesRes, articlesRes, coverageRes] = await Promise.all([
     fetch(`${process.env.API_URL ?? process.env.PUBLIC_API_URL ?? 'http://localhost:3000'}/api/v1/services?limit=12`),
     fetch(`${process.env.API_URL ?? process.env.PUBLIC_API_URL ?? 'http://localhost:3000'}/api/v1/cms/articles?limit=3`),
+    fetch(`${process.env.API_URL ?? process.env.PUBLIC_API_URL ?? 'http://localhost:3000'}/api/v1/public/coverage-areas`),
   ])
   if (servicesRes.ok) {
     const json = await servicesRes.json()
@@ -59,8 +67,18 @@ try {
       }))
     }
   }
+  if (coverageRes.ok) {
+    const json = await coverageRes.json()
+    const areas: CoverageArea[] = json.data ?? []
+    totalCities = areas.length
+  }
 } catch {
   // silent — components handle empty state with fallback
+}
+
+// Fallback jika fetch gagal — pakai jumlah dari fallback Coverage.astro
+if (totalCities === 0) {
+  totalCities = 6 // ['Jakarta', 'Bandung', 'Tangerang', 'Bekasi', 'Depok', 'Bogor']
 }
 ---
 
@@ -116,13 +134,14 @@ try {
   <!-- Visible pada initial page load — desain compact seperti referensi -->
   <Hero totalServices={services.length} />
   <QuickServiceCategories />
-  <WhyChooseUs totalServices={services.length} />
+  <WhyChooseUs totalServices={services.length} totalCities={totalCities} />
   <Coverage />
 
   <!-- ── Section tambahan (hidden, muncul saat "Lihat Selengkapnya" diklik) ── -->
   <div id="homepage-content" class="hidden">
     <FeaturedServices services={services} />
     <Process />
+    <Statistics totalCities={totalCities} />
     <Testimonials />
     <CorporateCTA />
     <LatestArticles articles={articles} />

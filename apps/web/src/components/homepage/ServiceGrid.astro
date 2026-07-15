@@ -14,7 +14,7 @@ export interface ServiceItem {
   name: string;
   slug: string;
   shortDescription: string | null;
-  basePrice: number;
+  basePrice: string;
   estimatedDuration: number | null;
 }
 
@@ -32,14 +32,6 @@ const { services, section } = Astro.props as Props;
 const sectionTitle = section?.title ?? 'Layanan Profesional'
 const sectionContent = section?.content ?? 'Pilih layanan yang Anda butuhkan — harga transparan, teknisi berpengalaman, garansi kepuasan.'
 
-function formatPrice(price: number): string {
-  return new Intl.NumberFormat('id-ID', {
-    style: 'currency',
-    currency: 'IDR',
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  }).format(price);
-}
 ---
 
 <section class="bg-bg-section" id="layanan">
@@ -71,7 +63,7 @@ function formatPrice(price: number): string {
                 )}
                 <div class="mt-5 flex items-center justify-between border-t border-border-default pt-4">
                   <span class="text-body font-semibold text-primary-500">
-                    {formatPrice(service.basePrice)}
+                    {service.basePrice}
                   </span>
                   {service.estimatedDuration && (
                     <span class="text-caption text-text-muted">

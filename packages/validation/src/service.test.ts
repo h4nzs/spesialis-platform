@@ -5,7 +5,7 @@ const validService = {
   categoryId: '550e8400-e29b-41d4-a716-446655440000',
   name: 'Cuci AC Standar',
   slug: 'cuci-ac-standar',
-  basePrice: 150000,
+  basePrice: '150000',
 };
 
 describe('createServiceSchema', () => {
@@ -42,8 +42,8 @@ describe('createServiceSchema', () => {
     expect(result.success).toBe(false);
   });
 
-  it('rejects negative base price', () => {
-    const result = createServiceSchema.safeParse({ ...validService, basePrice: -100 });
+  it('rejects empty base price', () => {
+    const result = createServiceSchema.safeParse({ ...validService, basePrice: '' });
     expect(result.success).toBe(false);
   });
 

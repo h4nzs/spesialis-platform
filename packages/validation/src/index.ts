@@ -17,6 +17,7 @@ export {
   convertGuestSchema,
   refreshTokenSchema,
   verifyEmailSchema,
+  adminCreateUserSchema,
 } from './user.ts';
 export type {
   RegisterInput,
@@ -30,6 +31,7 @@ export type {
   ConvertGuestInput,
   RefreshTokenInput,
   VerifyEmailInput,
+  AdminCreateUserInput,
 } from './user.ts';
 
 export { updateCustomerSchema, updateCustomerStatusSchema } from './customer.ts';

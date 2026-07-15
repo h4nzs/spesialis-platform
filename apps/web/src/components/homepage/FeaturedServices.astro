@@ -13,7 +13,7 @@ export interface FeaturedService {
   name: string;
   slug: string;
   shortDescription: string | null;
-  basePrice: number;
+  basePrice: string;
   isFeatured: boolean | null;
 }
 
@@ -24,14 +24,6 @@ interface Props {
 const { services } = Astro.props as Props;
 const featured = services.filter((s) => s.isFeatured === true);
 
-function formatPrice(price: number): string {
-  return new Intl.NumberFormat('id-ID', {
-    style: 'currency',
-    currency: 'IDR',
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  }).format(price);
-}
 ---
 
 {
@@ -65,7 +57,7 @@ function formatPrice(price: number): string {
                   </p>
                 )}
                 <p class="mt-5 text-body font-semibold text-primary-500">
-                  {formatPrice(service.basePrice)}
+                  {service.basePrice}
                 </p>
               </a>
             ))

@@ -17,7 +17,7 @@ export interface Service {
   slug: string;
   shortDescription: string | null;
   description: string | null;
-  basePrice: number;
+  basePrice: string;
   estimatedDuration: number | null;
   warrantyDays: number | null;
   thumbnail: string | null;
@@ -33,7 +33,7 @@ export type CreateServiceInput = {
   categoryId: string;
   name: string;
   slug: string;
-  basePrice: number;
+  basePrice: string;
 };
 
 export type UpdateServiceInput = Partial<

@@ -5,7 +5,7 @@ export interface ServiceData {
   slug: string;
   shortDescription: string | null;
   description: string | null;
-  basePrice: number;
+  basePrice: string;
   estimatedDuration: number | null;
   warrantyDays: number | null;
   thumbnail: string | null;

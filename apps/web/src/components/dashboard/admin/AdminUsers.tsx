@@ -98,6 +98,17 @@ export function AdminUsers() {
   const [newStatus, setNewStatus] = useState('');
   const [newRole, setNewRole] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [createForm, setCreateForm] = useState({
+    email: '',
+    phone: '',
+    password: '',
+    fullName: '',
+    role: 'customer',
+    ktpNumber: '',
+  });
+  const [createError, setCreateError] = useState('');
+  const [creating, setCreating] = useState(false);
   const [currentUserRole, setCurrentUserRole] = useState<string>('');
 
   useEffect(() => {
@@ -256,32 +267,103 @@ export function AdminUsers() {
     (opt) => isSuperAdmin || opt.value !== 'super_admin',
   );
 
+  function openCreateModal() {
+    setCreateForm({
+      email: '',
+      phone: '',
+      password: '',
+      fullName: '',
+      role: 'customer',
+      ktpNumber: '',
+    });
+    setCreateError('');
+    setShowCreateModal(true);
+  }
+
+  async function handleCreateUser(e: React.SyntheticEvent<HTMLFormElement>) {
+    e.preventDefault();
+    setCreateError('');
+
+    // Validasi client-side
+    if (createForm.role === 'partner' && !createForm.ktpNumber.trim()) {
+      setCreateError('Nomor KTP wajib diisi untuk role Partner');
+      return;
+    }
+
+    setCreating(true);
+    try {
+      await api.post('/api/v1/admin/users', { body: createForm });
+      setShowCreateModal(false);
+      await loadData();
+    } catch (err: unknown) {
+      const msg =
+        err && typeof err === 'object' && 'message' in err
+          ? (err as { message: string }).message
+          : 'Gagal membuat user';
+      setCreateError(msg);
+    } finally {
+      setCreating(false);
+    }
+  }
+
+  const CREATE_ROLE_OPTIONS = [
+    { value: 'customer', label: 'Customer' },
+    { value: 'partner', label: 'Partner' },
+    { value: 'corporate', label: 'Corporate' },
+    { value: 'admin', label: 'Admin' },
+    { value: 'super_admin', label: 'Super Admin' },
+    { value: 'dispatcher', label: 'Dispatcher' },
+    { value: 'finance', label: 'Finance' },
+    { value: 'content_manager', label: 'Content Manager' },
+  ];
+
   return (
     <div className="space-y-4">
-      <form onSubmit={handleSearch} className="flex flex-wrap gap-3">
-        <div className="min-w-[200px] flex-1">
-          <Input
-            placeholder="Cari email atau nomor HP..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
-        </div>
-        <div className="w-40">
-          <Select
-            value={roleFilter}
-            onChange={(e) => setRoleFilter(e.target.value)}
-            options={ROLE_OPTIONS}
-          />
-        </div>
-        <div className="w-40">
-          <Select
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
-            options={STATUS_OPTIONS}
-          />
-        </div>
-        <Button type="submit">Cari</Button>
-      </form>
+      <div className="flex items-center justify-between">
+        <form onSubmit={handleSearch} className="flex flex-wrap gap-3 flex-1">
+          <div className="min-w-[200px] flex-1">
+            <Input
+              placeholder="Cari email atau nomor HP..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+          </div>
+          <div className="w-40">
+            <Select
+              value={roleFilter}
+              onChange={(e) => setRoleFilter(e.target.value)}
+              options={ROLE_OPTIONS}
+            />
+          </div>
+          <div className="w-40">
+            <Select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              options={STATUS_OPTIONS}
+            />
+          </div>
+          <Button type="submit">Cari</Button>
+        </form>
+        {isSuperAdmin && (
+          <Button onClick={openCreateModal}>
+            <svg
+              className="icon"
+              viewBox="0 0 24 24"
+              width="16"
+              height="16"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <line x1="12" y1="5" x2="12" y2="19" />
+              <line x1="5" y1="12" x2="19" y2="12" />
+            </svg>
+            Tambah User
+          </Button>
+        )}
+      </div>
 
       {loading ? (
         <TableSkeleton toolbarWidth="w-64" />
@@ -362,6 +444,81 @@ export function AdminUsers() {
             </Button>
           </div>
         </div>
+      </Modal>
+
+      <Modal
+        open={showCreateModal}
+        onClose={() => setShowCreateModal(false)}
+        title="Tambah User Baru"
+      >
+        <form onSubmit={handleCreateUser} className="space-y-4">
+          {createError && (
+            <p className="text-sm text-danger-500 bg-danger-100 rounded-md px-3 py-2">
+              {createError}
+            </p>
+          )}
+          <Input
+            label="Nama Lengkap"
+            placeholder="Masukkan nama lengkap"
+            value={createForm.fullName}
+            onChange={(e) => setCreateForm({ ...createForm, fullName: e.target.value })}
+            required
+          />
+          <Input
+            label="Email"
+            type="email"
+            placeholder="user@example.com"
+            value={createForm.email}
+            onChange={(e) => setCreateForm({ ...createForm, email: e.target.value })}
+            required
+          />
+          <Input
+            label="Nomor HP"
+            placeholder="081234567890"
+            value={createForm.phone}
+            onChange={(e) => setCreateForm({ ...createForm, phone: e.target.value })}
+            required
+          />
+          <Input
+            label="Password"
+            type="password"
+            placeholder="Min. 8 karakter, huruf besar, huruf kecil, angka"
+            value={createForm.password}
+            onChange={(e) => setCreateForm({ ...createForm, password: e.target.value })}
+            required
+          />
+          <div>
+            <label className="block text-sm font-medium text-text-primary mb-1">Role</label>
+            <Select
+              value={createForm.role}
+              onChange={(e) =>
+                setCreateForm({
+                  ...createForm,
+                  role: e.target.value,
+                  ktpNumber: e.target.value !== 'partner' ? '' : createForm.ktpNumber,
+                })
+              }
+              options={CREATE_ROLE_OPTIONS}
+            />
+          </div>
+          {createForm.role === 'partner' && (
+            <Input
+              label="Nomor KTP"
+              placeholder="Masukkan 16 digit nomor KTP"
+              value={createForm.ktpNumber}
+              onChange={(e) => setCreateForm({ ...createForm, ktpNumber: e.target.value })}
+              required
+            />
+          )}
+          <div className="flex justify-end gap-2 pt-2">
+            <Button variant="ghost" type="button" onClick={() => setShowCreateModal(false)}>
+              Batal
+            </Button>
+            <Button type="submit" disabled={creating}>
+              {creating ? 'Menyimpan...' : 'Buat User'}
+            </Button>
+          </div>
+        </form>
       </Modal>
 
       <Modal

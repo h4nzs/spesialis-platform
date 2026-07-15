@@ -90,7 +90,7 @@ router.post(
         slug: data.slug,
         shortDescription: data.shortDescription ?? null,
         description: data.description ?? null,
-        basePrice: String(data.basePrice),
+        basePrice: data.basePrice,
         estimatedDuration: data.estimatedDuration ?? null,
         warrantyDays: data.warrantyDays ?? null,
         isFeatured: data.isFeatured ?? false,
@@ -133,7 +133,7 @@ router.patch(
       .set(
         omitUndefined({
           ...data,
-          basePrice: data.basePrice !== undefined ? String(data.basePrice) : undefined,
+          basePrice: data.basePrice,
         }),
       )
       .where(eq(services.id, id))

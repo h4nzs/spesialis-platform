@@ -1,15 +1,100 @@
 import { Hono } from 'hono';
 import { eq, and, or, like, sql, desc, isNull } from 'drizzle-orm';
 import type { UserRole, UserStatus } from '@ahlipanggilan/types';
-import { db, users } from '../../lib/db.ts';
+import { db, users, customerProfiles, partnerProfiles } from '../../lib/db.ts';
 import { authMiddleware, requireRole } from '../../middleware/auth.ts';
 import { validateBody } from '../../middleware/validation.ts';
-import { updateUserStatusSchema, updateUserRoleSchema } from '@ahlipanggilan/validation';
-import { success, successPaginated, notFound, forbidden } from '../../lib/response.ts';
+import {
+  updateUserStatusSchema,
+  updateUserRoleSchema,
+  adminCreateUserSchema,
+} from '@ahlipanggilan/validation';
+import type { AdminCreateUserInput } from '@ahlipanggilan/validation';
+import { hashPassword } from '../../lib/auth.ts';
+import {
+  success,
+  successPaginated,
+  created,
+  notFound,
+  forbidden,
+  conflict,
+} from '../../lib/response.ts';
 import { buildPaginationMeta } from '../../lib/pagination.ts';
 import { createAuditLog } from '../../lib/audit.ts';
 
 const router = new Hono();
+
+router.post(
+  '/',
+  authMiddleware,
+  requireRole('super_admin'),
+  validateBody(adminCreateUserSchema),
+  async (c) => {
+    const { email, phone, password, fullName, role, ktpNumber } = c.get(
+      'validated',
+    ) as AdminCreateUserInput;
+
+    // Validasi: jika role partner, ktpNumber wajib
+    if (role === 'partner' && !ktpNumber) {
+      return conflict(c, 'Nomor KTP wajib diisi untuk role Partner');
+    }
+
+    // Cek duplikat email atau phone
+    const existing = await db
+      .select({ id: users.id })
+      .from(users)
+      .where(or(eq(users.email, email), eq(users.phone, phone)))
+      .limit(1);
+
+    if (existing[0]) {
+      return conflict(c, 'Email atau nomor HP sudah terdaftar');
+    }
+
+    const passwordHash = await hashPassword(password);
+
+    const { user } = await db.transaction(async (tx) => {
+      const [createdUser] = await tx
+        .insert(users)
+        .values({
+          email,
+          phone,
+          passwordHash,
+          role: role as UserRole,
+          status: 'active',
+        })
+        .returning({ id: users.id, email: users.email, role: users.role });
+
+      if (!createdUser) throw new Error('Gagal membuat user');
+
+      // Buat profile sesuai role
+      if (role === 'customer') {
+        await tx.insert(customerProfiles).values({
+          userId: createdUser.id,
+          fullName,
+        });
+      } else if (role === 'partner') {
+        await tx.insert(partnerProfiles).values({
+          userId: createdUser.id,
+          fullName,
+          phone,
+          ktpNumber: ktpNumber!,
+        });
+      }
+
+      return { user: createdUser };
+    });
+
+    await createAuditLog(c, {
+      userId: c.get('userId'),
+      action: 'CREATE_USER',
+      entity: 'user',
+      entityId: user.id,
+      newValue: { email, role },
+    });
+
+    return created(c, { user }, `User ${role} berhasil dibuat`);
+  },
+);
 
 router.get('/', authMiddleware, requireRole('admin', 'super_admin'), async (c) => {
   const page = Number(c.req.query('page') ?? 1);

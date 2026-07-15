@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { Button } from '@ahlipanggilan/ui';
-import { createBrowserClient, formatCurrency } from '@ahlipanggilan/shared';
+import { createBrowserClient } from '@ahlipanggilan/shared';
 import { createGuestBookingSchema, createCustomerBookingSchema } from '@ahlipanggilan/validation';
 
 function getEl(id: string): HTMLElement | null {
@@ -12,7 +12,7 @@ interface ServiceInfo {
   id: string;
   name: string;
   slug: string;
-  basePrice: number;
+  basePrice: string;
   shortDescription: string | null;
 }
 
@@ -279,9 +279,7 @@ export function BookingForm({ serviceId, initialAuth }: BookingFormProps) {
         ) : service ? (
           <div className="mt-1 flex items-center justify-between">
             <span className="font-medium text-text-primary">{service.name}</span>
-            <span className="text-sm font-medium text-primary">
-              {formatCurrency(service.basePrice)}
-            </span>
+            <span className="text-sm font-medium text-primary">{service.basePrice}</span>
           </div>
         ) : (
           <p className="mt-1 text-sm text-danger-500">

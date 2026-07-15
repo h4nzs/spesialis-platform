@@ -88,7 +88,36 @@ export const verifyEmailSchema = z.object({
   token: z.string().min(1, 'Token verifikasi wajib diisi'),
 });
 
+export const adminCreateUserSchema = z.object({
+  email: z.string().email('Format email tidak valid').max(255),
+  phone: z
+    .string()
+    .min(10, 'Nomor HP minimal 10 digit')
+    .max(30)
+    .regex(/^\+?[0-9]+$/, 'Nomor HP hanya boleh angka dan +'),
+  password: z
+    .string()
+    .min(8, 'Password minimal 8 karakter')
+    .max(128)
+    .regex(/[A-Z]/, 'Password harus mengandung huruf besar')
+    .regex(/[a-z]/, 'Password harus mengandung huruf kecil')
+    .regex(/[0-9]/, 'Password harus mengandung angka'),
+  fullName: z.string().min(1, 'Nama lengkap wajib diisi').max(255),
+  role: z.enum([
+    'customer',
+    'partner',
+    'corporate',
+    'admin',
+    'super_admin',
+    'dispatcher',
+    'finance',
+    'content_manager',
+  ]),
+  ktpNumber: z.string().max(30).optional(),
+});
+
 export type UpdateUserStatusInput = z.infer<typeof updateUserStatusSchema>;
+export type AdminCreateUserInput = z.infer<typeof adminCreateUserSchema>;
 export type ConvertGuestInput = z.infer<typeof convertGuestSchema>;
 export type RefreshTokenInput = z.infer<typeof refreshTokenSchema>;
 export type VerifyEmailInput = z.infer<typeof verifyEmailSchema>;

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { createBrowserClient, formatCurrency } from '@ahlipanggilan/shared';
+import { createBrowserClient } from '@ahlipanggilan/shared';
 import type { ServiceData, ReviewData } from './utils';
 
 interface ServiceDetailProps {
@@ -217,9 +217,7 @@ export function ServiceDetail({ slug }: ServiceDetailProps) {
         <div className="lg:col-span-2">
           <div className="sticky top-24 rounded-xl border border-border-default bg-bg-surface p-6 shadow-xs">
             <div className="flex items-baseline gap-2">
-              <span className="text-h2 font-bold text-primary-500">
-                {formatCurrency(service.basePrice)}
-              </span>
+              <span className="text-h2 font-bold text-primary-500">{service.basePrice}</span>
               <span className="text-body-sm text-text-muted">/ sekali</span>
             </div>
             {service.estimatedDuration && (

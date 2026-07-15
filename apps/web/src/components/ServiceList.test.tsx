@@ -28,7 +28,7 @@ describe('ServiceList', () => {
         name: 'AC Service',
         slug: 'ac-service',
         shortDescription: 'Service AC',
-        basePrice: 150000,
+        basePrice: '150000',
         estimatedDuration: 60,
         thumbnail: null,
       },

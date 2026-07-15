@@ -1,12 +1,12 @@
 import { useState, useEffect } from 'react';
-import { createBrowserClient, formatCurrency } from '@ahlipanggilan/shared';
+import { createBrowserClient } from '@ahlipanggilan/shared';
 
 interface ServiceItem {
   id: string;
   name: string;
   slug: string;
   shortDescription: string | null;
-  basePrice: number;
+  basePrice: string;
   estimatedDuration: number | null;
   thumbnail: string | null;
 }
@@ -127,9 +127,7 @@ export function ServiceList({ searchQuery }: { searchQuery?: string }) {
               {service.shortDescription ?? 'Tidak ada deskripsi'}
             </p>
             <div className="mt-4 flex items-center justify-between">
-              <span className="text-body-sm font-medium text-primary-500">
-                {formatCurrency(service.basePrice)}
-              </span>
+              <span className="text-body-sm font-medium text-primary-500">{service.basePrice}</span>
               {service.estimatedDuration && (
                 <span className="text-caption text-text-muted">
                   &plusmn;{service.estimatedDuration} menit

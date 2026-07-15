@@ -6,7 +6,6 @@ import {
   text,
   integer,
   boolean,
-  numeric,
   index,
 } from 'drizzle-orm/pg-core';
 import { serviceCategories } from './service-categories.ts';
@@ -22,7 +21,7 @@ export const services = pgTable(
     slug: varchar('slug', { length: 255 }).notNull().unique(),
     shortDescription: varchar('short_description', { length: 300 }),
     description: text('description'),
-    basePrice: numeric('base_price', { precision: 12, scale: 2 }).notNull(),
+    basePrice: text('base_price').notNull(),
     estimatedDuration: integer('estimated_duration'),
     warrantyDays: integer('warranty_days'),
     thumbnail: varchar('thumbnail', { length: 255 }),

@@ -110,7 +110,7 @@ describe('GET /:id', () => {
 });
 
 describe('POST /', () => {
-  const validBody = { categoryId: UUID, name: 'Service 1', slug: 'service-1', basePrice: 100000 };
+  const validBody = { categoryId: UUID, name: 'Service 1', slug: 'service-1', basePrice: '100000' };
 
   it('201 created', async () => {
     mockDb.select.mockReturnValueOnce(makeChain([]));

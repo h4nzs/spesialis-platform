@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { createBrowserClient, formatCurrency } from '@ahlipanggilan/shared';
+import { createBrowserClient } from '@ahlipanggilan/shared';
 import {
   Button,
   Input,
@@ -134,7 +134,7 @@ export function AdminServices() {
         slug: form.slug,
         shortDescription: form.shortDescription || undefined,
         description: form.description || undefined,
-        basePrice: Number(form.basePrice),
+        basePrice: form.basePrice,
         estimatedDuration: form.estimatedDuration ? Number(form.estimatedDuration) : undefined,
         warrantyDays: form.warrantyDays ? Number(form.warrantyDays) : undefined,
         isFeatured: form.isFeatured,
@@ -181,7 +181,7 @@ export function AdminServices() {
     {
       key: 'basePrice',
       header: 'Harga',
-      render: (item) => formatCurrency(item.basePrice),
+      render: (item) => item.basePrice,
     },
     {
       key: 'isActive',
@@ -232,7 +232,7 @@ export function AdminServices() {
               {
                 key: 'basePrice',
                 label: 'Harga',
-                format: (v) => formatCurrency(v as string),
+                format: (v) => (v as string) ?? '-',
               },
               {
                 key: 'isActive',
@@ -305,7 +305,6 @@ export function AdminServices() {
           <div className="grid grid-cols-3 gap-3">
             <Input
               label="Harga"
-              type="number"
               value={form.basePrice}
               onChange={(e) => setForm((f) => ({ ...f, basePrice: e.target.value }))}
               required

@@ -8,11 +8,17 @@
  *   Counter animation would be nice but is JS-dependent — static first.
  */
 
+interface Props {
+  totalCities?: number;
+}
+
+const { totalCities = 5 } = Astro.props as Props;
+
 const stats = [
   { value: '1.000+', label: 'Pesanan Selesai', color: 'text-primary-500' },
   { value: '4.8', label: 'Rating Rata-rata', suffix: '/5.0', color: 'text-warning-600' },
   { value: '100+', label: 'Mitra Terverifikasi', color: 'text-success-600' },
-  { value: '5', label: 'Kota Tersedia', color: 'text-secondary-500' },
+  { value: `${totalCities}`, label: 'Kota Tersedia', color: 'text-secondary-500' },
 ];
 ---
 
