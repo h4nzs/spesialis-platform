@@ -81,6 +81,27 @@ vi.mock('@ahlipanggilan/ui', () => ({
       Export CSV
     </button>
   ),
+  Input: ({
+    label,
+    value,
+    onChange,
+    placeholder,
+  }: {
+    label?: string;
+    value?: string;
+    onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
+    placeholder?: string;
+  }) => (
+    <div>
+      {label && <label>{label}</label>}
+      <input
+        value={value ?? ''}
+        onChange={onChange}
+        placeholder={placeholder}
+        data-testid="input"
+      />
+    </div>
+  ),
   Pagination: ({ ..._props }: { [key: string]: unknown }) => <div />,
   ConfirmDialog: ({ ..._props }: { [key: string]: unknown }) => null,
   Spinner: () => <div aria-hidden="true" />,

@@ -131,8 +131,29 @@
     {
       "idx": 18,
       "version": "7",
+      "when": 1783776000006,
+      "tag": "0018_change_audit_logs_entity_id_type",
+      "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "7",
+      "when": 1783776000007,
+      "tag": "0019_add_coverage_areas",
+      "breakpoints": true
+    },
+    {
+      "idx": 20,
+      "version": "7",
+      "when": 1783780000000,
+      "tag": "0020_change_services_base_price_to_text",
+      "breakpoints": true
+    },
+    {
+      "idx": 21,
+      "version": "7",
       "when": 1784132000000,
-      "tag": "0018_add_partner_domicile",
+      "tag": "0021_add_partner_domicile",
       "breakpoints": true
     }
   ]
