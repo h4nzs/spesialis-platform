@@ -27,6 +27,7 @@ import {
   updateAvailabilitySchema,
   verifyPartnerSchema,
   addSkillSchema,
+  replacePartnerSkillsSchema,
   createPartnerDocumentSchema,
   paginationQuerySchema,
 } from '@ahlipanggilan/validation';
@@ -78,7 +79,7 @@ router.post(
   rateLimit(5, 60_000),
   validateBody(partnerRegistrationSchema),
   async (c) => {
-    const { email, phone, password, fullName, ktpNumber } = c.get(
+    const { email, phone, password, fullName, ktpNumber, domicile, skillIds } = c.get(
       'validated',
     ) as PartnerRegistrationInput;
 
@@ -105,12 +106,27 @@ router.post(
 
     if (!user) return serverError(c, 'Gagal membuat user');
 
-    await db.insert(partnerProfiles).values({
-      userId: user.id,
-      fullName,
-      phone,
-      ktpNumber,
-    });
+    const [profile] = await db
+      .insert(partnerProfiles)
+      .values({
+        userId: user.id,
+        fullName,
+        phone,
+        ktpNumber,
+        domicile: domicile ?? null,
+      })
+      .returning({ id: partnerProfiles.id });
+
+    // Insert partner skills if provided
+    if (skillIds && skillIds.length > 0 && profile) {
+      await db.insert(partnerSkills).values(
+        skillIds.map((categoryId) => ({
+          partnerId: profile.id,
+          categoryId,
+          proficiency: 'Intermediate',
+        })),
+      );
+    }
 
     // Generate verification token & send email (fire-and-forget)
     const verificationToken = generateRefreshToken();
@@ -164,6 +180,7 @@ router.get('/', validateQuery(paginationQuerySchema), async (c) => {
       verificationStatus: partnerProfiles.verificationStatus,
       experienceYear: partnerProfiles.experienceYear,
       bio: partnerProfiles.bio,
+      domicile: partnerProfiles.domicile,
     })
     .from(partnerProfiles)
     .where(conditions.length > 0 ? and(...conditions) : undefined)
@@ -490,6 +507,74 @@ router.get('/:id', async (c) => {
 
   return success(c, { ...profile, skills });
 });
+
+router.patch(
+  '/:id',
+  authMiddleware,
+  requireRole('admin', 'super_admin'),
+  validateBody(updatePartnerSchema),
+  async (c) => {
+    const partnerId = c.req.param('id')!;
+    const data = c.get('validated') as UpdatePartnerInput;
+
+    const [profile] = await db
+      .select({ id: partnerProfiles.id })
+      .from(partnerProfiles)
+      .where(eq(partnerProfiles.id, partnerId))
+      .limit(1);
+    if (!profile) return notFound(c, 'Partner tidak ditemukan');
+
+    const [updated] = await db
+      .update(partnerProfiles)
+      .set(omitUndefined(data))
+      .where(eq(partnerProfiles.id, partnerId))
+      .returning({
+        id: partnerProfiles.id,
+        fullName: partnerProfiles.fullName,
+        phone: partnerProfiles.phone,
+        domicile: partnerProfiles.domicile,
+        bio: partnerProfiles.bio,
+        experienceYear: partnerProfiles.experienceYear,
+      });
+
+    if (!updated) return serverError(c, 'Gagal update partner');
+    return success(c, updated, 'Partner berhasil diperbarui');
+  },
+);
+
+router.patch(
+  '/:id/skills',
+  authMiddleware,
+  requireRole('admin', 'super_admin'),
+  validateBody(replacePartnerSkillsSchema),
+  async (c) => {
+    const partnerId = c.req.param('id')!;
+    const { skillIds } = c.get('validated') as { skillIds: string[] };
+
+    const [profile] = await db
+      .select({ id: partnerProfiles.id })
+      .from(partnerProfiles)
+      .where(eq(partnerProfiles.id, partnerId))
+      .limit(1);
+    if (!profile) return notFound(c, 'Partner tidak ditemukan');
+
+    // Replace all skills in a transaction
+    await db.transaction(async (tx) => {
+      await tx.delete(partnerSkills).where(eq(partnerSkills.partnerId, partnerId));
+      if (skillIds.length > 0) {
+        await tx.insert(partnerSkills).values(
+          skillIds.map((categoryId) => ({
+            partnerId,
+            categoryId,
+            proficiency: 'Intermediate',
+          })),
+        );
+      }
+    });
+
+    return success(c, null, 'Skill berhasil diperbarui');
+  },
+);
 
 router.get('/:id/reviews', async (c) => {
   const partnerId = c.req.param('id')!;

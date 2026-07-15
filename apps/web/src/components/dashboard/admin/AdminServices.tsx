@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { createBrowserClient } from '@ahlipanggilan/shared';
 import {
   Button,
@@ -11,6 +11,7 @@ import {
   EmptyState,
   CSVExportButton,
   TableSkeleton,
+  MediaBrowser,
 } from '@ahlipanggilan/ui';
 import type { Column } from '@ahlipanggilan/ui';
 
@@ -20,6 +21,7 @@ interface ServiceItem {
   categoryName: string | null;
   name: string;
   slug: string;
+  thumbnail: string | null;
   basePrice: string;
   isActive: boolean;
   isFeatured: boolean;
@@ -39,6 +41,7 @@ interface ServiceForm {
   slug: string;
   shortDescription: string;
   description: string;
+  thumbnail: string;
   basePrice: string;
   estimatedDuration: string;
   warrantyDays: string;
@@ -52,6 +55,7 @@ const EMPTY_FORM: ServiceForm = {
   slug: '',
   shortDescription: '',
   description: '',
+  thumbnail: '',
   basePrice: '',
   estimatedDuration: '',
   warrantyDays: '',
@@ -69,6 +73,42 @@ export function AdminServices() {
   const [form, setForm] = useState<ServiceForm>(EMPTY_FORM);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
+  const [showMediaBrowser, setShowMediaBrowser] = useState(false);
+  const thumbnailInputRef = useRef<HTMLInputElement>(null);
+  const [thumbnailUploading, setThumbnailUploading] = useState(false);
+
+  const uploadToMedia = useCallback(
+    async (file: File): Promise<string> => {
+      const formData = new FormData();
+      formData.append('file', file);
+      const result = await api.post<{ url: string; id: string }>('/api/v1/media/upload', {
+        formData,
+      });
+      const data = result as unknown as { url?: string; id?: string };
+      return data?.url ?? `/api/v1/media/${data?.id}/file`;
+    },
+    [api],
+  );
+
+  const handleThumbnailFileSelect = useCallback(
+    async (e: React.ChangeEvent<HTMLInputElement>) => {
+      const files = Array.from(e.target.files ?? []);
+      if (files.length === 0) return;
+      const file = files[0];
+      if (!file.type.startsWith('image/')) return;
+      setThumbnailUploading(true);
+      try {
+        const url = await uploadToMedia(file);
+        setForm((f) => ({ ...f, thumbnail: url }));
+      } catch {
+        setError('Gagal mengupload gambar');
+      } finally {
+        setThumbnailUploading(false);
+      }
+      e.target.value = '';
+    },
+    [uploadToMedia],
+  );
 
   const loadData = useCallback(async () => {
     try {
@@ -100,17 +140,18 @@ export function AdminServices() {
     setEditing(item.id);
     setError('');
     try {
-      const detail = await api.get<ServiceItem>(`/api/v1/admin/services/${item.id}`);
+      const detail = await api.get<Record<string, unknown>>(`/api/v1/admin/services/${item.id}`);
       setForm({
-        categoryId: detail.categoryId || '',
-        name: detail.name || '',
-        slug: detail.slug || '',
-        shortDescription: '',
-        description: '',
+        categoryId: (detail.categoryId as string) || '',
+        name: (detail.name as string) || '',
+        slug: (detail.slug as string) || '',
+        shortDescription: (detail.shortDescription as string) || '',
+        description: (detail.description as string) || '',
+        thumbnail: (detail.thumbnail as string) || '',
         basePrice: String(detail.basePrice ?? ''),
         estimatedDuration: String(detail.estimatedDuration ?? ''),
-        warrantyDays: '',
-        isFeatured: detail.isFeatured ?? false,
+        warrantyDays: String(detail.warrantyDays ?? ''),
+        isFeatured: (detail.isFeatured as boolean) ?? false,
         displayOrder: String(detail.displayOrder ?? '0'),
       });
       setShowModal(true);
@@ -134,6 +175,7 @@ export function AdminServices() {
         slug: form.slug,
         shortDescription: form.shortDescription || undefined,
         description: form.description || undefined,
+        thumbnail: form.thumbnail || undefined,
         basePrice: form.basePrice,
         estimatedDuration: form.estimatedDuration ? Number(form.estimatedDuration) : undefined,
         warrantyDays: form.warrantyDays ? Number(form.warrantyDays) : undefined,
@@ -171,9 +213,23 @@ export function AdminServices() {
       key: 'name',
       header: 'Nama',
       render: (item) => (
-        <div>
-          <span className="font-medium text-text-primary">{item.name}</span>
-          <span className="ml-2 text-xs text-text-secondary">({item.slug})</span>
+        <div className="flex items-center gap-3">
+          <div className="h-10 w-10 shrink-0 overflow-hidden rounded-lg border border-border-default bg-neutral-100">
+            {item.thumbnail && (
+              <img
+                src={item.thumbnail}
+                alt=""
+                className="h-full w-full object-cover"
+                onError={(e) => {
+                  (e.target as HTMLImageElement).style.display = 'none';
+                }}
+              />
+            )}
+          </div>
+          <div>
+            <span className="font-medium text-text-primary">{item.name}</span>
+            <span className="ml-2 text-xs text-text-secondary">({item.slug})</span>
+          </div>
         </div>
       ),
     },
@@ -256,6 +312,16 @@ export function AdminServices() {
         columns={columns}
         keyExtractor={(item) => item.id}
         emptyState={<EmptyState title="Belum ada layanan" />}
+      />
+
+      {/* MediaBrowser */}
+      <MediaBrowser
+        open={showMediaBrowser}
+        onClose={() => setShowMediaBrowser(false)}
+        onSelect={(url) => {
+          setForm((f) => ({ ...f, thumbnail: url }));
+          setShowMediaBrowser(false);
+        }}
       />
 
       <Modal
@@ -341,6 +407,52 @@ export function AdminServices() {
                 Featured
               </label>
             </div>
+          </div>
+
+          {/* Thumbnail */}
+          <div>
+            <label className="mb-1 block text-sm font-medium text-text-primary">Gambar</label>
+            <div className="flex gap-2">
+              <div className="flex-1">
+                <Input
+                  value={form.thumbnail}
+                  onChange={(e) => setForm((f) => ({ ...f, thumbnail: e.target.value }))}
+                  placeholder="URL gambar"
+                />
+              </div>
+              <Button type="button" variant="secondary" onClick={() => setShowMediaBrowser(true)}>
+                Pilih
+              </Button>
+              <Button
+                type="button"
+                variant="secondary"
+                onClick={() => thumbnailInputRef.current?.click()}
+                disabled={thumbnailUploading}
+              >
+                {thumbnailUploading ? '...' : 'Upload'}
+              </Button>
+            </div>
+            <input
+              ref={thumbnailInputRef}
+              type="file"
+              accept="image/jpeg,image/png,image/webp"
+              className="hidden"
+              onChange={handleThumbnailFileSelect}
+            />
+            {form.thumbnail && (
+              <div className="relative mt-2 aspect-video w-full max-w-[240px] overflow-hidden rounded-lg border border-border-default bg-neutral-100">
+                <img
+                  src={form.thumbnail}
+                  alt="Preview"
+                  loading="lazy"
+                  decoding="async"
+                  className="h-full w-full object-cover"
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).style.display = 'none';
+                  }}
+                />
+              </div>
+            )}
           </div>
 
           <div className="flex justify-end gap-2 pt-2">

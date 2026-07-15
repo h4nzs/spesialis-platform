@@ -1,6 +1,10 @@
 import { useState, useEffect, useMemo } from 'react';
 import { Button } from '@ahlipanggilan/ui';
-import { createBrowserClient } from '@ahlipanggilan/shared';
+import {
+  createBrowserClient,
+  getCategorySpecificFields,
+  inferCategorySlug,
+} from '@ahlipanggilan/shared';
 import { createGuestBookingSchema, createCustomerBookingSchema } from '@ahlipanggilan/validation';
 
 function getEl(id: string): HTMLElement | null {
@@ -325,7 +329,13 @@ export function BookingForm({ serviceId, initialAuth }: BookingFormProps) {
 
             <a
               href={`https://wa.me/${whatsappPhone || getEl('app-settings')?.dataset.whatsappPhone}?text=${encodeURIComponent(
-                `Halo Ahli Panggilan, saya ingin bertanya tentang ${service?.name ?? 'layanan'}`,
+                `Halo Ahli Panggilan, saya ingin memesan layanan *${service?.name ?? 'layanan'}*
+
+Nama: ${fullName || ''}
+Alamat: ${addrLine || ''}
+Tanggal Pekerjaan: ${bookingDate || ''}
+Jam Pekerjaan: ${bookingTime || ''}
+${getCategorySpecificFields(inferCategorySlug(service?.name))}`,
               )}`}
               target="_blank"
               rel="noopener noreferrer"

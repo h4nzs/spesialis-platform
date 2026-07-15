@@ -3,7 +3,7 @@ export const prerender = false;
 
 import BaseLayout from '../layouts/BaseLayout.astro'
 import Hero from '../components/homepage/Hero.astro'
-import QuickServiceCategories from '../components/homepage/QuickServiceCategories.astro'
+import { ServiceExplorer } from '../components/homepage/ServiceExplorer.tsx'
 import WhyChooseUs from '../components/homepage/WhyChooseUs.astro'
 import Statistics from '../components/homepage/Statistics.astro'
 import FeaturedServices from '../components/homepage/FeaturedServices.astro'
@@ -133,7 +133,7 @@ if (totalCities === 0) {
   <!-- ── Landing: Hero + Service Categories + Why Choose + Coverage ── -->
   <!-- Visible pada initial page load — desain compact seperti referensi -->
   <Hero totalServices={services.length} />
-  <QuickServiceCategories />
+  <ServiceExplorer client:load />
   <WhyChooseUs totalServices={services.length} totalCities={totalCities} />
   <Coverage />
 

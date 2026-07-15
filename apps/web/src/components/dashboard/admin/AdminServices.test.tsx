@@ -185,6 +185,21 @@ vi.mock('@ahlipanggilan/ui', () => ({
   Pagination: ({ ..._props }: { [key: string]: unknown }) => <div />,
   ConfirmDialog: ({ ..._props }: { [key: string]: unknown }) => null,
   Spinner: () => <div aria-hidden="true" />,
+  MediaBrowser: ({
+    open,
+    onClose,
+    onSelect,
+  }: {
+    open: boolean;
+    onClose: () => void;
+    onSelect: (url: string) => void;
+  }) =>
+    open ? (
+      <div data-testid="media-browser">
+        <button onClick={() => onSelect('https://example.com/img.jpg')}>Pilih Gambar</button>
+        <button onClick={onClose}>Tutup</button>
+      </div>
+    ) : null,
 }));
 
 beforeEach(() => {

@@ -127,6 +127,13 @@
       "when": 1783776000005,
       "tag": "0017_add_trigram_indexes",
       "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "7",
+      "when": 1784132000000,
+      "tag": "0018_add_partner_domicile",
+      "breakpoints": true
     }
   ]
 }

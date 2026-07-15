@@ -111,6 +111,9 @@ export { pingIndexNow, generateIndexNowKey, getIndexNowKeyLocation } from './ind
 export { SCHEMA_TEMPLATES, getSchemaTemplate } from './schema-templates.ts';
 export type { SchemaTemplate, SchemaTemplateType, SchemaField } from './schema-templates.ts';
 
+// ─── WA Template ───────────────────────────────────────────────────
+export { getCategorySpecificFields, inferCategorySlug } from './wa-template.ts';
+
 // ─── SEO Analyzer ─────────────────────────────────────────────────
 export {
   analyzeContent,

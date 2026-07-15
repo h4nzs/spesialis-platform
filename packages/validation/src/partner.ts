@@ -22,6 +22,7 @@ export const updatePartnerSchema = z.object({
   avatar: z.string().url().optional(),
   bio: z.string().max(1000).optional(),
   experienceYear: z.coerce.number().int().min(0).optional(),
+  domicile: z.string().max(255).optional(),
 });
 
 export const updateAvailabilitySchema = z.object({
@@ -54,6 +55,12 @@ export const partnerRegistrationSchema = z.object({
     .regex(/[0-9]/, 'Password harus mengandung angka'),
   fullName: z.string().min(1, 'Nama lengkap wajib diisi').max(255),
   ktpNumber: z.string().min(1, 'Nomor KTP wajib diisi').max(30),
+  domicile: z.string().min(1, 'Domisili wajib diisi').max(255).optional(),
+  skillIds: z.array(z.string().uuid('ID kategori tidak valid')).optional(),
+});
+
+export const replacePartnerSkillsSchema = z.object({
+  skillIds: z.array(z.string().uuid('ID kategori tidak valid')),
 });
 
 export const createPartnerDocumentSchema = z.object({

@@ -24,6 +24,7 @@ const NAV_MAP: Record<string, NavEntry[]> = {
     { href: '/dashboard/admin/faq', label: 'FAQ', icon: 'helpCircle' },
     { href: '/dashboard/admin/cms-pages', label: 'Halaman', icon: 'fileText' },
     { href: '/dashboard/admin/services', label: 'Layanan', icon: 'wrench' },
+    { href: '/dashboard/admin/service-categories', label: 'Kategori', icon: 'address' },
     { href: '/dashboard/admin/settings', label: 'Pengaturan', icon: 'settings' },
   ],
   customer: [
@@ -50,6 +51,7 @@ const NAV_MAP: Record<string, NavEntry[]> = {
     { href: '/dashboard/admin/customers', label: 'Customer', icon: 'users' },
     { href: '/dashboard/admin/users', label: 'User', icon: 'user' },
     { href: '/dashboard/admin/services', label: 'Layanan', icon: 'wrench' },
+    { href: '/dashboard/admin/service-categories', label: 'Kategori', icon: 'address' },
     { href: '/dashboard/admin/contracts', label: 'Kontrak', icon: 'scrollText' },
     { href: '/dashboard/admin/invoices', label: 'Invoice', icon: 'receipt' },
     { href: '/dashboard/admin/articles', label: 'Artikel', icon: 'fileText' },
@@ -79,6 +81,7 @@ const NAV_MAP: Record<string, NavEntry[]> = {
     { href: '/dashboard/admin/customers', label: 'Customer', icon: 'users' },
     { href: '/dashboard/admin/users', label: 'User', icon: 'user' },
     { href: '/dashboard/admin/services', label: 'Layanan', icon: 'wrench' },
+    { href: '/dashboard/admin/service-categories', label: 'Kategori', icon: 'address' },
     { href: '/dashboard/admin/contracts', label: 'Kontrak', icon: 'scrollText' },
     { href: '/dashboard/admin/invoices', label: 'Invoice', icon: 'receipt' },
     { href: '/dashboard/admin/articles', label: 'Artikel', icon: 'fileText' },

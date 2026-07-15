@@ -26,6 +26,7 @@ export function ProfileSettings() {
 
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
+  const [domicile, setDomicile] = useState('');
   const [profileErrors, setProfileErrors] = useState<string[]>([]);
   const [profileSaving, setProfileSaving] = useState(false);
   const [profileSuccess, setProfileSuccess] = useState(false);
@@ -45,6 +46,22 @@ export function ProfileSettings() {
         setEmail(u.email);
         setPhone(u.phone);
         setEmailVerified(!!u.emailVerifiedAt);
+
+        // Fetch partner-specific data for partner role
+        if (u.role === 'partner') {
+          api
+            .get<{ successful: boolean; data: { domicile: string | null } }>('/api/v1/partners/me')
+            .then((res) => {
+              const pd = res as unknown as {
+                success?: boolean;
+                data?: { domicile?: string | null };
+              };
+              if (pd?.data && typeof pd.data.domicile === 'string') {
+                setDomicile(pd.data.domicile);
+              }
+            })
+            .catch(() => {});
+        }
       })
       .catch(() => {})
       .finally(() => setLoading(false));
@@ -63,7 +80,18 @@ export function ProfileSettings() {
 
     setProfileSaving(true);
     try {
-      await api.patch('/api/v1/auth/profile', { body: parsed.data });
+      const promises = [api.patch('/api/v1/auth/profile', { body: parsed.data })];
+
+      // Save partner-specific fields
+      if (profile?.role === 'partner') {
+        promises.push(
+          api.patch('/api/v1/partners/me', {
+            body: { domicile: domicile || undefined },
+          }),
+        );
+      }
+
+      await Promise.all(promises);
       setProfileSuccess(true);
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Gagal memperbarui profil';
@@ -186,6 +214,14 @@ export function ProfileSettings() {
             value={phone}
             onChange={(e) => setPhone(e.target.value)}
           />
+          {profile?.role === 'partner' && (
+            <Input
+              label="Domisili"
+              value={domicile}
+              onChange={(e) => setDomicile(e.target.value)}
+              placeholder="Contoh: Jakarta Selatan, DKI Jakarta"
+            />
+          )}
           {profileErrors.length > 0 && (
             <div className="rounded-md bg-danger-500/10 p-3 text-sm text-danger-500">
               {profileErrors.map((err, i) => (

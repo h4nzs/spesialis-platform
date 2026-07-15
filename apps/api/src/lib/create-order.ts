@@ -101,7 +101,15 @@ export async function createOrderTransaction(
           .where(inArray(services.id, serviceIds))
       : [];
     const priceLookup = new Map(
-      prices.map((s) => [s.id, { name: s.name, price: Number(s.price ?? 0) }]),
+      prices.map((s) => [
+        s.id,
+        {
+          name: s.name,
+          // Hapus karakter non-digit (Rp, ., spasi, dll) lalu konversi ke number
+          // Contoh: "Rp 150.000" → "150000" → 150000
+          price: Number(String(s.price ?? '').replace(/\D/g, '')) || 0,
+        },
+      ]),
     );
     const basePrice = items.reduce(
       (sum, item) => sum + (priceLookup.get(item.serviceId)?.price ?? 0) * item.quantity,

@@ -1,6 +1,6 @@
 import { Hono } from 'hono';
 import { eq, inArray, asc } from 'drizzle-orm';
-import { db, systemSettings, coverageAreas } from '../lib/db.ts';
+import { db, systemSettings, coverageAreas, serviceCategories } from '../lib/db.ts';
 import { success } from '../lib/response.ts';
 
 const router = new Hono();
@@ -19,6 +19,23 @@ router.get('/settings', async (c) => {
   }
 
   return success(c, result);
+});
+
+router.get('/service-categories', async (c) => {
+  const items = await db
+    .select({
+      id: serviceCategories.id,
+      name: serviceCategories.name,
+      slug: serviceCategories.slug,
+      icon: serviceCategories.icon,
+      description: serviceCategories.description,
+      displayOrder: serviceCategories.displayOrder,
+    })
+    .from(serviceCategories)
+    .where(eq(serviceCategories.isActive, true))
+    .orderBy(asc(serviceCategories.displayOrder));
+
+  return success(c, items);
 });
 
 router.get('/coverage-areas', async (c) => {

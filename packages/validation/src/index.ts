@@ -43,6 +43,7 @@ export {
   updateAvailabilitySchema,
   verifyPartnerSchema,
   addSkillSchema,
+  replacePartnerSkillsSchema,
   partnerRegistrationSchema,
   createPartnerDocumentSchema,
 } from './partner.ts';

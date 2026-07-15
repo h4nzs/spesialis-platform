@@ -22,6 +22,7 @@ export const partnerProfiles = pgTable(
     phone: varchar('phone', { length: 30 }).notNull(),
     avatar: text('avatar'),
     ktpNumber: varchar('ktp_number', { length: 30 }).notNull(),
+    domicile: varchar('domicile', { length: 255 }),
     ktpMediaId: uuid('ktp_media_id'),
     profilePhotoId: uuid('profile_photo_id'),
     experienceYear: integer('experience_year'),
