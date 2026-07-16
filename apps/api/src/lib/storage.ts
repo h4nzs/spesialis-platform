@@ -89,7 +89,8 @@ export function getR2PublicUrl(filename: string): string {
 
 /* ── Sharp (lazy — tidak blocking module loading) ──────────────────── */
 
-let _sharp: (typeof import('sharp'))['default'] | null = null;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+let _sharp: any = null;
 
 async function getSharp() {
   if (!_sharp) {
