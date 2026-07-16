@@ -2,6 +2,7 @@ import { writeFile, mkdir, unlink } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
 import { join, extname, resolve } from 'node:path';
 import { randomUUID } from 'node:crypto';
+import sharp from 'sharp';
 
 /* ── Constants ───────────────────────────────────────────────────── */
 
@@ -116,7 +117,22 @@ export async function saveFile(file: File): Promise<StoredFile> {
 
   const ext = extname(file.name) || '';
   const uniqueName = `${randomUUID()}${ext}`;
-  const buffer = Buffer.from(await file.arrayBuffer());
+  let buffer = Buffer.from(await file.arrayBuffer());
+
+  // ── Image compression ──────────────────────────────────────
+  if (file.type.startsWith('image/')) {
+    try {
+      if (file.type === 'image/jpeg') {
+        buffer = await sharp(buffer).jpeg({ quality: 60, mozjpeg: true }).toBuffer();
+      } else if (file.type === 'image/png') {
+        buffer = await sharp(buffer).png({ compressionLevel: 6 }).toBuffer();
+      } else if (file.type === 'image/webp') {
+        buffer = await sharp(buffer).webp({ quality: 60 }).toBuffer();
+      }
+    } catch (err) {
+      console.warn('Image compression failed, saving original:', err);
+    }
+  }
 
   if (isR2Enabled()) {
     try {
@@ -136,7 +152,7 @@ export async function saveFile(file: File): Promise<StoredFile> {
         originalName: file.name,
         mimeType: file.type,
         extension: ext.replace('.', ''),
-        size: file.size,
+        size: buffer.length,
         path: uniqueName, // R2 key = filename
         disk: 'Cloudflare R2',
       };
@@ -155,7 +171,7 @@ export async function saveFile(file: File): Promise<StoredFile> {
     originalName: file.name,
     mimeType: file.type,
     extension: ext.replace('.', ''),
-    size: file.size,
+    size: buffer.length,
     path: filePath,
     disk: 'Local',
   };

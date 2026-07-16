@@ -9,6 +9,15 @@ vi.mock('@aws-sdk/client-s3', () => ({
   PutObjectCommand: vi.fn(),
   DeleteObjectCommand: vi.fn(),
 }));
+vi.mock('sharp', () => {
+  return {
+    default: (input: Buffer) => ({
+      jpeg: () => ({ toBuffer: () => Promise.resolve(input) }),
+      png: () => ({ toBuffer: () => Promise.resolve(input) }),
+      webp: () => ({ toBuffer: () => Promise.resolve(input) }),
+    }),
+  };
+});
 
 import { existsSync } from 'node:fs';
 import { writeFile, mkdir, unlink } from 'node:fs/promises';
@@ -142,7 +151,7 @@ describe('saveFile', () => {
     expect(result).toHaveProperty('originalName', 'profile.jpg');
     expect(result).toHaveProperty('mimeType', 'image/jpeg');
     expect(result).toHaveProperty('extension', 'jpg');
-    expect(result).toHaveProperty('size', 4096);
+    expect(result).toHaveProperty('size', 8);
     expect(result).toHaveProperty('path');
     expect(result.path).toContain(result.filename);
     expect(writeFile).toHaveBeenCalledWith(
