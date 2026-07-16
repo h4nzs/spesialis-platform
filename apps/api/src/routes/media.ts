@@ -28,6 +28,16 @@ import {
 const router = new Hono();
 
 router.get('/', authMiddleware, async (c) => {
+  // Hono v4 strict routing: handle kedua varian trailing slash
+  // /api/v1/media (no slash) dan /api/v1/media/ (with slash)
+  await handleListMedia(c);
+});
+
+router.get('', authMiddleware, async (c) => {
+  await handleListMedia(c);
+});
+
+async function handleListMedia(c: any) {
   const page = Number(c.req.query('page') ?? 1);
   const limit = Number(c.req.query('limit') ?? 20);
   const search = c.req.query('search');
@@ -69,7 +79,7 @@ router.get('/', authMiddleware, async (c) => {
   const total = Number(countResult[0]?.count ?? 0);
 
   return successPaginated(c, items, buildPaginationMeta(page, limit, total));
-});
+}
 
 router.post('/upload', authMiddleware, async (c) => {
   const userId = c.get('userId');
