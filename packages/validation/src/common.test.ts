@@ -82,8 +82,13 @@ describe('paginationQuerySchema', () => {
     expect(result.success).toBe(false);
   });
 
-  it('rejects limit above 100', () => {
-    const result = paginationQuerySchema.safeParse({ limit: 200 });
+  it('rejects limit above 250', () => {
+    const result = paginationQuerySchema.safeParse({ limit: 300 });
     expect(result.success).toBe(false);
+  });
+
+  it('accepts limit up to 250', () => {
+    const result = paginationQuerySchema.safeParse({ limit: 250 });
+    expect(result.success).toBe(true);
   });
 });
