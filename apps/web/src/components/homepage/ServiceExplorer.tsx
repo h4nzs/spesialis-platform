@@ -9,6 +9,7 @@ interface Category {
   slug: string;
   description: string | null;
   icon: string | null;
+  image: string | null;
   displayOrder: number;
 }
 
@@ -338,6 +339,7 @@ export function ServiceExplorer() {
                 reviews={reviews}
                 catName={activeCat?.name ?? ''}
                 catSlug={activeCat?.slug ?? null}
+                catImage={activeCat?.image ?? null}
               />
               {/* Benefit bar */}
               <BenefitBar />
@@ -374,11 +376,13 @@ function ServiceDetailCard({
   reviews,
   catName,
   catSlug,
+  catImage,
 }: {
   service: ServiceDetail;
   reviews: ReviewData | null;
   catName: string;
   catSlug: string | null;
+  catImage: string | null;
 }) {
   const avgRating = reviews?.aggregate.averageRating ?? 0;
   const totalReviews = reviews?.aggregate.totalReviews ?? 0;
@@ -410,38 +414,41 @@ function ServiceDetailCard({
         {/* ── Left: Image ──────────────────────────────────── */}
         <div className="relative lg:col-span-5">
           <div className="aspect-[4/3] w-full overflow-hidden rounded-xl bg-gradient-to-br from-primary-100 via-primary-50 to-neutral-100 shadow-sm">
-            {service.thumbnail ? (
-              <img
-                src={service.thumbnail}
-                alt={service.name}
-                loading="lazy"
-                decoding="async"
-                className="h-full w-full object-cover"
-              />
-            ) : (
-              <div className="flex h-full items-center justify-center">
-                <div className="text-center">
-                  <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-white/70 text-primary-400 shadow-xs">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="28"
-                      height="28"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      stroke-width="1.5"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                    >
-                      <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
-                      <circle cx="8.5" cy="8.5" r="1.5" />
-                      <polyline points="21 15 16 10 5 21" />
-                    </svg>
+            {(() => {
+              const imgSrc = service.thumbnail || catImage;
+              return imgSrc ? (
+                <img
+                  src={imgSrc}
+                  alt={service.name}
+                  loading="lazy"
+                  decoding="async"
+                  className="h-full w-full object-cover"
+                />
+              ) : (
+                <div className="flex h-full items-center justify-center">
+                  <div className="text-center">
+                    <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-white/70 text-primary-400 shadow-xs">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="28"
+                        height="28"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="1.5"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      >
+                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+                        <circle cx="8.5" cy="8.5" r="1.5" />
+                        <polyline points="21 15 16 10 5 21" />
+                      </svg>
+                    </div>
+                    <p className="mt-2 text-xs font-medium text-neutral-400">{service.name}</p>
                   </div>
-                  <p className="mt-2 text-xs font-medium text-neutral-400">{service.name}</p>
                 </div>
-              </div>
-            )}
+              );
+            })()}
           </div>
           {service.basePrice && (
             <div className="absolute bottom-3 left-3 inline-flex items-center gap-1.5 rounded-lg bg-white/95 px-3 py-1.5 shadow-sm backdrop-blur-sm">

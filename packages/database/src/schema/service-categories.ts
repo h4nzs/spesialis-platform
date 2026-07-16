@@ -6,6 +6,7 @@ export const serviceCategories = pgTable('service_categories', {
   slug: varchar('slug', { length: 255 }).notNull().unique(),
   description: text('description'),
   icon: varchar('icon', { length: 255 }),
+  image: varchar('image', { length: 512 }),
   displayOrder: integer('display_order').notNull().default(0),
   isActive: boolean('is_active').notNull().default(true),
   createdAt: timestamp('created_at').defaultNow().notNull(),

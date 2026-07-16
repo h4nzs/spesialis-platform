@@ -65,6 +65,7 @@ router.post(
         slug,
         description: data.description ?? null,
         icon: data.icon ?? null,
+        image: data.image ?? null,
         displayOrder: data.displayOrder ?? 0,
         isActive: true,
       })

@@ -13,6 +13,7 @@ router.get('/', async (c) => {
       slug: serviceCategories.slug,
       description: serviceCategories.description,
       icon: serviceCategories.icon,
+      image: serviceCategories.image,
       displayOrder: serviceCategories.displayOrder,
     })
     .from(serviceCategories)
@@ -32,6 +33,7 @@ router.get('/:slug', async (c) => {
       slug: serviceCategories.slug,
       description: serviceCategories.description,
       icon: serviceCategories.icon,
+      image: serviceCategories.image,
     })
     .from(serviceCategories)
     .where(eq(serviceCategories.slug, slug))

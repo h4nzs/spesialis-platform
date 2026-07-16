@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { createBrowserClient } from '@ahlipanggilan/shared';
 import {
   Button,
@@ -10,6 +10,7 @@ import {
   Badge,
   EmptyState,
   TableSkeleton,
+  MediaBrowser,
 } from '@ahlipanggilan/ui';
 import type { Column } from '@ahlipanggilan/ui';
 
@@ -19,6 +20,7 @@ interface CategoryItem {
   slug: string;
   description: string | null;
   icon: string | null;
+  image: string | null;
   displayOrder: number;
   isActive: boolean;
   createdAt: string;
@@ -30,6 +32,7 @@ interface CategoryForm {
   slug: string;
   description: string;
   icon: string;
+  image: string;
   displayOrder: string;
 }
 
@@ -38,6 +41,7 @@ const EMPTY_FORM: CategoryForm = {
   slug: '',
   description: '',
   icon: '',
+  image: '',
   displayOrder: '0',
 };
 
@@ -71,6 +75,42 @@ export function AdminServiceCategories() {
   const [form, setForm] = useState<CategoryForm>(EMPTY_FORM);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
+  const [showMediaBrowser, setShowMediaBrowser] = useState(false);
+  const imageInputRef = useRef<HTMLInputElement>(null);
+  const [imageUploading, setImageUploading] = useState(false);
+
+  const uploadToMedia = useCallback(
+    async (file: File): Promise<string> => {
+      const formData = new FormData();
+      formData.append('file', file);
+      const result = await api.post<{ url: string; id: string }>('/api/v1/media/upload', {
+        formData,
+      });
+      const data = result as unknown as { url?: string; id?: string };
+      return data?.url ?? `/api/v1/media/${data?.id}/file`;
+    },
+    [api],
+  );
+
+  const handleImageFileSelect = useCallback(
+    async (e: React.ChangeEvent<HTMLInputElement>) => {
+      const files = Array.from(e.target.files ?? []);
+      if (files.length === 0) return;
+      const file = files[0];
+      if (!file.type.startsWith('image/')) return;
+      setImageUploading(true);
+      try {
+        const url = await uploadToMedia(file);
+        setForm((f) => ({ ...f, image: url }));
+      } catch {
+        setError('Gagal mengupload gambar');
+      } finally {
+        setImageUploading(false);
+      }
+      e.target.value = '';
+    },
+    [uploadToMedia],
+  );
 
   const loadData = useCallback(async () => {
     try {
@@ -102,6 +142,7 @@ export function AdminServiceCategories() {
       slug: item.slug,
       description: item.description ?? '',
       icon: item.icon ?? '',
+      image: item.image ?? '',
       displayOrder: String(item.displayOrder),
     });
     setShowModal(true);
@@ -120,6 +161,7 @@ export function AdminServiceCategories() {
         name: form.name,
         description: form.description || undefined,
         icon: form.icon || undefined,
+        image: form.image || undefined,
         displayOrder: Number(form.displayOrder) || 0,
       };
 
@@ -141,19 +183,21 @@ export function AdminServiceCategories() {
     }
   }
 
-  async function handleDelete(item: CategoryItem) {
-    if (
-      !confirm(
-        `Nonaktifkan kategori "${item.name}"?\n\nLayanan dalam kategori ini tidak akan terhapus.`,
+  async function handleToggleActive(item: CategoryItem) {
+    if (item.isActive) {
+      if (
+        !confirm(
+          `Nonaktifkan kategori "${item.name}"?\n\nLayanan dalam kategori ini tidak akan terhapus.`,
+        )
       )
-    )
-      return;
-    try {
+        return;
       await api.delete(`/api/v1/admin/service-categories/${item.id}`);
-      await loadData();
-    } catch {
-      // silent
+    } else {
+      await api.patch(`/api/v1/admin/service-categories/${item.id}`, {
+        body: { isActive: true },
+      });
     }
+    await loadData();
   }
 
   /** Auto-generate slug from name (only when creating) */
@@ -221,8 +265,12 @@ export function AdminServiceCategories() {
           <Button size="sm" onClick={() => openEdit(item)}>
             Edit
           </Button>
-          <Button size="sm" variant="danger" onClick={() => handleDelete(item)}>
-            Nonaktifkan
+          <Button
+            size="sm"
+            variant={item.isActive ? 'danger' : 'secondary'}
+            onClick={() => handleToggleActive(item)}
+          >
+            {item.isActive ? 'Nonaktifkan' : 'Aktifkan'}
           </Button>
         </div>
       ),
@@ -285,6 +333,78 @@ export function AdminServiceCategories() {
             placeholder="Pilih icon"
           />
 
+          {/* Image */}
+          <div>
+            <label className="mb-1 block text-sm font-medium text-text-primary">
+              Gambar Kategori
+            </label>
+            <div className="flex gap-2">
+              <div className="flex-1">
+                <Input
+                  value={form.image}
+                  onChange={(e) => setForm((f) => ({ ...f, image: e.target.value }))}
+                  placeholder="URL gambar"
+                />
+              </div>
+              <Button type="button" variant="secondary" onClick={() => setShowMediaBrowser(true)}>
+                Pilih
+              </Button>
+              <Button
+                type="button"
+                variant="secondary"
+                onClick={() => imageInputRef.current?.click()}
+                disabled={imageUploading}
+              >
+                {imageUploading ? '...' : 'Upload'}
+              </Button>
+            </div>
+            <input
+              ref={imageInputRef}
+              type="file"
+              accept="image/jpeg,image/png,image/webp"
+              className="hidden"
+              onChange={handleImageFileSelect}
+            />
+            {form.image && (
+              <div className="relative mt-2">
+                <div className="relative aspect-video w-full max-w-[240px] overflow-hidden rounded-lg border border-border-default bg-neutral-100">
+                  <img
+                    src={form.image}
+                    alt="Preview"
+                    loading="lazy"
+                    decoding="async"
+                    className="h-full w-full object-cover"
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).style.display = 'none';
+                    }}
+                  />
+                  {/* Hapus button overlay */}
+                  <button
+                    type="button"
+                    onClick={() => setForm((f) => ({ ...f, image: '' }))}
+                    className="absolute right-1.5 top-1.5 flex h-6 w-6 items-center justify-center rounded-full bg-black/50 text-white transition-colors duration-150 hover:bg-danger-500"
+                    title="Hapus gambar"
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="12"
+                      height="12"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2.5"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    >
+                      <line x1="18" y1="6" x2="6" y2="18" />
+                      <line x1="6" y1="6" x2="18" y2="18" />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+
           <Input
             label="Urutan Tampil"
             type="number"
@@ -302,6 +422,16 @@ export function AdminServiceCategories() {
           </div>
         </form>
       </Modal>
+
+      {/* MediaBrowser */}
+      <MediaBrowser
+        open={showMediaBrowser}
+        onClose={() => setShowMediaBrowser(false)}
+        onSelect={(url) => {
+          setForm((f) => ({ ...f, image: url }));
+          setShowMediaBrowser(false);
+        }}
+      />
     </div>
   );
 }
