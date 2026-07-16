@@ -97,7 +97,8 @@ router.patch(
         .from(serviceCategories)
         .where(eq(serviceCategories.slug, data.slug))
         .limit(1);
-      if (existing) return error(c, 'SLUG_EXISTS', 'Slug sudah digunakan', 409);
+      if (existing && existing.id !== id)
+        return error(c, 'SLUG_EXISTS', 'Slug sudah digunakan', 409);
     }
 
     const [updated] = await db
