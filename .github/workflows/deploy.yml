@@ -158,6 +158,17 @@ jobs:
 
           export COMPOSE_ENV_FILE="--env-file .env.prod"
 
+          # ── Free up VPS disk ─────────────────────────────────────
+          # Hapus SEMUA Docker image yang tidak dipakai oleh container
+          # yang sedang berjalan. Ini mencegah "no space left on device"
+          # saat pull image baru (image @aws-sdk/client-s3 ~1GB).
+          echo "Freeing up disk: removing unused Docker images..."
+          BEFORE=$(df -h / | awk 'NR==2 {print $4}')
+          docker image prune -a -f 2>/dev/null || true
+          docker builder prune -a -f 2>/dev/null || true
+          AFTER=$(df -h / | awk 'NR==2 {print $4}')
+          echo "Disk: $BEFORE → $AFTER free"
+
           echo "Pulling images (ghcr.io/${IMAGE_OWNER}/api:${IMAGE_TAG})..."
           docker compose -f docker-compose.prod.yml $COMPOSE_ENV_FILE pull
 
@@ -327,8 +338,9 @@ jobs:
           fi
 
           # ── Cleanup ────────────────────────────────────────────────
-          echo "Pruning old images (older than 24h)..."
-          docker image prune -f --filter "until=24h"
+          # Hapus image lama yang tidak terpakai (keep only active + latest)
+          echo "Pruning unused Docker images..."
+          docker image prune -a -f 2>/dev/null || true
 
           echo "=== Final container status ==="
           docker ps --format 'table {{.Names}}\t{{.Status}}'
