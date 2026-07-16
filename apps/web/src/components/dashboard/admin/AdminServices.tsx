@@ -175,7 +175,7 @@ export function AdminServices() {
         slug: form.slug,
         shortDescription: form.shortDescription || undefined,
         description: form.description || undefined,
-        thumbnail: form.thumbnail || undefined,
+        thumbnail: form.thumbnail || null,
         basePrice: form.basePrice,
         estimatedDuration: form.estimatedDuration ? Number(form.estimatedDuration) : undefined,
         warrantyDays: form.warrantyDays ? Number(form.warrantyDays) : undefined,
@@ -430,17 +430,40 @@ export function AdminServices() {
               onChange={handleThumbnailFileSelect}
             />
             {form.thumbnail && (
-              <div className="relative mt-2 aspect-video w-full max-w-[240px] overflow-hidden rounded-lg border border-border-default bg-neutral-100">
-                <img
-                  src={form.thumbnail}
-                  alt="Preview"
-                  loading="lazy"
-                  decoding="async"
-                  className="h-full w-full object-cover"
-                  onError={(e) => {
-                    (e.target as HTMLImageElement).style.display = 'none';
-                  }}
-                />
+              <div className="relative mt-2">
+                <div className="relative aspect-video w-full max-w-[240px] overflow-hidden rounded-lg border border-border-default bg-neutral-100">
+                  <img
+                    src={form.thumbnail}
+                    alt="Preview"
+                    loading="lazy"
+                    decoding="async"
+                    className="h-full w-full object-cover"
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).style.display = 'none';
+                    }}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setForm((f) => ({ ...f, thumbnail: '' }))}
+                    className="absolute right-1.5 top-1.5 flex h-6 w-6 items-center justify-center rounded-full bg-black/50 text-white transition-colors duration-150 hover:bg-danger-500"
+                    title="Hapus gambar"
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="12"
+                      height="12"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2.5"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    >
+                      <line x1="18" y1="6" x2="6" y2="18" />
+                      <line x1="6" y1="6" x2="18" y2="18" />
+                    </svg>
+                  </button>
+                </div>
               </div>
             )}
           </div>

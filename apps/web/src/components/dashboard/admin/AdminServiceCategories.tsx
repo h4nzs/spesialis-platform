@@ -161,7 +161,7 @@ export function AdminServiceCategories() {
         name: form.name,
         description: form.description || undefined,
         icon: form.icon || undefined,
-        image: form.image || undefined,
+        image: form.image || null,
         displayOrder: Number(form.displayOrder) || 0,
       };
 
