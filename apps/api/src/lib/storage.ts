@@ -2,7 +2,6 @@ import { writeFile, mkdir, unlink } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
 import { join, extname, resolve } from 'node:path';
 import { randomUUID } from 'node:crypto';
-import sharp from 'sharp';
 
 /* ── Constants ───────────────────────────────────────────────────── */
 
@@ -88,6 +87,17 @@ export function getR2PublicUrl(filename: string): string {
   return `https://${cfg.bucket}.${host}/${key}`;
 }
 
+/* ── Sharp (lazy — tidak blocking module loading) ──────────────────── */
+
+let _sharp: (typeof import('sharp'))['default'] | null = null;
+
+async function getSharp() {
+  if (!_sharp) {
+    _sharp = (await import('sharp')).default;
+  }
+  return _sharp;
+}
+
 /* ── Helpers ─────────────────────────────────────────────────────── */
 
 export function isAllowedMimeType(mimeType: string): boolean {
@@ -119,15 +129,16 @@ export async function saveFile(file: File): Promise<StoredFile> {
   const uniqueName = `${randomUUID()}${ext}`;
   let buffer = Buffer.from(await file.arrayBuffer());
 
-  // ── Image compression ──────────────────────────────────────
+  // ── Image compression (lazy sharp) ─────────────────────────
   if (file.type.startsWith('image/')) {
     try {
+      const s = await getSharp();
       if (file.type === 'image/jpeg') {
-        buffer = await sharp(buffer).jpeg({ quality: 60, mozjpeg: true }).toBuffer();
+        buffer = await s(buffer).jpeg({ quality: 60, mozjpeg: true }).toBuffer();
       } else if (file.type === 'image/png') {
-        buffer = await sharp(buffer).png({ compressionLevel: 6 }).toBuffer();
+        buffer = await s(buffer).png({ compressionLevel: 6 }).toBuffer();
       } else if (file.type === 'image/webp') {
-        buffer = await sharp(buffer).webp({ quality: 60 }).toBuffer();
+        buffer = await s(buffer).webp({ quality: 60 }).toBuffer();
       }
     } catch (err) {
       console.warn('Image compression failed, saving original:', err);

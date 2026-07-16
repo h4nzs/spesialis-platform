@@ -10,7 +10,7 @@ COPY apps/api/ ./apps/api/
 ENV CI=true
 
 RUN corepack enable && \
-    pnpm install --frozen-lockfile --no-optional
+    pnpm install --frozen-lockfile
 
 EXPOSE 3000
 
