@@ -1,4 +1,4 @@
-import { Hono } from 'hono';
+import { Hono, type Context } from 'hono';
 import { eq, desc } from 'drizzle-orm';
 import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
@@ -37,7 +37,7 @@ router.get('', authMiddleware, async (c) => {
   await handleListMedia(c);
 });
 
-async function handleListMedia(c: any) {
+async function handleListMedia(c: Context) {
   const page = Number(c.req.query('page') ?? 1);
   const limit = Number(c.req.query('limit') ?? 20);
   const search = c.req.query('search');
