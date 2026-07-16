@@ -6,7 +6,7 @@ export const createServiceCategorySchema = z.object({
   slug: slugSchema.optional(),
   description: z.string().optional(),
   icon: z.string().optional(),
-  image: z.string().max(512).optional(),
+  image: z.string().max(512).optional().nullable(),
   displayOrder: z.coerce.number().int().min(0).optional(),
 });
 
@@ -15,7 +15,7 @@ export const updateServiceCategorySchema = z.object({
   slug: slugSchema.optional(),
   description: z.string().optional(),
   icon: z.string().optional(),
-  image: z.string().max(512).optional(),
+  image: z.string().max(512).optional().nullable(),
   displayOrder: z.coerce.number().int().min(0).optional(),
   isActive: z.boolean().optional(),
 });
