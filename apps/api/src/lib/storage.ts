@@ -2,7 +2,6 @@ import { writeFile, mkdir, unlink } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
 import { join, extname, resolve } from 'node:path';
 import { randomUUID } from 'node:crypto';
-import { S3Client, PutObjectCommand, DeleteObjectCommand } from '@aws-sdk/client-s3';
 
 /* ── Constants ───────────────────────────────────────────────────── */
 
@@ -23,9 +22,10 @@ export interface StoredFile {
   disk: StorageDisk;
 }
 
-/* ── R2 / S3 Client ──────────────────────────────────────────────── */
+/* ── R2 / S3 Client (lazy — tidak blocking module loading) ──────── */
 
-let _s3Client: S3Client | null = null;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+let _s3Client: any = null;
 
 function getR2Config() {
   const endpoint = process.env.R2_ENDPOINT;
@@ -38,13 +38,15 @@ function getR2Config() {
   return null;
 }
 
-function getS3Client(): S3Client {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+async function getS3Client(): Promise<any> {
   if (!_s3Client) {
     const cfg = getR2Config();
     if (!cfg)
       throw new Error(
         'R2 not configured — missing R2_ENDPOINT, R2_BUCKET, R2_ACCESS_KEY, R2_SECRET_KEY',
       );
+    const { S3Client } = await import('@aws-sdk/client-s3');
     _s3Client = new S3Client({
       region: 'auto',
       endpoint: cfg.endpoint,
@@ -117,25 +119,30 @@ export async function saveFile(file: File): Promise<StoredFile> {
   const buffer = Buffer.from(await file.arrayBuffer());
 
   if (isR2Enabled()) {
-    const client = getS3Client();
-    await client.send(
-      new PutObjectCommand({
-        Bucket: getR2Bucket(),
-        Key: uniqueName,
-        Body: buffer,
-        ContentType: file.type,
-      }),
-    );
+    try {
+      const client = await getS3Client();
+      const { PutObjectCommand } = await import('@aws-sdk/client-s3');
+      await client.send(
+        new PutObjectCommand({
+          Bucket: getR2Bucket(),
+          Key: uniqueName,
+          Body: buffer,
+          ContentType: file.type,
+        }),
+      );
 
-    return {
-      filename: uniqueName,
-      originalName: file.name,
-      mimeType: file.type,
-      extension: ext.replace('.', ''),
-      size: file.size,
-      path: uniqueName, // R2 key = filename
-      disk: 'Cloudflare R2',
-    };
+      return {
+        filename: uniqueName,
+        originalName: file.name,
+        mimeType: file.type,
+        extension: ext.replace('.', ''),
+        size: file.size,
+        path: uniqueName, // R2 key = filename
+        disk: 'Cloudflare R2',
+      };
+    } catch {
+      // R2 upload failed — fall through to local filesystem
+    }
   }
 
   // Local filesystem fallback
@@ -159,10 +166,11 @@ export async function saveFile(file: File): Promise<StoredFile> {
 export async function deleteFile(path: string, disk?: StorageDisk): Promise<void> {
   if (disk === 'Cloudflare R2' || (disk === undefined && isR2Enabled())) {
     try {
-      const client = getS3Client();
+      const client = await getS3Client();
+      const { DeleteObjectCommand } = await import('@aws-sdk/client-s3');
       await client.send(new DeleteObjectCommand({ Bucket: getR2Bucket(), Key: path }));
     } catch {
-      // Ignore — file already deleted or not found
+      // Ignore — file already deleted, not found, or package not installed
     }
     return;
   }
