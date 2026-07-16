@@ -54,7 +54,7 @@ router.post('/', rateLimit(5, 60_000), validateBody(createCompanySchema), async 
     .insert(companies)
     .values({
       companyName: data.companyName,
-      legalName: data.legalName,
+      legalName: data.legalName ?? data.companyName,
       email: data.email,
       phone: data.phone,
       taxNumber: data.taxNumber ?? null,

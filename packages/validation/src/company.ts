@@ -2,7 +2,7 @@ import { z } from 'zod';
 
 export const createCompanySchema = z.object({
   companyName: z.string().min(1).max(255),
-  legalName: z.string().min(1).max(255),
+  legalName: z.string().max(255).optional(),
   email: z.string().email().max(255),
   phone: z
     .string()

@@ -7,6 +7,7 @@ import {
   partnerSkills,
   partnerDocuments,
   serviceCategories,
+  serviceSuggestions,
   assignments,
   orders,
   reviews,
@@ -79,9 +80,17 @@ router.post(
   rateLimit(5, 60_000),
   validateBody(partnerRegistrationSchema),
   async (c) => {
-    const { email, phone, password, fullName, ktpNumber, domicile, skillIds } = c.get(
-      'validated',
-    ) as PartnerRegistrationInput;
+    const {
+      email,
+      phone,
+      password,
+      fullName,
+      ktpNumber,
+      domicile,
+      skillIds,
+      suggestedServiceName,
+      suggestedServiceDescription,
+    } = c.get('validated') as PartnerRegistrationInput;
 
     const existing = await db
       .select({ id: users.id })
@@ -125,6 +134,27 @@ router.post(
           categoryId,
           proficiency: 'Intermediate',
         })),
+      );
+    }
+
+    // Simpan usulan layanan baru ke database + notifikasi admin
+    if (suggestedServiceName) {
+      try {
+        await db.insert(serviceSuggestions).values({
+          partnerName: fullName,
+          partnerEmail: email,
+          serviceName: suggestedServiceName,
+          description: suggestedServiceDescription ?? null,
+          status: 'pending',
+        });
+      } catch {
+        // silent — jangan sampai gagal menyimpan suggestion menggagalkan registrasi
+      }
+
+      notifyAdmins(
+        'partner.suggested_service',
+        'Usulan Layanan Baru dari Mitra',
+        `Mitra ${fullName} (${email}) mengusulkan layanan baru: ${suggestedServiceName}${suggestedServiceDescription ? ` — ${suggestedServiceDescription}` : ''}`,
       );
     }
 

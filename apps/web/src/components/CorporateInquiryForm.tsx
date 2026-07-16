@@ -3,11 +3,22 @@ import { createBrowserClient } from '@ahlipanggilan/shared';
 import { createCompanySchema } from '@ahlipanggilan/validation';
 import { Button, Input, Card } from '@ahlipanggilan/ui';
 
+const EMPLOYEE_OPTIONS = [
+  { value: '1-9', label: 'Dibawah 10 orang' },
+  { value: '10-50', label: '10 — 50 orang' },
+  { value: '51+', label: 'Diatas 50 orang' },
+] as const;
+
+const EMPLOYEE_MAP: Record<string, number> = {
+  '1-9': 5,
+  '10-50': 30,
+  '51+': 100,
+};
+
 export function CorporateInquiryForm() {
   const api = createBrowserClient();
   const [form, setForm] = useState({
     companyName: '',
-    legalName: '',
     email: '',
     phone: '',
     industry: '',
@@ -26,9 +37,15 @@ export function CorporateInquiryForm() {
     e.preventDefault();
     setErrors([]);
 
+    const employeeCount = form.employeeCount ? EMPLOYEE_MAP[form.employeeCount] : undefined;
+
     const parsed = createCompanySchema.safeParse({
-      ...form,
-      employeeCount: form.employeeCount ? Number(form.employeeCount) : undefined,
+      companyName: form.companyName,
+      email: form.email,
+      phone: form.phone,
+      industry: form.industry || undefined,
+      employeeCount,
+      password: form.password,
     });
     if (!parsed.success) {
       setErrors(parsed.error.issues.map((i) => i.message));
@@ -84,12 +101,6 @@ export function CorporateInquiryForm() {
         required
       />
       <Input
-        label="Nama Legal (sesuai akta)"
-        value={form.legalName}
-        onChange={(e) => setField('legalName', e.target.value)}
-        required
-      />
-      <Input
         label="Email"
         type="email"
         value={form.email}
@@ -109,12 +120,27 @@ export function CorporateInquiryForm() {
         onChange={(e) => setField('industry', e.target.value)}
         placeholder="Contoh: Hospitality, Pendidikan"
       />
-      <Input
-        label="Jumlah Karyawan"
-        type="number"
-        value={form.employeeCount}
-        onChange={(e) => setField('employeeCount', e.target.value)}
-      />
+
+      {/* Jumlah Karyawan — dropdown */}
+      <div className="space-y-1.5">
+        <label htmlFor="employeeCount" className="text-body-sm font-medium text-text-primary">
+          Jumlah Karyawan
+        </label>
+        <select
+          id="employeeCount"
+          value={form.employeeCount}
+          onChange={(e) => setField('employeeCount', e.target.value)}
+          className="w-full rounded-lg border border-border-default bg-bg-surface px-3 py-2.5 text-sm text-text-primary outline-none transition-colors focus:border-primary focus:ring-1 focus:ring-primary"
+        >
+          <option value="">Pilih jumlah karyawan</option>
+          {EMPLOYEE_OPTIONS.map((opt) => (
+            <option key={opt.value} value={opt.value}>
+              {opt.label}
+            </option>
+          ))}
+        </select>
+      </div>
+
       <Input
         label="Buat Password"
         type="password"

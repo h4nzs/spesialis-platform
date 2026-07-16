@@ -57,6 +57,8 @@ export const partnerRegistrationSchema = z.object({
   ktpNumber: z.string().min(1, 'Nomor KTP wajib diisi').max(30),
   domicile: z.string().min(1, 'Domisili wajib diisi').max(255).optional(),
   skillIds: z.array(z.string().uuid('ID kategori tidak valid')).optional(),
+  suggestedServiceName: z.string().max(255).optional(),
+  suggestedServiceDescription: z.string().max(1000).optional(),
 });
 
 export const replacePartnerSkillsSchema = z.object({
@@ -75,4 +77,5 @@ export type UpdateAvailabilityInput = z.infer<typeof updateAvailabilitySchema>;
 export type VerifyPartnerInput = z.infer<typeof verifyPartnerSchema>;
 export type AddSkillInput = z.infer<typeof addSkillSchema>;
 export type PartnerRegistrationInput = z.infer<typeof partnerRegistrationSchema>;
+
 export type CreatePartnerDocumentInput = z.infer<typeof createPartnerDocumentSchema>;

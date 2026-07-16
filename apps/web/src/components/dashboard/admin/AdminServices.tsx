@@ -113,7 +113,7 @@ export function AdminServices() {
   const loadData = useCallback(async () => {
     try {
       const [svc, cats] = await Promise.all([
-        api.get<{ data: ServiceItem[] }>('/api/v1/admin/services', { params: { limit: 100 } }),
+        api.get<{ data: ServiceItem[] }>('/api/v1/admin/services', { params: { limit: 200 } }),
         api.get<CategoryItem[]>('/api/v1/admin/service-categories'),
       ]);
       setServices(Array.isArray(svc) ? svc : (svc?.data ?? []));
