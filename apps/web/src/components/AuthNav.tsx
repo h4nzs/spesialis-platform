@@ -19,7 +19,7 @@ export function AuthNav({ initialAuth }: AuthNavProps) {
         </a>
         <a
           href="/register"
-          className="inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-primary-hover"
+          className="inline-flex items-center gap-2 rounded-md bg-warning-500 px-4 py-2 text-sm font-medium text-white shadow-xs transition-all duration-150 ease-out hover:bg-warning-600 hover:shadow-sm"
         >
           Daftar
         </a>
@@ -44,7 +44,7 @@ export function AuthNav({ initialAuth }: AuthNavProps) {
   return (
     <a
       href={dashboardUrl}
-      className="inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-primary-hover"
+      className="inline-flex items-center gap-2 rounded-md bg-warning-500 px-4 py-2 text-sm font-medium text-white shadow-xs transition-all duration-150 ease-out hover:bg-warning-600 hover:shadow-sm"
     >
       {label}
     </a>
