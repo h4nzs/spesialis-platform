@@ -71,7 +71,11 @@ router.route('/admin/users', adminUsersRouter);
 router.route('/admin/settings', adminSettingsRouter);
 router.route('/admin/faq', adminFaqRouter);
 router.route('/admin/orders', adminOrdersRouter);
+// Mount di kedua prefix (/media dan /media/) agar request dengan dan
+// tanpa trailing slash sama-sama terhandle — Cloudflare URL Normalization
+// otomatis menambah/menghapus trailing slash yang bikin redirect loop.
 router.route('/media', mediaRouter);
+router.route('/media/', mediaRouter);
 router.route('/cms', cmsRouter);
 router.route('/cms', cmsRevalidationRouter);
 router.route('/seo', seoRouter);

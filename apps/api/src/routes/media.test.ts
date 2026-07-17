@@ -57,7 +57,10 @@ function mkApp() {
   authState.userId = 'uid';
   const app = new Hono();
   app.onError(errorHandler);
+  // Mount di kedua prefix (dengan dan tanpa trailing slash) — sama
+  // seperti routing di index.ts untuk handle Cloudflare URL Normalization.
   app.route('/api/v1/media', mediaRouter);
+  app.route('/api/v1/media/', mediaRouter);
   return app;
 }
 
@@ -102,13 +105,29 @@ describe('GET / — list media', () => {
     expect(body.pagination.total).toBe(1);
   });
 
-  it('301 redirects /media/ → /media (strip trailing slash)', async () => {
+  it('200 with trailing slash (mounted at /api/v1/media/)', async () => {
+    mockDb.select.mockReturnValueOnce(
+      makeChain([
+        {
+          id: UUID,
+          filename: 'test.jpg',
+          mimeType: 'image/jpeg',
+          extension: 'jpg',
+          size: 1024,
+          createdAt: new Date().toISOString(),
+        },
+      ]),
+    );
+    mockDb.select.mockReturnValueOnce(
+      Object.assign(makeChain([{ count: 1 }]), {
+        where: vi.fn().mockResolvedValue([{ count: 1 }]),
+      }),
+    );
     const res = await mkApp().request('/api/v1/media/', { headers: a() });
-    expect(res.status).toBe(301);
-    // Hono's redirect returns a full URL when using new URL(c.req.url).toString()
-    const location = res.headers.get('location')!;
-    expect(location).toMatch(/\/api\/v1\/media$/);
-    expect(location).not.toMatch(/\/$/);
+    expect(res.status).toBe(200);
+    const body = (await res.json()) as { success: boolean; data: unknown[] };
+    expect(body.success).toBe(true);
+    expect(Array.isArray(body.data)).toBe(true);
   });
 
   it('401 no auth', async () => {

@@ -27,9 +27,10 @@ import {
 
 const router = new Hono();
 
-// Daftarkan route dengan dan tanpa trailing slash untuk menghindari
-// redirect loop dengan Cloudflare URL Normalization yang otomatis
-// menambah/menghapus trailing slash di level edge.
+// Daftarkan route untuk path kosong (tanpa trailing slash) dan path '/'
+// (dengan trailing slash) agar request ke /media dan /media/ sama-sama
+// terhandle tanpa redirect — menghindari redirect loop dengan Cloudflare
+// URL Normalization yang otomatis menambah/menghapus trailing slash.
 router.get('', authMiddleware, async (c) => {
   return handleListMedia(c);
 });
