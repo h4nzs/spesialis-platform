@@ -303,27 +303,20 @@ export function ServiceExplorer() {
         <div className="rounded-xl border border-border-default bg-white p-5 shadow-sm md:p-6">
           {/* ── Category Row — 2 baris (grid responsif) ──────────── */}
           <div className="grid grid-cols-3 gap-x-3 gap-y-4 sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-9 md:gap-x-5 md:gap-y-5 justify-items-center">
-            {categories.map((cat) => {
-              const isActive = cat.slug === activeCatSlug;
-              const isLainnya = cat.icon === 'more-horizontal';
-              return (
-                <button
-                  key={cat.id}
-                  type="button"
-                  onClick={() => handleCategoryClick(cat.slug)}
-                  className={`group relative flex flex-col items-center gap-2 px-2 py-1 text-center transition-all duration-200 ease-out focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-500 ${
-                    isActive ? 'scale-105' : 'hover:scale-105'
-                  }`}
-                >
-                  {/* Icon — tanpa background circle untuk item biasa */}
-                  {isLainnya ? (
-                    <div
-                      className="flex h-12 w-12 items-center justify-center rounded-xl bg-blue-100 text-blue-600 transition-all duration-200 md:h-14 md:w-14"
-                      aria-hidden="true"
-                    >
-                      <span dangerouslySetInnerHTML={{ __html: getIcon(cat.icon) }} />
-                    </div>
-                  ) : (
+            {/* ── Kategori biasa (kecuali Layanan Lainnya) ───────── */}
+            {categories
+              .filter((cat) => cat.icon !== 'more-horizontal')
+              .map((cat) => {
+                const isActive = cat.slug === activeCatSlug;
+                return (
+                  <button
+                    key={cat.id}
+                    type="button"
+                    onClick={() => handleCategoryClick(cat.slug)}
+                    className={`group relative flex flex-col items-center gap-2 px-2 py-1 text-center transition-all duration-200 ease-out focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-500 ${
+                      isActive ? 'scale-105' : 'hover:scale-105'
+                    }`}
+                  >
                     <div
                       className={`flex h-12 w-12 items-center justify-center transition-all duration-200 md:h-14 md:w-14 ${
                         isActive
@@ -334,27 +327,20 @@ export function ServiceExplorer() {
                     >
                       <span dangerouslySetInnerHTML={{ __html: getIcon(cat.icon) }} />
                     </div>
-                  )}
-                  {/* Label */}
-                  <span
-                    className={`text-[11px] font-semibold leading-snug transition-colors duration-200 ${
-                      isLainnya
-                        ? 'text-blue-600'
-                        : isActive
-                          ? 'text-primary-700'
-                          : 'text-primary-900'
-                    }`}
-                  >
-                    {cat.name}
-                  </span>
-                  {/* Active indicator — orange underline */}
-                  {isActive && (
-                    <span className="absolute -bottom-1 left-1/2 h-0.5 w-5 -translate-x-1/2 rounded-full bg-warning-500" />
-                  )}
-                </button>
-              );
-            })}
-            {/* ── Hero Services (standalone, tanpa kategori) ───────── */}
+                    <span
+                      className={`text-[11px] font-semibold leading-snug transition-colors duration-200 ${
+                        isActive ? 'text-primary-700' : 'text-primary-900'
+                      }`}
+                    >
+                      {cat.name}
+                    </span>
+                    {isActive && (
+                      <span className="absolute -bottom-1 left-1/2 h-0.5 w-5 -translate-x-1/2 rounded-full bg-warning-500" />
+                    )}
+                  </button>
+                );
+              })}
+            {/* ── Hero Services (standalone, tanpa kategori) ──────── */}
             {heroServices.map((svc) => {
               const isSelected = svc.id === selectedServiceId;
               const iconName = guessServiceIcon(svc.name);
@@ -393,6 +379,39 @@ export function ServiceExplorer() {
                 </button>
               );
             })}
+            {/* ── Layanan Lainnya (selalu paling ujung) ──────────── */}
+            {categories
+              .filter((cat) => cat.icon === 'more-horizontal')
+              .map((cat) => {
+                const isActive = cat.slug === activeCatSlug;
+                return (
+                  <button
+                    key={cat.id}
+                    type="button"
+                    onClick={() => handleCategoryClick(cat.slug)}
+                    className={`group relative flex flex-col items-center gap-2 px-2 py-1 text-center transition-all duration-200 ease-out focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-500 ${
+                      isActive ? 'scale-105' : 'hover:scale-105'
+                    }`}
+                  >
+                    <div
+                      className="flex h-12 w-12 items-center justify-center rounded-xl bg-blue-100 text-blue-600 transition-all duration-200 md:h-14 md:w-14"
+                      aria-hidden="true"
+                    >
+                      <span dangerouslySetInnerHTML={{ __html: getIcon(cat.icon) }} />
+                    </div>
+                    <span
+                      className={`text-[11px] font-semibold leading-snug transition-colors duration-200 ${
+                        isActive ? 'text-blue-700' : 'text-blue-600'
+                      }`}
+                    >
+                      {cat.name}
+                    </span>
+                    {isActive && (
+                      <span className="absolute -bottom-1 left-1/2 h-0.5 w-5 -translate-x-1/2 rounded-full bg-warning-500" />
+                    )}
+                  </button>
+                );
+              })}
           </div>
 
           {/* ── Sub-Services Panel ──────────────────────────── */}
