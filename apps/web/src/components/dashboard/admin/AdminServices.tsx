@@ -342,9 +342,11 @@ export function AdminServices() {
             label="Kategori"
             value={form.categoryId}
             onChange={(e) => setForm((f) => ({ ...f, categoryId: e.target.value }))}
-            options={categories.map((c) => ({ value: c.id, label: c.name }))}
-            placeholder="Pilih kategori"
-            required
+            options={[
+              { value: '', label: 'Tidak ada kategori' },
+              ...categories.map((c) => ({ value: c.id, label: c.name })),
+            ]}
+            placeholder="Pilih kategori (opsional)"
             error={fieldErrors['categoryId']}
           />
 
