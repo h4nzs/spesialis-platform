@@ -27,9 +27,14 @@ describe('createServiceSchema', () => {
     expect(result.success).toBe(true);
   });
 
-  it('rejects missing categoryId', () => {
+  it('accepts missing categoryId (now optional)', () => {
     const result = createServiceSchema.safeParse({ ...validService, categoryId: undefined });
-    expect(result.success).toBe(false);
+    expect(result.success).toBe(true);
+  });
+
+  it('accepts null categoryId', () => {
+    const result = createServiceSchema.safeParse({ ...validService, categoryId: null });
+    expect(result.success).toBe(true);
   });
 
   it('rejects invalid UUID categoryId', () => {

@@ -208,6 +208,7 @@ async function seedData() {
     basePrice: string;
     estimatedDuration: number;
     isFeatured?: boolean;
+    showInHero?: boolean;
     displayOrder: number;
   }> = [];
 
