@@ -27,8 +27,20 @@ import {
 
 const router = new Hono();
 
+// Redirect /media/ → /media (strip trailing slash) to handle requests
+// where Cloudflare or Nginx adds a trailing slash.
+router.use('*', async (c, next) => {
+  const path = c.req.path;
+  if (path.endsWith('/') && path.length > 1) {
+    const url = new URL(c.req.url);
+    url.pathname = path.replace(/\/+$/, '');
+    return c.redirect(url.toString(), 301);
+  }
+  await next();
+});
+
 router.get('', authMiddleware, async (c) => {
-  await handleListMedia(c);
+  return handleListMedia(c);
 });
 
 async function handleListMedia(c: Context) {

@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { createBrowserClient } from '@ahlipanggilan/shared';
+import { createBrowserClient, parseApiError } from '@ahlipanggilan/shared';
 import { Button, Input, Modal } from '@ahlipanggilan/ui';
 
 // ── Types ────────────────────────────────────────────────────────
@@ -46,6 +46,7 @@ export default function CoverageAreaFormModal({
   const [form, setForm] = useState<CoverageAreaFormData>(EMPTY_FORM);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
   // Reset form when modal opens or editingId changes
   useEffect(() => {
@@ -98,7 +99,9 @@ export default function CoverageAreaFormModal({
       onClose();
       onSaved();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Gagal menyimpan area layanan');
+      const { fieldErrors: fe, generalError } = parseApiError(err, 'Gagal menyimpan area layanan');
+      setFieldErrors(fe);
+      setError(generalError);
     } finally {
       setSubmitting(false);
     }
@@ -120,6 +123,7 @@ export default function CoverageAreaFormModal({
           onChange={(e) => setForm((f) => ({ ...f, city: e.target.value }))}
           placeholder="cth: Jakarta, Bandung, Surabaya"
           required
+          error={fieldErrors['city']}
         />
 
         {/* ── Note ──────────────────────────────────────────────── */}

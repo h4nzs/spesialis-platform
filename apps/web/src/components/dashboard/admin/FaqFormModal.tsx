@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { createBrowserClient } from '@ahlipanggilan/shared';
+import { createBrowserClient, parseApiError } from '@ahlipanggilan/shared';
 import { Button, Input, Select, Modal, RichTextEditor } from '@ahlipanggilan/ui';
 
 // ── Types ────────────────────────────────────────────────────────
@@ -49,6 +49,7 @@ export default function FaqFormModal({ open, onClose, editingId, onSaved }: FaqF
   const [form, setForm] = useState<FaqFormData>(EMPTY_FORM);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
   // Reset form when modal opens or editingId changes
   useEffect(() => {
@@ -74,6 +75,7 @@ export default function FaqFormModal({ open, onClose, editingId, onSaved }: FaqF
     } else {
       setForm(EMPTY_FORM);
       setError('');
+      setFieldErrors({});
     }
   }, [open, editingId, api]);
 
@@ -103,7 +105,9 @@ export default function FaqFormModal({ open, onClose, editingId, onSaved }: FaqF
       onClose();
       onSaved();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Gagal menyimpan FAQ');
+      const { fieldErrors: fe, generalError } = parseApiError(err, 'Gagal menyimpan FAQ');
+      setFieldErrors(fe);
+      setError(generalError);
     } finally {
       setSubmitting(false);
     }
@@ -113,16 +117,15 @@ export default function FaqFormModal({ open, onClose, editingId, onSaved }: FaqF
     <Modal open={open} onClose={onClose} title={editingId ? 'Edit FAQ' : 'Tambah FAQ'}>
       <form onSubmit={handleSave} className="space-y-4">
         {error && <p className="text-sm text-danger-500">{error}</p>}
-
-        {/* ── Question ────────────────────────────────────────── */}
+        {/* ── Question ────────────────────────────────────────── */}{' '}
         <Input
           label="Pertanyaan"
           value={form.question}
           onChange={(e) => setForm((f) => ({ ...f, question: e.target.value }))}
           placeholder="Masukkan pertanyaan"
           required
+          error={fieldErrors['question']}
         />
-
         {/* ── Answer (RichTextEditor) ─────────────────────────── */}
         <RichTextEditor
           label="Jawaban"
@@ -130,7 +133,6 @@ export default function FaqFormModal({ open, onClose, editingId, onSaved }: FaqF
           onChange={(html) => setForm((f) => ({ ...f, answer: html }))}
           placeholder="Tulis jawaban di sini..."
         />
-
         {/* ── Category & Display Order ────────────────────────── */}
         <div className="grid grid-cols-2 gap-3">
           <Input
@@ -138,6 +140,7 @@ export default function FaqFormModal({ open, onClose, editingId, onSaved }: FaqF
             value={form.category}
             onChange={(e) => setForm((f) => ({ ...f, category: e.target.value }))}
             placeholder="cth: Pembayaran, Layanan"
+            error={fieldErrors['category']}
           />
           <Input
             label="Urutan Tampil"
@@ -149,7 +152,6 @@ export default function FaqFormModal({ open, onClose, editingId, onSaved }: FaqF
             min={0}
           />
         </div>
-
         {/* ── Active Status ───────────────────────────────────── */}
         <Select
           label="Status"
@@ -157,7 +159,6 @@ export default function FaqFormModal({ open, onClose, editingId, onSaved }: FaqF
           onChange={(e) => setForm((f) => ({ ...f, isActive: e.target.value }))}
           options={IS_ACTIVE_OPTIONS}
         />
-
         {/* ── Actions ─────────────────────────────────────────── */}
         <div className="flex justify-end gap-2 border-t border-border-default pt-4">
           <Button variant="ghost" type="button" onClick={onClose}>

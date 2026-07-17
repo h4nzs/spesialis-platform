@@ -68,6 +68,55 @@ beforeEach(() => {
   mockDb.insert.mockReset();
 });
 
+describe('GET / — list media', () => {
+  it('200 without trailing slash', async () => {
+    // Items query — resolves at .offset()
+    mockDb.select.mockReturnValueOnce(
+      makeChain([
+        {
+          id: UUID,
+          filename: 'test.jpg',
+          mimeType: 'image/jpeg',
+          extension: 'jpg',
+          size: 1024,
+          createdAt: new Date().toISOString(),
+        },
+      ]),
+    );
+    // Count query — resolves at .where() (no .limit/.offset)
+    mockDb.select.mockReturnValueOnce(
+      Object.assign(makeChain([{ count: 1 }]), {
+        where: vi.fn().mockResolvedValue([{ count: 1 }]),
+      }),
+    );
+    const res = await mkApp().request('/api/v1/media', { headers: a() });
+    expect(res.status).toBe(200);
+    const body = (await res.json()) as {
+      success: boolean;
+      data: unknown[];
+      pagination: { page: number; limit: number; total: number };
+    };
+    expect(body.success).toBe(true);
+    expect(Array.isArray(body.data)).toBe(true);
+    expect(body.pagination.page).toBe(1);
+    expect(body.pagination.total).toBe(1);
+  });
+
+  it('301 redirects /media/ → /media (strip trailing slash)', async () => {
+    const res = await mkApp().request('/api/v1/media/', { headers: a() });
+    expect(res.status).toBe(301);
+    // Hono's redirect returns a full URL when using new URL(c.req.url).toString()
+    const location = res.headers.get('location')!;
+    expect(location).toMatch(/\/api\/v1\/media$/);
+    expect(location).not.toMatch(/\/$/);
+  });
+
+  it('401 no auth', async () => {
+    const res = await mkApp().request('/api/v1/media');
+    expect(res.status).toBe(401);
+  });
+});
+
 describe('POST /upload', () => {
   it('201 uploaded', async () => {
     mockDb.insert.mockReturnValueOnce(

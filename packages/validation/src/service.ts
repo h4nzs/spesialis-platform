@@ -10,7 +10,7 @@ export const createServiceSchema = z.object({
     .regex(/^[a-z0-9-]+$/),
   shortDescription: z.string().max(300).optional(),
   description: z.string().optional(),
-  thumbnail: z.string().max(255).optional(),
+  thumbnail: z.string().max(255).optional().nullable(),
   basePrice: z.string().min(1),
   estimatedDuration: z.coerce.number().int().min(1).optional(),
   warrantyDays: z.coerce.number().int().min(0).optional(),

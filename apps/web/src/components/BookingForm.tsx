@@ -4,6 +4,7 @@ import {
   createBrowserClient,
   getCategorySpecificFields,
   inferCategorySlug,
+  parseApiError,
 } from '@ahlipanggilan/shared';
 import { createGuestBookingSchema, createCustomerBookingSchema } from '@ahlipanggilan/validation';
 
@@ -180,8 +181,12 @@ export function BookingForm({ serviceId, initialAuth }: BookingFormProps) {
         setBookingResult(result);
         setSubmitted(true);
       } catch (err: unknown) {
-        if (err instanceof Error) setGeneralError(err.message);
-        else setGeneralError('Terjadi kesalahan. Silakan coba lagi.');
+        const { fieldErrors, generalError } = parseApiError(
+          err,
+          'Terjadi kesalahan. Silakan coba lagi.',
+        );
+        setErrors(Object.entries(fieldErrors).map(([field, message]) => ({ field, message })));
+        if (generalError) setGeneralError(generalError);
       } finally {
         setLoading(false);
       }
@@ -223,8 +228,12 @@ export function BookingForm({ serviceId, initialAuth }: BookingFormProps) {
         setBookingResult(result);
         setSubmitted(true);
       } catch (err: unknown) {
-        if (err instanceof Error) setGeneralError(err.message);
-        else setGeneralError('Terjadi kesalahan. Silakan coba lagi.');
+        const { fieldErrors, generalError } = parseApiError(
+          err,
+          'Terjadi kesalahan. Silakan coba lagi.',
+        );
+        setErrors(Object.entries(fieldErrors).map(([field, message]) => ({ field, message })));
+        if (generalError) setGeneralError(generalError);
       } finally {
         setLoading(false);
       }

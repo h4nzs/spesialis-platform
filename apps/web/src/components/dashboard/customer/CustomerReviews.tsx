@@ -1,5 +1,10 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { createBrowserClient, formatDate, formatRating } from '@ahlipanggilan/shared';
+import {
+  createBrowserClient,
+  formatDate,
+  formatRating,
+  parseApiError,
+} from '@ahlipanggilan/shared';
 import {
   Button,
   Textarea,
@@ -47,7 +52,8 @@ export function CustomerReviews() {
   const [rating, setRating] = useState('');
   const [comment, setComment] = useState('');
   const [submitting, setSubmitting] = useState(false);
-  const [error, setError] = useState('');
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+  const [generalError, setGeneralError] = useState('');
 
   const loadReviews = useCallback(async () => {
     try {
@@ -65,7 +71,8 @@ export function CustomerReviews() {
   }, [loadReviews]);
 
   async function openCreate() {
-    setError('');
+    setFieldErrors({});
+    setGeneralError('');
     setOrderId('');
     setRating('');
     setComment('');
@@ -84,20 +91,23 @@ export function CustomerReviews() {
 
   async function handleSubmit(e: React.SyntheticEvent<HTMLFormElement>) {
     e.preventDefault();
+    setFieldErrors({});
+    setGeneralError('');
     if (!orderId || !rating) {
-      setError('Pilih pesanan dan rating wajib diisi');
+      setGeneralError('Pilih pesanan dan rating wajib diisi');
       return;
     }
     setSubmitting(true);
-    setError('');
     try {
       await api.post('/api/v1/reviews', {
         body: { orderId, rating: Number(rating), review: comment || undefined },
       });
       setShowModal(false);
       await loadReviews();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Gagal mengirim ulasan');
+    } catch (err: unknown) {
+      const result = parseApiError(err, 'Gagal mengirim ulasan');
+      setFieldErrors(result.fieldErrors);
+      setGeneralError(result.generalError);
     } finally {
       setSubmitting(false);
     }
@@ -149,12 +159,13 @@ export function CustomerReviews() {
 
       <Modal open={showModal} onClose={() => setShowModal(false)} title="Tulis Ulasan">
         <form onSubmit={handleSubmit} className="space-y-4">
-          {error && <p className="text-sm text-danger">{error}</p>}
+          {generalError && <p className="text-sm text-danger">{generalError}</p>}
 
           <Select
             label="Pesanan"
             value={orderId}
             onChange={(e) => setOrderId(e.target.value)}
+            error={fieldErrors['orderId']}
             options={availableOrders.map((o) => ({
               value: o.id,
               label: `${o.bookingNumber} - ${o.status}`,
@@ -171,6 +182,7 @@ export function CustomerReviews() {
             label="Rating"
             value={rating}
             onChange={(e) => setRating(e.target.value)}
+            error={fieldErrors['rating']}
             options={RATING_OPTIONS}
             placeholder="Pilih rating"
             required
@@ -180,6 +192,7 @@ export function CustomerReviews() {
             label="Komentar (opsional)"
             value={comment}
             onChange={(e) => setComment(e.target.value)}
+            error={fieldErrors['review']}
             placeholder="Ceritakan pengalaman Anda..."
           />
 

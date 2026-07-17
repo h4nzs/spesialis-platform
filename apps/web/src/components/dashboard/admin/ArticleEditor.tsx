@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
-import { createBrowserClient } from '@ahlipanggilan/shared';
+import { createBrowserClient, parseApiError } from '@ahlipanggilan/shared';
 import {
   Button,
   Input,
@@ -86,6 +86,7 @@ export function ArticleEditor({ editingId }: ArticleEditorProps) {
   const [categories, setCategories] = useState<CategoryItem[]>([]);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
   const [coverUploading, setCoverUploading] = useState(false);
   const [coverDragOver, setCoverDragOver] = useState(false);
@@ -316,7 +317,9 @@ export function ArticleEditor({ editingId }: ArticleEditorProps) {
       }
       goBack();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Gagal menyimpan artikel');
+      const { fieldErrors: fe, generalError } = parseApiError(err, 'Gagal menyimpan artikel');
+      setFieldErrors(fe);
+      setError(generalError);
     } finally {
       setSubmitting(false);
     }
@@ -389,6 +392,7 @@ export function ArticleEditor({ editingId }: ArticleEditorProps) {
                     value={form.title}
                     onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
                     required
+                    error={fieldErrors['title']}
                   />
                   <Input
                     label="Slug"
@@ -396,6 +400,7 @@ export function ArticleEditor({ editingId }: ArticleEditorProps) {
                     onChange={(e) => setForm((f) => ({ ...f, slug: e.target.value }))}
                     placeholder="judul-artikel"
                     required
+                    error={fieldErrors['slug']}
                   />
                 </div>
 

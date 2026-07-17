@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { createBrowserClient } from '@ahlipanggilan/shared';
+import { createBrowserClient, parseApiError } from '@ahlipanggilan/shared';
 import { Button, Input, Card } from '@ahlipanggilan/ui';
 import { partnerRegistrationSchema } from '@ahlipanggilan/validation';
 
@@ -175,8 +175,12 @@ export function PartnerRegistrationForm() {
       await api.post('/api/v1/partners/register', { body: parsed.data });
       setSuccess(true);
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : 'Registrasi gagal';
-      setErrors([{ field: '', message: msg }]);
+      const { fieldErrors, generalError } = parseApiError(err, 'Registrasi gagal');
+      const newErrors: { field: string; message: string }[] = Object.entries(fieldErrors).map(
+        ([field, message]) => ({ field, message }),
+      );
+      if (generalError) newErrors.push({ field: '', message: generalError });
+      setErrors(newErrors);
     } finally {
       setSubmitting(false);
     }

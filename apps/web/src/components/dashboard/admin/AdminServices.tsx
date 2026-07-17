@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
-import { createBrowserClient } from '@ahlipanggilan/shared';
+import { createBrowserClient, parseApiError } from '@ahlipanggilan/shared';
 import {
   Button,
   Input,
@@ -73,6 +73,7 @@ export function AdminServices() {
   const [form, setForm] = useState<ServiceForm>(EMPTY_FORM);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [showMediaBrowser, setShowMediaBrowser] = useState(false);
   const thumbnailInputRef = useRef<HTMLInputElement>(null);
   const [thumbnailUploading, setThumbnailUploading] = useState(false);
@@ -133,12 +134,14 @@ export function AdminServices() {
     setEditing(null);
     setForm(EMPTY_FORM);
     setError('');
+    setFieldErrors({});
     setShowModal(true);
   }
 
   async function openEdit(item: ServiceItem) {
     setEditing(item.id);
     setError('');
+    setFieldErrors({});
     try {
       const detail = await api.get<Record<string, unknown>>(`/api/v1/admin/services/${item.id}`);
       setForm({
@@ -191,7 +194,9 @@ export function AdminServices() {
       setShowModal(false);
       await loadData();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Gagal menyimpan layanan');
+      const { fieldErrors: fe, generalError } = parseApiError(err, 'Gagal menyimpan layanan');
+      setFieldErrors(fe);
+      setError(generalError);
     } finally {
       setSubmitting(false);
     }
@@ -329,6 +334,7 @@ export function AdminServices() {
             options={categories.map((c) => ({ value: c.id, label: c.name }))}
             placeholder="Pilih kategori"
             required
+            error={fieldErrors['categoryId']}
           />
 
           <Input
@@ -336,6 +342,7 @@ export function AdminServices() {
             value={form.name}
             onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
             required
+            error={fieldErrors['name']}
           />
 
           <Input
@@ -344,18 +351,21 @@ export function AdminServices() {
             onChange={(e) => setForm((f) => ({ ...f, slug: e.target.value }))}
             placeholder="nama-layanan"
             required
+            error={fieldErrors['slug']}
           />
 
           <Input
             label="Deskripsi Singkat"
             value={form.shortDescription}
             onChange={(e) => setForm((f) => ({ ...f, shortDescription: e.target.value }))}
+            error={fieldErrors['shortDescription']}
           />
 
           <Textarea
             label="Deskripsi"
             value={form.description}
             onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
+            error={fieldErrors['description']}
           />
 
           <div className="grid grid-cols-3 gap-3">
@@ -364,18 +374,21 @@ export function AdminServices() {
               value={form.basePrice}
               onChange={(e) => setForm((f) => ({ ...f, basePrice: e.target.value }))}
               required
+              error={fieldErrors['basePrice']}
             />
             <Input
               label="Durasi (menit)"
               type="number"
               value={form.estimatedDuration}
               onChange={(e) => setForm((f) => ({ ...f, estimatedDuration: e.target.value }))}
+              error={fieldErrors['estimatedDuration']}
             />
             <Input
               label="Garasi (hari)"
               type="number"
               value={form.warrantyDays}
               onChange={(e) => setForm((f) => ({ ...f, warrantyDays: e.target.value }))}
+              error={fieldErrors['warrantyDays']}
             />
           </div>
 
@@ -385,6 +398,7 @@ export function AdminServices() {
               type="number"
               value={form.displayOrder}
               onChange={(e) => setForm((f) => ({ ...f, displayOrder: e.target.value }))}
+              error={fieldErrors['displayOrder']}
             />
             <div className="flex items-end pb-2">
               <label className="flex items-center gap-2 text-sm text-text-primary">
@@ -408,6 +422,7 @@ export function AdminServices() {
                   value={form.thumbnail}
                   onChange={(e) => setForm((f) => ({ ...f, thumbnail: e.target.value }))}
                   placeholder="URL gambar"
+                  error={fieldErrors['thumbnail']}
                 />
               </div>
               <Button type="button" variant="secondary" onClick={() => setShowMediaBrowser(true)}>

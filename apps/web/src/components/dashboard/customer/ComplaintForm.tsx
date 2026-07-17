@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { createBrowserClient } from '@ahlipanggilan/shared';
+import { createBrowserClient, parseApiError } from '@ahlipanggilan/shared';
 import { createComplaintSchema } from '@ahlipanggilan/validation';
 import { Button, Input, Textarea, Card } from '@ahlipanggilan/ui';
 
@@ -10,15 +10,34 @@ export function ComplaintForm() {
   const [description, setDescription] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
-  const [errors, setErrors] = useState<string[]>([]);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+  const [generalError, setGeneralError] = useState('');
+
+  function setField(field: string, value: string) {
+    if (field === 'orderId') setOrderId(value);
+    else if (field === 'title') setTitle(value);
+    else if (field === 'description') setDescription(value);
+    setFieldErrors((prev) => {
+      const next = { ...prev };
+      delete next[field];
+      return next;
+    });
+  }
 
   async function handleSubmit(e: React.SyntheticEvent<HTMLFormElement>) {
     e.preventDefault();
-    setErrors([]);
+    setFieldErrors({});
+    setGeneralError('');
 
     const parsed = createComplaintSchema.safeParse({ orderId, title, description });
     if (!parsed.success) {
-      setErrors(parsed.error.issues.map((i) => i.message));
+      const fieldErrorMap: Record<string, string> = {};
+      for (const issue of parsed.error.issues) {
+        const field = issue.path.join('.');
+        fieldErrorMap[field] = issue.message;
+      }
+      setFieldErrors(fieldErrorMap);
+      setGeneralError('Lengkapi data komplain dengan benar');
       return;
     }
 
@@ -26,8 +45,10 @@ export function ComplaintForm() {
     try {
       await api.post('/api/v1/complaints', { body: parsed.data });
       setSuccess(true);
-    } catch {
-      setErrors(['Gagal mengirim komplain. Silakan coba lagi.']);
+    } catch (err: unknown) {
+      const result = parseApiError(err, 'Gagal mengirim komplain. Silakan coba lagi.');
+      setFieldErrors(result.fieldErrors);
+      setGeneralError(result.generalError);
     } finally {
       setSubmitting(false);
     }
@@ -49,34 +70,33 @@ export function ComplaintForm() {
 
   return (
     <form onSubmit={handleSubmit} className="max-w-lg space-y-4">
-      {errors.length > 0 && (
+      {generalError && (
         <div className="rounded-md bg-danger/10 p-3">
-          {errors.map((err, i) => (
-            <p key={i} className="text-sm text-danger">
-              {err}
-            </p>
-          ))}
+          <p className="text-sm text-danger">{generalError}</p>
         </div>
       )}
 
       <Input
         label="ID Pesanan"
         value={orderId}
-        onChange={(e) => setOrderId(e.target.value)}
+        onChange={(e) => setField('orderId', e.target.value)}
+        error={fieldErrors['orderId']}
         placeholder="Masukkan ID order"
         required
       />
       <Input
         label="Judul"
         value={title}
-        onChange={(e) => setTitle(e.target.value)}
+        onChange={(e) => setField('title', e.target.value)}
+        error={fieldErrors['title']}
         placeholder="Ringkasan komplain"
         required
       />
       <Textarea
         label="Deskripsi"
         value={description}
-        onChange={(e) => setDescription(e.target.value)}
+        onChange={(e) => setField('description', e.target.value)}
+        error={fieldErrors['description']}
         placeholder="Jelaskan masalah Anda (minimal 10 karakter)"
         required
       />

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { loginSchema } from '@ahlipanggilan/validation';
 import { Button } from '@ahlipanggilan/ui';
+import { parseApiError } from '@ahlipanggilan/shared';
 import { getApiClient, redirectToDashboard } from '../lib/auth.ts';
 
 interface FieldError {
@@ -43,11 +44,12 @@ export function LoginForm() {
       api.getTokenStore().setTokens(result.token, result.refreshToken);
       redirectToDashboard(result.user.role);
     } catch (err: unknown) {
-      if (err instanceof Error) {
-        setGeneralError(err.message);
-      } else {
-        setGeneralError('Terjadi kesalahan. Silakan coba lagi.');
-      }
+      const { fieldErrors, generalError } = parseApiError(
+        err,
+        'Terjadi kesalahan. Silakan coba lagi.',
+      );
+      setErrors(Object.entries(fieldErrors).map(([field, message]) => ({ field, message })));
+      if (generalError) setGeneralError(generalError);
     } finally {
       setLoading(false);
     }

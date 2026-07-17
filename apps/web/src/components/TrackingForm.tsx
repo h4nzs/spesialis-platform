@@ -5,6 +5,7 @@ import {
   formatCurrency,
   getStatusLabel,
   getStatusColor,
+  parseApiError,
 } from '@ahlipanggilan/shared';
 import type { OrderStatus } from '@ahlipanggilan/types';
 
@@ -48,11 +49,8 @@ export function TrackingForm() {
       );
       setResult(data);
     } catch (err: unknown) {
-      if (err instanceof Error) {
-        setError(err.message);
-      } else {
-        setError('Terjadi kesalahan. Silakan coba lagi.');
-      }
+      const { generalError } = parseApiError(err, 'Terjadi kesalahan. Silakan coba lagi.');
+      setError(generalError);
     } finally {
       setLoading(false);
     }

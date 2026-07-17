@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { createBrowserClient } from '@ahlipanggilan/shared';
+import { createBrowserClient, parseApiError } from '@ahlipanggilan/shared';
 import { createCompanySchema } from '@ahlipanggilan/validation';
 import { Button, Input, Card } from '@ahlipanggilan/ui';
 
@@ -27,15 +27,22 @@ export function CorporateInquiryForm() {
   });
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
-  const [errors, setErrors] = useState<string[]>([]);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+  const [generalError, setGeneralError] = useState('');
 
   function setField(field: string, value: string) {
     setForm((prev) => ({ ...prev, [field]: value }));
+    setFieldErrors((prev) => {
+      const next = { ...prev };
+      delete next[field];
+      return next;
+    });
   }
 
   async function handleSubmit(e: React.SyntheticEvent<HTMLFormElement>) {
     e.preventDefault();
-    setErrors([]);
+    setFieldErrors({});
+    setGeneralError('');
 
     const employeeCount = form.employeeCount ? EMPLOYEE_MAP[form.employeeCount] : undefined;
 
@@ -48,12 +55,13 @@ export function CorporateInquiryForm() {
       password: form.password,
     });
     if (!parsed.success) {
-      setErrors(parsed.error.issues.map((i) => i.message));
-      return;
-    }
-
-    if (!form.password || form.password.length < 8) {
-      setErrors(['Password minimal 8 karakter']);
+      const fieldErrorMap: Record<string, string> = {};
+      for (const issue of parsed.error.issues) {
+        const field = issue.path.join('.');
+        fieldErrorMap[field] = issue.message;
+      }
+      setFieldErrors(fieldErrorMap);
+      setGeneralError('Lengkapi data dengan benar');
       return;
     }
 
@@ -61,8 +69,10 @@ export function CorporateInquiryForm() {
     try {
       await api.post('/api/v1/companies', { body: { ...parsed.data, password: form.password } });
       setSuccess(true);
-    } catch {
-      setErrors(['Gagal mengirim. Silakan coba lagi.']);
+    } catch (err: unknown) {
+      const result = parseApiError(err, 'Gagal mengirim. Silakan coba lagi.');
+      setFieldErrors(result.fieldErrors);
+      setGeneralError(result.generalError);
     } finally {
       setSubmitting(false);
     }
@@ -84,13 +94,9 @@ export function CorporateInquiryForm() {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      {errors.length > 0 && (
+      {generalError && (
         <div className="rounded-md bg-danger-500/10 p-3">
-          {errors.map((err, i) => (
-            <p key={i} className="text-sm text-danger-500">
-              {err}
-            </p>
-          ))}
+          <p className="text-sm text-danger-500">{generalError}</p>
         </div>
       )}
 
@@ -98,6 +104,7 @@ export function CorporateInquiryForm() {
         label="Nama Perusahaan"
         value={form.companyName}
         onChange={(e) => setField('companyName', e.target.value)}
+        error={fieldErrors['companyName']}
         required
       />
       <Input
@@ -105,6 +112,7 @@ export function CorporateInquiryForm() {
         type="email"
         value={form.email}
         onChange={(e) => setField('email', e.target.value)}
+        error={fieldErrors['email']}
         required
       />
       <Input
@@ -112,12 +120,14 @@ export function CorporateInquiryForm() {
         type="tel"
         value={form.phone}
         onChange={(e) => setField('phone', e.target.value)}
+        error={fieldErrors['phone']}
         required
       />
       <Input
         label="Industri"
         value={form.industry}
         onChange={(e) => setField('industry', e.target.value)}
+        error={fieldErrors['industry']}
         placeholder="Contoh: Hospitality, Pendidikan"
       />
 
@@ -130,7 +140,9 @@ export function CorporateInquiryForm() {
           id="employeeCount"
           value={form.employeeCount}
           onChange={(e) => setField('employeeCount', e.target.value)}
-          className="w-full rounded-lg border border-border-default bg-bg-surface px-3 py-2.5 text-sm text-text-primary outline-none transition-colors focus:border-primary focus:ring-1 focus:ring-primary"
+          className={`w-full rounded-lg border bg-bg-surface px-3 py-2.5 text-sm text-text-primary outline-none transition-colors focus:border-primary focus:ring-1 focus:ring-primary ${
+            fieldErrors['employeeCount'] ? 'border-danger-500' : 'border-border-default'
+          }`}
         >
           <option value="">Pilih jumlah karyawan</option>
           {EMPLOYEE_OPTIONS.map((opt) => (
@@ -139,6 +151,9 @@ export function CorporateInquiryForm() {
             </option>
           ))}
         </select>
+        {fieldErrors['employeeCount'] && (
+          <p className="mt-1 text-xs text-danger-500">{fieldErrors['employeeCount']}</p>
+        )}
       </div>
 
       <Input
@@ -146,6 +161,7 @@ export function CorporateInquiryForm() {
         type="password"
         value={form.password}
         onChange={(e) => setField('password', e.target.value)}
+        error={fieldErrors['password']}
         required
         placeholder="Minimal 8 karakter"
       />

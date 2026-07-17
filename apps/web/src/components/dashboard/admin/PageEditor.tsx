@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { createBrowserClient } from '@ahlipanggilan/shared';
+import { createBrowserClient, parseApiError } from '@ahlipanggilan/shared';
 import {
   Button,
   Input,
@@ -93,6 +93,7 @@ export function PageEditor({ editingId }: PageEditorProps) {
   const [form, setForm] = useState<PageFormData>(EMPTY_FORM);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
 
   // Navigate back to page list
@@ -185,7 +186,9 @@ export function PageEditor({ editingId }: PageEditorProps) {
       }
       goBack();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Gagal menyimpan halaman');
+      const { fieldErrors: fe, generalError } = parseApiError(err, 'Gagal menyimpan halaman');
+      setFieldErrors(fe);
+      setError(generalError);
     } finally {
       setSubmitting(false);
     }
@@ -249,6 +252,7 @@ export function PageEditor({ editingId }: PageEditorProps) {
                     onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
                     placeholder="cth: Tentang Kami"
                     required
+                    error={fieldErrors['title']}
                   />
                   <Input
                     label="Slug"
@@ -256,6 +260,7 @@ export function PageEditor({ editingId }: PageEditorProps) {
                     onChange={(e) => setForm((f) => ({ ...f, slug: e.target.value }))}
                     placeholder="tentang-kami"
                     required
+                    error={fieldErrors['slug']}
                   />
                 </div>
               </div>

@@ -72,6 +72,8 @@ export {
   INVOICE_STATUS_CHANGE_OPTIONS,
   CONTRACT_STATUS_CHANGE_OPTIONS,
   mapZodIssues,
+  parseApiError,
+  getFieldError,
   isValidUUID,
   isValidEmail,
   isValidIndonesianPhone,

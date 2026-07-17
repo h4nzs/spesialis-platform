@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
-import { createBrowserClient } from '@ahlipanggilan/shared';
+import { createBrowserClient, parseApiError } from '@ahlipanggilan/shared';
 import {
   Button,
   Input,
@@ -75,6 +75,7 @@ export function AdminServiceCategories() {
   const [form, setForm] = useState<CategoryForm>(EMPTY_FORM);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [showMediaBrowser, setShowMediaBrowser] = useState(false);
   const imageInputRef = useRef<HTMLInputElement>(null);
   const [imageUploading, setImageUploading] = useState(false);
@@ -131,12 +132,14 @@ export function AdminServiceCategories() {
     setEditing(null);
     setForm(EMPTY_FORM);
     setError('');
+    setFieldErrors({});
     setShowModal(true);
   }
 
   function openEdit(item: CategoryItem) {
     setEditing(item.id);
     setError('');
+    setFieldErrors({});
     setForm({
       name: item.name,
       slug: item.slug,
@@ -177,7 +180,9 @@ export function AdminServiceCategories() {
       setShowModal(false);
       await loadData();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Gagal menyimpan kategori');
+      const { fieldErrors: fe, generalError } = parseApiError(err, 'Gagal menyimpan kategori');
+      setFieldErrors(fe);
+      setError(generalError);
     } finally {
       setSubmitting(false);
     }
@@ -310,6 +315,7 @@ export function AdminServiceCategories() {
             value={form.name}
             onChange={(e) => handleNameChange(e.target.value)}
             required
+            error={fieldErrors['name']}
           />
 
           <Input
@@ -317,12 +323,14 @@ export function AdminServiceCategories() {
             value={form.slug}
             onChange={(e) => setForm((f) => ({ ...f, slug: e.target.value }))}
             placeholder="auto-generated"
+            error={fieldErrors['slug']}
           />
 
           <Textarea
             label="Deskripsi"
             value={form.description}
             onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
+            error={fieldErrors['description']}
           />
 
           <Select
@@ -331,6 +339,7 @@ export function AdminServiceCategories() {
             onChange={(e) => setForm((f) => ({ ...f, icon: e.target.value }))}
             options={ICON_OPTIONS}
             placeholder="Pilih icon"
+            error={fieldErrors['icon']}
           />
 
           {/* Image */}
@@ -344,6 +353,7 @@ export function AdminServiceCategories() {
                   value={form.image}
                   onChange={(e) => setForm((f) => ({ ...f, image: e.target.value }))}
                   placeholder="URL gambar"
+                  error={fieldErrors['image']}
                 />
               </div>
               <Button type="button" variant="secondary" onClick={() => setShowMediaBrowser(true)}>
