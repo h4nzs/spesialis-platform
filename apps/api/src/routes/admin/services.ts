@@ -37,6 +37,7 @@ router.get(
         basePrice: services.basePrice,
         isActive: services.isActive,
         isFeatured: services.isFeatured,
+        showInHero: services.showInHero,
         displayOrder: services.displayOrder,
         estimatedDuration: services.estimatedDuration,
       })
@@ -86,7 +87,7 @@ router.post(
     const [created_service] = await db
       .insert(services)
       .values({
-        categoryId: data.categoryId,
+        categoryId: data.categoryId ?? null,
         name: data.name,
         slug: data.slug,
         shortDescription: data.shortDescription ?? null,
@@ -96,6 +97,7 @@ router.post(
         estimatedDuration: data.estimatedDuration ?? null,
         warrantyDays: data.warrantyDays ?? null,
         isFeatured: data.isFeatured ?? false,
+        showInHero: data.showInHero ?? false,
         displayOrder: data.displayOrder ?? 0,
       })
       .returning();

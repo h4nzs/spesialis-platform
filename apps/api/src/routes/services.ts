@@ -14,10 +14,12 @@ router.get('/', validateQuery(paginationQuerySchema), async (c) => {
 
   const categoryId = c.req.query('categoryId');
   const featured = c.req.query('featured');
+  const hero = c.req.query('hero');
   const q = c.req.query('q');
 
   const conditions: SQL[] = [eq(services.isActive, true)];
   if (categoryId) conditions.push(eq(services.categoryId, categoryId));
+  if (hero === 'true') conditions.push(eq(services.showInHero, true));
   if (featured === 'true') conditions.push(eq(services.isFeatured, true));
   if (q) {
     const pattern = `%${q}%`;

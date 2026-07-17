@@ -35,6 +35,84 @@ interface ReviewData {
   aggregate: { averageRating: number; totalReviews: number };
 }
 
+/* ── Helper: auto-assign icon based on service name ──────────────── */
+function guessServiceIcon(name: string): string {
+  const n = name.toLowerCase();
+  if (n.includes('darurat') || n.includes('emergency')) return 'alert-triangle';
+  if (
+    n.includes('montir') ||
+    n.includes('mobil') ||
+    n.includes('kendaraan') ||
+    n.includes('otomotif')
+  )
+    return 'truck';
+  if (n.includes('elektronik') || n.includes('tv') || n.includes('monitor') || n.includes('ac'))
+    return 'monitor';
+  if (
+    n.includes('plumbing') ||
+    n.includes('pipa') ||
+    n.includes('saluran') ||
+    n.includes('kran') ||
+    n.includes('water')
+  )
+    return 'droplet';
+  if (n.includes('listrik') || n.includes('kelistrikan') || n.includes('instalasi')) return 'zap';
+  if (n.includes('clean') || n.includes('cleaning') || n.includes('bersih') || n.includes('sapu'))
+    return 'sparkles';
+  if (
+    n.includes('tukang') ||
+    n.includes('bangunan') ||
+    n.includes('renovasi') ||
+    n.includes('konstruksi')
+  )
+    return 'hammer';
+  if (n.includes('las') || n.includes('welding') || n.includes('besi')) return 'wrench';
+  if (n.includes('aspal') || n.includes('jalan') || n.includes('paving')) return 'road';
+  if (
+    n.includes('wc') ||
+    n.includes('toilet') ||
+    n.includes('septic') ||
+    n.includes('sedot') ||
+    n.includes('tinja')
+  )
+    return 'trash-2';
+  if (
+    n.includes('pest') ||
+    n.includes('hama') ||
+    n.includes('serangga') ||
+    n.includes('rayap') ||
+    n.includes('nyamuk')
+  )
+    return 'bug';
+  if (
+    n.includes('taman') ||
+    n.includes('outdoor') ||
+    n.includes('kebun') ||
+    n.includes('rumput') ||
+    n.includes('tanaman')
+  )
+    return 'tree';
+  if (
+    n.includes('bodyguard') ||
+    n.includes('security') ||
+    n.includes('satpam') ||
+    n.includes('pengaman')
+  )
+    return 'shield';
+  if (n.includes('supir') || n.includes('driver') || n.includes('sopir') || n.includes('antar'))
+    return 'car';
+  if (
+    n.includes('rumah tangga') ||
+    n.includes('household') ||
+    n.includes('asisten') ||
+    n.includes('pembantu') ||
+    n.includes('baby') ||
+    n.includes('babysitter')
+  )
+    return 'users';
+  return 'search';
+}
+
 /* ── Icons ──────────────────────────────────────────────────────────── */
 
 const ICONS: Record<string, string> = {
@@ -126,6 +204,7 @@ const DESCRIPTION_PLACEHOLDER =
 export function ServiceExplorer() {
   const api = useMemo(() => createBrowserClient(), []);
   const [categories, setCategories] = useState<Category[]>([]);
+  const [heroServices, setHeroServices] = useState<ServiceItem[]>([]);
   const [activeCatSlug, setActiveCatSlug] = useState<string | null>(null);
   const [catServices, setCatServices] = useState<Record<string, ServiceItem[]>>({});
   const [loadingCat, setLoadingCat] = useState(false);
@@ -140,6 +219,15 @@ export function ServiceExplorer() {
     api
       .get<Category[]>('/api/v1/service-categories')
       .then(setCategories)
+      .catch(() => {});
+    api
+      .get<{ data: ServiceItem[] }>('/api/v1/services', { params: { hero: 'true', limit: 20 } })
+      .then((res) => {
+        const items = Array.isArray(res)
+          ? res
+          : ((res as unknown as { data?: ServiceItem[] })?.data ?? []);
+        setHeroServices(items);
+      })
       .catch(() => {});
   }, [api]);
 
@@ -261,6 +349,45 @@ export function ServiceExplorer() {
                   </span>
                   {/* Active indicator — orange underline */}
                   {isActive && (
+                    <span className="absolute -bottom-1 left-1/2 h-0.5 w-5 -translate-x-1/2 rounded-full bg-warning-500" />
+                  )}
+                </button>
+              );
+            })}
+            {/* ── Hero Services (standalone, tanpa kategori) ───────── */}
+            {heroServices.map((svc) => {
+              const isSelected = svc.id === selectedServiceId;
+              const iconName = guessServiceIcon(svc.name);
+              return (
+                <button
+                  key={`hero-${svc.id}`}
+                  type="button"
+                  onClick={() => {
+                    setActiveCatSlug(null);
+                    handleServiceClick(svc);
+                  }}
+                  className={`group relative flex flex-col items-center gap-2 px-2 py-1 text-center transition-all duration-200 ease-out focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-500 ${
+                    isSelected ? 'scale-105' : 'hover:scale-105'
+                  }`}
+                >
+                  <div
+                    className={`flex h-12 w-12 items-center justify-center transition-all duration-200 md:h-14 md:w-14 ${
+                      isSelected
+                        ? 'text-warning-600'
+                        : 'text-primary-800 group-hover:text-primary-600'
+                    }`}
+                    aria-hidden="true"
+                  >
+                    <span dangerouslySetInnerHTML={{ __html: getIcon(iconName) }} />
+                  </div>
+                  <span
+                    className={`text-[11px] font-semibold leading-snug transition-colors duration-200 ${
+                      isSelected ? 'text-warning-600' : 'text-primary-900'
+                    }`}
+                  >
+                    {svc.name}
+                  </span>
+                  {isSelected && (
                     <span className="absolute -bottom-1 left-1/2 h-0.5 w-5 -translate-x-1/2 rounded-full bg-warning-500" />
                   )}
                 </button>
@@ -472,7 +599,7 @@ function ServiceDetailCard({
         <div className="lg:col-span-4">
           {/* Breadcrumb */}
           <nav className="flex items-center gap-1.5 text-[11px] text-neutral-400">
-            <span>{catName}</span>
+            <span>{catName || 'Layanan'}</span>
             <span className="text-neutral-300">›</span>
             <span className="font-medium text-neutral-600">{service.name}</span>
           </nav>

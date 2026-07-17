@@ -17,7 +17,7 @@ import type { Column } from '@ahlipanggilan/ui';
 
 interface ServiceItem {
   id: string;
-  categoryId: string;
+  categoryId: string | null;
   categoryName: string | null;
   name: string;
   slug: string;
@@ -25,6 +25,7 @@ interface ServiceItem {
   basePrice: string;
   isActive: boolean;
   isFeatured: boolean;
+  showInHero: boolean;
   displayOrder: number;
   estimatedDuration: number | null;
 }
@@ -46,6 +47,7 @@ interface ServiceForm {
   estimatedDuration: string;
   warrantyDays: string;
   isFeatured: boolean;
+  showInHero: boolean;
   displayOrder: string;
 }
 
@@ -60,6 +62,7 @@ const EMPTY_FORM: ServiceForm = {
   estimatedDuration: '',
   warrantyDays: '',
   isFeatured: false,
+  showInHero: false,
   displayOrder: '0',
 };
 
@@ -155,6 +158,7 @@ export function AdminServices() {
         estimatedDuration: String(detail.estimatedDuration ?? ''),
         warrantyDays: String(detail.warrantyDays ?? ''),
         isFeatured: (detail.isFeatured as boolean) ?? false,
+        showInHero: (detail.showInHero as boolean) ?? false,
         displayOrder: String(detail.displayOrder ?? '0'),
       });
       setShowModal(true);
@@ -165,15 +169,15 @@ export function AdminServices() {
 
   async function handleSave(e: React.SyntheticEvent<HTMLFormElement>) {
     e.preventDefault();
-    if (!form.categoryId || !form.name || !form.slug || !form.basePrice) {
-      setError('Nama, slug, kategori, dan harga wajib diisi');
+    if (!form.name || !form.slug || !form.basePrice) {
+      setError('Nama, slug, dan harga wajib diisi');
       return;
     }
     setSubmitting(true);
     setError('');
     try {
-      const body = {
-        categoryId: form.categoryId,
+      const body: Record<string, unknown> = {
+        categoryId: form.categoryId || null,
         name: form.name,
         slug: form.slug,
         shortDescription: form.shortDescription || undefined,
@@ -183,6 +187,7 @@ export function AdminServices() {
         estimatedDuration: form.estimatedDuration ? Number(form.estimatedDuration) : undefined,
         warrantyDays: form.warrantyDays ? Number(form.warrantyDays) : undefined,
         isFeatured: form.isFeatured,
+        showInHero: form.showInHero,
         displayOrder: Number(form.displayOrder),
       };
 
@@ -257,6 +262,12 @@ export function AdminServices() {
       key: 'isFeatured',
       header: 'Featured',
       render: (item) => (item.isFeatured ? '⭐' : '-'),
+    },
+    {
+      key: 'showInHero',
+      header: 'Hero',
+      render: (item) =>
+        item.showInHero && !item.categoryId ? <Badge variant="warning">Hero</Badge> : '-',
     },
     {
       key: 'id',
@@ -400,7 +411,7 @@ export function AdminServices() {
               onChange={(e) => setForm((f) => ({ ...f, displayOrder: e.target.value }))}
               error={fieldErrors['displayOrder']}
             />
-            <div className="flex items-end pb-2">
+            <div className="flex items-end gap-4 pb-2">
               <label className="flex items-center gap-2 text-sm text-text-primary">
                 <input
                   type="checkbox"
@@ -410,6 +421,17 @@ export function AdminServices() {
                 />
                 Featured
               </label>
+              {!form.categoryId && (
+                <label className="flex items-center gap-2 text-sm text-text-primary">
+                  <input
+                    type="checkbox"
+                    checked={form.showInHero}
+                    onChange={(e) => setForm((f) => ({ ...f, showInHero: e.target.checked }))}
+                    className="rounded border-border-default"
+                  />
+                  Tampilkan di Hero
+                </label>
+              )}
             </div>
           </div>
 

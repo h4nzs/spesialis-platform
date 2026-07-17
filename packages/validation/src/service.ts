@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
 export const createServiceSchema = z.object({
-  categoryId: z.string().uuid(),
+  categoryId: z.string().uuid().optional().nullable(),
   name: z.string().min(1).max(255),
   slug: z
     .string()
@@ -15,10 +15,12 @@ export const createServiceSchema = z.object({
   estimatedDuration: z.coerce.number().int().min(1).optional(),
   warrantyDays: z.coerce.number().int().min(0).optional(),
   isFeatured: z.boolean().optional(),
+  showInHero: z.boolean().optional(),
   displayOrder: z.coerce.number().int().min(0).optional(),
 });
 
 export const updateServiceSchema = z.object({
+  categoryId: z.string().uuid().optional().nullable(),
   name: z.string().min(1).max(255).optional(),
   slug: z
     .string()
@@ -34,6 +36,7 @@ export const updateServiceSchema = z.object({
   warrantyDays: z.coerce.number().int().min(0).optional().nullable(),
   isActive: z.boolean().optional(),
   isFeatured: z.boolean().optional(),
+  showInHero: z.boolean().optional(),
   displayOrder: z.coerce.number().int().min(0).optional(),
 });
 

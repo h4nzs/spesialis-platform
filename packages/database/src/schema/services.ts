@@ -14,9 +14,10 @@ export const services = pgTable(
   'services',
   {
     id: uuid('id').defaultRandom().primaryKey(),
-    categoryId: uuid('category_id')
-      .references(() => serviceCategories.id, { onDelete: 'restrict' })
-      .notNull(),
+    categoryId: uuid('category_id').references(() => serviceCategories.id, {
+      onDelete: 'set null',
+    }),
+    showInHero: boolean('show_in_hero').notNull().default(false),
     name: varchar('name', { length: 255 }).notNull(),
     slug: varchar('slug', { length: 255 }).notNull().unique(),
     shortDescription: varchar('short_description', { length: 300 }),
