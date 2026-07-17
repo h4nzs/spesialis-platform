@@ -29,10 +29,16 @@ const router = new Hono();
 
 // Redirect /media/ → /media (strip trailing slash) to handle requests
 // where Cloudflare or Nginx adds a trailing slash.
+// Uses forwarded headers so redirect URLs use the correct protocol (HTTPS)
+// when Hono is behind a reverse proxy (Nginx).
 router.use('*', async (c, next) => {
   const path = c.req.path;
   if (path.endsWith('/') && path.length > 1) {
+    const proto = c.req.header('x-forwarded-proto') ?? 'http';
+    const host = c.req.header('x-forwarded-host') ?? c.req.header('host') ?? '';
     const url = new URL(c.req.url);
+    url.protocol = proto === 'https' ? 'https:' : 'http:';
+    url.host = host;
     url.pathname = path.replace(/\/+$/, '');
     return c.redirect(url.toString(), 301);
   }

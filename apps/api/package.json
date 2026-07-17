@@ -14,6 +14,8 @@
     "db:seed-data:prod": "tsx src/seeds/seed-data.ts",
     "db:seed-admin": "tsx --env-file=../../.env src/seeds/seed-admin.ts",
     "db:seed-admin:prod": "tsx src/seeds/seed-admin.ts",
+    "db:check-media": "tsx --env-file=../../.env src/scripts/check-orphaned-media.ts",
+    "db:check-media:prod": "tsx src/scripts/check-orphaned-media.ts",
     "test": "vitest run",
     "test:integration": "vitest run --config vitest.integration.config.ts"
   },
