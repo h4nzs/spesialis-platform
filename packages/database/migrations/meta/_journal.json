@@ -169,6 +169,13 @@
       "when": 1784193000000,
       "tag": "0022_add_category_image",
       "breakpoints": true
+    },
+    {
+      "idx": 24,
+      "version": "7",
+      "when": 1784283000000,
+      "tag": "0023_make_category_id_nullable_add_show_in_hero",
+      "breakpoints": true
     }
   ]
 }

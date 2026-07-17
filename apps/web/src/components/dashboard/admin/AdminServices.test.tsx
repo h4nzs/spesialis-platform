@@ -369,7 +369,7 @@ describe('AdminServices', () => {
     fireEvent.submit(form!);
 
     await waitFor(() => {
-      expect(screen.getByText('Nama, slug, kategori, dan harga wajib diisi')).toBeInTheDocument();
+      expect(screen.getByText('Nama, slug, dan harga wajib diisi')).toBeInTheDocument();
     });
   });
 
