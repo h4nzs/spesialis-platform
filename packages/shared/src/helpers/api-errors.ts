@@ -1,4 +1,3 @@
-import type { ValidationError } from '@ahlipanggilan/types';
 import { ApiClientError } from '../errors.ts';
 
 /**
@@ -226,7 +225,6 @@ export function parseApiError(
   if (err instanceof ApiClientError && err.errors && err.errors.length > 0) {
     const fieldErrors: Record<string, string> = {};
     for (const ve of err.errors) {
-      const label = FIELD_LABELS[ve.field] ?? ve.field;
       fieldErrors[ve.field] = formatErrorMessage(ve.field, ve.message);
     }
     // Build a general summary from field errors

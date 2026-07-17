@@ -6,6 +6,10 @@ const mockPost = vi.fn();
 
 vi.mock('@ahlipanggilan/shared', () => ({
   createBrowserClient: () => ({ post: mockPost }),
+  parseApiError: (err: unknown, fallback?: string) => {
+    if (err instanceof Error) return { fieldErrors: {}, generalError: err.message };
+    return { fieldErrors: {}, generalError: fallback ?? 'Terjadi kesalahan' };
+  },
   SCHEMA_TEMPLATES: [],
 }));
 
@@ -64,6 +68,6 @@ describe('CorporateInquiryForm', () => {
     render(<CorporateInquiryForm />);
     fillRequiredFields();
     fireEvent.click(screen.getByRole('button', { name: 'Daftar' }));
-    expect(await screen.findByText('Gagal mengirim. Silakan coba lagi.')).toBeInTheDocument();
+    expect(await screen.findByText('Gagal mengirim')).toBeInTheDocument();
   });
 });

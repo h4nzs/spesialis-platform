@@ -9,6 +9,10 @@ vi.mock('@ahlipanggilan/shared', () => ({
   formatCurrency: (n: number) => `Rp${n.toLocaleString('id-ID')}`,
   getStatusLabel: (s: string) => s,
   getStatusColor: () => 'default',
+  parseApiError: (err: unknown, fallback?: string) => {
+    if (err instanceof Error) return { fieldErrors: {}, generalError: err.message };
+    return { fieldErrors: {}, generalError: fallback ?? 'Terjadi kesalahan' };
+  },
   SCHEMA_TEMPLATES: [],
 }));
 

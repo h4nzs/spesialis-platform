@@ -7,6 +7,10 @@ const mockPost = vi.fn();
 
 vi.mock('@ahlipanggilan/shared', () => ({
   createBrowserClient: () => ({ post: mockPost }),
+  parseApiError: (err: unknown, fallback?: string) => {
+    if (err instanceof Error) return { fieldErrors: {}, generalError: err.message };
+    return { fieldErrors: {}, generalError: fallback ?? 'Terjadi kesalahan' };
+  },
   SCHEMA_TEMPLATES: [],
 }));
 
@@ -31,15 +35,18 @@ vi.mock('@ahlipanggilan/ui', () => ({
     value,
     onChange,
     placeholder,
+    error,
   }: {
     label: string;
     value: string;
     onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
     placeholder?: string;
+    error?: string;
   }) => (
     <div>
       <label htmlFor={label}>{label}</label>
       <input id={label} value={value} onChange={onChange} placeholder={placeholder} />
+      {error && <p className="text-sm text-danger">{error}</p>}
     </div>
   ),
   Textarea: ({
@@ -47,15 +54,18 @@ vi.mock('@ahlipanggilan/ui', () => ({
     value,
     onChange,
     placeholder,
+    error,
   }: {
     label: string;
     value: string;
     onChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
     placeholder?: string;
+    error?: string;
   }) => (
     <div>
       <label htmlFor={label}>{label}</label>
       <textarea id={label} value={value} onChange={onChange} placeholder={placeholder} />
+      {error && <p className="text-sm text-danger">{error}</p>}
     </div>
   ),
   Card: ({ children, padding: _padding }: { children: React.ReactNode; padding?: string }) => (
@@ -107,13 +117,19 @@ vi.mock('@ahlipanggilan/validation', () => ({
     safeParse: (data: unknown) => {
       const d = data as { orderId: string; title: string; description: string };
       if (!d.orderId)
-        return { success: false, error: { issues: [{ message: 'Order ID wajib diisi' }] } };
+        return {
+          success: false,
+          error: { issues: [{ path: ['orderId'], message: 'Order ID wajib diisi' }] },
+        };
       if (!d.title)
-        return { success: false, error: { issues: [{ message: 'Judul wajib diisi' }] } };
+        return {
+          success: false,
+          error: { issues: [{ path: ['title'], message: 'Judul wajib diisi' }] },
+        };
       if (!d.description || d.description.length < 10)
         return {
           success: false,
-          error: { issues: [{ message: 'Deskripsi minimal 10 karakter' }] },
+          error: { issues: [{ path: ['description'], message: 'Deskripsi minimal 10 karakter' }] },
         };
       return { success: true, data: d };
     },

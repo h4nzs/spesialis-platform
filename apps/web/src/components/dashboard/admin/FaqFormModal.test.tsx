@@ -16,6 +16,10 @@ vi.mock('@ahlipanggilan/shared', () => ({
     patch: mockPatch,
     delete: vi.fn(),
   }),
+  parseApiError: (err: unknown, fallback?: string) => {
+    if (err instanceof Error) return { fieldErrors: {}, generalError: err.message };
+    return { fieldErrors: {}, generalError: fallback ?? 'Terjadi kesalahan' };
+  },
   SCHEMA_TEMPLATES: [],
 }));
 
