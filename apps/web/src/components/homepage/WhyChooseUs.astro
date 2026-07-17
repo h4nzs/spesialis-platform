@@ -62,10 +62,10 @@ const iconSVGs: Record<string, string> = {
 ---
 
 <section class="bg-bg-section">
-  <div class="container-page py-6 md:py-8">
+  <div class="container-page py-3 md:py-4">
     <div class="grid gap-5 md:grid-cols-6 md:gap-5">
       <!-- ── Left: Dark Blue Card (mengisi 2 kolom) ──────────────── -->
-      <div class="flex flex-col justify-between gap-4 rounded-2xl bg-gradient-to-br from-primary-800 to-primary-950 p-6 md:col-span-2 md:p-7">
+      <div class="flex flex-col justify-between gap-4 rounded-2xl bg-gradient-to-br from-primary-800 to-primary-950 p-4 md:col-span-2 md:p-5">
         <h3 class="text-xl font-extrabold text-white leading-snug">
           Mengapa Memilih<br />Ahli Panggilan?
         </h3>
@@ -88,7 +88,7 @@ const iconSVGs: Record<string, string> = {
       <div class="flex flex-row gap-3 md:col-span-4">
         {
           benefits.map((b) => (
-            <div class="flex flex-1 flex-col rounded-xl border border-border-default bg-bg-surface p-4 md:p-5 shadow-xs">
+            <div class="flex flex-1 flex-col rounded-xl border border-border-default bg-bg-surface p-3 md:p-4 shadow-xs">
               <div class={`mb-3 flex h-10 w-10 items-center justify-center rounded-full ${b.iconBg}`} aria-hidden="true">
                 <span set:html={iconSVGs[b.icon]} />
               </div>

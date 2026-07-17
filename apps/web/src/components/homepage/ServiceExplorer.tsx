@@ -299,8 +299,8 @@ export function ServiceExplorer() {
 
   return (
     <section className="bg-bg-section">
-      <div className="container-page py-4 md:py-6">
-        <div className="rounded-xl border border-border-default bg-white p-5 shadow-sm md:p-6">
+      <div className="container-page py-2 md:py-3">
+        <div className="rounded-xl border border-border-default bg-white p-3 shadow-sm md:p-4">
           {/* ── Category Row — 2 baris (grid responsif) ──────────── */}
           <div className="grid grid-cols-3 gap-x-3 gap-y-4 sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-9 md:gap-x-5 md:gap-y-5 justify-items-center">
             {/* ── Kategori biasa (kecuali Layanan Lainnya) ───────── */}
