@@ -31,8 +31,12 @@ const subtitle =
   'Butuh teknisi, montir, tukang, ahli pipa, cleaning service, hingga berbagai tenaga profesional lainnya? Tim Ahli Panggilan siap datang ke lokasi Anda dengan layanan cepat, profesional, dan terpercaya.';
 ---
 
-<section class="relative overflow-hidden bg-bg-page pt-4 pb-2 md:pt-6 md:pb-3">
-  <!-- Full background hero image -->
+<section class="relative overflow-hidden bg-bg-page min-h-[280px] md:min-h-[320px] lg:min-h-[380px] flex flex-col justify-center pt-5 pb-3 md:pt-6 md:pb-3 lg:pt-8 lg:pb-4">
+  <!-- Full background hero image
+       ⚠️  Hero area: ~280–380px tergantung viewport.
+       Pastikan gambar hero-home.webp/jpg beresolusi >= 1920×1080px
+       agar tidak terlihat pecah/blur pada area yang lebih luas.
+  -->
   <picture>
     <source srcset="/hero-home.webp" type="image/webp" />
     <img
@@ -51,20 +55,20 @@ const subtitle =
       <!-- ── Left Column (7/12) ──────────────────────────────────── -->
       <div class="lg:col-span-7">
         <!-- Eyebrow -->
-        <p class="text-caption font-semibold uppercase tracking-[0.2em] text-primary-500">
+        <p class="text-body-sm font-semibold uppercase tracking-[0.25em] md:tracking-[0.3em] text-primary-500">
           LAYANAN PROFESIONAL ON-DEMAND
         </p>
 
         <!-- Headline -->
-        <h1 class="mt-1 text-h1 text-balance text-text-primary leading-[1.1]" set:html={headline} />
+        <h1 class="mt-1.5 md:mt-2 text-h1 lg:text-display text-balance text-text-primary leading-[1.15]" set:html={headline} />
 
         <!-- Subtitle -->
-        <p class="mt-1.5 max-w-lg text-body-sm text-text-secondary text-pretty leading-relaxed">
+        <p class="mt-1.5 md:mt-2 max-w-xl md:max-w-2xl text-body-sm md:text-body text-text-secondary text-pretty leading-relaxed md:leading-loose">
           {subtitle}
         </p>
 
         <!-- CTA Buttons -->
-        <div class="mt-3 flex flex-col gap-2 sm:flex-row">
+        <div class="mt-2.5 md:mt-3 flex flex-col gap-2 sm:flex-row">
           <a
             href="/services"
             class="inline-flex h-9 items-center justify-center rounded-lg bg-warning-500 px-4 text-body-sm font-semibold text-white shadow-xs transition-all duration-150 ease-out hover:bg-warning-600 hover:shadow-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-warning-500"
@@ -83,7 +87,7 @@ const subtitle =
         </div>
 
         <!-- Trust Indicators -->
-        <div class="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1">
+        <div class="mt-2 md:mt-2.5 flex flex-wrap items-center gap-x-4 gap-y-1">
           <div class="flex items-center gap-2">
             <div class="flex h-8 w-8 items-center justify-center rounded-full border border-border-default text-primary-500" aria-hidden="true">
               <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
