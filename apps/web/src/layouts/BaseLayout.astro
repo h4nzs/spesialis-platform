@@ -57,6 +57,11 @@ const waPages = ['/', '/services', '/blog', '/tracking', '/partner', '/corporate
 const showWa = whatsappPhone && waPages.some(
   (p) => Astro.url.pathname === p || (p !== '/' && Astro.url.pathname.startsWith(p + '/')),
 )
+
+// ── Plausible Analytics ────────────────────────────────────────
+// Only active when PLAUSIBLE_DOMAIN env var is set (production)
+const plausibleDomain = process.env.PLAUSIBLE_DOMAIN ?? ''
+const plausibleSrc = plausibleDomain ? `https://${plausibleDomain}/js/script.js` : ''
 ---
 
 <!DOCTYPE html>
@@ -103,6 +108,12 @@ const showWa = whatsappPhone && waPages.some(
     <link rel="prefetch" href="/faq" />
     <link rel="prefetch" href="/partner" />
     <link rel="prefetch" href="/corporate" />
+
+    {
+      plausibleSrc && (
+        <script defer data-domain="ahlipanggilan.id" src={plausibleSrc} />
+      )
+    }
   </head>
   <body class="min-h-screen overflow-x-hidden bg-bg-page text-text-primary font-sans antialiased">
     <a href="#main-content" class="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-toast focus:rounded-md focus:bg-bg-surface focus:px-4 focus:py-2 focus:text-body focus:font-medium focus:text-text-primary focus:shadow-md">
