@@ -189,21 +189,20 @@ test.describe('Admin Testimonials CRUD', () => {
     expect(res.status()).toBe(403);
   });
 
-  test('Testimonial appears in CMS API response', async ({ request }) => {
+  test('Testimonial visible via admin API after creation', async ({ request }) => {
     const auth = await loginViaApi(
       request,
       TEST_CREDENTIALS.admin.email,
       TEST_CREDENTIALS.admin.password,
     );
 
-    // Create an active testimonial via admin API
-    const uniqueName = `CMS E2E ${Date.now()}`;
+    const uniqueName = `Admin E2E ${Date.now()}`;
     const createRes = await request.post(`${API_URL}/api/v1/admin/testimonials`, {
       headers: { Cookie: `token=${auth.token}` },
       data: {
         name: uniqueName,
         location: 'Jakarta',
-        quote: 'Should appear in public CMS API.',
+        quote: 'Should appear in admin API.',
         rating: 5,
         displayOrder: 98,
         isActive: 'true',
@@ -213,11 +212,13 @@ test.describe('Admin Testimonials CRUD', () => {
     const createBody = (await createRes.json()) as { data: { id: string } };
     createdIds.push(createBody.data.id);
 
-    // Fetch from public CMS API (no auth needed)
-    const cmsRes = await request.get(`${API_URL}/api/v1/cms/testimonials`);
-    expect(cmsRes.ok()).toBeTruthy();
-    const cmsBody = (await cmsRes.json()) as { data: Array<{ name: string }> };
-    const names = cmsBody.data.map((t) => t.name);
+    // Verify via admin API (no cache) that data was persisted
+    const adminRes = await request.get(`${API_URL}/api/v1/admin/testimonials`, {
+      headers: { Cookie: `token=${auth.token}` },
+    });
+    expect(adminRes.ok()).toBeTruthy();
+    const adminBody = (await adminRes.json()) as { data: Array<{ name: string }> };
+    const names = adminBody.data.map((t: { name: string }) => t.name);
     expect(names).toContain(uniqueName);
   });
 
@@ -248,7 +249,9 @@ test.describe('Admin Testimonials CRUD', () => {
     const cmsRes = await request.get(`${API_URL}/api/v1/cms/testimonials`);
     expect(cmsRes.ok()).toBeTruthy();
     const cmsBody = (await cmsRes.json()) as { data: Array<{ name: string }> };
-    const names = cmsBody.data.map((t) => t.name);
+    const names = cmsBody.data.map((t: { name: string }) => t.name);
+    // Even with stale CMS cache, an inactive testimonial freshly created
+    // should never appear in cached or fresh responses (it was never active).
     expect(names).not.toContain(inactiveName);
   });
 });

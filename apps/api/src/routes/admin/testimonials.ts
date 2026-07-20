@@ -8,6 +8,7 @@ import type { CreateTestimonialInput, UpdateTestimonialInput } from '@ahlipanggi
 import { success, created, notFound, serverError, successPaginated } from '../../lib/response.ts';
 import { buildPaginationMeta } from '../../lib/pagination.ts';
 import { omitUndefined } from '../../lib/update.ts';
+import { invalidateCollectionCache } from '../../lib/cache.ts';
 
 const router = new Hono();
 
@@ -80,6 +81,7 @@ router.post(
       .returning();
 
     if (!created_item) return serverError(c, 'Gagal membuat testimonial');
+    invalidateCollectionCache('cms_testimonials');
     return created(c, created_item, 'Testimonial berhasil dibuat');
   },
 );
@@ -111,6 +113,7 @@ router.patch(
       .where(eq(cmsTestimonials.id, id))
       .returning();
 
+    invalidateCollectionCache('cms_testimonials');
     return success(c, updated, 'Testimonial berhasil diperbarui');
   },
 );
@@ -126,6 +129,7 @@ router.delete('/:id', authMiddleware, requireRole('admin', 'super_admin'), async
   if (!item) return notFound(c, 'Testimonial tidak ditemukan');
 
   await db.update(cmsTestimonials).set({ deletedAt: new Date() }).where(eq(cmsTestimonials.id, id));
+  invalidateCollectionCache('cms_testimonials');
   return success(c, null, 'Testimonial berhasil dihapus');
 });
 

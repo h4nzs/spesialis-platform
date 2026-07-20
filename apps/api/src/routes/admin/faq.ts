@@ -8,6 +8,7 @@ import type { CreateFaqInput, UpdateFaqInput } from '@ahlipanggilan/validation';
 import { success, created, notFound, serverError, successPaginated } from '../../lib/response.ts';
 import { buildPaginationMeta } from '../../lib/pagination.ts';
 import { omitUndefined } from '../../lib/update.ts';
+import { invalidateCollectionCache } from '../../lib/cache.ts';
 
 const router = new Hono();
 
@@ -81,6 +82,7 @@ router.post(
       .returning();
 
     if (!created_item) return serverError(c, 'Gagal membuat FAQ');
+    invalidateCollectionCache('cms_faq');
     return created(c, created_item, 'FAQ berhasil dibuat');
   },
 );
@@ -107,6 +109,7 @@ router.patch(
       .where(eq(faq.id, id))
       .returning();
 
+    invalidateCollectionCache('cms_faq');
     return success(c, updated, 'FAQ berhasil diperbarui');
   },
 );
@@ -122,6 +125,7 @@ router.delete('/:id', authMiddleware, requireRole('admin', 'super_admin'), async
   if (!item) return notFound(c, 'FAQ tidak ditemukan');
 
   await db.update(faq).set({ deletedAt: new Date() }).where(eq(faq.id, id));
+  invalidateCollectionCache('cms_faq');
   return success(c, null, 'FAQ berhasil dihapus');
 });
 

@@ -64,8 +64,9 @@ export const cmsCache = new MemoryCache(60_000);
 /** Map CMS collection names to cache key prefixes */
 const COLLECTION_CACHE_PREFIXES: Record<string, string> = {
   cms_articles: 'cms:articles:',
-  cms_faq: 'cms:faq:',
+  cms_faq: 'cms:faq',
   cms_pages: 'cms:pages:',
+  cms_testimonials: 'cms:testimonials',
 };
 
 /**

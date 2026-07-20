@@ -56,6 +56,7 @@ const TABLE_NAMES = [
   'indexnowLogs',
   'coverageAreas',
   'serviceSuggestions',
+  'cmsTestimonials',
 ] as const;
 
 const RELATION_NAMES = [
@@ -103,6 +104,7 @@ const SOFT_DELETE_TABLES = new Set([
   'partnerPenalties',
   'faq',
   'corporateInquiries',
+  'cmsTestimonials',
 ]);
 
 // Tables with type-specific $type<>() calls
@@ -123,14 +125,14 @@ const TYPED_TABLES: Record<string, Record<string, string>> = {
 // ── Tests ────────────────────────────────────────────────────────────────────
 
 describe('schema exports', () => {
-  it('exports all 39 tables', () => {
+  it('exports all 40 tables', () => {
     for (const name of TABLE_NAMES) {
       expect(schema).toHaveProperty(name);
       expect(schema[name as keyof typeof schema]).toBeDefined();
     }
   });
 
-  it('exports only the expected 39 tables (no extra)', () => {
+  it('exports only the expected 40 tables (no extra)', () => {
     const allKeys = Object.keys(schema).filter((k) => !k.endsWith('Relations') && k !== 'default');
     expect(allKeys.length).toBe(TABLE_NAMES.length);
     for (const key of allKeys) {
