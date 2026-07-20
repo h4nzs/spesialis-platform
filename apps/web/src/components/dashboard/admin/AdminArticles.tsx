@@ -4,6 +4,7 @@ import {
   Button,
   Table,
   Badge,
+  Pagination,
   EmptyState,
   TableSkeleton,
   CSVExportButton,
@@ -35,10 +36,13 @@ interface ArticleItem {
   updatedAt: string;
 }
 
+const PAGE_SIZE = 20;
+
 export function AdminArticles() {
   const api = useMemo(() => createBrowserClient(), []);
   const [articles, setArticles] = useState<ArticleItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [page, setPage] = useState(1);
 
   const loadData = useCallback(async () => {
     try {
@@ -69,6 +73,7 @@ export function AdminArticles() {
     if (!confirm(`Hapus artikel "${item.title}"?`)) return;
     try {
       await api.delete(`/api/v1/admin/articles/${item.id}`);
+      setPage(1);
       await loadData();
     } catch {
       // silent
@@ -160,11 +165,19 @@ export function AdminArticles() {
       </div>
 
       <Table
-        data={articles}
+        data={articles.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)}
         columns={columns}
         keyExtractor={(item) => item.id}
         emptyState={<EmptyState title="Belum ada artikel" />}
       />
+
+      {articles.length > PAGE_SIZE && (
+        <Pagination
+          page={page}
+          totalPages={Math.ceil(articles.length / PAGE_SIZE)}
+          onPageChange={setPage}
+        />
+      )}
     </div>
   );
 }

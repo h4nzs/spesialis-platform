@@ -8,6 +8,7 @@ import {
   Modal,
   Table,
   Badge,
+  Pagination,
   EmptyState,
   CSVExportButton,
   TableSkeleton,
@@ -51,6 +52,8 @@ interface ServiceForm {
   displayOrder: string;
 }
 
+const PAGE_SIZE = 20;
+
 const EMPTY_FORM: ServiceForm = {
   categoryId: '',
   name: '',
@@ -71,6 +74,7 @@ export function AdminServices() {
   const [services, setServices] = useState<ServiceItem[]>([]);
   const [categories, setCategories] = useState<CategoryItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [page, setPage] = useState(1);
   const [showModal, setShowModal] = useState(false);
   const [editing, setEditing] = useState<string | null>(null);
   const [form, setForm] = useState<ServiceForm>(EMPTY_FORM);
@@ -197,6 +201,7 @@ export function AdminServices() {
         await api.post('/api/v1/admin/services', { body });
       }
       setShowModal(false);
+      setPage(1);
       await loadData();
     } catch (err) {
       const { fieldErrors: fe, generalError } = parseApiError(err, 'Gagal menyimpan layanan');
@@ -212,6 +217,7 @@ export function AdminServices() {
       await api.patch(`/api/v1/admin/services/${item.id}`, {
         body: { isActive: !item.isActive },
       });
+      setPage(1);
       await loadData();
     } catch {
       // silent
@@ -324,11 +330,19 @@ export function AdminServices() {
       </div>
 
       <Table
-        data={services}
+        data={services.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)}
         columns={columns}
         keyExtractor={(item) => item.id}
         emptyState={<EmptyState title="Belum ada layanan" />}
       />
+
+      {services.length > PAGE_SIZE && (
+        <Pagination
+          page={page}
+          totalPages={Math.ceil(services.length / PAGE_SIZE)}
+          onPageChange={setPage}
+        />
+      )}
 
       <Modal
         open={showModal}

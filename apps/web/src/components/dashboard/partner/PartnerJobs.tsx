@@ -1,6 +1,15 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { createBrowserClient, formatDate, getStatusLabel } from '@ahlipanggilan/shared';
-import { Badge, Card, Button, Modal, Input, EmptyState, Skeleton } from '@ahlipanggilan/ui';
+import {
+  Badge,
+  Card,
+  Button,
+  Modal,
+  Input,
+  Pagination,
+  EmptyState,
+  Skeleton,
+} from '@ahlipanggilan/ui';
 import type { OrderStatus } from '@ahlipanggilan/types';
 
 interface JobItem {
@@ -14,10 +23,13 @@ interface JobItem {
   bookingNumber: string;
 }
 
+const PAGE_SIZE = 10;
+
 export function PartnerJobs() {
   const api = useMemo(() => createBrowserClient(), []);
   const [jobs, setJobs] = useState<JobItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [page, setPage] = useState(1);
   const [rejectTarget, setRejectTarget] = useState<string | null>(null);
   const [rejectReason, setRejectReason] = useState('');
 
@@ -40,6 +52,7 @@ export function PartnerJobs() {
   async function handleAccept(orderId: string) {
     try {
       await api.post(`/api/v1/bookings/${orderId}/accept`);
+      setPage(1);
       await loadJobs();
     } catch {
       // silent
@@ -51,6 +64,7 @@ export function PartnerJobs() {
       await api.post(`/api/v1/bookings/${orderId}/reject`, { body: { reason } });
       setRejectTarget(null);
       setRejectReason('');
+      setPage(1);
       await loadJobs();
     } catch {
       // silent
@@ -60,6 +74,7 @@ export function PartnerJobs() {
   async function handleStart(orderId: string) {
     try {
       await api.post(`/api/v1/bookings/${orderId}/start`);
+      setPage(1);
       await loadJobs();
     } catch {
       // silent
@@ -69,6 +84,7 @@ export function PartnerJobs() {
   async function handleOnTheWay(orderId: string) {
     try {
       await api.post(`/api/v1/bookings/${orderId}/on-the-way`);
+      setPage(1);
       await loadJobs();
     } catch {
       // silent
@@ -78,6 +94,7 @@ export function PartnerJobs() {
   async function handleComplete(orderId: string) {
     try {
       await api.post(`/api/v1/bookings/${orderId}/complete`);
+      setPage(1);
       await loadJobs();
     } catch {
       // silent
@@ -113,9 +130,11 @@ export function PartnerJobs() {
     return <EmptyState title="Belum ada pekerjaan" />;
   }
 
+  const paginatedJobs = jobs.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+
   return (
     <div className="space-y-4">
-      {jobs.map((job) => (
+      {paginatedJobs.map((job) => (
         <Card key={job.id}>
           <div className="flex items-start justify-between">
             <div>
@@ -157,6 +176,14 @@ export function PartnerJobs() {
           </div>
         </Card>
       ))}
+
+      {jobs.length > PAGE_SIZE && (
+        <Pagination
+          page={page}
+          totalPages={Math.ceil(jobs.length / PAGE_SIZE)}
+          onPageChange={setPage}
+        />
+      )}
 
       <Modal
         open={rejectTarget !== null}

@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { createBrowserClient } from '@ahlipanggilan/shared';
-import { Button, Table, Badge, EmptyState, TableSkeleton } from '@ahlipanggilan/ui';
+import { Button, Table, Badge, Pagination, EmptyState, TableSkeleton } from '@ahlipanggilan/ui';
 import type { Column } from '@ahlipanggilan/ui';
 
 interface PageItem {
@@ -12,10 +12,13 @@ interface PageItem {
   updatedAt: string;
 }
 
+const PAGE_SIZE = 50;
+
 export function AdminPages() {
   const api = useMemo(() => createBrowserClient(), []);
   const [items, setItems] = useState<PageItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [page, setPage] = useState(1);
 
   const loadData = useCallback(async () => {
     try {
@@ -46,6 +49,7 @@ export function AdminPages() {
     if (!confirm(`Hapus halaman "${item.title}"?`)) return;
     try {
       await api.delete(`/api/v1/admin/cms-pages/${item.id}`);
+      setPage(1);
       await loadData();
     } catch {
       // silent
@@ -109,7 +113,7 @@ export function AdminPages() {
       </div>
 
       <Table
-        data={items}
+        data={items.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)}
         columns={columns}
         keyExtractor={(item) => item.id}
         emptyState={
@@ -119,6 +123,14 @@ export function AdminPages() {
           />
         }
       />
+
+      {items.length > PAGE_SIZE && (
+        <Pagination
+          page={page}
+          totalPages={Math.ceil(items.length / PAGE_SIZE)}
+          onPageChange={setPage}
+        />
+      )}
     </div>
   );
 }

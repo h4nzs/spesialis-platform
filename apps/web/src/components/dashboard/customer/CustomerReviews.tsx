@@ -11,6 +11,7 @@ import {
   Select,
   Modal,
   Table,
+  Pagination,
   EmptyState,
   TableSkeleton,
   CSVExportButton,
@@ -42,10 +43,13 @@ const RATING_OPTIONS = [
   { value: '1', label: '1 - Buruk' },
 ];
 
+const PAGE_SIZE = 20;
+
 export function CustomerReviews() {
   const api = useMemo(() => createBrowserClient(), []);
   const [reviews, setReviews] = useState<ReviewItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [page, setPage] = useState(1);
   const [showModal, setShowModal] = useState(false);
   const [availableOrders, setAvailableOrders] = useState<OrderItem[]>([]);
   const [orderId, setOrderId] = useState('');
@@ -103,6 +107,7 @@ export function CustomerReviews() {
         body: { orderId, rating: Number(rating), review: comment || undefined },
       });
       setShowModal(false);
+      setPage(1);
       await loadReviews();
     } catch (err: unknown) {
       const result = parseApiError(err, 'Gagal mengirim ulasan');
@@ -152,10 +157,18 @@ export function CustomerReviews() {
 
       <Table
         columns={columns}
-        data={reviews}
+        data={reviews.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)}
         keyExtractor={(r) => r.id}
         emptyState={<EmptyState title="Belum ada ulasan" />}
       />
+
+      {reviews.length > PAGE_SIZE && (
+        <Pagination
+          page={page}
+          totalPages={Math.ceil(reviews.length / PAGE_SIZE)}
+          onPageChange={setPage}
+        />
+      )}
 
       <Modal open={showModal} onClose={() => setShowModal(false)} title="Tulis Ulasan">
         <form onSubmit={handleSubmit} className="space-y-4">

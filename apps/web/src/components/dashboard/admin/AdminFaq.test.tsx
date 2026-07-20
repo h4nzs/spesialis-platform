@@ -130,24 +130,6 @@ vi.mock('@ahlipanggilan/ui', () => ({
   ),
   TableSkeleton: () => <div data-testid="table-skeleton" />,
   Spinner: () => <div data-testid="spinner" />,
-  RichTextEditor: ({
-    label,
-    value,
-    onChange,
-  }: {
-    label?: string;
-    value?: string;
-    onChange?: (html: string) => void;
-  }) => (
-    <div>
-      {label && <label>{label}</label>}
-      <textarea
-        data-testid={`rte-${label}`}
-        value={value ?? ''}
-        onChange={(e) => onChange?.(e.target.value)}
-      />
-    </div>
-  ),
   Card: ({ children, ..._props }: { children: React.ReactNode; [key: string]: unknown }) => (
     <div>{children}</div>
   ),

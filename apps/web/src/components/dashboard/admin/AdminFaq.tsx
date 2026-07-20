@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useMemo, Suspense } from 'react';
 import { createBrowserClient } from '@ahlipanggilan/shared';
-import { Button, Table, Badge, EmptyState, TableSkeleton } from '@ahlipanggilan/ui';
+import { Button, Table, Badge, Pagination, EmptyState, TableSkeleton } from '@ahlipanggilan/ui';
 import { LazyFallback } from '../../ui/LazyFallback';
 import type { Column } from '@ahlipanggilan/ui';
 
@@ -18,10 +18,13 @@ interface FaqItem {
 // ── Lazy-loaded form modal ──────────────────────────────────────
 const FaqFormModal = React.lazy(() => import('./FaqFormModal'));
 
+const PAGE_SIZE = 20;
+
 export function AdminFaq() {
   const api = useMemo(() => createBrowserClient(), []);
   const [items, setItems] = useState<FaqItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [page, setPage] = useState(1);
   const [showModal, setShowModal] = useState(false);
   const [editing, setEditing] = useState<string | null>(null);
 
@@ -56,6 +59,7 @@ export function AdminFaq() {
     if (!confirm(`Hapus FAQ "${item.question}"?`)) return;
     try {
       await api.delete(`/api/v1/admin/faq/${item.id}`);
+      setPage(1);
       await loadData();
     } catch {
       // silent
@@ -129,7 +133,7 @@ export function AdminFaq() {
       </div>
 
       <Table
-        data={items}
+        data={items.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)}
         columns={columns}
         keyExtractor={(item) => item.id}
         emptyState={
@@ -140,13 +144,24 @@ export function AdminFaq() {
         }
       />
 
+      {items.length > PAGE_SIZE && (
+        <Pagination
+          page={page}
+          totalPages={Math.ceil(items.length / PAGE_SIZE)}
+          onPageChange={setPage}
+        />
+      )}
+
       {/* ── FAQ Form Modal (lazy-loaded) ───────────────────── */}
       <Suspense fallback={<LazyFallback />}>
         <FaqFormModal
           open={showModal}
           onClose={() => setShowModal(false)}
           editingId={editing}
-          onSaved={loadData}
+          onSaved={() => {
+            setPage(1);
+            loadData();
+          }}
         />
       </Suspense>
     </div>

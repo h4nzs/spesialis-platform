@@ -6,6 +6,7 @@ import {
   Select,
   Table,
   Badge,
+  Pagination,
   Modal,
   EmptyState,
   CSVExportButton,
@@ -85,10 +86,13 @@ function decodeJwtFromCookie(): { sub: string; email: string; role: string } | n
   }
 }
 
+const PAGE_SIZE = 20;
+
 export function AdminUsers() {
   const api = useMemo(() => createBrowserClient(), []);
   const [users, setUsers] = useState<UserItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
   const [roleFilter, setRoleFilter] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
@@ -120,6 +124,7 @@ export function AdminUsers() {
 
   const loadData = useCallback(
     async (searchTerm?: string) => {
+      setPage(1);
       setLoading(true);
       try {
         const params: Record<string, string | number> = { limit: 100 };
@@ -144,6 +149,7 @@ export function AdminUsers() {
 
   function handleSearch(e: React.SyntheticEvent<HTMLFormElement>) {
     e.preventDefault();
+    setPage(1);
     loadData(search);
   }
 
@@ -170,6 +176,7 @@ export function AdminUsers() {
         body: { status: newStatus },
       });
       setShowStatusModal(false);
+      setPage(1);
       await loadData();
     } catch {
       // silent
@@ -189,6 +196,7 @@ export function AdminUsers() {
         body: { role: newRole },
       });
       setShowRoleModal(false);
+      setPage(1);
       await loadData();
     } catch {
       // silent
@@ -294,6 +302,7 @@ export function AdminUsers() {
     try {
       await api.post('/api/v1/admin/users', { body: createForm });
       setShowCreateModal(false);
+      setPage(1);
       await loadData();
     } catch (err: unknown) {
       const msg =
@@ -404,11 +413,19 @@ export function AdminUsers() {
             </div>
           )}
           <Table
-            data={users}
+            data={users.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)}
             columns={columns}
             keyExtractor={(item) => item.id}
             emptyState={<EmptyState title="Tidak ada user ditemukan" />}
           />
+
+          {users.length > PAGE_SIZE && (
+            <Pagination
+              page={page}
+              totalPages={Math.ceil(users.length / PAGE_SIZE)}
+              onPageChange={setPage}
+            />
+          )}
         </>
       )}
 

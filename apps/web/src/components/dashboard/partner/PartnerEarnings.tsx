@@ -1,6 +1,14 @@
 import { useState, useEffect, useMemo } from 'react';
 import { createBrowserClient, formatDate, getStatusLabel } from '@ahlipanggilan/shared';
-import { Card, Table, Badge, EmptyState, Skeleton, CSVExportButton } from '@ahlipanggilan/ui';
+import {
+  Card,
+  Table,
+  Badge,
+  Pagination,
+  EmptyState,
+  Skeleton,
+  CSVExportButton,
+} from '@ahlipanggilan/ui';
 import type { OrderStatus } from '@ahlipanggilan/types';
 
 interface JobItem {
@@ -13,6 +21,8 @@ interface JobItem {
   bookingNumber: string;
 }
 
+const PAGE_SIZE = 10;
+
 export function PartnerEarnings() {
   const api = useMemo(() => createBrowserClient(), []);
   const [profile, setProfile] = useState<{
@@ -21,6 +31,7 @@ export function PartnerEarnings() {
   } | null>(null);
   const [jobs, setJobs] = useState<JobItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [page, setPage] = useState(1);
 
   useEffect(() => {
     Promise.all([
@@ -120,10 +131,17 @@ export function PartnerEarnings() {
                   render: (row: JobItem) => (row.completedAt ? formatDate(row.completedAt) : '-'),
                 },
               ]}
-              data={completedJobs}
+              data={completedJobs.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)}
               keyExtractor={(j) => j.id}
               emptyState={<EmptyState title="Belum ada riwayat pekerjaan" />}
             />
+            {completedJobs.length > PAGE_SIZE && (
+              <Pagination
+                page={page}
+                totalPages={Math.ceil(completedJobs.length / PAGE_SIZE)}
+                onPageChange={setPage}
+              />
+            )}
           </div>
         </div>
       )}

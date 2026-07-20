@@ -365,6 +365,8 @@ export function RichTextEditor({
   const errorId = error ? `${inputId}-error` : undefined;
 
   // ── Empty state when there's no editor ─────────────────────────
+  // ⚠️ TipTap editor not yet initialized — prevent unnecessary re-render
+  // Return a minimal placeholder to avoid layout shift.
   if (!editor) {
     return (
       <div className="flex flex-col gap-1.5">

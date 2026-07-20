@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { createBrowserClient, parseApiError } from '@ahlipanggilan/shared';
-import { Button, Input, Select, Modal, RichTextEditor } from '@ahlipanggilan/ui';
+import { Button, Input, Select, Modal } from '@ahlipanggilan/ui';
+import { RichTextEditor } from '@ahlipanggilan/ui/editor';
 
 // ── Types ────────────────────────────────────────────────────────
 

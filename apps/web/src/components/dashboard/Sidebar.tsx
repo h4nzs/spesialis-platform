@@ -223,7 +223,7 @@ export function Sidebar({ role, currentPath }: { role: UserRole; currentPath?: s
       {/* Mobile hamburger */}
       <button
         type="button"
-        className="fixed left-4 top-4 z-50 flex h-10 w-10 items-center justify-center rounded-lg border border-border-default bg-bg-surface text-text-primary shadow-xs sm:hidden"
+        className="fixed left-4 top-4 z-[60] flex h-10 w-10 items-center justify-center rounded-lg border border-border-default bg-bg-sidebar text-text-primary shadow-xs sm:hidden"
         onClick={() => setOpen((v) => !v)}
         aria-label="Buka menu navigasi"
       >
@@ -233,7 +233,7 @@ export function Sidebar({ role, currentPath }: { role: UserRole; currentPath?: s
       {/* Mobile overlay */}
       {open && (
         <div
-          className="fixed inset-0 z-40 bg-black/30 sm:hidden"
+          className="fixed inset-0 z-[55] bg-black/30 sm:hidden"
           onClick={() => setOpen(false)}
           aria-hidden="true"
         />
@@ -241,7 +241,7 @@ export function Sidebar({ role, currentPath }: { role: UserRole; currentPath?: s
 
       {/* Sidebar navigation */}
       <nav
-        className={`fixed left-0 top-0 z-40 flex h-full w-60 flex-col border-r border-border-default bg-bg-sidebar shadow-lg transition-transform duration-200 ease-out sm:static sm:shadow-none ${
+        className={`fixed left-0 top-0 z-[55] flex h-full w-60 flex-col border-r border-border-default bg-bg-sidebar shadow-lg transition-transform duration-200 ease-out sm:sticky sm:top-20 sm:h-[calc(100vh-5rem)] sm:max-h-[calc(100vh-5rem)] sm:shrink-0 sm:rounded-xl sm:border sm:shadow-sm sm:z-0 ${
           open ? 'translate-x-0' : '-translate-x-full sm:translate-x-0'
         }`}
       >

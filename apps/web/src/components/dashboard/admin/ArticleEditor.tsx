@@ -5,13 +5,13 @@ import {
   Input,
   Select,
   Card,
-  RichTextEditor,
   MediaBrowser,
   TagsInput,
   SEOEditor,
   SeoAnalyzerPanel,
   SchemaBuilder,
 } from '@ahlipanggilan/ui';
+import { RichTextEditor } from '@ahlipanggilan/ui/editor';
 import type { SeoData } from '@ahlipanggilan/ui';
 import { renderMarkdown } from '../../../lib/markdown.ts';
 

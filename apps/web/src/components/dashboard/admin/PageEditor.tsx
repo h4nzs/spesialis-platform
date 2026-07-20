@@ -1,14 +1,7 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { createBrowserClient, parseApiError } from '@ahlipanggilan/shared';
-import {
-  Button,
-  Input,
-  Select,
-  Card,
-  RichTextEditor,
-  SEOEditor,
-  SeoAnalyzerPanel,
-} from '@ahlipanggilan/ui';
+import { Button, Input, Select, Card, SEOEditor, SeoAnalyzerPanel } from '@ahlipanggilan/ui';
+import { RichTextEditor } from '@ahlipanggilan/ui/editor';
 import type { SeoData } from '@ahlipanggilan/ui';
 
 // ── Types ────────────────────────────────────────────────────────

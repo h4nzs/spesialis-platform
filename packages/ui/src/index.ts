@@ -57,9 +57,6 @@ export { PhoneInput, type PhoneInputProps } from './components/PhoneInput.tsx';
 export { NumberInput, type NumberInputProps } from './components/NumberInput.tsx';
 export { TimePicker, type TimePickerProps } from './components/TimePicker.tsx';
 
-// ─── Rich Text Editor ───────────────────────────────────────────
-export { RichTextEditor, type RichTextEditorProps } from './components/RichTextEditor.tsx';
-
 // ─── Media Browser ────────────────────────────────────────────
 export { MediaBrowser, type MediaBrowserProps } from './components/MediaBrowser.tsx';
 

@@ -8,6 +8,7 @@ import {
   Modal,
   Table,
   Badge,
+  Pagination,
   EmptyState,
   TableSkeleton,
   MediaBrowser,
@@ -66,10 +67,13 @@ const ICON_OPTIONS = [
   { value: 'more-horizontal', label: '📋 Lainnya' },
 ];
 
+const PAGE_SIZE = 50;
+
 export function AdminServiceCategories() {
   const api = useMemo(() => createBrowserClient(), []);
   const [items, setItems] = useState<CategoryItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [page, setPage] = useState(1);
   const [showModal, setShowModal] = useState(false);
   const [editing, setEditing] = useState<string | null>(null);
   const [form, setForm] = useState<CategoryForm>(EMPTY_FORM);
@@ -178,6 +182,7 @@ export function AdminServiceCategories() {
         await api.post('/api/v1/admin/service-categories', { body });
       }
       setShowModal(false);
+      setPage(1);
       await loadData();
     } catch (err) {
       const { fieldErrors: fe, generalError } = parseApiError(err, 'Gagal menyimpan kategori');
@@ -202,6 +207,7 @@ export function AdminServiceCategories() {
         body: { isActive: true },
       });
     }
+    setPage(1);
     await loadData();
   }
 
@@ -291,7 +297,7 @@ export function AdminServiceCategories() {
       </div>
 
       <Table
-        data={items}
+        data={items.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)}
         columns={columns}
         keyExtractor={(item) => item.id}
         emptyState={
@@ -301,6 +307,14 @@ export function AdminServiceCategories() {
           />
         }
       />
+
+      {items.length > PAGE_SIZE && (
+        <Pagination
+          page={page}
+          totalPages={Math.ceil(items.length / PAGE_SIZE)}
+          onPageChange={setPage}
+        />
+      )}
 
       <Modal
         open={showModal}

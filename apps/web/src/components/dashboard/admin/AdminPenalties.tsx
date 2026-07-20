@@ -8,6 +8,7 @@ import {
   Modal,
   Table,
   Badge,
+  Pagination,
   EmptyState,
   TableSkeleton,
   CSVExportButton,
@@ -61,10 +62,13 @@ function formatDate(dateStr: string | Date): string {
   });
 }
 
+const PAGE_SIZE = 20;
+
 export function AdminPenalties() {
   const api = useMemo(() => createBrowserClient(), []);
   const [penalties, setPenalties] = useState<PenaltyItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [page, setPage] = useState(1);
 
   // Partner search
   const [partnerSearch, setPartnerSearch] = useState('');
@@ -275,6 +279,7 @@ export function AdminPenalties() {
 
       await api.post('/api/v1/admin/penalties', { body });
       setShowImpose(false);
+      setPage(1);
       await loadPenalties();
     } catch {
       setImposeError('Gagal menyimpan penalty');
@@ -301,6 +306,7 @@ export function AdminPenalties() {
       setShowStatus(false);
       setSelectedPenalty(null);
       setStatusAction(null);
+      setPage(1);
       await loadPenalties();
     } catch {
       // silent
@@ -451,10 +457,18 @@ export function AdminPenalties() {
 
       <Table
         columns={columns}
-        data={penalties}
+        data={penalties.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)}
         keyExtractor={(p) => p.id}
         emptyState={<EmptyState title="Belum ada penalty" />}
       />
+
+      {penalties.length > PAGE_SIZE && (
+        <Pagination
+          page={page}
+          totalPages={Math.ceil(penalties.length / PAGE_SIZE)}
+          onPageChange={setPage}
+        />
+      )}
 
       {/* Impose Penalty Modal */}
       <Modal open={showImpose} onClose={() => setShowImpose(false)} title="Tambah Penalty">

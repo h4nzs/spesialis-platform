@@ -104,13 +104,6 @@ vi.mock('@ahlipanggilan/ui', () => ({
       </select>
     </div>
   ),
-  RichTextEditor: ({ value, onChange }: { value?: string; onChange?: (html: string) => void }) => (
-    <textarea
-      data-testid="richtexteditor"
-      value={value ?? ''}
-      onChange={(e) => onChange?.(e.target.value)}
-    />
-  ),
   TableSkeleton: () => <div data-testid="table-skeleton" />,
   Card: ({ children, ..._props }: { children: React.ReactNode; [key: string]: unknown }) => (
     <div>{children}</div>
@@ -136,6 +129,16 @@ vi.mock('@ahlipanggilan/ui', () => ({
   Pagination: ({ ..._props }: { [key: string]: unknown }) => <div />,
   ConfirmDialog: ({ ..._props }: { [key: string]: unknown }) => null,
   Spinner: () => <div aria-hidden="true" />,
+}));
+
+vi.mock('@ahlipanggilan/ui/editor', () => ({
+  RichTextEditor: ({ value, onChange }: { value?: string; onChange?: (html: string) => void }) => (
+    <textarea
+      data-testid="richtexteditor"
+      value={value ?? ''}
+      onChange={(e) => onChange?.(e.target.value)}
+    />
+  ),
 }));
 
 const onClose = vi.fn();
