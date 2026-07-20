@@ -241,7 +241,7 @@ services:
     expose:
       - '8000'
     environment:
-      PLAUSIBLE_BASE_URL: https://${PLAUSIBLE_DOMAIN:-stats.ahlipanggilan.id}
+      BASE_URL: https://${PLAUSIBLE_DOMAIN:-stats.ahlipanggilan.id}
       DATABASE_URL: postgres://plausible:${PLAUSIBLE_DB_PASSWORD:-plausible}@plausible-db:5432/plausible
       CLICKHOUSE_DATABASE_URL: http://plausible-clickhouse:8123
       SECRET_KEY_BASE: ${PLAUSIBLE_SECRET_KEY}
