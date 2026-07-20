@@ -243,7 +243,7 @@ services:
     environment:
       BASE_URL: https://${PLAUSIBLE_DOMAIN:-stats.ahlipanggilan.id}
       DATABASE_URL: postgres://plausible:${PLAUSIBLE_DB_PASSWORD:-plausible}@plausible-db:5432/plausible
-      CLICKHOUSE_DATABASE_URL: http://plausible-clickhouse:8123
+      CLICKHOUSE_DATABASE_URL: http://plausible-clickhouse:8123/plausible
       SECRET_KEY_BASE: ${PLAUSIBLE_SECRET_KEY}
       DISABLE_AUTH: 'false'
       DISABLE_REGISTRATION: 'true'
