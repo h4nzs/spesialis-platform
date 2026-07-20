@@ -302,7 +302,9 @@ export function ServiceExplorer() {
       <div className="container-page pt-2 pb-1 md:pt-3 md:pb-1.5">
         <div className="rounded-xl border border-border-default bg-white p-3 shadow-sm md:p-4">
           {/* ── Category Row — 2 baris (grid responsif) ──────────── */}
-          <div className="grid grid-cols-3 gap-x-3 gap-y-4 sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-9 md:gap-x-5 md:gap-y-5 justify-items-center">
+          {/* ⚠️  CLS guard: 12rem ≈ 2 rows of items (2 × ~88px + 16px gap)
+               prevents push-down when client data fills the SSR-empty grid. */}
+          <div className="grid grid-cols-3 gap-x-3 gap-y-4 sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-9 md:gap-x-5 md:gap-y-5 justify-items-center min-h-[12rem]">
             {/* ── Kategori biasa (kecuali Layanan Lainnya) ───────── */}
             {categories
               .filter((cat) => cat.icon !== 'more-horizontal')

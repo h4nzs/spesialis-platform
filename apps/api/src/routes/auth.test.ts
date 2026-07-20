@@ -39,6 +39,7 @@ const { mockDb, mockAuth, mockEmail, mockAudit, em } = vi.hoisted(() => {
     generateRefreshToken: vi.fn().mockReturnValue('mock-refresh-token'),
     hashToken: vi.fn().mockReturnValue('mock-hash-token'),
     getRefreshTokenExpiry: vi.fn().mockReturnValue(new Date(Date.now() + 7 * 86400000)),
+    getUserDisplayName: vi.fn().mockResolvedValue(undefined),
   };
   const mE = {
     sendPasswordResetEmail: vi.fn().mockResolvedValue(undefined),

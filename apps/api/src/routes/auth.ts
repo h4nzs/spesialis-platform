@@ -7,6 +7,7 @@ import {
   generateRefreshToken,
   getRefreshTokenExpiry,
   hashToken,
+  getUserDisplayName,
 } from '../lib/auth.ts';
 import { db, users, customerProfiles, refreshTokens, passwordResets } from '../lib/db.ts';
 import { authMiddleware } from '../middleware/auth.ts';
@@ -86,7 +87,12 @@ router.post('/register', rateLimit(10, 60_000), validateBody(registerSchema), as
       fullName,
     });
 
-    const jwtToken = await signAccessToken(createdUser.id, createdUser.email, createdUser.role);
+    const jwtToken = await signAccessToken(
+      createdUser.id,
+      createdUser.email,
+      createdUser.role,
+      fullName,
+    );
 
     const vt = generateRefreshToken();
     await tx.insert(passwordResets).values({
@@ -153,7 +159,7 @@ router.post(
       })
       .where(eq(customerProfiles.id, guestProfile.id));
 
-    const token = await signAccessToken(user.id, user.email, user.role);
+    const token = await signAccessToken(user.id, user.email, user.role, fullName);
 
     setAuthCookies(c, token);
     return created(c, { user, token }, 'Akun berhasil dibuat');
@@ -188,6 +194,8 @@ router.post('/login', rateLimit(10, 60_000), validateBody(loginSchema), async (c
     return unauthorized(c, 'Email atau password salah');
   }
 
+  const displayName = await getUserDisplayName(user.id);
+
   const refreshToken = generateRefreshToken();
   await db.insert(refreshTokens).values({
     userId: user.id,
@@ -195,7 +203,7 @@ router.post('/login', rateLimit(10, 60_000), validateBody(loginSchema), async (c
     expiresAt: getRefreshTokenExpiry(),
   });
 
-  const token = await signAccessToken(user.id, user.email, user.role);
+  const token = await signAccessToken(user.id, user.email, user.role, displayName);
 
   setAuthCookies(c, token, refreshToken);
   return success(c, {
@@ -235,6 +243,8 @@ router.post('/refresh', rateLimit(20, 60_000), validateBody(refreshTokenSchema),
     return unauthorized(c, 'User not found');
   }
 
+  const displayName = await getUserDisplayName(user.id);
+
   await db.update(refreshTokens).set({ revoked: true }).where(eq(refreshTokens.id, stored.id));
 
   const newRefreshToken = generateRefreshToken();
@@ -244,7 +254,7 @@ router.post('/refresh', rateLimit(20, 60_000), validateBody(refreshTokenSchema),
     expiresAt: getRefreshTokenExpiry(),
   });
 
-  const token = await signAccessToken(user.id, user.email, user.role);
+  const token = await signAccessToken(user.id, user.email, user.role, displayName);
 
   setAuthCookies(c, token, newRefreshToken);
   return success(c, { token, refreshToken: newRefreshToken });
@@ -412,7 +422,9 @@ router.get('/me', authMiddleware, async (c) => {
     return error(c, 'USER_NOT_FOUND', 'User tidak ditemukan', 404);
   }
 
-  return success(c, { user });
+  const fullName = (await getUserDisplayName(user.id)) ?? null;
+
+  return success(c, { user: { ...user, fullName } });
 });
 
 router.patch('/profile', authMiddleware, validateBody(updateProfileSchema), async (c) => {

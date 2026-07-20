@@ -5,6 +5,7 @@ export interface AuthLocals {
   userId: string;
   userEmail: string;
   userRole: string;
+  userName?: string;
 }
 
 declare global {
@@ -58,6 +59,7 @@ export const onRequest = defineMiddleware(async ({ locals, request }, next) => {
     userId: payload.sub,
     userEmail: payload.email,
     userRole: payload.role,
+    userName: payload.name,
   };
 
   const role = locals.auth.userRole;

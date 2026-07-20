@@ -1,6 +1,8 @@
 import { sign, verify } from 'hono/jwt';
 import { argon2id } from 'hash-wasm';
 import { randomUUID, createHash } from 'node:crypto';
+import { eq } from 'drizzle-orm';
+import { db, users, customerProfiles, partnerProfiles } from './db.ts';
 import type { UserRole } from '@ahlipanggilan/types';
 
 const JWT_SECRET: string =
@@ -45,12 +47,18 @@ export async function verifyPassword(hash: string, password: string): Promise<bo
   }
 }
 
-export function signAccessToken(userId: string, email: string, role: UserRole): Promise<string> {
+export function signAccessToken(
+  userId: string,
+  email: string,
+  role: UserRole,
+  name?: string,
+): Promise<string> {
   return sign(
     {
       sub: userId,
       email,
       role,
+      ...(name ? { name } : {}),
       iat: Math.floor(Date.now() / 1000),
       exp: Math.floor(Date.now() / 1000) + 15 * 60,
     },
@@ -77,4 +85,19 @@ export function hashToken(token: string): string {
 
 export function getRefreshTokenExpiry(): Date {
   return new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+}
+
+export async function getUserDisplayName(userId: string): Promise<string | undefined> {
+  const [profile] = await db
+    .select({
+      customerName: customerProfiles.fullName,
+      partnerName: partnerProfiles.fullName,
+    })
+    .from(users)
+    .leftJoin(customerProfiles, eq(customerProfiles.userId, users.id))
+    .leftJoin(partnerProfiles, eq(partnerProfiles.userId, users.id))
+    .where(eq(users.id, userId))
+    .limit(1);
+
+  return profile?.customerName ?? profile?.partnerName ?? undefined;
 }

@@ -198,7 +198,17 @@ function isNavItem(entry: NavEntry): entry is NavItem {
   return 'href' in entry;
 }
 
-export function Sidebar({ role, currentPath }: { role: UserRole; currentPath?: string }) {
+export function Sidebar({
+  role,
+  currentPath,
+  userName,
+  userEmail,
+}: {
+  role: UserRole;
+  currentPath?: string;
+  userName?: string;
+  userEmail?: string;
+}) {
   const [open, setOpen] = useState(false);
   const [sectionsOpen, setSectionsOpen] = useState<Record<string, boolean>>({
     seo: true,
@@ -251,7 +261,9 @@ export function Sidebar({ role, currentPath }: { role: UserRole; currentPath?: s
             S
           </div>
           <div className="min-w-0">
-            <p className="truncate text-body-sm font-semibold text-text-primary">Ahli Panggilan</p>
+            <p className="truncate text-body-sm font-semibold text-text-primary">
+              {userName ?? userEmail ?? 'Ahli Panggilan'}
+            </p>
             <p className="text-caption capitalize text-text-muted">{role}</p>
           </div>
         </div>
