@@ -15,7 +15,8 @@
     "db:generate": "drizzle-kit generate",
     "db:push": "drizzle-kit push",
     "db:migrate": "drizzle-kit migrate",
-    "db:seed-pages": "tsx src/seed-cms-pages.ts"
+    "db:seed-pages": "tsx src/seed-cms-pages.ts",
+    "db:seed-testimonials": "tsx src/seed-cms-testimonials.ts"
   },
   "dependencies": {
     "@ahlipanggilan/types": "workspace:*",

@@ -1,6 +1,6 @@
 import { Hono } from 'hono';
 import { eq, and, desc, asc, isNull } from 'drizzle-orm';
-import { db, articles, articleCategories, faq, cmsPages } from '../lib/db.ts';
+import { db, articles, articleCategories, faq, cmsPages, cmsTestimonials } from '../lib/db.ts';
 import { success } from '../lib/response.ts';
 import { cmsCache } from '../lib/cache.ts';
 
@@ -111,6 +111,33 @@ cmsRouter.get('/articles/:slug', async (c) => {
     return success(c, item ?? null);
   } catch {
     return success(c, null);
+  }
+});
+
+cmsRouter.get('/testimonials', async (c) => {
+  const cacheKey = 'cms:testimonials';
+  const cached = cmsCache.get(cacheKey);
+  if (cached.hit) return success(c, cached.data);
+
+  try {
+    const items = await db
+      .select({
+        id: cmsTestimonials.id,
+        name: cmsTestimonials.name,
+        location: cmsTestimonials.location,
+        role: cmsTestimonials.role,
+        quote: cmsTestimonials.quote,
+        rating: cmsTestimonials.rating,
+        avatar: cmsTestimonials.avatar,
+      })
+      .from(cmsTestimonials)
+      .where(eq(cmsTestimonials.isActive, 'true'))
+      .orderBy(asc(cmsTestimonials.displayOrder));
+
+    cmsCache.set(cacheKey, items);
+    return success(c, items);
+  } catch {
+    return success(c, []);
   }
 });
 

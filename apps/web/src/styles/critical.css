@@ -1,0 +1,666 @@
+/* ==========================================================================
+   Critical CSS — Above-the-fold styles
+   Inlined directly in BaseLayout <head> to eliminate render-blocking CSS.
+   Full Tailwind styles load asynchronously via global.css.
+   ========================================================================== */
+
+/* ── CSS Custom Properties (from @theme in global.css) ──────────────── */
+:root {
+  /* Primary: Deep Blue */
+  --color-primary-50: #eff6ff;
+  --color-primary-100: #dbeafe;
+  --color-primary-200: #bfdbfe;
+  --color-primary-300: #93c5fd;
+  --color-primary-400: #60a5fa;
+  --color-primary-500: #2563eb;
+  --color-primary-600: #1d4ed8;
+  --color-primary-700: #1e40af;
+  --color-primary-800: #1e3a8a;
+  --color-primary-900: #172554;
+  --color-primary-950: #0f172a;
+
+  /* Secondary: Sky Blue */
+  --color-secondary-50: #f0f9ff;
+  --color-secondary-100: #e0f2fe;
+  --color-secondary-200: #bae6fd;
+  --color-secondary-300: #7dd3fc;
+  --color-secondary-400: #38bdf8;
+  --color-secondary-500: #0ea5e9;
+  --color-secondary-600: #0284c7;
+  --color-secondary-700: #0369a1;
+  --color-secondary-800: #075985;
+  --color-secondary-900: #0c4a6e;
+  --color-secondary-950: #082f49;
+
+  /* Accent: Cyan */
+  --color-accent-50: #ecfeff;
+  --color-accent-100: #cffafe;
+  --color-accent-200: #a5f3fc;
+  --color-accent-300: #67e8f9;
+  --color-accent-400: #22d3ee;
+  --color-accent-500: #06b6d4;
+  --color-accent-600: #0891b2;
+  --color-accent-700: #0e7490;
+  --color-accent-800: #155e75;
+  --color-accent-900: #164e63;
+  --color-accent-950: #083344;
+
+  /* Success: Green */
+  --color-success-50: #f0fdf4;
+  --color-success-100: #dcfce7;
+  --color-success-200: #bbf7d0;
+  --color-success-300: #86efac;
+  --color-success-400: #4ade80;
+  --color-success-500: #22c55e;
+  --color-success-600: #16a34a;
+  --color-success-700: #15803d;
+  --color-success-800: #166534;
+  --color-success-900: #14532d;
+  --color-success-950: #052e16;
+
+  /* Warning: Orange */
+  --color-warning-50: #fff7ed;
+  --color-warning-100: #ffedd5;
+  --color-warning-200: #fed7aa;
+  --color-warning-300: #fdba74;
+  --color-warning-400: #fb923c;
+  --color-warning-500: #f97316;
+  --color-warning-600: #ea580c;
+  --color-warning-700: #c2410c;
+  --color-warning-800: #9a3412;
+  --color-warning-900: #7c2d12;
+  --color-warning-950: #431407;
+
+  /* Danger: Red */
+  --color-danger-50: #fef2f2;
+  --color-danger-100: #fee2e2;
+  --color-danger-200: #fecaca;
+  --color-danger-300: #fca5a5;
+  --color-danger-400: #f87171;
+  --color-danger-500: #ef4444;
+  --color-danger-600: #dc2626;
+  --color-danger-700: #b91c1c;
+  --color-danger-800: #991b1b;
+  --color-danger-900: #7f1d1d;
+  --color-danger-950: #450a0a;
+
+  /* Info: Blue */
+  --color-info-50: #eff6ff;
+  --color-info-100: #dbeafe;
+  --color-info-200: #bfdbfe;
+  --color-info-300: #93c5fd;
+  --color-info-400: #60a5fa;
+  --color-info-500: #3b82f6;
+  --color-info-600: #2563eb;
+  --color-info-700: #1d4ed8;
+  --color-info-800: #1e40af;
+  --color-info-900: #1e3a8a;
+  --color-info-950: #172554;
+
+  /* Neutral: Slate */
+  --color-neutral-0: #ffffff;
+  --color-neutral-50: #f8fafc;
+  --color-neutral-100: #f1f5f9;
+  --color-neutral-200: #e2e8f0;
+  --color-neutral-300: #cbd5e1;
+  --color-neutral-400: #94a3b8;
+  --color-neutral-500: #64748b;
+  --color-neutral-600: #475569;
+  --color-neutral-700: #334155;
+  --color-neutral-800: #1e293b;
+  --color-neutral-900: #0f172a;
+  --color-neutral-950: #020617;
+
+  /* ── Semantic Colors ──────────────────────────────────────────────── */
+  --color-primary: var(--color-primary-500);
+  --color-primary-hover: var(--color-primary-600);
+  --color-primary-active: var(--color-primary-700);
+  --color-primary-light: var(--color-primary-100);
+  --color-secondary: var(--color-secondary-500);
+  --color-secondary-hover: var(--color-secondary-600);
+  --color-accent: var(--color-accent-500);
+  --color-success: var(--color-success-500);
+  --color-warning: var(--color-warning-500);
+  --color-danger: var(--color-danger-500);
+  --color-info: var(--color-info-500);
+
+  /* ── Background Tokens ─────────────────────────────────────────── */
+  --color-bg-page: var(--color-neutral-50);
+  --color-bg-section: var(--color-neutral-100);
+  --color-bg-card: var(--color-neutral-0);
+  --color-bg-sidebar: var(--color-neutral-0);
+  --color-bg-navbar: var(--color-neutral-0);
+  --color-bg-footer: var(--color-primary-900);
+  --color-bg-modal: var(--color-neutral-0);
+  --color-bg-overlay: rgba(0, 0, 0, 0.5);
+  --color-bg-surface: var(--color-neutral-0);
+
+  /* ── Surface Tokens ────────────────────────────────────────────── */
+  --color-surface-primary: var(--color-neutral-0);
+  --color-surface-secondary: var(--color-neutral-100);
+  --color-surface-brand: var(--color-primary-100);
+  --color-surface-success: var(--color-success-100);
+  --color-surface-warning: var(--color-warning-100);
+  --color-surface-danger: var(--color-danger-100);
+
+  /* ── Text Tokens ────────────────────────────────────────────────── */
+  --color-text-primary: var(--color-neutral-900);
+  --color-text-secondary: var(--color-neutral-600);
+  --color-text-muted: var(--color-text-secondary);
+  --color-text-disabled: var(--color-neutral-300);
+  --color-text-white: var(--color-neutral-0);
+  --color-text-link: var(--color-primary-500);
+  --color-text-error: var(--color-danger-500);
+  --color-text-success: var(--color-success-500);
+
+  /* ── Border Tokens ────────────────────────────────────────────── */
+  --color-border-default: var(--color-neutral-200);
+  --color-border-light: var(--color-neutral-100);
+  --color-border-strong: var(--color-primary-500);
+  --color-border-brand: var(--color-primary-500);
+  --color-border-danger: var(--color-danger-500);
+  --color-border-success: var(--color-success-500);
+
+  /* ── Status Tokens ────────────────────────────────────────────── */
+  --color-status-pending: var(--color-warning-500);
+  --color-status-confirmed: var(--color-info-500);
+  --color-status-assigned: var(--color-primary-500);
+  --color-status-working: var(--color-primary-700);
+  --color-status-completed: var(--color-success-500);
+  --color-status-cancelled: var(--color-danger-500);
+  --color-status-expired: var(--color-neutral-500);
+
+  /* ── Fonts ──────────────────────────────────────────────────────── */
+  --font-sans: 'Inter Variable', 'Inter', system-ui, -apple-system, BlinkMacSystemFont,
+    'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, 'SF Mono', Monaco, 'Cascadia Code',
+    'Source Code Pro', monospace;
+
+  /* ── Font Weights ──────────────────────────────────────────────── */
+  --font-weight-light: 300;
+  --font-weight-regular: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+  --font-weight-extrabold: 800;
+
+  /* ── Font Sizes ────────────────────────────────────────────────── */
+  --text-display-xl: 3.75rem;
+  --text-display-xl--line-height: 1.2;
+  --text-display-xl--font-weight: 700;
+  --text-display-xl--letter-spacing: -0.02em;
+  --text-display: 3rem;
+  --text-display--line-height: 1.2;
+  --text-display--font-weight: 700;
+  --text-display--letter-spacing: -0.02em;
+  --text-h1: 2.5rem;
+  --text-h1--line-height: 1.25;
+  --text-h1--font-weight: 700;
+  --text-h1--letter-spacing: -0.01em;
+  --text-h2: 2rem;
+  --text-h2--line-height: 1.3;
+  --text-h2--font-weight: 700;
+  --text-h2--letter-spacing: -0.01em;
+  --text-h3: 1.75rem;
+  --text-h3--line-height: 1.35;
+  --text-h3--font-weight: 600;
+  --text-h4: 1.5rem;
+  --text-h4--line-height: 1.4;
+  --text-h4--font-weight: 600;
+  --text-h5: 1.25rem;
+  --text-h5--line-height: 1.45;
+  --text-h5--font-weight: 600;
+  --text-h6: 1.125rem;
+  --text-h6--line-height: 1.5;
+  --text-h6--font-weight: 600;
+  --text-body-lg: 1.125rem;
+  --text-body-lg--line-height: 1.7;
+  --text-body-lg--font-weight: 400;
+  --text-body: 1rem;
+  --text-body--line-height: 1.7;
+  --text-body--font-weight: 400;
+  --text-body-sm: 0.875rem;
+  --text-body-sm--line-height: 1.65;
+  --text-body-sm--font-weight: 400;
+  --text-caption: 0.75rem;
+  --text-caption--line-height: 1.6;
+  --text-caption--font-weight: 500;
+  --text-caption--letter-spacing: 0.01em;
+  --text-overline: 0.6875rem;
+  --text-overline--line-height: 1.6;
+  --text-overline--font-weight: 500;
+  --text-overline--letter-spacing: 0.08em;
+  --text-overline--text-transform: uppercase;
+
+  /* ── Border Radius ────────────────────────────────────────────── */
+  --radius-xs: 0.25rem;
+  --radius-sm: 0.5rem;
+  --radius-md: 0.75rem;
+  --radius-lg: 1rem;
+  --radius-xl: 1.25rem;
+  --radius-2xl: 1.5rem;
+  --radius-full: 9999px;
+
+  /* ── Shadows ──────────────────────────────────────────────────── */
+  --shadow-xs: 0 1px 2px 0 rgb(0 0 0 / 0.04);
+  --shadow-sm: 0 1px 3px 0 rgb(0 0 0 / 0.06), 0 1px 2px -1px rgb(0 0 0 / 0.06);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.06), 0 2px 4px -2px rgb(0 0 0 / 0.05);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.06), 0 4px 6px -4px rgb(0 0 0 / 0.04);
+  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.06), 0 8px 10px -6px rgb(0 0 0 / 0.04);
+
+  /* ── Z-Index ──────────────────────────────────────────────────── */
+  --z-navbar: 50;
+  --z-sidebar: 40;
+  --z-overlay: 45;
+  --z-modal: 50;
+  --z-drawer: 45;
+  --z-dropdown: 30;
+  --z-toast: 60;
+  --z-tooltip: 25;
+
+  /* ── Motion ───────────────────────────────────────────────────── */
+  --duration-instant: 75ms;
+  --duration-fast: 150ms;
+  --duration-normal: 200ms;
+  --duration-medium: 250ms;
+  --duration-slow: 300ms;
+  --ease-out: cubic-bezier(0.33, 1, 0.68, 1);
+  --ease-in: cubic-bezier(0.32, 0, 0.67, 0);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+}
+
+/* ── Website/App chart colors (used sparingly) ─────────────────────── */
+:root {
+  --color-chart-1: var(--color-primary-500);
+  --color-chart-2: var(--color-secondary-500);
+  --color-chart-3: var(--color-success-500);
+  --color-chart-4: var(--color-warning-500);
+  --color-chart-5: var(--color-danger-500);
+  --color-chart-6: #8b5cf6;
+  --color-chart-7: #14b8a6;
+  --color-chart-8: #d97706;
+
+  --color-dashboard-revenue: var(--color-success-500);
+  --color-dashboard-booking: var(--color-primary-500);
+  --color-dashboard-partner: var(--color-secondary-500);
+  --color-dashboard-customer: #8b5cf6;
+  --color-dashboard-complaint: var(--color-danger-500);
+  --color-dashboard-pending: var(--color-warning-500);
+
+  --animate-fade-in: fade-in var(--duration-normal) var(--ease-out);
+  --animate-fade-in-up: fade-in-up var(--duration-normal) var(--ease-out);
+  --animate-fade-in-down: fade-in-down var(--duration-normal) var(--ease-out);
+  --animate-scale-in: scale-in var(--duration-normal) var(--ease-out);
+  --animate-scale-out: scale-out var(--duration-fast) var(--ease-in);
+  --animate-slide-up: slide-up var(--duration-medium) var(--ease-out);
+  --animate-slide-down: slide-down var(--duration-medium) var(--ease-in);
+  --animate-slide-left: slide-left var(--duration-medium) var(--ease-out);
+  --animate-slide-right: slide-right var(--duration-medium) var(--ease-out);
+  --animate-skeleton: skeleton-shimmer 1.5s ease-in-out infinite;
+  --animate-spin: spin 1s linear infinite;
+  --animate-pulse-soft: pulse-soft 2s ease-in-out infinite;
+  --animate-loading-bar: loading-bar 1.2s ease-in-out infinite;
+}
+
+/* ── Base Styles ──────────────────────────────────────────────────── */
+
+/* ── Tailwind Preflight (subset: above-the-fold essentials) ────────── */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  border-color: var(--color-border-default, #e2e8f0);
+  border-style: solid;
+  border-width: 0;
+}
+
+html {
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  overflow-x: hidden;
+  background-color: var(--color-bg-page);
+  color: var(--color-text-primary);
+  font-size: var(--text-body);
+  line-height: 1.7;
+  font-family: inherit;
+}
+
+/* Elements that should inherit typography */
+button,
+input,
+select,
+textarea {
+  font-family: inherit;
+  font-size: 100%;
+  font-weight: inherit;
+  line-height: inherit;
+  color: inherit;
+  margin: 0;
+  padding: 0;
+}
+
+button {
+  text-transform: none;
+  cursor: pointer;
+}
+
+/* Remove default inner spacing from buttons */
+button,
+[type='button'],
+[type='reset'],
+[type='submit'] {
+  -webkit-appearance: button;
+  background-color: transparent;
+  background-image: none;
+}
+
+/* Links inherit color by default */
+a {
+  color: inherit;
+  text-decoration: inherit;
+}
+
+/* Block display & max-width for media */
+img,
+svg,
+video,
+canvas,
+audio,
+iframe,
+embed,
+object {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
+/* Reset headings and paragraphs */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-size: inherit;
+  font-weight: inherit;
+  margin: 0;
+}
+
+p {
+  margin: 0;
+}
+
+/* Reset lists */
+ol,
+ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+/* Table */
+table {
+  border-collapse: collapse;
+}
+
+/* ── Focus Ring ───────────────────────────────────────────────────── */
+:focus-visible {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: 2px;
+  border-radius: var(--radius-xs);
+}
+
+/* ── Selection ────────────────────────────────────────────────────── */
+::selection {
+  background-color: var(--color-primary-200);
+  color: var(--color-primary-900);
+}
+
+/* ── Screen-reader only ───────────────────────────────────────────── */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+/* ── Container utility (custom, not Tailwind) ─────────────────────── */
+.container-page {
+  max-width: 1280px;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 0.5rem;
+  padding-right: 0.5rem;
+}
+
+@media (width >= 640px) {
+  .container-page {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+}
+
+@media (width >= 1024px) {
+  .container-page {
+    padding-left: 1.25rem;
+    padding-right: 1.25rem;
+  }
+}
+
+/* ── Text utilities ──────────────────────────────────────────────── */
+.text-balance {
+  text-wrap: balance;
+}
+
+.text-pretty {
+  text-wrap: pretty;
+}
+
+/* ── Keyframes ────────────────────────────────────────────────────── */
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes fade-in-up {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fade-in-down {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes scale-in {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes scale-out {
+  from { opacity: 1; transform: scale(1); }
+  to { opacity: 0; transform: scale(0.95); }
+}
+
+@keyframes slide-up {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+
+@keyframes slide-down {
+  from { transform: translateY(-100%); }
+  to { transform: translateY(0); }
+}
+
+@keyframes slide-left {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(0); }
+}
+
+@keyframes slide-right {
+  from { transform: translateX(100%); }
+  to { transform: translateX(0); }
+}
+
+@keyframes skeleton-shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+@keyframes pulse-soft {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes loading-bar {
+  0% { transform: translateX(-100%); }
+  50% { transform: translateX(0%); }
+  100% { transform: translateX(100%); }
+}
+
+/* ── Reduced Motion ──────────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ==================================================================
+   Prose Content Styles
+   Used in blog articles and CMS pages (below the fold, but small)
+   ================================================================== */
+.prose p {
+  margin-top: 0;
+  margin-bottom: 1em;
+  line-height: 1.7;
+}
+
+.prose h2 {
+  font-size: var(--text-h4);
+  font-weight: var(--font-weight-semibold);
+  margin-top: 1.5em;
+  margin-bottom: 0.5em;
+  line-height: 1.4;
+  color: var(--color-text-primary);
+}
+
+.prose h3 {
+  font-size: var(--text-h5);
+  font-weight: var(--font-weight-semibold);
+  margin-top: 1.25em;
+  margin-bottom: 0.5em;
+  line-height: 1.45;
+  color: var(--color-text-primary);
+}
+
+.prose h4 {
+  font-size: 1.125rem;
+  font-weight: var(--font-weight-semibold);
+  margin-top: 1em;
+  margin-bottom: 0.5em;
+}
+
+.prose strong { font-weight: var(--font-weight-bold); }
+.prose em { font-style: italic; }
+
+.prose a {
+  color: var(--color-primary);
+  text-decoration: underline;
+  transition: color var(--duration-fast) var(--ease-out);
+}
+.prose a:hover { color: var(--color-primary-hover); }
+
+.prose ul {
+  list-style-type: disc;
+  padding-left: 1.5em;
+  margin-top: 0.5em;
+  margin-bottom: 0.5em;
+}
+.prose ul li { margin-top: 0.25em; margin-bottom: 0.25em; }
+
+.prose ol {
+  list-style-type: decimal;
+  padding-left: 1.5em;
+  margin-top: 0.5em;
+  margin-bottom: 0.5em;
+}
+.prose ol li { margin-top: 0.25em; margin-bottom: 0.25em; }
+
+.prose blockquote {
+  border-left: 4px solid var(--color-primary-200);
+  padding-left: 1em;
+  margin: 1em 0;
+  color: var(--color-text-secondary);
+  font-style: italic;
+}
+
+.prose code {
+  font-family: var(--font-mono);
+  font-size: 0.875em;
+  background-color: var(--color-neutral-100);
+  padding: 0.2em 0.4em;
+  border-radius: var(--radius-xs);
+}
+
+.prose pre {
+  background-color: var(--color-neutral-900);
+  color: var(--color-neutral-50);
+  padding: 1em;
+  border-radius: var(--radius-sm);
+  overflow-x: auto;
+  margin: 1em 0;
+}
+.prose pre code {
+  background: none;
+  padding: 0;
+  color: inherit;
+}
+
+.prose img {
+  max-width: 100%;
+  height: auto;
+  border-radius: var(--radius-sm);
+  margin: 1.5em auto;
+}
+
+.prose hr {
+  border-color: var(--color-border-default);
+  margin: 2em 0;
+}
+
+.prose-sm { font-size: 0.875rem; }
+.prose-sm h2 { font-size: 1.25rem; }
+.prose-sm h3 { font-size: 1.125rem; }
+
+.not-prose h1,
+.not-prose h2,
+.not-prose h3,
+.not-prose h4,
+.not-prose h5,
+.not-prose h6 {
+  font-size: revert;
+  font-weight: revert;
+}

@@ -1,0 +1,9 @@
+---
+export const prerender = false
+import DashboardLayout from '../../../layouts/DashboardLayout.astro'
+import { AdminTestimonials } from '../../../components/dashboard/admin/AdminTestimonials.tsx'
+---
+
+<DashboardLayout title="Kelola Testimoni" role={['admin', 'super_admin', 'content_manager']}>
+  <AdminTestimonials client:load />
+</DashboardLayout>

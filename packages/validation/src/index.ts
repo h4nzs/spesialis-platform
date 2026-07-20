@@ -174,3 +174,6 @@ export type { CreateRedirectInput, UpdateRedirectInput } from './redirect.ts';
 
 export { createCoverageAreaSchema, updateCoverageAreaSchema } from './coverage-area.ts';
 export type { CreateCoverageAreaInput, UpdateCoverageAreaInput } from './coverage-area.ts';
+
+export { createTestimonialSchema, updateTestimonialSchema } from './cms-testimonials.ts';
+export type { CreateTestimonialInput, UpdateTestimonialInput } from './cms-testimonials.ts';

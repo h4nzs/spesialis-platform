@@ -38,6 +38,7 @@ import { adminRedirectsRouter } from './admin/redirects.ts';
 import { adminPageErrorsRouter } from './admin/page-errors.ts';
 import { adminCoverageAreasRouter } from './admin/coverage-areas.ts';
 import { adminServiceSuggestionsRouter } from './admin/service-suggestions.ts';
+import { adminTestimonialsRouter } from './admin/testimonials.ts';
 import { sitemapSettingsRouter } from './sitemap-settings.ts';
 import { indexnowRouter } from './indexnow.ts';
 
@@ -91,6 +92,7 @@ router.route('/admin/redirects', adminRedirectsRouter);
 router.route('/admin/page-errors', adminPageErrorsRouter);
 router.route('/admin/coverage-areas', adminCoverageAreasRouter);
 router.route('/admin/service-suggestions', adminServiceSuggestionsRouter);
+router.route('/admin/testimonials', adminTestimonialsRouter);
 router.route('/sitemap-settings', sitemapSettingsRouter);
 router.route('/indexnow', indexnowRouter);
 

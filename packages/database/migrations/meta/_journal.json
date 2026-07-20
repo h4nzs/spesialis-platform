@@ -176,6 +176,13 @@
       "when": 1784283000000,
       "tag": "0023_make_category_id_nullable_add_show_in_hero",
       "breakpoints": true
+    },
+    {
+      "idx": 25,
+      "version": "7",
+      "when": 1784553025322,
+      "tag": "0025_closed_sir_ram",
+      "breakpoints": true
     }
   ]
 }
