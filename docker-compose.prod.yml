@@ -261,7 +261,7 @@ services:
       ADMIN_USER_PWD: ${PLAUSIBLE_ADMIN_PASSWORD}
     volumes:
       - ./plausible-migrate.sh:/plausible-migrate.sh:ro
-    command: ["sh", "/plausible-migrate.sh"]
+    command: ['sh', '/plausible-migrate.sh']
     depends_on:
       plausible-db:
         condition: service_healthy
