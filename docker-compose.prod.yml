@@ -31,9 +31,12 @@ services:
       timeout: 5s
       retries: 5
       start_period: 30s
-    # TODO: Re-add memory limits after debugging Postgres crash-loop.
-    # Original: limits: 512M, reservations: 256M
-    # Postgres 18 needs more memory on first startup — increase to 1G if re-adding.
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+        reservations:
+          memory: 256M
 
   # ── Hono API ──────────────────────────────────────────────────────
   api:
@@ -87,9 +90,9 @@ services:
     deploy:
       resources:
         limits:
-          memory: 512M
-        reservations:
           memory: 256M
+        reservations:
+          memory: 128M
     logging:
       driver: 'json-file'
       options:
@@ -112,6 +115,7 @@ services:
       API_URL: http://api:3000
       PUBLIC_API_URL: ${PUBLIC_API_URL:-https://ahlipanggilan.id/api}
       SITE_URL: ${SITE_URL:-https://ahlipanggilan.id}
+      PLAUSIBLE_DOMAIN: ${PLAUSIBLE_DOMAIN:-stats.ahlipanggilan.id}
     depends_on:
       api:
         condition: service_started
@@ -130,9 +134,9 @@ services:
     deploy:
       resources:
         limits:
-          memory: 512M
+          memory: 384M
         reservations:
-          memory: 256M
+          memory: 192M
     logging:
       driver: 'json-file'
       options:
@@ -214,14 +218,15 @@ services:
 
     volumes:
       - plausible_clickhouse_data:/var/lib/clickhouse
+      - ./infrastructure/docker/clickhouse/config.d:/etc/clickhouse-server/config.d:ro
     networks:
       - specialist
     deploy:
       resources:
         limits:
-          memory: 512M
+          memory: 768M
         reservations:
-          memory: 256M
+          memory: 384M
     logging:
       driver: 'json-file'
       options:
@@ -233,6 +238,9 @@ services:
         hard: 262144
 
   # ── Plausible Analytics ────────────────────────────────────────────
+  # Note: This image does NOT auto-run database migrations on startup.
+  # The `command` below runs Ecto migrations via eval before starting the app.
+  # Migration script: plausible-migrate.sh (mounted from host)
   plausible:
     image: ghcr.io/plausible/community-edition:latest
     container_name: ahlipanggilan-plausible
@@ -251,6 +259,9 @@ services:
       ADMIN_USER_EMAIL: ${PLAUSIBLE_ADMIN_EMAIL}
       ADMIN_USER_NAME: ${PLAUSIBLE_ADMIN_NAME:-Admin}
       ADMIN_USER_PWD: ${PLAUSIBLE_ADMIN_PASSWORD}
+    volumes:
+      - ./plausible-migrate.sh:/plausible-migrate.sh:ro
+    command: ["sh", "/plausible-migrate.sh"]
     depends_on:
       plausible-db:
         condition: service_healthy

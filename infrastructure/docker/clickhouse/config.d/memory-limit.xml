@@ -1,0 +1,24 @@
+<clickhouse>
+    <!--
+      Memory limit config for ClickHouse in Docker.
+      
+      Docker cgroup limit: 768MB
+      max_server_memory_usage: 650MB — leaves ~118MB headroom for:
+        - Background merge operations (main cause of crashes)
+        - Temporary allocations during query processing
+        - System caches (mark cache, uncompressed cache)
+      
+      Without this limit, ClickHouse tries to use all memory within the
+      cgroup (max_memory_usage = 0 = unlimited), and crashes with
+      MEMORY_LIMIT_EXCEEDED when background merges spike above the limit.
+    -->
+    <max_server_memory_usage>681574400</max_server_memory_usage>
+
+    <!--
+      Listen on all interfaces (required for Docker networking).
+      Default Alpine config only listens on 127.0.0.1 / ::1 (loopback),
+      which causes "connection refused" from other containers.
+    -->
+    <listen_host>0.0.0.0</listen_host>
+    <listen_host>::</listen_host>
+</clickhouse>
