@@ -893,97 +893,110 @@ router.get(
   authMiddleware,
   requireRole('admin', 'super_admin', 'content_manager'),
   async (c) => {
-    const articleId = c.req.query('articleId') ?? '';
+    try {
+      const articleId = c.req.query('articleId') ?? '';
 
-    // Fetch current article data to compute relevance
-    let currentTitle = '';
-    let currentTags: string[] = [];
+      // Fetch current article data to compute relevance
+      let currentTitle = '';
+      let currentTags: string[] = [];
 
-    if (articleId) {
-      const [current] = await db
-        .select({ title: articles.title, tags: articles.tags, content: articles.content })
-        .from(articles)
-        .where(and(eq(articles.id, articleId), isNull(articles.deletedAt)))
-        .limit(1);
-      if (current) {
-        currentTitle = current.title;
-        currentTags = current.tags;
+      if (articleId) {
+        const [current] = await db
+          .select({ title: articles.title, tags: articles.tags, content: articles.content })
+          .from(articles)
+          .where(and(eq(articles.id, articleId), isNull(articles.deletedAt)))
+          .limit(1);
+        if (current) {
+          currentTitle = current.title;
+          currentTags = (current.tags ?? []) as string[];
+        }
       }
-    }
 
-    // Find all active pillar content (exclude current article)
-    const conditions = [eq(articles.isPillarContent, true), isNull(articles.deletedAt)];
-    if (articleId) conditions.push(ne(articles.id, articleId));
+      // Find all active pillar content (exclude current article)
+      const conditions = [eq(articles.isPillarContent, true), isNull(articles.deletedAt)];
+      if (articleId) conditions.push(ne(articles.id, articleId));
 
-    const pillars = await db
-      .select({
-        id: articles.id,
-        title: articles.title,
-        slug: articles.slug,
-        tags: articles.tags,
-        summary: articles.summary,
-      })
-      .from(articles)
-      .where(and(...conditions))
-      .orderBy(desc(articles.updatedAt))
-      .limit(20);
+      const pillars = await db
+        .select({
+          id: articles.id,
+          title: articles.title,
+          slug: articles.slug,
+          tags: articles.tags,
+          summary: articles.summary,
+        })
+        .from(articles)
+        .where(and(...conditions))
+        .orderBy(desc(articles.updatedAt))
+        .limit(20);
 
-    if (pillars.length === 0) {
-      return success(c, []);
-    }
+      if (pillars.length === 0) {
+        return success(c, []);
+      }
 
-    // Calculate relevance for each pillar
-    const suggestions: SuggestionItem[] = pillars.map((pillar) => {
-      // 1. Tag overlap score (0-1)
-      const tagOverlap =
-        currentTags.length > 0 && pillar.tags.length > 0
-          ? currentTags.filter((t) =>
-              pillar.tags.some((pt) => pt.toLowerCase() === t.toLowerCase()),
-            ).length / Math.max(currentTags.length, 1)
+      // Calculate relevance for each pillar
+      const currentTagsSafe = currentTags.filter((t): t is string => typeof t === 'string');
+      const suggestions: SuggestionItem[] = pillars.map((pillar) => {
+        const pillarTags = (pillar.tags ?? []) as string[];
+
+        // 1. Tag overlap score (0-1)
+        const tagOverlap =
+          currentTagsSafe.length > 0 && pillarTags.length > 0
+            ? currentTagsSafe.filter((t) =>
+                pillarTags.some((pt) => pt.toLowerCase() === t.toLowerCase()),
+              ).length / Math.max(currentTagsSafe.length, 1)
+            : 0;
+
+        // 2. Title trigram similarity (0-1)
+        const pillarTitle = pillar.title ?? '';
+        const titleSim = currentTitle
+          ? trigramSimilarity(currentTitle.toLowerCase(), pillarTitle.toLowerCase())
           : 0;
 
-      // 2. Title trigram similarity (0-1)
-      const titleSim = currentTitle
-        ? trigramSimilarity(currentTitle.toLowerCase(), pillar.title.toLowerCase())
-        : 0;
+        // 3. Tag-in-title match (0-1)
+        const tagInTitle =
+          currentTagsSafe.length > 0 && pillarTitle
+            ? currentTagsSafe.filter((t) => pillarTitle.toLowerCase().includes(t.toLowerCase()))
+                .length / currentTagsSafe.length
+            : 0;
 
-      // 3. Tag-in-title match (0-1)
-      const tagInTitle =
-        currentTags.length > 0 && pillar.title
-          ? currentTags.filter((t) => pillar.title.toLowerCase().includes(t.toLowerCase())).length /
-            currentTags.length
-          : 0;
+        // Weighted combined score
+        const relevanceScore = Math.min(1, tagOverlap * 0.5 + titleSim * 0.3 + tagInTitle * 0.2);
 
-      // Weighted combined score
-      const relevanceScore = Math.min(1, tagOverlap * 0.5 + titleSim * 0.3 + tagInTitle * 0.2);
+        // Find matched tags
+        const matchedTags =
+          currentTagsSafe.length > 0
+            ? currentTagsSafe.filter(
+                (t) =>
+                  pillarTags.some((pt) => pt.toLowerCase() === t.toLowerCase()) ||
+                  pillarTitle.toLowerCase().includes(t.toLowerCase()),
+              )
+            : [];
 
-      // Find matched tags
-      const matchedTags =
-        currentTags.length > 0
-          ? currentTags.filter(
-              (t) =>
-                pillar.tags.some((pt) => pt.toLowerCase() === t.toLowerCase()) ||
-                pillar.title.toLowerCase().includes(t.toLowerCase()),
-            )
-          : [];
+        return {
+          id: pillar.id,
+          title: pillarTitle,
+          slug: pillar.slug,
+          url: `/blog/${pillar.slug}`,
+          relevanceScore: Math.round(relevanceScore * 100) / 100,
+          matchedTags,
+          suggestedAnchor: generateSuggestedAnchor(pillarTitle, currentTagsSafe),
+          reason: generateReason(pillar, matchedTags, relevanceScore),
+        };
+      });
 
-      return {
-        id: pillar.id,
-        title: pillar.title,
-        slug: pillar.slug,
-        url: `/blog/${pillar.slug}`,
-        relevanceScore: Math.round(relevanceScore * 100) / 100,
-        matchedTags,
-        suggestedAnchor: generateSuggestedAnchor(pillar.title, currentTags),
-        reason: generateReason(pillar, matchedTags, relevanceScore),
-      };
-    });
+      // Sort by relevance descending, filter low scores, limit
+      suggestions.sort((a, b) => b.relevanceScore - a.relevanceScore);
+      const filtered = suggestions.filter((s) => s.relevanceScore >= 0.1).slice(0, 10);
 
-    // Sort by relevance descending, filter low scores, limit
-    suggestions.sort((a, b) => b.relevanceScore - a.relevanceScore);
-    const filtered = suggestions.filter((s) => s.relevanceScore >= 0.1).slice(0, 10);
-
-    return success(c, filtered);
+      return success(c, filtered);
+    } catch (err) {
+      console.error({
+        event: 'suggestions_error',
+        articleId: c.req.query('articleId'),
+        error: err instanceof Error ? err.message : String(err),
+      });
+      return serverError(c, 'Gagal memuat saran tautan');
+    }
   },
 );
 

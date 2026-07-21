@@ -187,11 +187,11 @@ test.describe('Service Detail - FAQ Section & FAQPage Schema', () => {
     await page.waitForTimeout(300);
 
     // After click, details should be open (have 'open' attribute)
+    // HTML boolean attribute 'open' returns '' when present, null when absent
     const isOpenAfter = await firstDetails.getAttribute('open');
     if (isInitiallyOpen === null) {
-      expect(isOpenAfter).toBe('open');
+      expect(isOpenAfter).not.toBeNull();
     }
-    // If it was already open by default, that's also fine — just verify it has content
   });
 
   test('SEOE2E-20: FAQ from CMS appears when category matches', async ({ page, request }) => {

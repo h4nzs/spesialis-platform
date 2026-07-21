@@ -163,6 +163,10 @@ describe('FaqFormModal', () => {
   // ─── Create Mode ─────────────────────────────────────────────
 
   describe('create mode', () => {
+    beforeEach(() => {
+      mockGet.mockResolvedValue([]);
+    });
+
     it('renders nothing when closed', () => {
       renderModal({ open: false });
       expect(screen.queryByTestId('modal')).not.toBeInTheDocument();
@@ -178,7 +182,7 @@ describe('FaqFormModal', () => {
       renderModal();
       expect(screen.getByTestId('input-Pertanyaan')).toBeInTheDocument();
       expect(screen.getByTestId('richtexteditor')).toBeInTheDocument();
-      expect(screen.getByTestId('input-Kategori')).toBeInTheDocument();
+      expect(screen.getByTestId('select-Kategori Layanan')).toBeInTheDocument();
       expect(screen.getByTestId('input-Urutan Tampil')).toBeInTheDocument();
       expect(screen.getByTestId('select-Status')).toBeInTheDocument();
     });
@@ -275,15 +279,20 @@ describe('FaqFormModal', () => {
       isActive: 'true',
     };
 
+    beforeEach(() => {
+      // mockGet is called twice on mount: first for categories, then for FAQ detail
+      mockGet.mockReset();
+    });
+
     it('renders edit modal with correct title', () => {
-      mockGet.mockResolvedValue(faqDetail);
+      mockGet.mockResolvedValueOnce([]).mockResolvedValueOnce(faqDetail);
       renderModal({ editingId: 'f1' });
 
       expect(screen.getByText('Edit FAQ')).toBeInTheDocument();
     });
 
     it('fetches and pre-fills form on mount', async () => {
-      mockGet.mockResolvedValue(faqDetail);
+      mockGet.mockResolvedValueOnce([]).mockResolvedValueOnce(faqDetail);
       renderModal({ editingId: 'f1' });
 
       await waitFor(() => {
@@ -300,7 +309,7 @@ describe('FaqFormModal', () => {
     });
 
     it('shows error when detail fetch fails', async () => {
-      mockGet.mockRejectedValue(new Error('Not found'));
+      mockGet.mockResolvedValueOnce([]).mockRejectedValueOnce(new Error('Not found'));
       renderModal({ editingId: 'f1' });
 
       await waitFor(() => {
@@ -310,7 +319,7 @@ describe('FaqFormModal', () => {
 
     it('calls PATCH API on edit submit', async () => {
       const user = userEvent.setup();
-      mockGet.mockResolvedValue(faqDetail);
+      mockGet.mockResolvedValueOnce([]).mockResolvedValueOnce(faqDetail);
       mockPatch.mockResolvedValue(undefined);
       renderModal({ editingId: 'f1' });
 
@@ -338,14 +347,16 @@ describe('FaqFormModal', () => {
     });
 
     it('pre-fills display order and category', async () => {
-      mockGet.mockResolvedValue(faqDetail);
+      mockGet
+        .mockResolvedValueOnce([{ slug: 'General', name: 'General' }])
+        .mockResolvedValueOnce(faqDetail);
       renderModal({ editingId: 'f1' });
 
-      const categoryInput = screen.getByTestId('input-Kategori') as HTMLInputElement;
+      const categorySelect = screen.getByTestId('select-Kategori Layanan') as HTMLSelectElement;
       const orderInput = screen.getByTestId('input-Urutan Tampil') as HTMLInputElement;
 
       await waitFor(() => {
-        expect(categoryInput.value).toBe('General');
+        expect(categorySelect.value).toBe('General');
         expect(orderInput.value).toBe('1');
       });
     });
