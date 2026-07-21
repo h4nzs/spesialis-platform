@@ -1,6 +1,16 @@
 import React, { useState, useEffect, useCallback, useMemo, Suspense } from 'react';
 import { createBrowserClient } from '@ahlipanggilan/shared';
-import { Button, Table, Badge, Pagination, EmptyState, TableSkeleton } from '@ahlipanggilan/ui';
+import {
+  Button,
+  Input,
+  Table,
+  Badge,
+  Pagination,
+  EmptyState,
+  TableSkeleton,
+  Select,
+  type SelectOption,
+} from '@ahlipanggilan/ui';
 import { LazyFallback } from '../../ui/LazyFallback';
 import type { Column } from '@ahlipanggilan/ui';
 
@@ -27,6 +37,22 @@ export function AdminFaq() {
   const [page, setPage] = useState(1);
   const [showModal, setShowModal] = useState(false);
   const [editing, setEditing] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [categoryFilter, setCategoryFilter] = useState('');
+  const [categoryOptions, setCategoryOptions] = useState<SelectOption[]>([]);
+
+  // ── Fetch service categories for filter dropdown ───────────
+  useEffect(() => {
+    api
+      .get<{ slug: string; name: string }[]>('/api/v1/admin/service-categories')
+      .then((cats) => {
+        const list = Array.isArray(cats) ? cats : [];
+        setCategoryOptions(
+          list.map((c: { slug: string; name: string }) => ({ value: c.slug, label: c.name })),
+        );
+      })
+      .catch(() => {});
+  }, [api]);
 
   const loadData = useCallback(async () => {
     try {
@@ -44,6 +70,28 @@ export function AdminFaq() {
   useEffect(() => {
     loadData();
   }, [loadData]);
+
+  // ── Filter items by search query + category ───────────────
+  const filteredItems = useMemo(() => {
+    let result = items;
+
+    // Filter by category
+    if (categoryFilter) {
+      result = result.filter((item) => item.category === categoryFilter);
+    }
+
+    // Filter by search query (case-insensitive, match question text)
+    if (searchQuery.trim()) {
+      const q = searchQuery.trim().toLowerCase();
+      result = result.filter(
+        (item) =>
+          item.question.toLowerCase().includes(q) ||
+          (item.answer && item.answer.toLowerCase().includes(q)),
+      );
+    }
+
+    return result;
+  }, [items, categoryFilter, searchQuery]);
 
   function openCreate() {
     setEditing(null);
@@ -128,26 +176,93 @@ export function AdminFaq() {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-end">
+      <div className="flex flex-wrap items-end gap-3">
+        <div className="relative w-full sm:w-56">
+          <Input
+            label="Cari FAQ"
+            value={searchQuery}
+            onChange={(e) => {
+              setSearchQuery(e.target.value);
+              setPage(1);
+            }}
+            placeholder="Cari pertanyaan atau jawaban..."
+          />
+          {searchQuery && (
+            <button
+              type="button"
+              onClick={() => {
+                setSearchQuery('');
+                setPage(1);
+              }}
+              className="absolute right-2 top-[calc(50%+10px)] -translate-y-1/2 flex h-5 w-5 items-center justify-center rounded-full text-text-muted transition-colors hover:bg-neutral-100 hover:text-text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-500"
+              aria-label="Hapus pencarian"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <line x1="18" y1="6" x2="6" y2="18" />
+                <line x1="6" y1="6" x2="18" y2="18" />
+              </svg>
+            </button>
+          )}
+        </div>
+        <div className="w-full sm:w-48">
+          <Select
+            label="Filter Kategori"
+            value={categoryFilter}
+            onChange={(e) => {
+              setCategoryFilter(e.target.value);
+              setPage(1);
+            }}
+            options={[{ value: '', label: 'Semua Kategori' }, ...categoryOptions]}
+            placeholder="Pilih kategori"
+          />
+        </div>
         <Button onClick={openCreate}>Tambah FAQ</Button>
       </div>
 
       <Table
-        data={items.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)}
+        data={filteredItems.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)}
         columns={columns}
         keyExtractor={(item) => item.id}
         emptyState={
-          <EmptyState
-            title="Belum ada FAQ"
-            description="Klik 'Tambah FAQ' untuk membuat pertanyaan baru"
-          />
+          searchQuery.trim() || categoryFilter ? (
+            <EmptyState
+              title="Tidak ada FAQ yang cocok"
+              description="Coba ubah kata kunci pencarian atau reset filter untuk melihat semua FAQ"
+              action={
+                <Button
+                  size="sm"
+                  onClick={() => {
+                    setSearchQuery('');
+                    setCategoryFilter('');
+                  }}
+                >
+                  Reset Semua Filter
+                </Button>
+              }
+            />
+          ) : (
+            <EmptyState
+              title="Belum ada FAQ"
+              description="Klik 'Tambah FAQ' untuk membuat pertanyaan baru"
+            />
+          )
         }
       />
 
-      {items.length > PAGE_SIZE && (
+      {filteredItems.length > PAGE_SIZE && (
         <Pagination
           page={page}
-          totalPages={Math.ceil(items.length / PAGE_SIZE)}
+          totalPages={Math.ceil(filteredItems.length / PAGE_SIZE)}
           onPageChange={setPage}
         />
       )}

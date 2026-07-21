@@ -4,10 +4,12 @@ import {
   getCategorySpecificFields,
   inferCategorySlug,
 } from '@ahlipanggilan/shared';
-import type { ServiceData, ReviewData } from './utils';
+import type { ServiceData, ReviewData, FaqItem, RelatedServiceItem } from './utils';
 
 interface ServiceDetailProps {
   slug: string;
+  initialFaqs?: FaqItem[];
+  initialRelated?: RelatedServiceItem[];
 }
 
 function StarRating({ value, size = 'sm' }: { value: number; size?: 'sm' | 'md' }) {
@@ -34,7 +36,7 @@ function formatDate(iso: string): string {
   });
 }
 
-export function ServiceDetail({ slug }: ServiceDetailProps) {
+export function ServiceDetail({ slug, initialFaqs, initialRelated }: ServiceDetailProps) {
   const [service, setService] = useState<ServiceData | null>(null);
   const [reviews, setReviews] = useState<ReviewData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -196,7 +198,49 @@ export function ServiceDetail({ slug }: ServiceDetailProps) {
             )}
           </div>
 
-          {/* ─── Reviews section ──────────────────────────────── */}
+          {/* ─── FAQ section (AEO) ───────────────────────────── */}
+          {initialFaqs && initialFaqs.length > 0 && (
+            <div className="mt-12 border-t border-border-default pt-8">
+              <h2 className="text-h4 font-semibold text-text-primary">
+                Pertanyaan Umum seputar {service.name}
+              </h2>
+              <div className="mt-6 space-y-3">
+                {initialFaqs.map((faq, i) => (
+                  <details
+                    key={i}
+                    className="group rounded-xl border border-border-default bg-bg-surface transition-shadow duration-150 ease-out hover:shadow-xs"
+                  >
+                    <summary className="flex cursor-pointer items-center justify-between px-5 py-4 text-body font-medium text-text-primary select-none rounded-t-xl focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-500">
+                      {faq.question}
+                      <span
+                        className="ml-4 shrink-0 text-text-muted transition-transform duration-150 ease-out group-open:rotate-180"
+                        aria-hidden="true"
+                      >
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          width="20"
+                          height="20"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        >
+                          <path d="m6 9 6 6 6-6" />
+                        </svg>
+                      </span>
+                    </summary>
+                    <div className="border-t border-border-default px-5 py-4 text-body text-text-secondary leading-relaxed">
+                      {faq.answer}
+                    </div>
+                  </details>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* ── Reviews section ──────────────────────────────── */}
           {hasReviews && (
             <div className="mt-12 border-t border-border-default pt-8">
               <div className="flex items-center gap-3">
@@ -292,6 +336,67 @@ ${getCategorySpecificFields(inferCategorySlug(service.name))}`,
           </div>
         </div>
       </div>
+
+      {/* ─── Related Services section (internal linking) ──── */}
+      {initialRelated && initialRelated.length > 0 && (
+        <div className="mt-16 border-t border-border-default pt-12">
+          <h2 className="text-h3 font-bold text-text-primary">Layanan Terkait</h2>
+          <p className="mt-2 text-body text-text-muted">
+            Lihat juga layanan lain yang mungkin Anda butuhkan
+          </p>
+          <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {initialRelated.slice(0, 6).map((item) => (
+              <a
+                key={item.id}
+                href={`/services/${item.slug}`}
+                className="group flex flex-col rounded-xl border border-border-default bg-bg-surface p-5 transition-all duration-200 ease-out hover:-translate-y-1 hover:shadow-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-500 focus-visible:rounded-xl"
+              >
+                {item.thumbnail ? (
+                  <div className="mb-4 aspect-video w-full overflow-hidden rounded-lg bg-neutral-100">
+                    <img
+                      src={item.thumbnail}
+                      alt={item.name}
+                      loading="lazy"
+                      className="h-full w-full object-cover transition-transform duration-300 ease-out group-hover:scale-105"
+                    />
+                  </div>
+                ) : (
+                  <div className="mb-4 flex aspect-video w-full items-center justify-center rounded-lg bg-gradient-to-br from-primary-50 to-accent-50">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="32"
+                      height="32"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      className="text-primary-300"
+                    >
+                      <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+                    </svg>
+                  </div>
+                )}
+                <h3 className="text-body font-semibold text-text-primary transition-colors group-hover:text-primary-500">
+                  {item.name}
+                </h3>
+                {item.shortDescription && (
+                  <p className="mt-1.5 line-clamp-2 text-body-sm text-text-muted">
+                    {item.shortDescription}
+                  </p>
+                )}
+                <div className="mt-auto flex items-center justify-between pt-4">
+                  <span className="text-body font-semibold text-primary-500">{item.basePrice}</span>
+                  <span className="text-caption text-text-muted transition-colors group-hover:text-primary-500">
+                    Lihat detail &rarr;
+                  </span>
+                </div>
+              </a>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

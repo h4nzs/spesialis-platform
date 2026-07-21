@@ -1013,45 +1013,49 @@ AI QA Assistant
 | `permission.spec.ts`        | 7     | RBAC boundary tests (guest, customer, partner, corporate, admin cross-access)                                          |
 | `responsive-a11y.spec.ts`   | 34    | 6 viewports × 5 pages responsive layout + keyboard navigation + focus ring                                             |
 | `search.spec.ts`            | 5     | Services page, service detail by slug, blog page, blog article                                                         |
+| `service-faq.spec.ts`       | 8     | Service detail FAQ accordion, FAQPage JSON-LD, HowTo schema, Related Services internal linking                         |
 | `smoke.spec.ts`             | 10    | Production smoke test: 10 public pages with status code check                                                          |
 
-**Total: ~120+ E2E tests across 16 spec files**
+**Total: ~148+ E2E tests across 17 spec files**
 
 ## Flow Coverage Matrix
 
-| ID      | Flow                         | Priority | Status | Spec File(s)                                                                    |
-| ------- | ---------------------------- | -------- | ------ | ------------------------------------------------------------------------------- |
-| E2E-001 | Guest Booking                | P0       | ✅     | `booking.spec.ts`                                                               |
-| E2E-002 | Guest Tracking               | P0       | ✅     | `booking.spec.ts`                                                               |
-| E2E-003 | Customer Login               | P0       | ✅     | `auth.spec.ts`, `customer.spec.ts`                                              |
-| E2E-004 | Customer Repeat Booking      | P1       | ✅     | `customer.spec.ts`                                                              |
-| E2E-005 | Customer Review              | P1       | ✅     | `customer.spec.ts`                                                              |
-| E2E-006 | Partner Login                | P0       | ✅     | `auth.spec.ts`, `partner.spec.ts`                                               |
-| E2E-007 | Partner Accept Assignment    | P0       | ✅     | `flows.spec.ts`, `partner.spec.ts`                                              |
-| E2E-008 | Partner Reject Assignment    | P1       | ✅     | `partner-reject.spec.ts`                                                        |
-| E2E-009 | Partner Complete Job         | P0       | ✅     | `flows.spec.ts`, `partner.spec.ts`                                              |
-| E2E-010 | Corporate Login              | P0       | ✅     | `partner.spec.ts`                                                               |
-| E2E-011 | Corporate Create Maintenance | P0       | ✅     | `partner.spec.ts`                                                               |
-| E2E-012 | Corporate Download Invoice   | P1       | 🟡     | `partner.spec.ts` (page load only)                                              |
-| E2E-013 | Partner Documents            | P2       | ✅     | `partner-documents.spec.ts`                                                     |
-| E2E-014 | Admin Login                  | P0       | ✅     | `auth.spec.ts`, `admin.spec.ts`, `admin-flows.spec.ts`                          |
-| E2E-015 | Admin Assign Partner         | P0       | ✅     | `flows.spec.ts`, `admin.spec.ts`                                                |
-| E2E-016 | Admin Approve Partner        | P1       | ✅     | `admin-flows.spec.ts` (verify via API + UI page)                                |
-| E2E-017 | Admin Verify Payment         | P1       | ✅     | `flows.spec.ts`                                                                 |
-| E2E-018 | Admin Generate Invoice       | P1       | 🟡     | `admin-flows.spec.ts` (page load only)                                          |
-| E2E-019 | Admin Publish Article        | P1       | ✅     | `admin-media.spec.ts` (create draft → publish → verify in admin API)            |
-| E2E-020 | Admin Manage CMS Pages       | P1       | ✅     | `admin-flows.spec.ts` (page load only)                                          |
-| E2E-021 | CMS Pages CRUD               | P1       | 🟡     | Admin pages page load (create/edit/detail flow via UI)                          |
-| E2E-022 | Media Upload                 | P2       | ✅     | `admin-media.spec.ts`                                                           |
-| E2E-023 | Search Flow                  | P2       | ✅     | `search.spec.ts`                                                                |
-| E2E-024 | Complaint Flow               | P1       | ✅     | `customer.spec.ts` (create via API with booking, list, 404/422/401, admin view) |
-| E2E-025 | Partner Skills               | P1       | ✅     | `partner-skills.spec.ts`                                                        |
-| E2E-026 | Forgot Password              | P1       | 🟡     | `customer.spec.ts` (page load only)                                             |
-| E2E-027 | Permission Test              | P0       | ✅     | `permission.spec.ts`, `auth.spec.ts`                                            |
-| E2E-028 | Session Expired              | P1       | ✅     | `customer.spec.ts`                                                              |
-| E2E-029 | Responsive Test              | P1       | ✅     | `responsive-a11y.spec.ts`                                                       |
-| E2E-030 | Accessibility Test           | P1       | ✅     | `responsive-a11y.spec.ts`                                                       |
-| E2E-031 | Production Smoke Test        | P0       | ✅     | `smoke.spec.ts`                                                                 |
+| ID        | Flow                           | Priority | Status | Spec File(s)                                                                    |
+| --------- | ------------------------------ | -------- | ------ | ------------------------------------------------------------------------------- |
+| E2E-001   | Guest Booking                  | P0       | ✅     | `booking.spec.ts`                                                               |
+| E2E-002   | Guest Tracking                 | P0       | ✅     | `booking.spec.ts`                                                               |
+| E2E-003   | Customer Login                 | P0       | ✅     | `auth.spec.ts`, `customer.spec.ts`                                              |
+| E2E-004   | Customer Repeat Booking        | P1       | ✅     | `customer.spec.ts`                                                              |
+| E2E-005   | Customer Review                | P1       | ✅     | `customer.spec.ts`                                                              |
+| E2E-006   | Partner Login                  | P0       | ✅     | `auth.spec.ts`, `partner.spec.ts`                                               |
+| E2E-007   | Partner Accept Assignment      | P0       | ✅     | `flows.spec.ts`, `partner.spec.ts`                                              |
+| E2E-008   | Partner Reject Assignment      | P1       | ✅     | `partner-reject.spec.ts`                                                        |
+| E2E-009   | Partner Complete Job           | P0       | ✅     | `flows.spec.ts`, `partner.spec.ts`                                              |
+| E2E-010   | Corporate Login                | P0       | ✅     | `partner.spec.ts`                                                               |
+| E2E-011   | Corporate Create Maintenance   | P0       | ✅     | `partner.spec.ts`                                                               |
+| E2E-012   | Corporate Download Invoice     | P1       | 🟡     | `partner.spec.ts` (page load only)                                              |
+| E2E-013   | Partner Documents              | P2       | ✅     | `partner-documents.spec.ts`                                                     |
+| E2E-014   | Admin Login                    | P0       | ✅     | `auth.spec.ts`, `admin.spec.ts`, `admin-flows.spec.ts`                          |
+| E2E-015   | Admin Assign Partner           | P0       | ✅     | `flows.spec.ts`, `admin.spec.ts`                                                |
+| E2E-016   | Admin Approve Partner          | P1       | ✅     | `admin-flows.spec.ts` (verify via API + UI page)                                |
+| E2E-017   | Admin Verify Payment           | P1       | ✅     | `flows.spec.ts`                                                                 |
+| E2E-018   | Admin Generate Invoice         | P1       | 🟡     | `admin-flows.spec.ts` (page load only)                                          |
+| E2E-019   | Admin Publish Article          | P1       | ✅     | `admin-media.spec.ts` (create draft → publish → verify in admin API)            |
+| E2E-020   | Admin Manage CMS Pages         | P1       | ✅     | `admin-flows.spec.ts` (page load only)                                          |
+| E2E-021   | CMS Pages CRUD                 | P1       | 🟡     | Admin pages page load (create/edit/detail flow via UI)                          |
+| E2E-022   | Media Upload                   | P2       | ✅     | `admin-media.spec.ts`                                                           |
+| E2E-023   | Search Flow                    | P2       | ✅     | `search.spec.ts`                                                                |
+| E2E-024   | Complaint Flow                 | P1       | ✅     | `customer.spec.ts` (create via API with booking, list, 404/422/401, admin view) |
+| E2E-025   | Partner Skills                 | P1       | ✅     | `partner-skills.spec.ts`                                                        |
+| E2E-026   | Forgot Password                | P1       | 🟡     | `customer.spec.ts` (page load only)                                             |
+| E2E-027   | Permission Test                | P0       | ✅     | `permission.spec.ts`, `auth.spec.ts`                                            |
+| E2E-028   | Session Expired                | P1       | ✅     | `customer.spec.ts`                                                              |
+| E2E-029   | Responsive Test                | P1       | ✅     | `responsive-a11y.spec.ts`                                                       |
+| E2E-030   | Accessibility Test             | P1       | ✅     | `responsive-a11y.spec.ts`                                                       |
+| E2E-031   | Production Smoke Test          | P0       | ✅     | `smoke.spec.ts`                                                                 |
+| SEOE2E-20 | Service Detail FAQ + FAQPage   | P1       | ✅     | `service-faq.spec.ts`                                                           |
+| SEOE2E-21 | HowTo Schema (per kategori)    | P1       | ✅     | `service-faq.spec.ts`                                                           |
+| SEOE2E-22 | Related Services Internal Link | P1       | ✅     | `service-faq.spec.ts`                                                           |
 
 ### Legend
 
@@ -1066,9 +1070,9 @@ AI QA Assistant
 | Category  | Total  | ✅ Covered | 🟡 Partial | ❌ Missing |
 | --------- | ------ | ---------- | ---------- | ---------- |
 | P0 Flows  | 10     | 10         | 0          | 0          |
-| P1 Flows  | 13     | 11         | 2          | 0          |
+| P1 Flows  | 16     | 14         | 2          | 0          |
 | P2 Flows  | 3      | 3          | 0          | 0          |
-| **Total** | **26** | **24**     | **2**      | **0**      |
+| **Total** | **29** | **27**     | **2**      | **0**      |
 
 ### Notes
 
@@ -1076,19 +1080,22 @@ AI QA Assistant
 - **E2E-018** (Admin Generate Invoice): Page load test exists, but invoice generation workflow not tested.
 - **E2E-020** (Admin Manage CMS Pages): Page load test for admin pages exists, CMS pages create/edit flow via UI not tested.
 - **E2E-025** (Forgot Password): Page load test for forgot/reset password pages exists, but full OTP flow not tested.
+- **SEOE2E-20** (Service FAQ): Test file mencakup FAQ accordion UI, FAQPage JSON-LD, HowTo schema JSON-LD, dan schema coexistence verification via SSR HTML + client-side evaluate.
+- **SEOE2E-21/22** (HowTo + Related Services): Terverifikasi bersama dalam `service-faq.spec.ts` — JSON-LD parsing, elemen UI, dan internal linking card grid.
 
 ### Quick Stats
 
-- **Spec files**: 16
-- **Total tests**: ~140+
+- **Spec files**: 17
+- **Total tests**: ~148+
 - **API-level tests**: ~80 (flows, skills, documents, media upload, complaints, articles, partner verify)
-- **UI-level tests**: ~40 (page loads, navigation, form interaction)
+- **UI-level tests**: ~48 (page loads, navigation, form interaction)
 - **Auth/permission tests**: ~15 (login, RBAC boundaries, session)
 - **Responsive tests**: 30 (6 viewports × 5 pages)
 - **A11y tests**: 3 (keyboard navigation + focus ring)
+- **SEO E2E tests**: 27 (19 existing SEO + 8 service-faq)
 - **P0 coverage**: 100%
-- **P1 coverage**: 85% (11/13 fully covered, 2/13 partially)
-- **Overall coverage**: 92% (24/26 fully covered, 2/26 partially)
+- **P1 coverage**: 88% (14/16 fully covered, 2/16 partially)
+- **Overall coverage**: 93% (27/29 fully covered, 2/29 partially)
 
 ---
 

@@ -26,3 +26,17 @@ export interface ReviewData {
     totalReviews: number;
   };
 }
+
+export interface FaqItem {
+  question: string;
+  answer: string;
+}
+
+export interface RelatedServiceItem {
+  id: string;
+  name: string;
+  slug: string;
+  shortDescription: string | null;
+  basePrice: string;
+  thumbnail: string | null;
+}

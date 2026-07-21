@@ -1,7 +1,14 @@
 import { useState, useEffect, useMemo } from 'react';
 import { createBrowserClient, parseApiError } from '@ahlipanggilan/shared';
-import { Button, Input, Select, Modal } from '@ahlipanggilan/ui';
+import { Button, Input, Select, Modal, type SelectOption } from '@ahlipanggilan/ui';
 import { RichTextEditor } from '@ahlipanggilan/ui/editor';
+
+// ── Types ────────────────────────────────────────────────────────
+
+interface CategoryRecord {
+  slug: string;
+  name: string;
+}
 
 // ── Types ────────────────────────────────────────────────────────
 
@@ -51,6 +58,24 @@ export default function FaqFormModal({ open, onClose, editingId, onSaved }: FaqF
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+
+  // ── Fetch category options ────────────────────────────────────
+  const [categoryOptions, setCategoryOptions] = useState<SelectOption[]>([]);
+
+  useEffect(() => {
+    if (!open) return;
+    api
+      .get<CategoryRecord[]>('/api/v1/admin/service-categories')
+      .then((cats) => {
+        const list = cats as unknown as CategoryRecord[];
+        setCategoryOptions(
+          Array.isArray(list) ? list.map((c) => ({ value: c.slug, label: c.name })) : [],
+        );
+      })
+      .catch(() => {
+        setCategoryOptions([]);
+      });
+  }, [open, api]);
 
   // Reset form when modal opens or editingId changes
   useEffect(() => {
@@ -136,11 +161,12 @@ export default function FaqFormModal({ open, onClose, editingId, onSaved }: FaqF
         />
         {/* ── Category & Display Order ────────────────────────── */}
         <div className="grid grid-cols-2 gap-3">
-          <Input
-            label="Kategori"
+          <Select
+            label="Kategori Layanan"
             value={form.category}
             onChange={(e) => setForm((f) => ({ ...f, category: e.target.value }))}
-            placeholder="cth: Pembayaran, Layanan"
+            options={[{ value: '', label: '— Tidak ada kategori —' }, ...categoryOptions]}
+            placeholder="Pilih kategori"
             error={fieldErrors['category']}
           />
           <Input

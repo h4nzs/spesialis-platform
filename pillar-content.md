@@ -196,3 +196,162 @@ Sistem Anda harus menghasilkan struktur HTML yang mendeteksi daftar isi (<h2>) d
 "name": "Topik Utama Bisnis Anda"
 }
 }
+
+---
+
+Berikut adalah rancangan struktur JSON Response API yang ideal untuk sistem rekomendasi tautan (Link Suggestion Engine).
+API ini akan dipanggil oleh front-end (editor teks) setiap kali penulis mengetik atau menyimpan draf artikel cluster (artikel anak), lalu sistem akan mengembalikan daftar artikel pilar yang relevan.
+
+## 1. Struktur JSON Response (Rekomendasi Tautan)
+
+Response ini dirancang agar front-end bisa langsung menampilkan judul, tautan, alasan relevansi (skor), serta teks jangkar (anchor text) yang disarankan kepada penulis. [1]
+
+{
+"status": "success",
+"meta": {
+"current_article_id": 1024,
+"total_suggestions_found": 2,
+"engine_used": "vector_embeddings_v2"
+},
+"data": [
+{
+"id": 45,
+"title": "Panduan Lengkap Keamanan Siber untuk Perusahaan",
+"slug": "panduan-keamanan-siber-perusahaan",
+"url": "https://perusahaan.com",
+"relevance_score": 0.94,
+"seo_context": {
+"target_keywords": ["keamanan siber", "cybersecurity bisnis"],
+"suggested_anchor_text": "sistem keamanan siber perusahaan",
+"reason": "Artikel pilar ini sangat relevan karena draf Anda membahas tentang kebocoran data."
+}
+},
+{
+"id": 12,
+"title": "Infrastruktur Cloud Computing: Manfaat dan Implementasi",
+"slug": "infrastruktur-cloud-computing",
+"url": "https://perusahaan.com",
+"relevance_score": 0.78,
+"seo_context": {
+"target_keywords": ["cloud computing", "cloud perusahaan"],
+"suggested_anchor_text": "arsitektur cloud computing",
+"reason": "Ditemukan kecocokan topik sekunder mengenai penyimpanan data digital."
+}
+}
+]
+}
+
+---
+
+## 2. Penjelasan Elemen Kunci untuk Developer & SEO
+
+Agar tim developer Anda mudah mengintegrasikannya, berikut fungsi dari setiap objek di atas:
+
+- relevance_score: Menggunakan skala 0.00 sampai 1.00. Jika Anda menggunakan Vector Search (seperti PGVector atau Pinecone), ini adalah hasil Cosine Similarity. Di sisi front-end, Anda bisa mengurutkan artikel pilar dari skor tertinggi, atau hanya menampilkan yang skornya di atas 0.70.
+- suggested_anchor_text: Ini sangat penting untuk SEO tradisional. AI/sistem mendeteksi kata kunci penting di dalam artikel pilar dan memberi tahu penulis kalimat apa yang sebaiknya dipakai untuk menaruh link, sehingga struktur anchor text di web Anda bervariasi dan natural (tidak terdeteksi spam oleh Google).
+- reason: Berguna untuk UX penulis. Penulis tidak perlu menebak mengapa artikel pilar tersebut direkomendasikan, sehingga mereka bisa meletakkan link di paragraf yang paling tepat. [2]
+
+---
+
+## 3. Cara Front-End (Editor) Memproses JSON Ini
+
+Di bagian dashboard admin/CMS perusahaan Anda, buatlah sebuah komponen sidebar di sebelah editor teks. Alur kerjanya seperti ini:
+
+1.  Penulis mengetik draf artikel baru.
+2.  Setiap 15-30 detik (debounce), front-end mengirimkan teks draf ke API backend.
+3.  Backend memproses teks tersebut dan mengembalikan JSON Response di atas.
+4.  Front-end membaca array data dan menampilkannya sebagai widget rekomendasi:
+
+💡 Rekomendasi Tautan Internal (Pillar Content):
+
+- [Panduan Lengkap Keamanan Siber...] (Skor Relevansi: 94%)
+- Saran Teks: Gunakan kalimat "sistem keamanan siber perusahaan" sebagai anchor text.
+  - Aksi: [Copy Link] atau [Sisipkan Otomatis]
+
+---
+
+[1] [https://dzone.com](https://dzone.com/articles/fresh-data-ai-spring-ai-function-calls)
+[2] [https://medium.com](https://medium.com/api-center/api-bites-payload-conventions-76ffde7f5eb2)
+
+---
+
+Setelah menyiapkan struktur database dan JSON response untuk sistem rekomendasi, langkah berikutnya adalah membangun Logika Validasi (SEO Rules Engine) dan Sistem Pelaporan (Reporting).
+Rank Math tidak hanya memberikan rekomendasi tautan, tetapi juga memeriksa apakah penulis benar-benar mematuhi aturan penautan tersebut.
+Berikut adalah komponen-komponen teknis selanjutnya yang harus Anda bangun untuk melengkapi sistem CMS internal perusahaan Anda:
+------------------------------
+
+## 1. Logika Pemeriksaan Tautan (Link Validation Engine)
+
+Saat penulis mengeklik tombol "Publish" atau "Save", backend CMS Anda harus melakukan pemindaian (parsing) pada HTML artikel untuk memvalidasi struktur link internal menggunakan pustaka seperti BeautifulSoup (Python), DOMDocument (PHP), atau Cheerio (Node.js).
+Sistem harus memeriksa tiga aturan SEO utama:
+
+- Pillar Link Check: Apakah artikel cluster ini sudah memiliki minimal satu tautan <a href="..."> yang mengarah ke URL artikel pilar yang direkomendasikan?
+- Anchor Text Check: Apakah teks di dalam tautan (<a>teks</a>) mengandung kata kunci utama (Focus Keyword) dari artikel pilar?
+- Link Attribute Check: Pastikan tautan internal ini tidak sengaja diberi atribut rel="nofollow" atau target="_blank", karena tautan internal harus bertipe dofollow agar link equity (nilai SEO) mengalir lancar.
+
+---
+
+## 2. JSON Response untuk Evaluasi SEO Konten (SEO Score API)
+
+Selain menampilkan rekomendasi artikel pilar, Anda memerlukan API kedua untuk memberikan umpan balik (skor/analisis) secara instan kepada penulis mengenai kondisi optimasi artikel mereka.
+Berikut rancangan struktur JSON untuk evaluasi kecocokan artikel anak (cluster) terhadap artikel induk (pillar):
+
+{
+"status": "success",
+"article_id": 1024,
+"seo_score": 75,
+"pillar_connection_status": "incomplete",
+"seo_checklist": {
+"pillar_link_found": {
+"status": false,
+"message": "Anda belum menaruh link ke Artikel Pilar utama.",
+"impact": "critical"
+},
+"anchor_text_optimization": {
+"status": "warning",
+"message": "Link ke artikel pilar ditemukan, namun anchor text tidak mengandung kata kunci utama.",
+"impact": "moderate"
+},
+"link_dilution_check": {
+"status": true,
+"message": "Bagus! Jumlah tautan keluar tidak terlalu banyak, otoritas halaman terjaga.",
+"impact": "low"
+}
+}
+}
+
+---
+
+## 3. Modul Dasbor Pengawasan (Silo & Cluster Visualizer)
+
+Untuk level manajer konten atau Head of SEO di perusahaan Anda, mereka membutuhkan halaman dasbor khusus untuk memantau kesehatan arsitektur informasi situs. Anda perlu membuat visualisasi data berbasis tabel atau grafik (node graph) yang bersumber dari tabel content_links di database.
+Dasbor ini harus bisa menjawab pertanyaan-pertanyaan berikut:
+
+- Artikel pilar mana yang paling sedikit menerima tautan dari artikel anak? (Artinya artikel pilar tersebut kekurangan pasokan daya SEO).
+- Apakah ada artikel cluster yang yatim piatu (Orphan Pages)? Yaitu artikel anak yang tidak menautkan ke artikel pilar mana pun dan tidak menerima tautan dari mana pun.
+
+---
+
+## 4. Skema Integrasi JSON-LD Otomatis pada Sisi Server (SSR)
+
+Saat halaman pilar diakses oleh publik (atau oleh bot Google/AI), backend CMS Anda harus menyuntikkan metadata khusus secara otomatis. Karena sistem Anda tidak menggunakan WordPress, pastikan framework front-end perusahaan Anda (seperti Next.js, Nuxt.js, atau Laravel Blade) mendukung Server-Side Rendering (SSR) untuk menyuntikkan kode ini agar terbaca oleh algoritma AEO (Answer Engine) dan GEO (Generative Engine):
+
+<head>
+    <!-- SEO Tradisional -->
+    <title>Panduan Lengkap Keamanan Siber Perusahaan</title>
+    <link rel="canonical" href="https://perusahaan.com" />
+
+    <!-- GEO & AEO: Menyatakan bahwa ini adalah halaman pilar / indeks utama -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "CollectionPage",
+      "mainEntity": {
+        "@type": "Article",
+        "headline": "Panduan Lengkap Keamanan Siber Perusahaan",
+        "inLanguage": "id-ID"
+      }
+    }
+    </script>
+
+</head>

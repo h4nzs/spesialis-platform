@@ -1201,6 +1201,43 @@ Tests:
 
 ---
 
+# SEOE2E-20 to SEOE2E-22
+
+Service Detail — FAQ, HowTo Schema & Related Services
+
+Test file: `apps/web/tests/service-faq.spec.ts` (8 tests, serial mode)
+
+Priority
+
+P1
+
+Actor
+
+Guest (public page)
+
+Tests:
+
+| ID        | Test                                                       |
+| --------- | ---------------------------------------------------------- |
+| SEOE2E-20 | Service detail page loads with FAQ section heading         |
+| SEOE2E-20 | FAQ section renders accordion items (\<details\> elements) |
+| SEOE2E-20 | FAQ questions contain the service name                     |
+| SEOE2E-20 | FAQPage JSON-LD schema present in page source              |
+| SEOE2E-20 | FAQPage JSON-LD has proper Question/Answer pairs           |
+| SEOE2E-20 | FAQ accordion opens and closes on click                    |
+| SEOE2E-20 | FAQ from CMS appears when category matches                 |
+| SEOE2E-20 | Breadcrumb + FAQPage + Service schemas coexist in JSON-LD  |
+
+Notes:
+
+- **FAQ auto-generate fallback**: Jika CMS FAQ kosong, sistem auto-generate 5 FAQ per service (cara booking, harga, garansi, teknisi, pembayaran).
+- **CMS FAQ priority**: Jika FAQ dengan kategori cocok ditemukan di CMS, FAQ dari CMS digunakan sebagai pengganti fallback.
+- **HowTo schema**: Setiap service detail page juga menyertakan HowTo JSON-LD dengan 5-6 langkah kerja spesifik per kategori (electronics, plumbing, electrical, dll.) — total 16 kategori + fallback generik.
+- **Related Services**: Service lain dari kategori yang sama ditampilkan sebagai internal linking di bawah konten utama.
+- **Schema coexistence**: Service detail page memiliki 4+ schema dalam satu @graph: BreadcrumbList + Service + FAQPage + HowTo.
+
+---
+
 # Cross Module Flow
 
 Booking

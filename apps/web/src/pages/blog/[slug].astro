@@ -28,6 +28,7 @@ interface ArticleData {
   ogImage: string | null
   canonicalUrl: string | null
   schemaJson: Record<string, unknown> | null
+  tags: string[] | null
 }
 
 const apiUrl = process.env.API_URL ?? process.env.PUBLIC_API_URL ?? 'http://localhost:3000'
@@ -70,6 +71,7 @@ try {
   ogImage: r.og_image ?? null,
   canonicalUrl: r.canonical_url ?? null,
   schemaJson: r.schema_json ?? null,
+  tags: r.tags ?? null,
       }
     } else {
       error = 'Artikel tidak ditemukan'
@@ -98,13 +100,32 @@ const defaultJsonLd: Record<string, unknown> | undefined = article
           '@type': 'Article',
           headline: article.title,
           description: article.summary,
-          image: article.coverImage,
+          image: article.coverImage
+            ? {
+                '@type': 'ImageObject',
+                url: article.coverImage,
+                representativeOfPage: true,
+              }
+            : undefined,
           author: article.authorName
             ? { '@type': 'Person', name: article.authorName }
             : { '@type': 'Organization', name: 'Ahli Panggilan' },
           datePublished: article.publishedAt,
           dateModified: article.updatedAt,
-          publisher: { '@type': 'Organization', name: 'Ahli Panggilan' },
+          publisher: {
+            '@type': 'Organization',
+            name: 'Ahli Panggilan',
+            url: 'https://ahlipanggilan.id',
+          },
+          mainEntityOfPage: {
+            '@type': 'WebPage',
+            '@id': article.canonicalUrl
+              ? `https://ahlipanggilan.id${article.canonicalUrl.startsWith('/') ? article.canonicalUrl : `/${article.canonicalUrl}`}`
+              : `https://ahlipanggilan.id/blog/${article.slug}`,
+          },
+          ...(article.tags && article.tags.length > 0
+            ? { keywords: article.tags.join(', ') }
+            : {}),
         },
       ],
     }

@@ -76,9 +76,17 @@ const plausibleSrc = plausibleDomain ? `https://${plausibleDomain}/js/script.js`
     <meta name="theme-color" content="#2563eb" />
     <meta name="generator" content={Astro.generator} />
 
+    <!-- ── Performance resource hints ──────────────────────── -->
+    {Astro.url.pathname === '/' && (
+      <link rel="preload" href="/hero-home.webp" as="image" type="image/webp" fetchpriority="high" />
+    )}
+    {plausibleDomain && (
+      <link rel="preconnect" href={`https://${plausibleDomain}`} />
+    )}
+
     <title>{title}</title>
     <meta name="description" content={description} />
-    <meta name="robots" content={noindex ? 'noindex, nofollow' : 'index, follow'} />
+    <meta name="robots" content={noindex ? 'noindex, nofollow, noai, noimageai' : 'index, follow, noai, noimageai'} />
 
     {canonical && <link rel="canonical" href={canonical} />}
     <meta property="og:locale" content="id_ID" />

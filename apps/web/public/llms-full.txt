@@ -1,0 +1,166 @@
+# Ahli Panggilan — Complete Platform Information
+
+> Ahli Panggilan adalah platform layanan jasa profesional (on-demand service booking) di Indonesia. Kami menghubungkan pelanggan dengan teknisi terverifikasi untuk layanan AC, plumbing, listrik, cleaning, dan jasa profesional lainnya. Melayani area Jabodetabek dan Bandung.
+>
+> Website: https://ahlipanggilan.id
+> Email: hello@ahlipanggilan.id
+> WhatsApp: 6281234567890
+> Jam Operasional: Senin-Sabtu 08:00-20.00, Minggu 09:00-17.00 WIB
+
+---
+
+## Tentang Kami
+
+Ahli Panggilan adalah perusahaan penyedia layanan jasa profesional yang siap membantu kebutuhan rumah, kantor, dan bisnis Anda. Kami memiliki tim teknisi dan profesional berpengalaman yang siap memberikan solusi terbaik.
+
+### Visi
+Menjadi perusahaan penyedia layanan jasa profesional terpercaya yang mendukung pertumbuhan ekonomi lokal dan meningkatkan kualitas hidup masyarakat Indonesia.
+
+### Misi
+- Menyediakan akses mudah ke layanan jasa profesional berkualitas.
+- Memberdayakan tenaga ahli lokal melalui sistem kerja yang adil dan transparan.
+- Menjamin kepuasan pelanggan melalui layanan yang cepat, terpercaya, dan bergaransi.
+- Mendukung pertumbuhan bisnis perusahaan melalui solusi maintenance dan outsourcing.
+
+### Nilai Kami
+- **Transparan**: Harga jelas tanpa biaya tersembunyi.
+- **Terpercaya**: Setiap teknisi telah diverifikasi dan berpengalaman.
+- **Cepat**: Booking dalam hitungan menit, tanpa antre.
+- **Bergaransi**: Setiap layanan dilindungi garansi kepuasan.
+
+---
+
+## Layanan Jasa Profesional
+
+Ahli Panggilan menyediakan berbagai layanan jasa profesional untuk kebutuhan rumah, kantor, dan bisnis:
+
+1. **Perawatan AC** — Service AC, cuci AC, bongkar pasang AC, isi freon AC, perbaikan AC.
+2. **Kelistrikan** — Instalasi listrik, perbaikan, panel listrik, stop kontak.
+3. **Plumbing & Sanitasi** — Perbaikan pipa, water heater, pompa air, saluran mampet.
+4. **Cleaning Service** — Kebersihan rumah, kantor, apartemen.
+5. **Perawatan Gedung** — Perbaikan ringan, pengecatan, perbaikan furnitur.
+6. **CCTV** — Instalasi dan perbaikan CCTV.
+7. **Kunci** — Buka kunci, ganti kunci, perbaikan kunci.
+8. **Lainnya** — Berbagai jasa profesional lainnya.
+
+Harga transparan dimulai dari Rp50.000. Teknisi berpengalaman dan terverifikasi. Garansi kepuasan untuk setiap layanan.
+
+---
+
+## FAQ — Pertanyaan Umum
+
+### Bagaimana cara booking layanan?
+Anda dapat booking melalui website di halaman /book, pilih layanan, isi data diri, jadwal, dan alamat. Setelah submit, tim admin kami akan mengonfirmasi pesanan Anda.
+
+### Apakah booking bisa dilakukan tanpa login?
+Ya, guest booking tersedia. Anda bisa booking tanpa perlu membuat akun.
+
+### Bagaimana cara melacak pesanan?
+Gunakan nomor booking (format: SP-XXXXX) di halaman /tracking untuk melihat status pesanan Anda secara real-time.
+
+### Apa saja metode pembayaran?
+Pembayaran dapat dilakukan melalui Transfer Bank, QRIS, E-Wallet, atau Cash.
+
+### Apakah ada garansi layanan?
+Ya, setiap layanan dilindungi garansi kepuasan. Jika hasil pekerjaan tidak sesuai standar, kami akan menindaklanjuti.
+
+### Bagaimana cara menjadi mitra teknisi?
+Daftar gratis di /register/partner. Lengkapi data diri, unggah dokumen (KTP, foto profil, portfolio), dan tim kami akan memverifikasi dalam 1x24 jam.
+
+### Apakah ada biaya pendaftaran mitra?
+Tidak ada biaya pendaftaran sama sekali. Pendaftaran mitra 100% gratis.
+
+### Berapa minimal kontrak corporate?
+Minimal kontrak adalah 3 bulan dengan komitmen layanan tertentu. Untuk kebutuhan jangka pendek, Anda bisa melakukan booking reguler tanpa kontrak.
+
+### Apakah melayani perusahaan di luar Jabodetabek?
+Saat ini fokus di area Jabodetabek dan Bandung. Untuk kota lainnya, dapat menyesuaikan secara khusus tergantung volume kebutuhan.
+
+---
+
+## Layanan Corporate
+
+Ahli Panggilan menyediakan solusi maintenance profesional untuk perusahaan:
+
+### Manfaat Corporate
+- **Maintenance Rutin**: Jadwal perawatan berkala untuk AC, listrik, plumbing, dan infrastruktur gedung.
+- **Outsourcing Teknisi**: Teknisi dedicated untuk kebutuhan harian perusahaan. Cocok untuk hotel, apartemen, mall, dan perkantoran.
+- **SLA Garansi**: Service Level Agreement dengan response time terjamin. Darurat? Teknisi siap dalam hitungan jam.
+- **Laporan Berkala**: Laporan maintenance, biaya, dan rekomendasi secara rutin.
+
+### Layanan Corporate
+1. Perawatan AC Central & Split
+2. Kelistrikan Gedung
+3. Plumbing & Sanitasi
+4. Cleaning Service
+5. Perawatan Gedung
+6. Konsultasi & Audit Infrastruktur
+
+### Cara Memulai
+1. Ajukan inquiry via form di halaman /corporate
+2. Tim akan menghubungi untuk diskusi kebutuhan dan proposal
+3. Sign SLA (Service Level Agreement)
+4. Eksekusi & monitoring dengan laporan berkala
+
+---
+
+## Program Mitra Teknisi
+
+Bergabung menjadi mitra teknisi Ahli Panggilan:
+
+### Keuntungan
+- **Pendapatan Tambahan**: Dapatkan penghasilan dari setiap pekerjaan yang diselesaikan.
+- **Jadwal Fleksibel**: Tentukan sendiri kapan ingin bekerja.
+- **Jangkauan Luas**: Akses ke ribuan pelanggan potensial di Jabodetabek dan Bandung.
+- **Dukungan Penuh**: Tim admin siap membantu proses booking, komunikasi, dan komplain.
+
+### Cara Mendaftar
+1. Daftar di /register/partner (gratis)
+2. Lengkapi profil, atur keahlian dan jadwal
+3. Terima pekerjaan yang sesuai
+4. Selesaikan pekerjaan dan dapatkan pembayaran
+
+Dokumen yang diperlukan: KTP, foto profil, foto portfolio pekerjaan. Untuk kategori tertentu mungkin diperlukan sertifikat keahlian.
+
+---
+
+## Blog & Artikel
+
+Blog Ahli Panggilan menyediakan artikel dan panduan seputar:
+- Perawatan AC (service, cuci AC, isi freon)
+- Perbaikan rumah (plumbing, listrik, bocor)
+- Tips cleaning dan kebersihan
+- Panduan memilih jasa profesional
+- Tips menghemat biaya perawatan rumah
+
+Kunjungi halaman /blog untuk artikel terbaru.
+
+---
+
+## Informasi Kontak
+
+- **Email**: hello@ahlipanggilan.id
+- **WhatsApp**: 6281234567890
+- **Jam Operasional**: Senin - Sabtu: 08.00 - 20.00 WIB, Minggu: 09.00 - 17.00 WIB
+- **Lokasi**: Jakarta, Indonesia
+- **Area Layanan**: Jakarta, Bandung, Tangerang, Bekasi, Depok, Bogor (Jabodetabek dan Bandung)
+
+---
+
+## Sitemap
+
+Sitemap XML tersedia di: https://ahlipanggilan.id/sitemap.xml
+
+Halaman statis:
+- / (Homepage)
+- /tentang-kami (Tentang Kami)
+- /services (Layanan)
+- /blog (Blog)
+- /faq (FAQ)
+- /kontak (Kontak)
+- /book (Booking)
+- /tracking (Lacak Pesanan)
+- /corporate (Corporate)
+- /partner (Daftar Mitra)
+- /kebijakan-privasi (Kebijakan Privasi)
+- /syarat-ketentuan (Syarat & Ketentuan)

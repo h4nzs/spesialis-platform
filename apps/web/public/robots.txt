@@ -1,10 +1,122 @@
+# ──────────────────────────────────────────────────────────────
+# robots.txt — Ahli Panggilan (ahlipanggilan.id)
+# Last updated: 2026-07-21
+# ──────────────────────────────────────────────────────────────
+#
+# Strategy: "Balanced" — Allow AI search/retrieval bots that
+# drive traffic, block AI training bots that consume content
+# for model training without attribution.
+#
+# robots.txt is a voluntary protocol. Malicious crawlers may
+# ignore these rules. Sensitive data must be protected via
+# authentication, never via robots.txt alone.
+#
+# ──────────────────────────────────────────────────────────────
+#            AI TRAINING BOTS — BLOCKED
+# ──────────────────────────────────────────────────────────────
+# These bots crawl the web to train AI/LLM foundation models.
+# Blocking them protects our content from being used for
+# training without generating traffic or attribution.
+
+# OpenAI GPT training crawler
+User-agent: GPTBot
+Disallow: /
+
+# Anthropic Claude training crawler
+User-agent: ClaudeBot
+Disallow: /
+
+# Common Crawl Foundation (used by many LLM training pipelines)
+User-agent: CCBot
+Disallow: /
+
+# Meta AI training crawler (LLaMA models)
+User-agent: FacebookBot
+Disallow: /
+User-agent: Meta-ExternalAgent
+Disallow: /
+
+# Amazon AI training crawler
+User-agent: Amazonbot
+Disallow: /
+
+# ByteDance / TikTok AI training crawler
+User-agent: Bytespider
+Disallow: /
+
+# Cohere AI training crawler
+User-agent: cohere-ai
+Disallow: /
+
+# ──────────────────────────────────────────────────────────────
+#      AI TRAINING OPT-OUT (SEARCH ENGINE BOTS)
+# ──────────────────────────────────────────────────────────────
+# These are special tokens that tell existing search engine
+# crawlers NOT to use crawled content for AI training.
+# They still index normally for search — just no training.
+
+# Google: separate training opt-out (still index for search)
+User-agent: Google-Extended
+Disallow: /
+
+# Apple: separate training opt-out (still index for search)
+User-agent: Applebot-Extended
+Disallow: /
+
+# ──────────────────────────────────────────────────────────────
+#        AI SEARCH/RETRIEVAL BOTS — ALLOWED
+# ──────────────────────────────────────────────────────────────
+# These bots fetch content to display in AI chat answers with
+# attribution and a link back to our site (drives traffic).
+#
+# NOTE: Rules for these bots are inherited from the general
+#       `User-agent: *` section below for specific paths.
+
+# OpenAI Search (ChatGPT search, real-time answers)
+User-agent: OAI-SearchBot
+Allow: /
+
+# ChatGPT user-triggered fetcher (live links in chat)
+User-agent: ChatGPT-User
+Allow: /
+
+# Anthropic Claude web search / retrieval
+User-agent: Claude-Web
+Allow: /
+User-agent: anthropic-ai
+Allow: /
+
+# Perplexity AI search & answers
+User-agent: PerplexityBot
+Allow: /
+
+# DuckDuckGo AI Answers
+User-agent: DuckAssistBot
+Allow: /
+
+# ──────────────────────────────────────────────────────────────
+#            GENERAL CRAWLERS (SEARCH ENGINES)
+# ──────────────────────────────────────────────────────────────
+# Google, Bing, Yahoo, Yandex, Baidu, etc.
+# Allowed to index public content. Blocked from private areas.
+
 User-agent: *
 Allow: /
 Disallow: /dashboard/
+Disallow: /api/
 Disallow: /login
 Disallow: /register
 Disallow: /forgot-password
 Disallow: /reset-password
 Disallow: /verify-email
 
+# ──────────────────────────────────────────────────────────────
+#                     CRAWL DELAY
+# ──────────────────────────────────────────────────────────────
+# Be gentle to our servers — 1 second between requests
+Crawl-Delay: 1
+
+# ──────────────────────────────────────────────────────────────
+#                    SITEMAP REFERENCE
+# ──────────────────────────────────────────────────────────────
 Sitemap: https://ahlipanggilan.id/sitemap.xml

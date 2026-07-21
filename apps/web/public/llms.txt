@@ -1,0 +1,44 @@
+# Ahli Panggilan
+
+> Ahli Panggilan adalah platform layanan jasa profesional (on-demand service booking) di Indonesia. Kami menghubungkan pelanggan dengan teknisi terverifikasi untuk layanan AC, plumbing, listrik, cleaning, dan jasa profesional lainnya. Melayani area Jabodetabek dan Bandung.
+
+## Tentang Perusahaan
+
+- [Tentang Kami](https://ahlipanggilan.id/tentang-kami): Visi, misi, dan nilai-nilai perusahaan — transparan, terpercaya, cepat, bergaransi.
+- [Hubungi Kami](https://ahlipanggilan.id/kontak): Informasi kontak: email (hello@ahlipanggilan.id), WhatsApp, jam operasional (Senin-Sabtu 08:00-20.00, Minggu 09:00-17.00 WIB), dan lokasi (Jakarta, Indonesia).
+- [Kebijakan Privasi](https://ahlipanggilan.id/kebijakan-privasi): Kebijakan privasi dan perlindungan data pengguna.
+- [Syarat & Ketentuan](https://ahlipanggilan.id/syarat-ketentuan): Syarat dan ketentuan penggunaan platform.
+
+## Layanan
+
+- [Semua Layanan](https://ahlipanggilan.id/services): Daftar lengkap layanan jasa profesional yang tersedia. Harga transparan, teknisi berpengalaman.
+- Halaman layanan spesifik: `/services/{slug}` — misalnya `/services/cuci-ac`, `/services/service-ac`, `/services/cleaning-rumah`.
+
+## Blog & Artikel
+
+- [Blog](https://ahlipanggilan.id/blog): Artikel dan panduan seputar perawatan rumah, tips AC, plumbing, listrik, dan jasa profesional lainnya.
+- Halaman artikel spesifik: `/blog/{slug}` — misalnya `/blog/cara-merawat-ac-awet`, `/blog/mengatasi-saluran-air-mampet`.
+
+## FAQ
+
+- [Pertanyaan Umum](https://ahlipanggilan.id/faq): Jawaban untuk pertanyaan yang sering diajukan tentang booking, pembayaran, garansi, dan cara menjadi mitra.
+
+## Corporate
+
+- [Layanan Corporate](https://ahlipanggilan.id/corporate): Layanan jasa profesional untuk perusahaan — maintenance rutin, outsourcing teknisi, SLA dengan response time terjamin. Cocok untuk hotel, apartemen, mall, dan perkantoran.
+
+## Mitra
+
+- [Daftar Mitra](https://ahlipanggilan.id/partner): Program kemitraan untuk teknisi dan profesional jasa. Daftar gratis, jadwal fleksibel, pendapatan tambahan.
+- [Daftar Sekarang](https://ahlipanggilan.id/register/partner): Form pendaftaran mitra teknisi.
+
+## Book & Track
+
+- [Booking Layanan](https://ahlipanggilan.id/book): Halaman booking layanan jasa profesional.
+- [Lacak Pesanan](https://ahlipanggilan.id/tracking): Lacak status pesanan menggunakan nomor booking.
+
+## Optional
+
+- [Full Content](https://ahlipanggilan.id/llms-full.txt): Complete platform information in a single document for AI consumption. Contains comprehensive details about all services, FAQ, corporate solutions, and partner programs.
+- [Sitemap XML](https://ahlipanggilan.id/sitemap.xml): Sitemap dalam format XML untuk crawler.
+- [API Documentation](https://ahlipanggilan.id/api/v1): REST API documentation (endpoint: `/api/v1/`).

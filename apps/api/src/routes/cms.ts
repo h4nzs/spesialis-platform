@@ -1,6 +1,14 @@
 import { Hono } from 'hono';
 import { eq, and, desc, asc, isNull } from 'drizzle-orm';
-import { db, articles, articleCategories, faq, cmsPages, cmsTestimonials } from '../lib/db.ts';
+import {
+  db,
+  articles,
+  articleCategories,
+  faq,
+  cmsPages,
+  cmsTestimonials,
+  coverageAreas,
+} from '../lib/db.ts';
 import { success } from '../lib/response.ts';
 import { cmsCache } from '../lib/cache.ts';
 
@@ -15,11 +23,15 @@ cmsRouter.use('*', async (c, next) => {
 });
 
 cmsRouter.get('/faq', async (c) => {
-  const cacheKey = 'cms:faq';
+  const category = c.req.query('category');
+  const cacheKey = `cms:faq${category ? `:cat:${category}` : ''}`;
   const cached = cmsCache.get(cacheKey);
   if (cached.hit) return success(c, cached.data);
 
   try {
+    const conditions: ReturnType<typeof eq>[] = [eq(faq.isActive, 'true')];
+    if (category) conditions.push(eq(faq.category, category));
+
     const items = await db
       .select({
         id: faq.id,
@@ -29,7 +41,7 @@ cmsRouter.get('/faq', async (c) => {
         sort: faq.displayOrder,
       })
       .from(faq)
-      .where(eq(faq.isActive, 'true'))
+      .where(and(...conditions))
       .orderBy(asc(faq.displayOrder));
 
     cmsCache.set(cacheKey, items);
@@ -133,6 +145,25 @@ cmsRouter.get('/testimonials', async (c) => {
       .from(cmsTestimonials)
       .where(eq(cmsTestimonials.isActive, 'true'))
       .orderBy(asc(cmsTestimonials.displayOrder));
+
+    cmsCache.set(cacheKey, items);
+    return success(c, items);
+  } catch {
+    return success(c, []);
+  }
+});
+
+cmsRouter.get('/coverage-areas', async (c) => {
+  const cacheKey = 'cms:coverage-areas';
+  const cached = cmsCache.get(cacheKey);
+  if (cached.hit) return success(c, cached.data);
+
+  try {
+    const items = await db
+      .select({ city: coverageAreas.city })
+      .from(coverageAreas)
+      .where(eq(coverageAreas.isActive, 'true'))
+      .orderBy(asc(coverageAreas.displayOrder));
 
     cmsCache.set(cacheKey, items);
     return success(c, items);

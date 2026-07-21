@@ -3,18 +3,23 @@ export const prerender = false;
 
 import BaseLayout from '../../layouts/BaseLayout.astro'
 import { ServiceDetail } from '../../components/services/ServiceDetail'
-import type { ServiceData, ReviewData } from '../../components/services/utils'
+import type { ServiceData, ReviewData, FaqItem, RelatedServiceItem } from '../../components/services/utils'
+import { inferCategorySlug } from '@ahlipanggilan/shared'
 
 const { slug } = Astro.params
 
-// SSR: fetch service + reviews for JSON-LD structured data
+// ── SSR data fetching ───────────────────────────────────────────
+// Fetch service + reviews + category FAQs for JSON-LD structured data
 // ServiceDetail client component handles visual rendering with skeleton
 let service: ServiceData | null = null
 let reviews: ReviewData | null = null
 let error: string | null = null
+let serviceFaqs: FaqItem[] = []
+let catSlug: string | null = null
+let relatedServices: RelatedServiceItem[] = []
 
 try {
-  const apiUrl = process.env.API_URL ?? process.env.PUBLIC_API_URL ?? 'http://localhost:3000'
+  const apiUrl = process.env.PUBLIC_API_URL ?? process.env.API_URL ?? 'http://localhost:3000'
   const [serviceRes, reviewsRes] = await Promise.all([
     fetch(`${apiUrl}/api/v1/services/${slug}`),
     fetch(`${apiUrl}/api/v1/services/${slug}/reviews`),
@@ -26,10 +31,247 @@ try {
     const reviewsJson = await reviewsRes.json()
     reviews = reviewsJson.data
   }
+
+  // ── Fetch coverage areas for areaServed JSON-LD ────────────
+  let coverageCities: string[] = [];
+  try {
+    const covRes = await fetch(`${apiUrl}/api/v1/cms/coverage-areas`);
+    if (covRes.ok) {
+      const covJson = await covRes.json();
+      const rawCities: Array<{ city: string }> = covJson.data ?? [];
+      coverageCities = rawCities.map((c) => c.city);
+    }
+  } catch {
+    // Silent — areaServed will be omitted
+  }
+
+  // ── Fetch category slug for AEO + HowTo ──────────────────
+  let matchedCategorySlug: string | null = null
+  if (service?.categoryId) {
+    try {
+      const catRes = await fetch(`${apiUrl}/api/v1/service-categories`)
+      if (catRes.ok) {
+        const catJson = await catRes.json()
+        const categories: Array<{ id: string; slug: string }> = catJson.data ?? []
+        const cat = categories.find((c) => c.id === service!.categoryId)
+        if (cat?.slug) {
+          matchedCategorySlug = cat.slug
+        }
+      }
+    } catch {
+      // Silent — fall back to generated FAQ + generic HowTo below
+    }
+  }
+
+  // ── Fetch category-specific FAQs for AEO ───────────────────
+  if (matchedCategorySlug) {
+    try {
+      const faqRes = await fetch(
+        `${apiUrl}/api/v1/cms/faq?category=${matchedCategorySlug}`,
+      )
+      if (faqRes.ok) {
+        const faqJson = await faqRes.json()
+        const rawFaqs: Array<{ question: string; answer: string }> = faqJson.data ?? []
+        if (rawFaqs.length > 0) {
+          serviceFaqs = rawFaqs.map((f) => ({ question: f.question, answer: f.answer }))
+        }
+      }
+    } catch {
+      // Silent — fall back to generated FAQs below
+    }
+  }
+
+  // ── Fallback: auto-generate FAQs if none from CMS ─────────
+  if (service && serviceFaqs.length === 0) {
+    serviceFaqs = [
+      {
+        question: `Bagaimana cara memesan layanan ${service.name}?`,
+        answer: `Anda dapat memesan layanan ${service.name} melalui website Ahli Panggilan di halaman booking. Pilih layanan, isi data diri, jadwal, dan alamat. Tim kami akan mengonfirmasi pesanan Anda dalam waktu singkat.`,        
+      },
+      {
+        question: `Berapa biaya layanan ${service.name}?`,
+        answer: `Biaya layanan ${service.name} adalah ${service.basePrice}. Harga sudah transparan tanpa biaya tersembunyi. Untuk kebutuhan khusus atau area di luar cakupan, tim kami akan memberikan penawaran harga setelah survey.`,
+      },
+      {
+        question: `Apakah ada garansi untuk layanan ${service.name}?`,
+        answer: `Ya, setiap layanan ${service.name} dilindungi garansi kepuasan Ahli Panggilan. Jika hasil pekerjaan tidak sesuai standar, kami akan menindaklanjuti tanpa biaya tambahan.`,
+      },
+      {
+        question: `Apakah teknisi ${service.name} sudah berpengalaman?`,
+        answer: `Ya, setiap teknisi Ahli Panggilan telah melalui proses verifikasi dan memiliki pengalaman di bidangnya. Kami memastikan hanya teknisi berkualitas dan terpercaya yang melayani Anda.`,
+      },
+      {
+        question: `Bagaimana cara pembayaran untuk layanan ${service.name}?`,
+        answer: `Pembayaran dapat dilakukan melalui Transfer Bank, QRIS, E-Wallet, atau Cash. Pembayaran dilakukan setelah pekerjaan selesai sesuai kesepakatan.`,
+      },
+    ]
+  }
+
+  // ── Fetch related services from same category (internal linking) ─
+  if (service?.categoryId) {
+    try {
+      const relatedRes = await fetch(
+        `${apiUrl}/api/v1/services?categoryId=${service.categoryId}&limit=6`,
+      )
+      if (relatedRes.ok) {
+        const relatedJson = await relatedRes.json()
+        const raw: RelatedServiceItem[] = relatedJson.data ?? []
+        // Exclude the current service from related list
+        relatedServices = raw.filter((r) => r.slug !== service!.slug)
+      }
+    } catch {
+      // Silent — related services section will not appear
+    }
+  }
+
+  // ── Determine category slug for HowTo schema ─────────────
+  catSlug = matchedCategorySlug ?? (service?.name ? inferCategorySlug(service.name) : null)
 } catch (e) {
   error = e instanceof Error ? e.message : 'Gagal memuat layanan'
 }
 
+// ── HowTo steps per category ────────────────────────────────────
+interface HowToStepItem {
+  name: string
+  text: string
+}
+
+const HOWTO_STEPS_BY_CATEGORY: Record<string, HowToStepItem[]> = {
+  emergency: [
+    { name: 'Hubungi Darurat', text: 'Hubungi tim darurat Ahli Panggilan melalui WhatsApp atau telepon. Sampaikan lokasi dan kondisi darurat yang Anda alami.' },
+    { name: 'Tim Dikerahkan', text: 'Tim teknisi darurat kami akan segera menuju lokasi Anda. Kami mengutamakan respons cepat untuk penanganan darurat.' },
+    { name: 'Penanganan Darurat', text: 'Teknisi melakukan penanganan darurat sesuai prosedur keselamatan untuk mengatasi masalah dengan cepat dan tepat.' },
+    { name: 'Pemeriksaan Hasil', text: 'Pastikan kondisi sudah aman dan masalah telah tertangani sebelum teknisi meninggalkan lokasi.' },
+    { name: 'Pembayaran', text: 'Lakukan pembayaran setelah penanganan selesai. Tersedia Transfer Bank, QRIS, E-Wallet, atau Cash.' },
+  ],
+  montir: [
+    { name: 'Pesan Layanan Montir', text: 'Pilih layanan montir yang sesuai dengan kendaraan Anda. Isi data kendaraan, lokasi, dan jadwal melalui website atau WhatsApp.' },
+    { name: 'Teknisi Datang ke Lokasi', text: 'Teknisi montir kami akan datang ke lokasi kendaraan Anda sesuai jadwal yang telah disepakati.' },
+    { name: 'Diagnosa & Konsultasi', text: 'Teknisi melakukan diagnosa awal pada kendaraan dan memberikan penjelasan tentang perbaikan yang diperlukan.' },
+    { name: 'Perbaikan', text: 'Teknisi melakukan perbaikan sesuai kebutuhan, termasuk service ringan, penggantian onderdil, atau perbaikan mesin.' },
+    { name: 'Uji Coba', text: 'Kendaraan diuji coba untuk memastikan semua berfungsi dengan baik sebelum diserahkan kembali.' },
+    { name: 'Pembayaran', text: 'Lakukan pembayaran setelah perbaikan selesai. Tersedia Transfer Bank, QRIS, E-Wallet, atau Cash.' },
+  ],
+  electronics: [
+    { name: 'Pesan Layanan Elektronik', text: 'Pilih layanan elektronik yang Anda butuhkan. Isi data unit, merek, model, dan gejala kerusakan melalui website atau WhatsApp.' },
+    { name: 'Teknisi Datang ke Lokasi', text: 'Teknisi kami akan datang ke lokasi sesuai jadwal yang telah disepakati dengan membawa peralatan yang diperlukan.' },
+    { name: 'Inspeksi & Diagnosa', text: 'Teknisi melakukan pengecekan menyeluruh pada unit elektronik untuk mendiagnosa sumber masalah.' },
+    { name: 'Perbaikan atau Service', text: 'Teknisi melakukan perbaikan atau perawatan sesuai kebutuhan. Kami menggunakan suku cadang dan material berkualitas.' },
+    { name: 'Uji Coba & Quality Check', text: 'Unit diuji coba untuk memastikan berfungsi normal dan sesuai standar kualitas sebelum diserahkan.' },
+    { name: 'Pembayaran', text: 'Lakukan pembayaran setelah service selesai. Tersedia Transfer Bank, QRIS, E-Wallet, atau Cash.' },
+  ],
+  plumbing: [
+    { name: 'Pesan Layanan Plumbing', text: 'Pilih layanan plumbing yang dibutuhkan. Isi data lokasi, jenis masalah (bocor/mampet/pasang baru), dan jadwal.' },
+    { name: 'Inspeksi Lokasi', text: 'Teknisi datang ke lokasi untuk melakukan inspeksi dan mengidentifikasi sumber masalah pada instalasi air.' },
+    { name: 'Perbaikan', text: 'Teknisi melakukan perbaikan sesuai kebutuhan, seperti perbaikan pipa bocor, pengurasan saluran mampet, atau pemasangan baru.' },
+    { name: 'Uji Coba', text: 'Hasil perbaikan diuji dengan mengalirkan air untuk memastikan tidak ada kebocoran dan saluran berfungsi normal.' },
+    { name: 'Pembayaran', text: 'Lakukan pembayaran setelah perbaikan selesai. Tersedia Transfer Bank, QRIS, E-Wallet, atau Cash.' },
+  ],
+  electrical: [
+    { name: 'Pesan Layanan Listrik', text: 'Pilih layanan listrik yang dibutuhkan. Isi data lokasi, jenis pekerjaan (perbaikan/pasang baru), dan daya listrik.' },
+    { name: 'Inspeksi Instalasi', text: 'Teknisi melakukan pengecekan instalasi listrik untuk memastikan keamanan dan mengidentifikasi masalah.' },
+    { name: 'Pengerjaan', text: 'Teknisi melakukan perbaikan, penggantian, atau pemasangan instalasi listrik sesuai standar keamanan.' },
+    { name: 'Uji Coba & Safety Check', text: 'Seluruh instalasi diuji untuk memastikan berfungsi dengan baik dan aman digunakan.' },
+    { name: 'Pembayaran', text: 'Lakukan pembayaran setelah pengerjaan selesai. Tersedia Transfer Bank, QRIS, E-Wallet, atau Cash.' },
+  ],
+  cleaning: [
+    { name: 'Pesan Layanan Cleaning', text: 'Pilih layanan cleaning yang dibutuhkan. Isi data properti, luas area, jumlah ruangan, dan jadwal pembersihan.' },
+    { name: 'Persiapan & Kedatangan', text: 'Tim cleaning kami datang ke lokasi dengan peralatan dan bahan pembersih profesional sesuai jadwal.' },
+    { name: 'Pelaksanaan Cleaning', text: 'Tim melakukan pembersihan menyeluruh sesuai standar prosedur untuk hasil yang maksimal.' },
+    { name: 'Inspeksi Hasil', text: 'Hasil pembersihan diperiksa untuk memastikan semua area bersih dan sesuai standar kualitas.' },
+    { name: 'Pembayaran', text: 'Lakukan pembayaran setelah cleaning selesai. Tersedia Transfer Bank, QRIS, E-Wallet, atau Cash.' },
+  ],
+  construction: [
+    { name: 'Pesan Layanan Bangunan', text: 'Pilih layanan bangunan yang dibutuhkan. Isi data proyek, lokasi, luas area, dan estimasi budget.' },
+    { name: 'Survey & Konsultasi', text: 'Tim kami melakukan survey lokasi untuk mengukur, menganalisis, dan memberikan rekomendasi terbaik.' },
+    { name: 'Persiapan Material', text: 'Material dan peralatan disiapkan sesuai kebutuhan proyek dengan standar kualitas terbaik.' },
+    { name: 'Pengerjaan', text: 'Tim berpengalaman melakukan pengerjaan konstruksi atau renovasi sesuai spesifikasi yang disepakati.' },
+    { name: 'Finishing & Quality Check', text: 'Tahap finishing dilakukan dengan teliti, dilanjutkan pengecekan kualitas hasil pekerjaan.' },
+    { name: 'Pembayaran', text: 'Lakukan pembayaran setelah pekerjaan selesai. Tersedia Transfer Bank, QRIS, E-Wallet, atau Cash.' },
+  ],
+  welding: [
+    { name: 'Pesan Layanan Las', text: 'Pilih layanan las yang dibutuhkan. Isi data ukuran, bahan (besi/stainless), dan lokasi pemasangan.' },
+    { name: 'Survey & Pengukuran', text: 'Teknisi melakukan survey lokasi dan pengukuran yang presisi sesuai kebutuhan Anda.' },
+    { name: 'Fabrikasi', text: 'Pengerjaan fabrikasi dilakukan di bengkel atau di lokasi sesuai jenis pekerjaan.' },
+    { name: 'Pemasangan', text: 'Hasil fabrikasi dipasang di lokasi dengan rapi dan kuat sesuai standar.' },
+    { name: 'Finishing', text: 'Pengecekan akhir, pembersihan area kerja, dan finishing untuk hasil yang maksimal.' },
+    { name: 'Pembayaran', text: 'Lakukan pembayaran setelah pemasangan selesai. Tersedia Transfer Bank, QRIS, E-Wallet, atau Cash.' },
+  ],
+  paving: [
+    { name: 'Pesan Layanan Aspal', text: 'Pilih layanan pengaspalan. Isi data luas area, jenis aspal, dan lokasi pekerjaan.' },
+    { name: 'Survey Lokasi', text: 'Tim kami melakukan survey lokasi untuk mengukur area dan menganalisis kebutuhan pengaspalan.' },
+    { name: 'Persiapan Lahan', text: 'Lahan dibersihkan dan dipersiapkan, termasuk pengerukan dan pemadatan dasar.' },
+    { name: 'Pengaspalan', text: 'Proses pengaspalan dilakukan dengan alat berat dan teknik yang sesuai standar.' },
+    { name: 'Finishing & Pemadatan', text: 'Aspal dipadatkan dan area dibersihkan. Jalur siap digunakan setelah proses curing.' },
+    { name: 'Pembayaran', text: 'Lakukan pembayaran setelah pengaspalan selesai. Tersedia Transfer Bank, QRIS, E-Wallet, atau Cash.' },
+  ],
+  septic: [
+    { name: 'Pesan Layanan Sedot WC', text: 'Pilih layanan sedot septic tank. Isi data kapasitas tangki dan lokasi.' },
+    { name: 'Survey Lokasi', text: 'Tim kami melakukan survey untuk memastikan akses mobil sedot dan lokasi tangki.' },
+    { name: 'Pengerjaan Sedot', text: 'Proses penyedotan septic tank dilakukan dengan alat khusus dan sesuai prosedur kebersihan.' },
+    { name: 'Perapihan', text: 'Area kerja dibersihkan dan dirapikan setelah proses penyedotan selesai.' },
+    { name: 'Pembayaran', text: 'Lakukan pembayaran setelah pengerjaan selesai. Tersedia Transfer Bank, QRIS, E-Wallet, atau Cash.' },
+  ],
+  'pest-control': [
+    { name: 'Pesan Layanan Pest Control', text: 'Pilih layanan pest control. Isi data jenis hama, tingkat infestasi, dan luas area.' },
+    { name: 'Survey & Identifikasi Hama', text: 'Teknisi melakukan survey untuk mengidentifikasi jenis hama, sumber, dan tingkat infestasi.' },
+    { name: 'Penyemprotan atau Treatment', text: 'Treatment dilakukan dengan metode yang sesuai (fogging, penyemprotan, atau umpan) dan bahan aman.' },
+    { name: 'Monitoring & Evaluasi', text: 'Area dimonitoring untuk memastikan hama telah tertangani dan tidak ada infestasi ulang.' },
+    { name: 'Pembayaran', text: 'Lakukan pembayaran setelah treatment selesai. Tersedia Transfer Bank, QRIS, E-Wallet, atau Cash.' },
+  ],
+  garden: [
+    { name: 'Pesan Layanan Taman', text: 'Pilih layanan taman yang dibutuhkan. Isi data luas area dan jenis pekerjaan.' },
+    { name: 'Survey Lokasi', text: 'Tim kami melakukan survey untuk melihat kondisi taman dan mendiskusikan konsep yang diinginkan.' },
+    { name: 'Pengerjaan Taman', text: 'Pengerjaan meliputi penanaman, pemotongan, penataan, atau perawatan taman sesuai kebutuhan.' },
+    { name: 'Finishing & Pembersihan', text: 'Area dibersihkan dan hasil pekerjaan dirapikan untuk tampilan yang maksimal.' },
+    { name: 'Pembayaran', text: 'Lakukan pembayaran setelah pengerjaan selesai. Tersedia Transfer Bank, QRIS, E-Wallet, atau Cash.' },
+  ],
+  security: [
+    { name: 'Konsultasi Keamanan', text: 'Hubungi tim Ahli Panggilan untuk konsultasi kebutuhan keamanan Anda. Sampaikan jenis layanan dan lokasi.' },
+    { name: 'Survey Lokasi', text: 'Tim kami melakukan survey lokasi untuk menganalisis kebutuhan keamanan dan menentukan jumlah personil.' },
+    { name: 'Penempatan Personil', text: 'Personil keamanan yang terlatih ditempatkan sesuai jadwal dan lokasi yang disepakati.' },
+    { name: 'Patroli & Monitoring', text: 'Petugas melakukan patroli rutin dan monitoring area sesuai standar operasional prosedur.' },
+    { name: 'Laporan & Evaluasi', text: 'Laporan kegiatan keamanan disampaikan secara berkala untuk evaluasi dan perbaikan.' },
+    { name: 'Pembayaran', text: 'Lakukan pembayaran sesuai periode yang disepakati. Tersedia Transfer Bank, QRIS, atau E-Wallet.' },
+  ],
+  driver: [
+    { name: 'Pesan Layanan Supir', text: 'Pilih layanan driver/supir yang dibutuhkan. Isi data durasi, jam kerja, dan rute perjalanan.' },
+    { name: 'Penjadwalan', text: 'Kami menyesuaikan jadwal driver dengan kebutuhan Anda, termasuk jam mulai, rute, dan durasi.' },
+    { name: 'Pelaksanaan Tugas', text: 'Driver profesional menjalankan tugas sesuai jadwal yang telah disepakati.' },
+    { name: 'Evaluasi', text: 'Lakukan evaluasi rutin untuk memastikan kualitas layanan driver sesuai harapan.' },
+    { name: 'Pembayaran', text: 'Lakukan pembayaran sesuai periode yang disepakati. Tersedia Transfer Bank, QRIS, atau E-Wallet.' },
+  ],
+  household: [
+    { name: 'Konsultasi Kebutuhan', text: 'Hubungi tim Ahli Panggilan untuk konsultasi kebutuhan asisten rumah tangga. Sampaikan jenis pekerja, durasi, dan jam kerja.' },
+    { name: 'Seleksi & Penempatan', text: 'Kami melakukan seleksi dan menempatkan pekerja rumah tangga yang sesuai dengan kebutuhan Anda.' },
+    { name: 'Mulai Bekerja', text: 'Pekerja rumah tangga mulai bertugas sesuai jadwal yang telah disepakati.' },
+    { name: 'Monitoring Berkala', text: 'Tim Ahli Panggilan melakukan monitoring berkala untuk memastikan kualitas layanan.' },
+    { name: 'Pembayaran', text: 'Lakukan pembayaran sesuai periode yang disepakati. Tersedia Transfer Bank, QRIS, atau E-Wallet.' },
+  ],
+  investigation: [
+    { name: 'Konsultasi Awal', text: 'Hubungi tim investigasi untuk konsultasi awal. Sampaikan kebutuhan investigasi dengan tingkat kerahasiaan tinggi.' },
+    { name: 'Kontrak & Kerahasiaan', text: 'Tandatangani kontrak kerja dan perjanjian kerahasiaan untuk memulai proses investigasi.' },
+    { name: 'Pelaksanaan Investigasi', text: 'Tim investigasi melakukan pengumpulan data, verifikasi lapangan, dan analisis sesuai prosedur.' },
+    { name: 'Laporan Hasil', text: 'Laporan hasil investigasi disusun secara profesional dan disampaikan kepada klien.' },
+    { name: 'Pembayaran', text: 'Lakukan pembayaran sesuai kesepakatan. Tersedia Transfer Bank, QRIS, atau E-Wallet.' },
+  ],
+}
+
+/** Build HowTo schema steps array from category slug */
+function buildHowToSteps(categorySlug: string | null): HowToStepItem[] {
+  const steps = categorySlug ? HOWTO_STEPS_BY_CATEGORY[categorySlug] : undefined
+  if (steps) return steps
+  // Generic fallback — digunakan jika kategori tidak dikenali
+  return [
+    { name: 'Pesan Layanan', text: 'Pilih layanan yang Anda butuhkan dan isi data pemesanan melalui website Ahli Panggilan. Sertakan detail pekerjaan, jadwal, dan alamat.' },
+    { name: 'Konfirmasi Pesanan', text: 'Tim Ahli Panggilan akan mengonfirmasi pesanan Anda dan mempersiapkan teknisi yang sesuai dengan kebutuhan.' },
+    { name: 'Teknisi Datang ke Lokasi', text: 'Teknisi berpengalaman akan datang ke lokasi Anda sesuai jadwal yang telah disepakati.' },
+    { name: 'Pelaksanaan Pekerjaan', text: 'Teknisi melaksanakan pekerjaan sesuai standar prosedur dengan peralatan profesional.' },
+    { name: 'Pembayaran', text: 'Lakukan pembayaran setelah pekerjaan selesai. Tersedia Transfer Bank, QRIS, E-Wallet, atau Cash.' },
+  ]
+}
+
+// ── Build JSON-LD Graph ────────────────────────────────────────
 const jsonLdGraph: Record<string, unknown>[] = [];
 
 if (service) {
@@ -41,11 +283,16 @@ if (service) {
       { '@type': 'ListItem', position: 3, name: service?.name ?? 'Detail Layanan' },
     ],
   })
+  
   const serviceSchema: Record<string, unknown> = {
     '@type': 'Service',
     name: service.name,
     description: service.shortDescription,
     provider: { '@type': 'Organization', name: 'Ahli Panggilan' },
+    areaServed: coverageCities.map((city) => ({
+      '@type': 'City',
+      name: city,
+    })),
     offers: {
       '@type': 'Offer',
       price: service.basePrice,
@@ -75,6 +322,44 @@ if (service) {
   }
 
   jsonLdGraph.push(serviceSchema)
+
+  // ── Add FAQPage schema for AEO ────────────────────────────
+  if (serviceFaqs.length > 0) {
+    jsonLdGraph.push({
+      '@type': 'FAQPage',
+      mainEntity: serviceFaqs.map((faq) => ({
+        '@type': 'Question',
+        name: faq.question,
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: faq.answer,
+        },
+      })),
+    })
+  }
+
+  // ── Add HowTo schema for AEO ─────────────────────────────
+  const howToSteps = buildHowToSteps(catSlug)
+  const howToSchema: Record<string, unknown> = {
+    '@type': 'HowTo',
+    name: `Cara Memesan ${service.name}`,
+    description: `Panduan langkah demi langkah untuk memesan dan mendapatkan layanan ${service.name} dari Ahli Panggilan.`,
+    step: howToSteps.map((step, i) => ({
+      '@type': 'HowToStep',
+      position: i + 1,
+      name: step.name,
+      itemListElement: [
+        {
+          '@type': 'HowToDirection',
+          text: step.text,
+        },
+      ],
+    })),
+  }
+  if (service.estimatedDuration) {
+    howToSchema.totalTime = `PT${service.estimatedDuration}M`
+  }
+  jsonLdGraph.push(howToSchema)
 }
 
 const jsonLdPayload = service
@@ -90,6 +375,6 @@ const jsonLdPayload = service
   ogImageAlt={service?.name ?? undefined}
   jsonLd={jsonLdPayload}
 >
-  <ServiceDetail slug={slug!} client:load />
+  <ServiceDetail slug={slug!} initialFaqs={serviceFaqs} initialRelated={relatedServices} client:load />
 </BaseLayout>
 
