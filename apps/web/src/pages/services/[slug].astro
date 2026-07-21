@@ -17,6 +17,7 @@ let error: string | null = null
 let serviceFaqs: FaqItem[] = []
 let catSlug: string | null = null
 let relatedServices: RelatedServiceItem[] = []
+let coverageCities: string[] = [];
 
 try {
   const apiUrl = process.env.PUBLIC_API_URL ?? process.env.API_URL ?? 'http://localhost:3000'
@@ -33,7 +34,6 @@ try {
   }
 
   // ── Fetch coverage areas for areaServed JSON-LD ────────────
-  let coverageCities: string[] = [];
   try {
     const covRes = await fetch(`${apiUrl}/api/v1/cms/coverage-areas`);
     if (covRes.ok) {

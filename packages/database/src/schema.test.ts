@@ -57,6 +57,7 @@ const TABLE_NAMES = [
   'coverageAreas',
   'serviceSuggestions',
   'cmsTestimonials',
+  'articleLinks',
 ] as const;
 
 const RELATION_NAMES = [
@@ -87,6 +88,7 @@ const RELATION_NAMES = [
   'partnerPenaltiesRelations',
   'cmsPagesRelations',
   'indexnowLogsRelations',
+  'articleLinksRelations',
 ] as const;
 
 // Tables that support soft-delete (have deletedAt timestamp column)
