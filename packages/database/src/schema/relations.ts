@@ -25,6 +25,7 @@ import { orderMedia } from './order-media.ts';
 import { media } from './media.ts';
 import { articleCategories } from './article-categories.ts';
 import { articles } from './articles.ts';
+import { articleLinks } from './article-links.ts';
 import { contracts } from './contracts.ts';
 import { invoices } from './invoices.ts';
 import { partnerPenalties } from './partner-penalties.ts';
@@ -185,10 +186,25 @@ export const articleCategoriesRelations = relations(articleCategories, ({ many }
   articles: many(articles),
 }));
 
-export const articlesRelations = relations(articles, ({ one }) => ({
+export const articlesRelations = relations(articles, ({ one, many }) => ({
   category: one(articleCategories, {
     fields: [articles.categoryId],
     references: [articleCategories.id],
+  }),
+  sourceLinks: many(articleLinks, { relationName: 'sourceArticle' }),
+  targetLinks: many(articleLinks, { relationName: 'targetArticle' }),
+}));
+
+export const articleLinksRelations = relations(articleLinks, ({ one }) => ({
+  sourceArticle: one(articles, {
+    fields: [articleLinks.sourceArticleId],
+    references: [articles.id],
+    relationName: 'sourceArticle',
+  }),
+  targetArticle: one(articles, {
+    fields: [articleLinks.targetArticleId],
+    references: [articles.id],
+    relationName: 'targetArticle',
   }),
 }));
 

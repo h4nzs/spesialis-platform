@@ -29,6 +29,7 @@ interface ArticleData {
   canonicalUrl: string | null
   schemaJson: Record<string, unknown> | null
   tags: string[] | null
+  isPillarContent: boolean | null
 }
 
 const apiUrl = process.env.API_URL ?? process.env.PUBLIC_API_URL ?? 'http://localhost:3000'
@@ -72,6 +73,7 @@ try {
   canonicalUrl: r.canonical_url ?? null,
   schemaJson: r.schema_json ?? null,
   tags: r.tags ?? null,
+      isPillarContent: r.is_pillar_content ?? false,
       }
     } else {
       error = 'Artikel tidak ditemukan'
@@ -131,6 +133,22 @@ const defaultJsonLd: Record<string, unknown> | undefined = article
     }
   : undefined;
 
+// Auto-inject CollectionPage schema for pillar content (AEO/GEO optimization)
+const pillarCollectionSchema = article?.isPillarContent
+  ? {
+      '@type': 'CollectionPage',
+      mainEntity: {
+        '@type': 'Article',
+        headline: article.title,
+        inLanguage: 'id-ID',
+      },
+      about: {
+        '@type': 'Thing',
+        name: article.categoryName ?? article.title,
+      },
+    }
+  : null;
+
 // Merge custom schemaJson into the graph if present
 let jsonLdPayload = defaultJsonLd;
 if (article?.schemaJson && defaultJsonLd) {
@@ -149,6 +167,15 @@ if (article?.schemaJson && defaultJsonLd) {
       '@graph': [...baseGraph, custom],
     };
   }
+}
+
+// Append pillar CollectionPage if applicable
+if (pillarCollectionSchema && jsonLdPayload) {
+  const baseGraph = jsonLdPayload['@graph'] as Record<string, unknown>[];
+  jsonLdPayload = {
+    '@context': 'https://schema.org',
+    '@graph': [...baseGraph, pillarCollectionSchema],
+  };
 }
 
 // RichTextEditor produces HTML; renderMarkdown expects Markdown.

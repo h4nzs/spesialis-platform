@@ -38,6 +38,10 @@ router.get('/', async (c) => {
       priority: config.sitemap_blog_listing_priority ?? '0.8',
       changefreq: config.sitemap_blog_listing_changefreq ?? 'daily',
     },
+    pillarContent: {
+      priority: config.sitemap_pillar_content_priority ?? '1.0',
+      changefreq: config.sitemap_pillar_content_changefreq ?? 'daily',
+    },
     cmsPages: {
       priority: config.sitemap_cms_pages_priority ?? '0.6',
       changefreq: config.sitemap_cms_pages_changefreq ?? 'monthly',

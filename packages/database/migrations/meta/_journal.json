@@ -183,6 +183,13 @@
       "when": 1784553025322,
       "tag": "0025_closed_sir_ram",
       "breakpoints": true
+    },
+    {
+      "idx": 26,
+      "version": "7",
+      "when": 1784656500000,
+      "tag": "0026_add_pillar_content",
+      "breakpoints": true
     }
   ]
 }

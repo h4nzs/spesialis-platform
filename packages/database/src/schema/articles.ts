@@ -30,6 +30,7 @@ export const articles = pgTable(
     authorName: varchar('author_name', { length: 255 }),
     status: varchar('status', { length: 50 }).notNull().default('Draft'),
     isFeatured: boolean('is_featured').notNull().default(false),
+    isPillarContent: boolean('is_pillar_content').notNull().default(false),
     tags: text('tags')
       .array()
       .notNull()
@@ -53,5 +54,6 @@ export const articles = pgTable(
     publishedIdx: index('idx_articles_published_at').on(table.publishedAt),
     categoryIdIdx: index('idx_articles_category_id').on(table.categoryId),
     authorIdIdx: index('idx_articles_author_id').on(table.authorId),
+    isPillarContentIdx: index('idx_articles_is_pillar_content').on(table.isPillarContent),
   }),
 );

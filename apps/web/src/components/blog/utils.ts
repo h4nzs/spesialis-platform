@@ -30,6 +30,7 @@ export interface CmsArticle {
   og_description?: string | null;
   og_image?: string | null;
   canonical_url?: string | null;
+  is_pillar_content?: boolean | null;
 }
 
 export function formatDate(iso: string): string {

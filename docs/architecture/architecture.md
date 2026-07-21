@@ -145,6 +145,22 @@ Fungsi:
 
 SEO dikelola melalui beberapa komponen yang saling terintegrasi:
 
+### Pillar Content System (Content Pillar / Cluster)
+
+Sistem Content Pillar mengadopsi konsep Rank Math Pillar Content untuk CMS kustom, memungkinkan content manager membangun **Topical Authority** untuk SEO, AEO, dan GEO.
+
+Dokumentasi lengkap ada di: [`docs/architecture/pillar-content.md`](./pillar-content.md)
+
+#### Ringkasan Komponen
+
+| Komponen                | Sprint | Lokasi                                                |
+| ----------------------- | ------ | ----------------------------------------------------- |
+| Database + Checkbox     | 1      | Migration, ArticleEditor sidebar                      |
+| Link Suggestion Engine  | 2      | API `/suggestions`, `PillarLinkSuggestions.tsx`       |
+| Link Validation + Score | 3      | API `/seo-score`, `PillarSeoScore.tsx`                |
+| Sitemap + JSON-LD       | 4      | Sitemap boost, `blog/[slug].astro`                    |
+| Cluster Visualizer      | 5      | API `/pillar-overview`, `PillarClusterVisualizer.tsx` |
+
 ### Permission System
 
 - 8 permission keys dengan granular role assignment (admin/super_admin/content_manager)

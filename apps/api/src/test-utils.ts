@@ -78,10 +78,12 @@ export function buildEmptyTables() {
     'partnerDocuments',
     'articles',
     'articleCategories',
+    'articleLinks',
     'contracts',
     'invoices',
     'faq',
     'cmsTestimonials',
+    'corporateInquiries',
     'usersRelations',
     'customerProfilesRelations',
     'partnerProfilesRelations',
@@ -104,8 +106,11 @@ export function buildEmptyTables() {
     'orderMediaRelations',
     'articlesRelations',
     'articleCategoriesRelations',
+    'articleLinksRelations',
     'contractsRelations',
     'invoicesRelations',
+    'partnerPenalties',
+    'partnerPenaltiesRelations',
   ];
   const exps: Record<string, unknown> = {};
   for (const n of names) exps[n] = {};
@@ -200,10 +205,12 @@ export const TABLE_NAMES = [
   'partnerDocuments',
   'articles',
   'articleCategories',
+  'articleLinks',
   'contracts',
   'invoices',
   'faq',
   'cmsTestimonials',
+  'corporateInquiries',
   'usersRelations',
   'customerProfilesRelations',
   'partnerProfilesRelations',
@@ -226,8 +233,11 @@ export const TABLE_NAMES = [
   'orderMediaRelations',
   'articlesRelations',
   'articleCategoriesRelations',
+  'articleLinksRelations',
   'contractsRelations',
   'invoicesRelations',
+  'partnerPenalties',
+  'partnerPenaltiesRelations',
 ];
 
 export const EMPTY_TABLES: Record<string, unknown> = {};

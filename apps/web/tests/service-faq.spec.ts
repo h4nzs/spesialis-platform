@@ -225,22 +225,6 @@ test.describe('Service Detail - FAQ Section & FAQPage Schema', () => {
       const cmsFaqBody = (await cmsFaqRes.json()) as {
         data?: Array<{ question: string }>;
       };
-      const cmsQuestions = cmsFaqBody.data?.map((f) => f.question) ?? [];
-
-      // Get page FAQ questions
-      const pageSummaries = page.locator('details summary');
-      const summaryCount = await pageSummaries.count();
-
-      // Check if at least one CMS FAQ question appears on the page
-      let cmsFaqUsed = false;
-      for (let i = 0; i < summaryCount; i++) {
-        const text = await pageSummaries.nth(i).textContent();
-        if (text && cmsQuestions.some((q) => text.includes(q.slice(0, 15)))) {
-          cmsFaqUsed = true;
-          break;
-        }
-      }
-
       // If CMS FAQs exist, they should be used instead of fallback
       // CMS API should have returned data for the matched category
       expect(cmsFaqBody.data!.length).toBeGreaterThan(0);

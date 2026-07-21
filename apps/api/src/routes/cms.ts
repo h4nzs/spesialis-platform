@@ -68,6 +68,7 @@ cmsRouter.get('/articles', async (c) => {
         category: articleCategories.name,
         author: articles.authorName,
         tags: articles.tags,
+        is_pillar_content: articles.isPillarContent,
         published_at: articles.publishedAt,
       })
       .from(articles)
@@ -108,6 +109,7 @@ cmsRouter.get('/articles/:slug', async (c) => {
         og_image: articles.ogImage,
         canonical_url: articles.canonicalUrl,
         schema_json: articles.schemaJson,
+        is_pillar_content: articles.isPillarContent,
         published_at: articles.publishedAt,
         date_created: articles.createdAt,
         date_updated: articles.updatedAt,

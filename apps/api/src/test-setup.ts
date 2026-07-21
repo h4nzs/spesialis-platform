@@ -61,6 +61,8 @@ const TABLE_NAMES = [
   'invoicesRelations',
   'partnerPenalties',
   'partnerPenaltiesRelations',
+  'articleLinks',
+  'articleLinksRelations',
 ];
 const exps: Record<string, unknown> = {};
 for (const n of TABLE_NAMES) exps[n] = {};

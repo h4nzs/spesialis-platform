@@ -14,6 +14,8 @@ import {
 import { RichTextEditor } from '@ahlipanggilan/ui/editor';
 import type { SeoData } from '@ahlipanggilan/ui';
 import { renderMarkdown } from '../../../lib/markdown.ts';
+import { PillarLinkSuggestions } from './PillarLinkSuggestions.tsx';
+import { PillarSeoScore } from './PillarSeoScore.tsx';
 
 // ── Types ────────────────────────────────────────────────────────
 
@@ -27,6 +29,7 @@ interface ArticleFormData {
   authorName: string;
   status: string;
   isFeatured: boolean;
+  isPillarContent: boolean;
   tags: string[];
   metaTitle: string;
   metaDescription: string;
@@ -60,6 +63,7 @@ const EMPTY_FORM: ArticleFormData = {
   authorName: '',
   status: 'Draft',
   isFeatured: false,
+  isPillarContent: false,
   tags: [],
   metaTitle: '',
   metaDescription: '',
@@ -206,6 +210,7 @@ export function ArticleEditor({ editingId }: ArticleEditorProps) {
             authorName: (d.authorName as string) ?? '',
             status: (d.status as string) ?? 'Draft',
             isFeatured: (d.isFeatured as boolean) ?? false,
+            isPillarContent: (d.isPillarContent as boolean) ?? false,
             tags: Array.isArray(d.tags) ? (d.tags as string[]) : [],
             metaTitle: (d.metaTitle as string) ?? '',
             metaDescription: (d.metaDescription as string) ?? '',
@@ -299,6 +304,7 @@ export function ArticleEditor({ editingId }: ArticleEditorProps) {
         authorName: form.authorName || undefined,
         status: form.status,
         isFeatured: form.isFeatured,
+        isPillarContent: form.isPillarContent,
         tags: form.tags,
         metaTitle: form.metaTitle || undefined,
         metaDescription: form.metaDescription || undefined,
@@ -478,6 +484,22 @@ export function ArticleEditor({ editingId }: ArticleEditorProps) {
                   />
                   Featured
                 </label>
+                <label className="flex items-center gap-2 text-sm font-medium text-primary-700">
+                  <input
+                    type="checkbox"
+                    checked={form.isPillarContent}
+                    onChange={(e) => setForm((f) => ({ ...f, isPillarContent: e.target.checked }))}
+                    className="rounded border-primary-300 text-primary-600 focus:ring-primary-500"
+                  />
+                  Jadikan sebagai Content Pillar
+                </label>
+                {form.isPillarContent && (
+                  <p className="text-xs text-primary-600">
+                    Artikel ini akan menjadi artikel pilar utama. Artikel cluster akan
+                    direkomendasikan untuk menautkannya. Dapatkan prioritas lebih tinggi di sitemap
+                    dan schema CollectionPage otomatis.
+                  </p>
+                )}
               </div>
             </Card>
 
@@ -581,6 +603,10 @@ export function ArticleEditor({ editingId }: ArticleEditorProps) {
                 suggestions={[]}
               />
             </Card>
+
+            <PillarLinkSuggestions editingId={editingId} isPillarContent={form.isPillarContent} />
+
+            <PillarSeoScore editingId={editingId} />
 
             <Card>
               <SEOEditor

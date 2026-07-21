@@ -214,7 +214,6 @@ test.describe('Service Detail - HowTo Schema & Related Services', () => {
 
     // Check if Related Services section exists
     const relatedHeading = page.locator('h2:has-text("Layanan Terkait")');
-    const relatedCount = await relatedHeading.count();
 
     // If service has a categoryId, Related Services section should exist
     if (categoryId) {

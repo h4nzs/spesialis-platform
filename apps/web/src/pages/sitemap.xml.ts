@@ -9,6 +9,7 @@ interface SitemapConfig {
   articles: { priority: string; changefreq: string };
   blogListing: { priority: string; changefreq: string };
   cmsPages: { priority: string; changefreq: string };
+  pillarContent: { priority: string; changefreq: string };
 }
 
 // ── Default config (fallback if API unavailable) ───────────────
@@ -18,6 +19,7 @@ const DEFAULT_CONFIG: SitemapConfig = {
   articles: { priority: '0.7', changefreq: 'weekly' },
   blogListing: { priority: '0.8', changefreq: 'daily' },
   cmsPages: { priority: '0.6', changefreq: 'monthly' },
+  pillarContent: { priority: '1.0', changefreq: 'daily' },
 };
 
 // ── Static pages ───────────────────────────────────────────────
@@ -80,6 +82,12 @@ export const GET: APIRoute = async () => {
             priority: configData.data.cmsPages?.priority ?? DEFAULT_CONFIG.cmsPages.priority,
             changefreq: configData.data.cmsPages?.changefreq ?? DEFAULT_CONFIG.cmsPages.changefreq,
           },
+          pillarContent: {
+            priority:
+              configData.data.pillarContent?.priority ?? DEFAULT_CONFIG.pillarContent.priority,
+            changefreq:
+              configData.data.pillarContent?.changefreq ?? DEFAULT_CONFIG.pillarContent.changefreq,
+          },
         };
       }
     }
@@ -106,7 +114,7 @@ export const GET: APIRoute = async () => {
       }
     }
 
-    // ── Articles (with image tags) ──────────────────────────────
+    // ── Articles (with image tags + pillar content boost) ──────
     if (articlesRes?.ok) {
       const articlesData = await articlesRes.json();
       const arts = articlesData.data ?? [];
@@ -115,17 +123,25 @@ export const GET: APIRoute = async () => {
         updatedAt?: string;
         cover_image?: string;
         title?: string;
+        is_pillar_content?: boolean;
       }>) {
         const lastmod = a.updatedAt ? `<lastmod>${a.updatedAt}</lastmod>` : '';
         const imageTag = a.cover_image
           ? `\n    <image:image>\n      <image:loc>${escapeXml(a.cover_image)}</image:loc>\n      ${a.title ? `<image:title>${escapeXml(a.title)}</image:title>` : ''}\n    </image:image>`
           : '';
+        // Pillar content gets boosted priority and changefreq
+        const articlePriority = a.is_pillar_content
+          ? config.pillarContent.priority
+          : config.articles.priority;
+        const articleChangefreq = a.is_pillar_content
+          ? config.pillarContent.changefreq
+          : config.articles.changefreq;
         dynamicUrls += `
   <url>
     <loc>${SITE}/blog/${a.slug}</loc>
     ${lastmod}
-    <changefreq>${config.articles.changefreq}</changefreq>
-    <priority>${config.articles.priority}</priority>${imageTag}
+    <changefreq>${articleChangefreq}</changefreq>
+    <priority>${articlePriority}</priority>${imageTag}
   </url>`;
       }
     }

@@ -21,6 +21,7 @@ export interface Article {
   authorName: string | null;
   status: ArticleStatus;
   isFeatured: boolean;
+  isPillarContent: boolean;
   tags: string[];
   metaTitle: string | null;
   metaDescription: string | null;
@@ -46,6 +47,7 @@ export type CreateArticleInput = {
   status?: ArticleStatus;
   isFeatured?: boolean;
   tags?: string[];
+  isPillarContent?: boolean;
   metaTitle?: string;
   metaDescription?: string;
   ogTitle?: string;

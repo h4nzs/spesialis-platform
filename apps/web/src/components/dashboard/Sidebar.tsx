@@ -20,6 +20,7 @@ const NAV_MAP: Record<string, NavEntry[]> = {
   content_manager: [
     { href: '/dashboard/admin', label: 'Ringkasan', icon: 'dashboard' },
     { href: '/dashboard/admin/articles', label: 'Artikel', icon: 'fileText' },
+    { href: '/dashboard/admin/pillar-clusters', label: 'Cluster Visualizer', icon: 'barChart' },
     { href: '/dashboard/admin/media', label: 'Media', icon: 'file' },
     { href: '/dashboard/admin/faq', label: 'FAQ', icon: 'helpCircle' },
     { href: '/dashboard/admin/testimonials', label: 'Testimoni', icon: 'review' },
@@ -56,6 +57,7 @@ const NAV_MAP: Record<string, NavEntry[]> = {
     { href: '/dashboard/admin/contracts', label: 'Kontrak', icon: 'scrollText' },
     { href: '/dashboard/admin/invoices', label: 'Invoice', icon: 'receipt' },
     { href: '/dashboard/admin/articles', label: 'Artikel', icon: 'fileText' },
+    { href: '/dashboard/admin/pillar-clusters', label: 'Cluster Visualizer', icon: 'barChart' },
     {
       label: 'SEO',
       icon: 'search',
@@ -88,6 +90,7 @@ const NAV_MAP: Record<string, NavEntry[]> = {
     { href: '/dashboard/admin/contracts', label: 'Kontrak', icon: 'scrollText' },
     { href: '/dashboard/admin/invoices', label: 'Invoice', icon: 'receipt' },
     { href: '/dashboard/admin/articles', label: 'Artikel', icon: 'fileText' },
+    { href: '/dashboard/admin/pillar-clusters', label: 'Cluster Visualizer', icon: 'barChart' },
     {
       label: 'SEO',
       icon: 'search',

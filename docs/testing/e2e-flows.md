@@ -1238,6 +1238,42 @@ Notes:
 
 ---
 
+# SEOE2E-23 to SEOE2E-28
+
+Pillar Content — Content Pillar / Cluster Management
+
+Test file: `apps/web/tests/pillar-content.spec.ts` (dedicated spec file, 15+ tests, serial mode)
+
+Priority
+
+P1
+
+Actor
+
+Admin / Content Manager
+
+Tests:
+
+| ID        | Test                                                                    | Status |
+| --------- | ----------------------------------------------------------------------- | ------ |
+| SEOE2E-23 | Article Editor menampilkan checkbox "Jadikan sebagai Content Pillar"    | 🟡     |
+| SEOE2E-24 | Pillar content mendapat prioritas 1.0 & daily di sitemap XML            | 🟡     |
+| SEOE2E-25 | Pillar detail page auto-inject CollectionPage JSON-LD                   | 🟡     |
+| SEOE2E-26 | Link Suggestion Engine menampilkan rekomendasi pillar content di editor | 🟡     |
+| SEOE2E-27 | SEO Score API mengembalikan checklist link validation dengan score      | 🟡     |
+| SEOE2E-28 | Cluster Visualizer dashboard menampilkan pillar status, cluster, orphan | 🟡     |
+
+Notes:
+
+- **SEOE2E-23** (Pillar Checkbox): Verifikasi checkbox muncul di ArticleEditor sidebar saat edit + create. Cek nilai `isPillarContent` di API response setelah save.
+- **SEOE2E-24** (Sitemap Priority): Verifikasi sitemap.xml mengandung `<priority>1.0</priority>` untuk pillar content dan `<priority>0.7</priority>` untuk artikel biasa.
+- **SEOE2E-25** (CollectionPage JSON-LD): Verifikasi halaman `/blog/{slug}` pillar content mengandung `<script type="application/ld+json">` dengan `@type: "CollectionPage"` dan `mainEntity`.
+- **SEOE2E-26** (Link Suggestions): Verifikasi `GET /api/v1/admin/articles/suggestions?articleId=X` mengembalikan array suggestions dengan `relevanceScore`, `suggestedAnchor`, dan `reason`.
+- **SEOE2E-27** (SEO Score): Verifikasi `GET /api/v1/admin/articles/seo-score?articleId=X` mengembalikan `seoScore`, `pillarConnectionStatus`, dan 3-item `checklist`.
+- **SEOE2E-28** (Cluster Visualizer): Verifikasi halaman `/dashboard/admin/pillar-clusters` menampilkan: 4 stat cards, progress bar konektivitas, pillar table dengan expandable cluster, orphan articles.
+
+---
+
 # Cross Module Flow
 
 Booking
