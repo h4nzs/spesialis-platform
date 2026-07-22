@@ -11,7 +11,6 @@ import type { PrivacyLevel } from '../types.ts';
 
 const MAX_DEPTH = 10;
 import { getPropertyDefinition } from '../registry/properties.ts';
-import { getEventDefinition } from '../registry/events.ts';
 
 // ── PII Patterns ──────────────────────────────────────────────────
 // These patterns catch common PII fields even if not defined in registry.
@@ -65,7 +64,6 @@ export function privacyFilter(
     return properties;
   }
 
-  const definition = getEventDefinition(eventName);
   const filtered: Record<string, unknown> = {};
 
   // Initialize visited set for circular reference detection

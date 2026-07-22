@@ -161,7 +161,7 @@ export function createPlausibleProvider(): AnalyticsProvider {
       }
     },
 
-    pageview(url, title) {
+    pageview(_url, _title) {
       // Plausible auto-tracks pageviews via the script tag
       // No manual pageview call needed
     },

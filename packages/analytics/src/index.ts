@@ -151,7 +151,7 @@ import './properties/index.ts';
 
 import { configureAnalytics } from './core/tracker.ts';
 import { registerProvider } from './providers/index.ts';
-import { getActiveProviders, initProviders } from './providers/index.ts';
+import { initProviders } from './providers/index.ts';
 import {
   createPlausibleProvider,
   createDebugProvider,

@@ -13,8 +13,7 @@ import {
   initProviders,
   destroyProviders,
 } from '../providers/index.ts';
-import { createMockProvider } from './helpers/test-utils.ts';
-import type { AnalyticsProvider, ProviderConfig } from '../types.ts';
+import type { AnalyticsProvider } from '../types.ts';
 
 const mockProvider: AnalyticsProvider = {
   name: 'test-provider',

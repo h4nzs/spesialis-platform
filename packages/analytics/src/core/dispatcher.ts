@@ -64,10 +64,10 @@ export function dispatch(event: NormalizedEvent): DispatchResult[] {
   for (const provider of providers) {
     const start = performance.now();
     try {
-      const result = provider.track(event);
       // Handle both sync and async providers
-      if (result instanceof Promise) {
-        result.catch((error) => {
+      const trackResult = provider.track(event);
+      if (trackResult instanceof Promise) {
+        trackResult.catch((error) => {
           const message = error instanceof Error ? error.message : String(error);
           enqueueRetry(event, provider.name, message);
         });
@@ -129,7 +129,7 @@ async function dispatchToProvider(
 
       if (callResult instanceof Promise) {
         // ── Timeout via Promise.race ───────────────────────────────
-        const result = await Promise.race([
+        await Promise.race([
           callResult,
           new Promise<void>((_, reject) =>
             setTimeout(() => reject(new Error(`Timeout after ${timeout}ms`)), timeout),

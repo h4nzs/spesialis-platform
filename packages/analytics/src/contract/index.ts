@@ -14,7 +14,7 @@
 // the Analytics Contract provides RUNTIME/CI safety via validation.
 // =============================================================================
 
-import type { EventDefinition, EventCategory, EventStatus, PropertyDefinition } from '../types.ts';
+import type { EventDefinition, EventCategory, EventStatus } from '../types.ts';
 import { getEventDefinition, getAllEventDefinitions } from '../registry/events.ts';
 import { getPropertyDefinition, getAllPropertyDefinitions } from '../registry/properties.ts';
 

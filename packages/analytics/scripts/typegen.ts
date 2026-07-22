@@ -130,7 +130,6 @@ function generate(): string {
   lines.push('// This is the contract that track() uses for compile-time validation.');
   lines.push('// =============================================================================');
   lines.push('');
-  lines.push('// eslint-disable-next-line @typescript-eslint/no-empty-object-type');
   lines.push('export interface EventRegistry {');
 
   // Group events by category
@@ -171,8 +170,8 @@ function generate(): string {
 
       // Build the property type line
       if (props.length === 0) {
-        // No properties — use empty object
-        lines.push(`  ${event.name}: {}`);
+        // No properties — use never-typed object
+        lines.push(`  ${event.name}: Record<string, never>`);
       } else if (props.length === 1) {
         // Single property — inline
         lines.push(`  ${event.name}: { ${props[0]!.trim()} }`);

@@ -9,7 +9,7 @@
 
 import type { NormalizedEvent } from '../types.ts';
 import { dispatch } from './dispatcher.ts';
-import { startRetryProcessor, stopRetryProcessor, getRetryQueueSize } from './dispatcher.ts';
+import { startRetryProcessor, stopRetryProcessor } from './dispatcher.ts';
 import { getConfig } from './tracker.ts';
 
 interface QueueInstance {

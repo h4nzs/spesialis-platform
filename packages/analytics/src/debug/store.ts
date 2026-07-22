@@ -9,7 +9,7 @@
 // - Live event subscriptions
 // =============================================================================
 
-import type { DebugEvent, AnalyticsProvider, ProviderConfig } from '../types.ts';
+import type { DebugEvent } from '../types.ts';
 import {
   getDebugEvents,
   subscribe,
@@ -61,7 +61,7 @@ function buildSnapshot(): DebugStoreSnapshot {
   const providers = getProvidersByPriority();
   const config = getConfig();
 
-  const providerHealth: ProviderHealth[] = providers.map(({ name, provider, config: pCfg }) => ({
+  const providerHealth: ProviderHealth[] = providers.map(({ name, config: pCfg }) => ({
     name,
     enabled: pCfg.enabled,
     priority: pCfg.priority ?? 100,

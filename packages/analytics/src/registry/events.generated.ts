@@ -16,7 +16,6 @@
 // This is the contract that track() uses for compile-time validation.
 // =============================================================================
 
-// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface EventRegistry {
   // ── Authentication ───────────────────────────────────────
   login_start: { method: string };
@@ -25,9 +24,9 @@ export interface EventRegistry {
     role: string;
   };
   login_failed: { reason: string };
-  logout: {};
+  logout: Record<string, never>;
   password_reset_request: { email_hash: string };
-  password_reset_complete: {};
+  password_reset_complete: Record<string, never>;
   register_start: { method: string };
   register_complete: {
     user_id: string;
@@ -90,15 +89,15 @@ export interface EventRegistry {
   };
 
   // ── Corporate ───────────────────────────────────────
-  corporate_landing_view: {};
-  inquiry_start: {};
+  corporate_landing_view: Record<string, never>;
+  inquiry_start: Record<string, never>;
   inquiry_submit: {
     company_name: string;
     service_interest: string;
     industry?: string;
     employees?: number;
   };
-  corporate_dashboard_view: {};
+  corporate_dashboard_view: Record<string, never>;
 
   // ── Dashboard ───────────────────────────────────────
   dashboard_view: {
@@ -228,13 +227,13 @@ export interface EventRegistry {
   };
 
   // ── Partner ───────────────────────────────────────
-  partner_register_start: {};
+  partner_register_start: Record<string, never>;
   partner_register_form_step: {
     step: number;
     step_name: string;
   };
   partner_register_complete: { partner_id: string };
-  partner_dashboard_view: {};
+  partner_dashboard_view: Record<string, never>;
   partner_job_accept: {
     assignment_id: string;
     booking_id: string;

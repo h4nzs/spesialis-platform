@@ -11,7 +11,7 @@ import {
   drainRetryQueue,
   getRetryQueueSize,
 } from '../core/dispatcher.ts';
-import { configureAnalytics, getConfig } from '../core/config.ts';
+import { configureAnalytics } from '../core/config.ts';
 import { registerProvider, destroyProviders } from '../providers/index.ts';
 import { createMockEvent, registerTestProvider, resetConfig } from './helpers/test-utils.ts';
 import type { AnalyticsProvider } from '../types.ts';

@@ -7,7 +7,6 @@
 // =============================================================================
 
 import { track } from '../core/tracker.ts';
-import type { EventRegistry } from '../registry/events.ts';
 
 // ── Navigation ────────────────────────────────────────────────
 export function trackNavigation(destination: string, label: string, section?: string): void {

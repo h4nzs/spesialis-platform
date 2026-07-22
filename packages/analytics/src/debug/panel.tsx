@@ -14,8 +14,8 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import type { DebugEvent } from '../types.ts';
-import type { DebugStoreSnapshot, ProviderHealth } from './store.ts';
-import { subscribeToStore, clearAllEvents, exportEvents, getRetryQueueSize } from './store.ts';
+import type { DebugStoreSnapshot } from './store.ts';
+import { subscribeToStore, clearAllEvents, exportEvents } from './store.ts';
 
 // ── Styles ─────────────────────────────────────────────────────────
 // Inlined for zero-dependency distribution (no CSS modules needed).
@@ -186,7 +186,7 @@ const PANEL_STYLES = {
     borderRadius: '3px',
     opacity: 0.3,
   },
-  keyValue: (key: string) => ({
+  keyValue: (_keyParam: string) => ({
     display: 'flex',
     gap: '8px',
     padding: '1px 0',
