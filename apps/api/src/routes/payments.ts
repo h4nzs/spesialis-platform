@@ -1,5 +1,6 @@
 import { Hono } from 'hono';
-import { eq, and, desc, sql, alias } from 'drizzle-orm';
+import { eq, and, desc, sql } from 'drizzle-orm';
+import { alias } from 'drizzle-orm/pg-core';
 import { db, orders, payments, customerProfiles, users } from '../lib/db.ts';
 
 // Alias untuk self-join ke users (verifier)
@@ -215,9 +216,9 @@ router.get('/:id', authMiddleware, async (c) => {
       // ── Join: Customer info ───────────────────────────
       customerName: customerProfiles.fullName,
       customerEmail: users.email,
-      customerPhone: customerProfiles.phone,
+      customerPhone: users.phone,
       // ── Join: Verifier info ────────────────────────────
-      verifierName: usersVerified.name,
+      verifierEmail: usersVerified.email,
     })
     .from(payments)
     .leftJoin(orders, eq(payments.orderId, orders.id))
@@ -277,7 +278,7 @@ router.get('/:id', authMiddleware, async (c) => {
           phone: rows.customerPhone,
         }
       : null,
-    verifier: rows.verifierName ? { name: rows.verifierName } : null,
+    verifier: rows.verifierEmail ? { email: rows.verifierEmail } : null,
   });
 });
 

@@ -33,7 +33,7 @@ interface CustomerInfo {
 }
 
 interface VerifierInfo {
-  name: string;
+  email: string;
 }
 
 interface PaymentDetailResponse {
@@ -311,7 +311,7 @@ export function AdminPaymentDetail({ id }: { id: string }) {
             <div>
               <dt className="text-caption font-medium text-text-muted">Diverifikasi oleh</dt>
               <dd className="mt-0.5 text-body-sm font-medium text-text-primary">
-                {verifier?.name ?? '-'}
+                {verifier?.email ?? '-'}
               </dd>
             </div>
             <div>

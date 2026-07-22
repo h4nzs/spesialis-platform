@@ -208,10 +208,11 @@ router.get(
         createdAt: orders.createdAt,
         customerId: orders.customerId,
         customerName: customerProfiles.fullName,
-        customerPhone: customerProfiles.phone,
+        customerPhone: sql<string>`COALESCE(${users.phone}, ${customerProfiles.guestPhone})`,
       })
       .from(orders)
       .leftJoin(customerProfiles, eq(orders.customerId, customerProfiles.id))
+      .leftJoin(users, eq(customerProfiles.userId, users.id))
       .where(and(...conditions))
       .orderBy(desc(orders.createdAt))
       .limit(limit)
