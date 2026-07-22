@@ -76,7 +76,7 @@ describe('validateEvent', () => {
     const result = validateEvent('payment_success', {
       booking_id: 'bk-1',
       amount: 50000,
-      method: 'transfer',
+      payment_method: 'transfer',
       payment_id: 'pay-123',
     });
     expect(result.valid).toBe(true);
