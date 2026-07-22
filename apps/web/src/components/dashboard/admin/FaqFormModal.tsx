@@ -1,7 +1,9 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, lazy, Suspense } from 'react';
 import { createBrowserClient, parseApiError } from '@ahlipanggilan/shared';
 import { Button, Input, Select, Modal, type SelectOption } from '@ahlipanggilan/ui';
-import { RichTextEditor } from '@ahlipanggilan/ui/editor';
+const RichTextEditor = lazy(() =>
+  import('@ahlipanggilan/ui/editor').then((m) => ({ default: m.RichTextEditor })),
+);
 
 // ── Types ────────────────────────────────────────────────────────
 
@@ -153,12 +155,20 @@ export default function FaqFormModal({ open, onClose, editingId, onSaved }: FaqF
           error={fieldErrors['question']}
         />
         {/* ── Answer (RichTextEditor) ─────────────────────────── */}
-        <RichTextEditor
-          label="Jawaban"
-          value={form.answer}
-          onChange={(html) => setForm((f) => ({ ...f, answer: html }))}
-          placeholder="Tulis jawaban di sini..."
-        />
+        <Suspense
+          fallback={
+            <div className="flex min-h-[200px] items-center justify-center rounded-md border border-border-default bg-bg-surface text-sm text-text-muted">
+              Memuat editor...
+            </div>
+          }
+        >
+          <RichTextEditor
+            label="Jawaban"
+            value={form.answer}
+            onChange={(html) => setForm((f) => ({ ...f, answer: html }))}
+            placeholder="Tulis jawaban di sini..."
+          />
+        </Suspense>
         {/* ── Category & Display Order ────────────────────────── */}
         <div className="grid grid-cols-2 gap-3">
           <Select

@@ -1,7 +1,9 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo, lazy, Suspense } from 'react';
 import { createBrowserClient, parseApiError } from '@ahlipanggilan/shared';
 import { Button, Input, Select, Card, SEOEditor, SeoAnalyzerPanel } from '@ahlipanggilan/ui';
-import { RichTextEditor } from '@ahlipanggilan/ui/editor';
+const RichTextEditor = lazy(() =>
+  import('@ahlipanggilan/ui/editor').then((m) => ({ default: m.RichTextEditor })),
+);
 import type { SeoData } from '@ahlipanggilan/ui';
 
 // ── Types ────────────────────────────────────────────────────────
@@ -260,12 +262,20 @@ export function PageEditor({ editingId }: PageEditorProps) {
             </Card>
 
             <Card>
-              <RichTextEditor
-                label="Konten"
-                value={form.content}
-                onChange={(html) => setForm((f) => ({ ...f, content: html }))}
-                placeholder="Tulis konten halaman di sini..."
-              />
+              <Suspense
+                fallback={
+                  <div className="flex min-h-[300px] items-center justify-center rounded-md border border-border-default bg-bg-surface text-sm text-text-muted">
+                    Memuat editor...
+                  </div>
+                }
+              >
+                <RichTextEditor
+                  label="Konten"
+                  value={form.content}
+                  onChange={(html) => setForm((f) => ({ ...f, content: html }))}
+                  placeholder="Tulis konten halaman di sini..."
+                />
+              </Suspense>
 
               {/* ── Live Preview ─────────────────────────────── */}
               {form.content && (

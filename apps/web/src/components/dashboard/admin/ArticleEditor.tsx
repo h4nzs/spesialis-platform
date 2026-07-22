@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef, lazy, Suspense } from 'react';
 import { createBrowserClient, parseApiError } from '@ahlipanggilan/shared';
 import {
   Button,
@@ -11,7 +11,9 @@ import {
   SeoAnalyzerPanel,
   SchemaBuilder,
 } from '@ahlipanggilan/ui';
-import { RichTextEditor } from '@ahlipanggilan/ui/editor';
+const RichTextEditor = lazy(() =>
+  import('@ahlipanggilan/ui/editor').then((m) => ({ default: m.RichTextEditor })),
+);
 import type { SeoData } from '@ahlipanggilan/ui';
 import { renderMarkdown } from '../../../lib/markdown.ts';
 import { PillarLinkSuggestions } from './PillarLinkSuggestions.tsx';
@@ -425,14 +427,22 @@ export function ArticleEditor({ editingId }: ArticleEditorProps) {
             </Card>
 
             <Card>
-              <RichTextEditor
-                label="Konten"
-                value={form.content}
-                onChange={(html) => setForm((f) => ({ ...f, content: html }))}
-                placeholder="Tulis konten artikel di sini..."
-                onImageUpload={openMediaForContent}
-                error={undefined}
-              />
+              <Suspense
+                fallback={
+                  <div className="flex min-h-[300px] items-center justify-center rounded-md border border-border-default bg-bg-surface text-sm text-text-muted">
+                    Memuat editor...
+                  </div>
+                }
+              >
+                <RichTextEditor
+                  label="Konten"
+                  value={form.content}
+                  onChange={(html) => setForm((f) => ({ ...f, content: html }))}
+                  placeholder="Tulis konten artikel di sini..."
+                  onImageUpload={openMediaForContent}
+                  error={undefined}
+                />
+              </Suspense>
 
               {/* ── Live Preview ─────────────────────────────── */}
               {form.content && (
