@@ -11,14 +11,10 @@
       Without this limit, ClickHouse tries to use all memory within the
       cgroup (max_memory_usage = 0 = unlimited), and crashes with
       MEMORY_LIMIT_EXCEEDED when background merges spike above the limit.
+      
+      listen_try: 1 — prevents startup failure if a listen address
+      cannot be bound (e.g., IPv6 disabled on VPS).
     -->
     <max_server_memory_usage>681574400</max_server_memory_usage>
-
-    <!--
-      Listen on all interfaces (required for Docker networking).
-      Default Alpine config only listens on 127.0.0.1 / ::1 (loopback),
-      which causes "connection refused" from other containers.
-    -->
-    <listen_host>0.0.0.0</listen_host>
-    <listen_host>::</listen_host>
+    <listen_try>1</listen_try>
 </clickhouse>

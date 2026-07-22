@@ -65,7 +65,7 @@ Semua container terhubung ke bridge network **`specialist`** — bisa resolve sa
 
 ### Entrypoint Flow
 
-Plausible container menjalankan migration script (bukan langsung app):
+**Plausible container** menjalankan migration script (bukan langsung app):
 
 ```
 Command: ["sh", "/plausible-migrate.sh"]
@@ -79,6 +79,21 @@ plausible-migrate.sh:
   2. Create admin user (jika belum ada)
   3. exec /entrypoint.sh run → exec /app/bin/plausible start
 ```
+
+**ClickHouse container** menggunakan **entrypoint default** dari image `clickhouse/clickhouse-server:24-alpine`:
+
+```
+Entrypoint: /entrypoint.sh
+  ↓
+1. Deteksi user → pilih antara root atau clickhouse user
+2. Buat direktori data & log dengan ownership yang benar
+3. Jika fresh install: init database
+4. exec clickhouse su clickhouse:clickhouse clickhouse-server
+  ↓
+clickhouse-server sebagai user clickhouse (UID 101)
+```
+
+> **Catatan:** Entrypoint tidak di-override. `cap_add` (SYS_NICE, SYS_PTRACE, IPC_LOCK) + `seccomp:unconfined` memungkinkan syscall `get_mempolicy` yang dibutuhkan `clickhouse su` untuk drop privileges.
 
 ---
 
@@ -130,25 +145,126 @@ PLAUSIBLE_ADMIN_PASSWORD=<password admin dashboard>
 
 ### ClickHouse Config Override
 
-**File:** `infrastructure/docker/clickhouse/config.d/memory-limit.xml`
+**Lokasi file:** `infrastructure/docker/clickhouse/config.d/`
 
-Konfigurasi ini di-mount ke `/etc/clickhouse-server/config.d/` di container `plausible-clickhouse` untuk meng-override default:
+ClickHouse menggunakan konfigurasi modular via file-file XML di `/etc/clickhouse-server/config.d/`. Berbeda dengan setup awal yang me-mount seluruh direktori `config.d/` (menimpa default image), sekarang **setiap file di-mount individually** ke container. Ini penting karena image ClickHouse membawa file `docker_related_config.xml` yang punya `<listen_try>1</listen_try>` — jika mount direktori, file ini hilang dan startup gagal saat IPv6 bind.
+
+#### 4 File Konfigurasi
+
+**1. `memory-limit.xml`** — Batas memori agar tidak OOM
 
 ```xml
 <clickhouse>
-    <!-- Memori: cegah OOM crash (default max_memory_usage = 0 = unlimited) -->
     <max_server_memory_usage>681574400</max_server_memory_usage>
-
-    <!-- Network: docker default Alpine hanya listen di 127.0.0.1 -->
-    <listen_host>0.0.0.0</listen_host>
-    <listen_host>::</listen_host>
+    <listen_try>1</listen_try>
 </clickhouse>
 ```
 
-Kenapa perlu:
+- `max_server_memory_usage=650MB` — self-regulate sebelum batas cgroup 768MB Docker
+- `listen_try=1` — jika bind ke suatu address gagal (misal IPv6 disabled), ClickHouse tetap start. Ini penting karena diambil dari `docker_related_config.xml` yang tersedia karena kita mount file-by-file, bukan mount direktori.
 
-- `max_server_memory_usage=650MB` — ClickHouse self-regulate sebelum kena cgroup 768MB Docker
-- `listen_host` — image Alpine default hanya `127.0.0.1` dan `::1` (loopback), container lain tidak bisa konek
+**2. `ipv4-only.xml`** — Hanya bind ke IPv4 (hindari error DNS)
+
+```xml
+<clickhouse>
+    <listen_host>0.0.0.0</listen_host>
+</clickhouse>
+```
+
+- VPS sering disable IPv6. Tanpa ini, ClickHouse coba bind ke `[::]:8123` dan error
+- Hanya set `listen_host=0.0.0.0`. Tidak perlu set `::` — tidak usah panggil fitur yang tidak ada
+
+**3. `logs.xml`** — Log ke console, disable system log tidak perlu
+
+```xml
+<clickhouse>
+    <logger>
+        <level>warning</level>
+        <console>true</console>
+    </logger>
+    <query_log replace="1">
+        <database>system</database>
+        <table>query_log</table>
+        <flush_interval_milliseconds>7500</flush_interval_milliseconds>
+        <engine>
+            ENGINE = MergeTree
+            PARTITION BY event_date
+            ORDER BY (event_time)
+            TTL event_date + interval 30 day
+            SETTINGS ttl_only_drop_parts=1
+        </engine>
+    </query_log>
+    <!-- Disable unnecessary system logs -->
+    <metric_log remove="remove" />
+    <asynchronous_metric_log remove="remove" />
+    <query_thread_log remove="remove" />
+    <text_log remove="remove" />
+    <trace_log remove="remove" />
+    <session_log remove="remove" />
+    <part_log remove="remove" />
+</clickhouse>
+```
+
+- `<console>true</console>` — semua log ke stdout/stderr → muncul di `docker logs`
+- Level `warning` — cukup untuk monitoring tanpa noise
+- System log lain di-disable untuk hemat disk I/O dan memory
+- Query log tetap aktif (30 hari TTL) untuk diagnosa
+
+**4. `low-resources.xml`** — Tuning untuk VPS 1.9GB RAM
+
+```xml
+<clickhouse>
+    <mark_cache_size>524288000</mark_cache_size>
+</clickhouse>
+```
+
+- `mark_cache_size=500MB` — batasi index cache. Default ~2GB, melebihi limit container 768MB
+- Kombinasi dengan `max_server_memory_usage=650MB` menjaga stabilitas
+
+#### Volume Mount di Docker Compose
+
+**PENTING:** Setiap file di-mount terpisah (bukan mount direktori):
+
+```yaml
+volumes:
+  - plausible_clickhouse_data:/var/lib/clickhouse
+  - ./infrastructure/docker/clickhouse/config.d/memory-limit.xml:/etc/clickhouse-server/config.d/memory-limit.xml:ro
+  - ./infrastructure/docker/clickhouse/config.d/ipv4-only.xml:/etc/clickhouse-server/config.d/ipv4-only.xml:ro
+  - ./infrastructure/docker/clickhouse/config.d/logs.xml:/etc/clickhouse-server/config.d/logs.xml:ro
+  - ./infrastructure/docker/clickhouse/config.d/low-resources.xml:/etc/clickhouse-server/config.d/low-resources.xml:ro
+```
+
+#### Kenapa Tidak Mount `config.d/` Sekaligus?
+
+Image ClickHouse (`clickhouse/clickhouse-server:24-alpine`) punya file bawaan:
+
+```
+/etc/clickhouse-server/config.d/
+  └── docker_related_config.xml  # <listen_try>1</listen_try> + listen_host
+```
+
+Jika mount direktori:
+
+```yaml
+volumes:
+  - ./config.d:/etc/clickhouse-server/config.d:ro # ❌ SALAH
+```
+
+Maka file `docker_related_config.xml` **hilang** karena direktori host menimpa seluruh `config.d/`. Akibatnya:
+
+- Kehilangan `<listen_try>1</listen_try>` → jika IPv6 bind gagal, ClickHouse **crash fatal**
+- Exit code 210 / 174, container restart loop
+
+Dengan mount **file-by-file**, `docker_related_config.xml` tetap terbaca:
+
+```
+/etc/clickhouse-server/config.d/
+  ├── docker_related_config.xml  ← dari image (listen_try=1!)
+  ├── memory-limit.xml           ← dari host
+  ├── ipv4-only.xml             ← dari host
+  ├── logs.xml                   ← dari host
+  └── low-resources.xml         ← dari host
+```
 
 ---
 
@@ -600,8 +716,7 @@ docker ps | grep plausible
 | `Dictionary (plausible.location_data_dict) not found`    | Urutan setup ClickHouse salah                    | Buat `location_data` dulu, baru dictionary, baru tabel lain                                              |
 | `SyntaxError: unexpected reserved word: end`             | Syntax Elixir salah di migration script          | Cek `try do ... else ... rescue ... end` — `else` harus di dalam `try`, bukan level `try`                |
 | `could not find migration runner process`                | Mencoba Ecto.Migrator untuk ClickHouse via eval  | ClickHouse repo modules tidak tersedia di eval. Tabel ClickHouse harus dibuat manual via `structure.sql` |
-| Exit code 137 (OOM killed)                               | Memory container kurang                          | Naikkan memory limit (min 512M untuk Plausible, 512M untuk ClickHouse)                                   |
-| Container restart terus tanpa error log                  | Crash sebelum sempat log                         | Cek `docker logs` segera setelah restart, atau `docker events`                                           |
+| Exit code 137 (OOM killed)                               | Memory container kurang                          | Naikkan memory limit (min 512M untuk Plausible, 512M untuk ClickHouse)                                   |     | Container restart loop (exit 210/174) | `get_mempolicy` diblokir seccomp, atau `listen_try` tidak ter-set (IPv6 disabled) | Cek apakah `config.d/` di-mount sebagai direktori (ubah ke file-by-file mount). Pastikan `docker_related_config.xml` dari image terbaca. Verifikasi `seccomp:unconfined` di apply |
 
 ### 9.2 Login "Wrong email or password"
 
@@ -655,12 +770,12 @@ Kalau dari nginx ke Plausible **200** tapi dari luar **502**:
 
 **Penyebab umum:**
 
-| Penyebab                                 | Ciri-ciri                                                                           | Solusi                                                                                                           |
-| ---------------------------------------- | ----------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
-| Tabel ClickHouse belum dibuat            | Log: `relation "events_v2" does not exist`                                          | Bootstrap ulang ClickHouse (lihat Setup Langkah 3)                                                               |
-| **ClickHouse listen hanya di 127.0.0.1** | Log: `Mint.TransportError) connection refused`                                      | Tambah `<listen_host>0.0.0.0</listen_host>` ke config override (`config.d/memory-limit.xml`), restart ClickHouse |
-| **ClickHouse kena OOM**                  | Log: `MEMORY_LIMIT_EXCEEDED`, crash-loop                                            | Naikkan limit memory (768M) + set `max_server_memory_usage=650MB` di config override                             |
-| **Kolom ClickHouse kurang**              | Log: `No such column scroll_depth / recovery_id / engagement_time / click_id_param` | Tambah kolom via `ALTER TABLE` (lihat 9.10)                                                                      |
+| Penyebab                                 | Ciri-ciri                                                                           | Solusi                                                                                      |
+| ---------------------------------------- | ----------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------- |
+| Tabel ClickHouse belum dibuat            | Log: `relation "events_v2" does not exist`                                          | Bootstrap ulang ClickHouse (lihat Setup Langkah 3)                                          |
+| **ClickHouse listen hanya di 127.0.0.1** | Log: `Mint.TransportError) connection refused`                                      | Tambah `<listen_host>0.0.0.0</listen_host>` ke `config.d/ipv4-only.xml`, restart ClickHouse |
+| **ClickHouse kena OOM**                  | Log: `MEMORY_LIMIT_EXCEEDED`, crash-loop                                            | Naikkan limit memory (768M) + set `max_server_memory_usage=650MB` di config override        |
+| **Kolom ClickHouse kurang**              | Log: `No such column scroll_depth / recovery_id / engagement_time / click_id_param` | Tambah kolom via `ALTER TABLE` (lihat 9.10)                                                 |
 
 ### 9.6 Domain "cannot be registered" di dashboard
 

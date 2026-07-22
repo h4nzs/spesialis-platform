@@ -1,0 +1,14 @@
+<clickhouse>
+    <!--
+      Low-resource tuning for VPS with 1.9GB RAM.
+      
+      mark_cache_size: 500MB — limits the mark cache (index cache) to
+      prevent ClickHouse from consuming all available memory during
+      analytic queries. Default is ~2GB which exceeds our container
+      limit of 768MB.
+      
+      Combined with max_server_memory_usage (set in memory-limit.xml),
+      this keeps ClickHouse stable under memory pressure.
+    -->
+    <mark_cache_size>524288000</mark_cache_size>
+</clickhouse>

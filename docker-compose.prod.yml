@@ -211,16 +211,41 @@ services:
         max-file: '3'
 
   # ── Plausible ClickHouse ───────────────────────────────────────────
+  # Uses default entrypoint from clickhouse/clickhouse-server image.
+  # The entrypoint handles user switching (clickhouse su) and data
+  # directory initialization. Config files are mounted individually
+  # into /etc/clickhouse-server/config.d/ so the image's default
+  # docker_related_config.xml (which sets listen_try=1) is preserved.
+  #
+  # IPv4-only binding avoids DNS errors on hosts with IPv6 disabled.
+  # Console logging sends all output to docker logs.
   plausible-clickhouse:
     image: clickhouse/clickhouse-server:24-alpine
     container_name: ahlipanggilan-plausible-clickhouse
     restart: unless-stopped
 
+    cap_add:
+      - SYS_NICE
+      - SYS_PTRACE
+      - IPC_LOCK
+    security_opt:
+      - seccomp:unconfined
     volumes:
       - plausible_clickhouse_data:/var/lib/clickhouse
-      - ./infrastructure/docker/clickhouse/config.d:/etc/clickhouse-server/config.d:ro
+      # Mount config files individually (NOT the whole directory) so
+      # the image's docker_related_config.xml remains available.
+      - ./infrastructure/docker/clickhouse/config.d/memory-limit.xml:/etc/clickhouse-server/config.d/memory-limit.xml:ro
+      - ./infrastructure/docker/clickhouse/config.d/ipv4-only.xml:/etc/clickhouse-server/config.d/ipv4-only.xml:ro
+      - ./infrastructure/docker/clickhouse/config.d/logs.xml:/etc/clickhouse-server/config.d/logs.xml:ro
+      - ./infrastructure/docker/clickhouse/config.d/low-resources.xml:/etc/clickhouse-server/config.d/low-resources.xml:ro
     networks:
       - specialist
+    healthcheck:
+      test: ['CMD-SHELL', 'wget --no-verbose --tries=1 --spider http://127.0.0.1:8123/ping || exit 1']
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 60s
     deploy:
       resources:
         limits:

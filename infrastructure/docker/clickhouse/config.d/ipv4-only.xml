@@ -1,0 +1,15 @@
+<clickhouse>
+    <!--
+      Force ClickHouse to listen on IPv4 only.
+      
+      Many VPS providers disable IPv6 or Docker networks don't route
+      IPv6 properly. Without this file, ClickHouse tries to bind to
+      [::]:8123, [::]:9000, etc. and fails with:
+        "EAI: Address family for hostname not supported"
+      
+      Adding <listen_host>::</listen_host> in the same config directory
+      as 0.0.0.0 would cause DNS resolution errors on IPv6-disabled
+      hosts. This file ensures clean IPv4-only binding.
+    -->
+    <listen_host>0.0.0.0</listen_host>
+</clickhouse>
