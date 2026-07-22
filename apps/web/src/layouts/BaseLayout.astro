@@ -85,7 +85,15 @@ const plausibleSrc = plausibleDomain ? `https://${plausibleDomain}/js/script.js`
 
     <!-- ── Performance resource hints ──────────────────────── -->
     {Astro.url.pathname === '/' && (
-      <link rel="preload" href="/hero-home.webp" as="image" type="image/webp" fetchpriority="high" />
+      <link
+        rel="preload"
+        as="image"
+        type="image/webp"
+        href="/hero-home-640.webp"
+        imagesrcset="/hero-home-640.webp 640w, /hero-home-1024.webp 1024w, /hero-home-1536.webp 1536w"
+        imagesizes="(max-width: 640px) 640px, (max-width: 1024px) 1024px, 1536px"
+        fetchpriority="high"
+      />
     )}
     {plausibleDomain && (
       <link rel="preconnect" href={`https://${plausibleDomain}`} />
