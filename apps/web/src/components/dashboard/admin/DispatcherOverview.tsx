@@ -54,6 +54,16 @@ interface SlaStats {
   waitingToday: number;
 }
 
+interface ActivityItem {
+  id: string;
+  bookingNumber: string;
+  status: string;
+  partnerName: string | null;
+  changedBy: string | null;
+  description: string;
+  createdAt: string;
+}
+
 // ── Helpers ────────────────────────────────────────────────────
 
 function getWaitingBadge(hours: number): { variant: 'warning' | 'danger' | 'info'; label: string } {
@@ -118,6 +128,10 @@ export function DispatcherOverview() {
 
   // ── Categories for filter ──────────────────────────────────────
   const [categories, setCategories] = useState<{ id: string; name: string }[]>([]);
+
+  // ── Recent activity state ──────────────────────────────────────
+  const [recentActivity, setRecentActivity] = useState<ActivityItem[]>([]);
+  const [activityLoading, setActivityLoading] = useState(true);
 
   // ── Load stats ─────────────────────────────────────────────────
   const loadStats = useCallback(async () => {
@@ -194,7 +208,23 @@ export function DispatcherOverview() {
     } catch {
       setCategories([]);
     }
-  }, [api]); // ── Debounce search input → trigger API call ────────────────
+  }, [api]);
+
+  // ── Load recent activity ─────────────────────────────────────────
+  const loadActivity = useCallback(async () => {
+    try {
+      const data = await api.get<ActivityItem[]>(
+        '/api/v1/admin/dashboard/dispatcher/recent-activity?limit=10',
+      );
+      setRecentActivity(Array.isArray(data) ? data : []);
+    } catch {
+      setRecentActivity([]);
+    } finally {
+      setActivityLoading(false);
+    }
+  }, [api]);
+
+  // ── Debounce search input → trigger API call ────────────────
   useEffect(() => {
     const timer = setTimeout(() => {
       setQueueSearch(queueSearchInput);
@@ -210,6 +240,7 @@ export function DispatcherOverview() {
     loadQueue();
     loadPartners();
     loadCategories();
+    loadActivity();
 
     // Auto-refresh every 30 seconds
     const interval = setInterval(() => {
@@ -217,10 +248,11 @@ export function DispatcherOverview() {
       loadSlaStats();
       loadQueue();
       loadPartners();
+      loadActivity();
     }, 30_000);
 
     return () => clearInterval(interval);
-  }, [loadStats, loadSlaStats, loadQueue, loadPartners, loadCategories]);
+  }, [loadStats, loadSlaStats, loadQueue, loadPartners, loadCategories, loadActivity]);
 
   // ── Handle assign ─────────────────────────────────────────────
   async function handleAssign() {
@@ -590,7 +622,123 @@ export function DispatcherOverview() {
       </Card>
 
       {/* ═══════════════════════════════════════════════════════
-          SECTION 4: Quick Actions
+          SECTION 4: Recent Activity
+          ═══════════════════════════════════════════════════════ */}
+      <Card padding="lg">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <h3 className="text-body font-semibold text-text-primary">Aktivitas Terbaru</h3>
+          {!activityLoading && recentActivity.length > 0 && (
+            <span className="text-caption text-text-muted">
+              {recentActivity.length} aktivitas terakhir
+            </span>
+          )}
+        </div>
+
+        <div className="mt-4">
+          {activityLoading ? (
+            <div className="flex items-center justify-center py-8">
+              <Spinner />
+            </div>
+          ) : recentActivity.length === 0 ? (
+            <EmptyState
+              title="Belum ada aktivitas"
+              description="Aktivitas assignment akan muncul di sini."
+            />
+          ) : (
+            <div className="space-y-1">
+              {recentActivity.map((item) => (
+                <div
+                  key={item.id}
+                  className="flex items-start gap-3 rounded-lg px-3 py-2.5 transition-colors hover:bg-neutral-50"
+                >
+                  {/* Status icon */}
+                  <div
+                    className={`mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full ${
+                      item.status === 'Partner Assigned' || item.status === 'Partner Accepted'
+                        ? 'bg-success-100 text-success-600'
+                        : item.status === 'Rejected' || item.status === 'Cancelled'
+                          ? 'bg-danger-100 text-danger-600'
+                          : item.status === 'Working' || item.status === 'On The Way'
+                            ? 'bg-primary-100 text-primary-600'
+                            : 'bg-neutral-100 text-neutral-500'
+                    }`}
+                  >
+                    {item.status === 'Partner Assigned' || item.status === 'Partner Accepted' ? (
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="12"
+                        height="12"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2.5"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <polyline points="20 6 9 17 4 12" />
+                      </svg>
+                    ) : item.status === 'Rejected' || item.status === 'Cancelled' ? (
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="12"
+                        height="12"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2.5"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <line x1="18" y1="6" x2="6" y2="18" />
+                        <line x1="6" y1="6" x2="18" y2="18" />
+                      </svg>
+                    ) : (
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="12"
+                        height="12"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2.5"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <polyline points="23 6 13.5 15.5 8.5 10.5 1 18" />
+                      </svg>
+                    )}
+                  </div>
+
+                  {/* Content */}
+                  <div className="min-w-0 flex-1">
+                    <p className="text-body-sm text-text-primary">
+                      <span className="font-medium">{item.bookingNumber}</span>
+                      {' — '}
+                      {item.description}
+                    </p>
+                    <p className="mt-0.5 text-caption text-text-muted">
+                      {item.createdAt ? formatDate(item.createdAt) : ''}
+                      {item.changedBy && ` oleh ${item.changedBy}`}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {recentActivity.length > 0 && (
+          <a
+            href="/dashboard/admin/bookings"
+            className="mt-3 inline-flex items-center gap-1 text-xs font-medium text-primary hover:text-primary-hover transition-colors"
+          >
+            Lihat semua booking →
+          </a>
+        )}
+      </Card>
+
+      {/* ═══════════════════════════════════════════════════════
+          SECTION 5: Quick Actions
           ═══════════════════════════════════════════════════════ */}
       <Card padding="lg">
         <h3 className="text-caption font-semibold uppercase tracking-wider text-text-muted">

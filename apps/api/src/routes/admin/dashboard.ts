@@ -11,6 +11,7 @@ import {
   companies,
   customerProfiles,
   auditLogs,
+  orderStatusHistory,
 } from '../../lib/db.ts';
 import { authMiddleware, requireRole } from '../../middleware/auth.ts';
 import { success, successPaginated } from '../../lib/response.ts';
@@ -320,6 +321,87 @@ router.get(
     });
   },
 );
+
+// ── Dispatcher: Recent Activity ─────────────────────────────────
+// Returns latest assignment-related status changes for real-time feed in dispatcher dashboard
+
+router.get(
+  '/dispatcher/recent-activity',
+  authMiddleware,
+  requireRole('admin', 'super_admin', 'dispatcher'),
+  async (c) => {
+    const limit = Number(c.req.query('limit') ?? 20);
+
+    // Query order_status_history for assignment-relevant transitions
+    const items = await db
+      .select({
+        id: orderStatusHistory.id,
+        orderId: orderStatusHistory.orderId,
+        fromStatus: orderStatusHistory.fromStatus,
+        toStatus: orderStatusHistory.toStatus,
+        note: orderStatusHistory.note,
+        createdAt: orderStatusHistory.createdAt,
+        bookingNumber: orders.bookingNumber,
+        partnerName: partnerProfiles.fullName,
+        changedByEmail: users.email,
+      })
+      .from(orderStatusHistory)
+      .innerJoin(orders, eq(orderStatusHistory.orderId, orders.id))
+      .leftJoin(partnerProfiles, eq(orders.partnerId, partnerProfiles.id))
+      .leftJoin(users, eq(orderStatusHistory.changedBy, users.id))
+      .orderBy(desc(orderStatusHistory.createdAt))
+      .limit(limit);
+
+    // Format into activity items with human-readable descriptions
+    const activity = items.map((item) => ({
+      id: item.id,
+      bookingNumber: item.bookingNumber,
+      status: item.toStatus,
+      partnerName: item.partnerName,
+      changedBy: item.changedByEmail,
+      description: formatActivityDescription(
+        item.fromStatus,
+        item.toStatus,
+        item.partnerName,
+        item.note,
+      ),
+      createdAt: item.createdAt,
+    }));
+
+    return success(c, activity);
+  },
+);
+
+function formatActivityDescription(
+  fromStatus: string | null,
+  toStatus: string,
+  partnerName: string | null,
+  note: string | null,
+): string {
+  const name = partnerName ?? 'Mitra';
+  switch (toStatus) {
+    case 'Waiting Assignment':
+      return fromStatus === 'Partner Assigned'
+        ? `${name} menolak assignment: ${note ?? 'tanpa alasan'}`
+        : 'Booking baru menunggu assignment';
+    case 'Partner Assigned':
+      return `${name} ditugaskan`;
+    case 'Partner Accepted':
+      return `${name} menerima assignment`;
+    case 'On The Way':
+      return `${name} menuju lokasi`;
+    case 'Working':
+      return `${name} memulai pekerjaan`;
+    case 'Completed':
+      return `${name} menyelesaikan pekerjaan`;
+    case 'Cancelled':
+      return note ? `Booking dibatalkan: ${note}` : 'Booking dibatalkan';
+    case 'Confirmed':
+      return 'Booking dikonfirmasi';
+    default:
+      return toStatus ? `Status berubah: ${fromStatus ?? '-'} → ${toStatus}` : 'Aktivitas baru';
+  }
+}
 
 // ── Dispatcher: SLA Breach Stats ───────────────────────────────
 // Count orders that have been waiting for assignment > 24 hours
