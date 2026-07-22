@@ -1,13 +1,13 @@
 ---
 import '@fontsource-variable/inter';
 import '../styles/global.css'
-import { readFileSync } from 'fs'
 import { AuthNav } from '../components/AuthNav.tsx'
 import WhatsAppFloating from '../components/WhatsAppFloating.astro'
 import Footer from '../components/homepage/Footer.astro'
 
 // ── Critical CSS (inlined for zero render-blocking delay) ─────────
-const criticalCSS = readFileSync(new URL('../styles/critical.css', import.meta.url), 'utf-8')
+// Uses ?raw import — bundled at build time, no filesystem access at runtime
+import criticalCSS from '../styles/critical.css?raw'
 
 export interface Props {
   title?: string
