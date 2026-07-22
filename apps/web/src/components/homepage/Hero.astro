@@ -38,7 +38,11 @@ const subtitle =
        agar tidak terlihat pecah/blur pada area yang lebih luas.
   -->
   <picture>
-    <source srcset="/hero-home.webp" type="image/webp" />
+    <source
+      srcset="/hero-home-640.webp 640w, /hero-home-1024.webp 1024w, /hero-home-1536.webp 1536w"
+      sizes="(max-width: 640px) 640px, (max-width: 1024px) 1024px, 1536px"
+      type="image/webp"
+    />
     <img
       src="/hero-home.webp"
       alt=""
