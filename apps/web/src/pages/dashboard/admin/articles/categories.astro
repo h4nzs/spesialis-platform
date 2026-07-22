@@ -1,0 +1,9 @@
+---
+export const prerender = false
+import DashboardLayout from '../../../../layouts/DashboardLayout.astro'
+import { AdminArticleCategories } from '../../../../components/dashboard/admin/AdminArticleCategories.tsx'
+---
+
+<DashboardLayout title="Kelola Kategori Artikel" role={['admin', 'super_admin', 'content_manager']}>
+  <AdminArticleCategories client:load />
+</DashboardLayout>
