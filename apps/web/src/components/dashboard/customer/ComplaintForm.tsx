@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { track } from '@spesialis/analytics';
 import { createBrowserClient, parseApiError } from '@ahlipanggilan/shared';
 import { createComplaintSchema } from '@ahlipanggilan/validation';
 import { Button, Input, Textarea, Card } from '@ahlipanggilan/ui';
@@ -43,8 +44,16 @@ export function ComplaintForm() {
 
     setSubmitting(true);
     try {
-      await api.post('/api/v1/complaints', { body: parsed.data });
+      const result = await api.post<{ id: string; order_id: string; category: string }>(
+        '/api/v1/complaints',
+        { body: parsed.data },
+      );
       setSuccess(true);
+      track('complaint_submit', {
+        complaint_id: result.id,
+        booking_id: result.order_id,
+        category: result.category,
+      });
     } catch (err: unknown) {
       const result = parseApiError(err, 'Gagal mengirim komplain. Silakan coba lagi.');
       setFieldErrors(result.fieldErrors);

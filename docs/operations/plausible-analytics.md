@@ -104,12 +104,17 @@ clickhouse-server sebagai user clickhouse (UID 101)
 ```bash
 # ── Plausible Analytics ──────────────────────────────────────────
 PLAUSIBLE_DOMAIN=stats.ahlipanggilan.id
+PUBLIC_PLAUSIBLE_DOMAIN=stats.ahlipanggilan.id  # client-side (PUBLIC_ prefix)
+PUBLIC_SITE_DOMAIN=ahlipanggilan.id
 PLAUSIBLE_SECRET_KEY=<output dari: openssl rand -hex 64>
 PLAUSIBLE_DB_PASSWORD=<password acak, min 12 karakter>
 PLAUSIBLE_ADMIN_EMAIL=admin@ahlipanggilan.id
 PLAUSIBLE_ADMIN_NAME=Admin
 PLAUSIBLE_ADMIN_PASSWORD=<password admin dashboard>
 ```
+
+> **PUBLIC\_ prefix:** Vite/Astro hanya mengekspos env var dengan prefix `PUBLIC_` ke client-side JavaScript via `import.meta.env.PUBLIC_*`. Tanpa prefix ini, analytics SDK tidak bisa membaca domain dari client.
+> **Sync requirement:** `PUBLIC_PLAUSIBLE_DOMAIN` harus sama dengan `PLAUSIBLE_DOMAIN`. Di docker-compose.prod.yml keduanya mereferensi env var yang sama.
 
 ### Di `docker-compose.prod.yml` (hardcoded / referensi env var)
 
@@ -436,9 +441,23 @@ Nginx Alpine entrypoint menjalankan `envsubst` pada file `.template`. Variabel `
 
 ## 6. Integrasi Frontend
 
+**Arsitektur:** Dua-layer tracking
+
+```
+BaseLayout.astro
+├── <script defer src=".../script.js">       Plausible script (handles pageviews)
+└── <script> import analytics client           @spesialis/analytics SDK
+       └── analyticsInit()
+              ├── Auto-tracking: scroll, CWV, errors, session
+              ├── Provider: Plausible (custom events)
+              └── Component helpers: trackCTA, trackBookingStart, etc.
+```
+
+#### Layer 1 — Plausible Script (Pageviews)
+
 **File:** `apps/web/src/layouts/BaseLayout.astro`
 
-Script tracking ditambahkan secara **conditional** — hanya aktif di production saat `PLAUSIBLE_DOMAIN` ter-set:
+Script Plausible tetap dipertahankan untuk automated pageview tracking:
 
 ```astro
 ---
@@ -446,12 +465,85 @@ const plausibleDomain = process.env.PLAUSIBLE_DOMAIN ?? ''
 const plausibleSrc = plausibleDomain ? `https://${plausibleDomain}/js/script.js` : ''
 ---
 
-<!-- Di <head> -->
 {
   plausibleSrc && (
     <script defer data-domain="ahlipanggilan.id" src={plausibleSrc} />
   )
 }
+```
+
+**Catatan:**
+
+- `defer` — tidak blocking render
+- **Tanpa `integrity`** — menghindari SRI hash mismatch
+- **Tanpa cookie** — GDPR compliant out of the box
+- **Domain sendiri** — first-party, tidak diblokir adblocker
+
+#### Layer 2 — Analytics SDK (@spesialis/analytics)
+
+**Bootstrap file:** `apps/web/src/analytics/client.ts`
+
+```ts
+import { analyticsInit } from '@spesialis/analytics';
+
+const plausibleDomain = import.meta.env.PUBLIC_PLAUSIBLE_DOMAIN ?? '';
+const siteDomain = import.meta.env.PUBLIC_SITE_DOMAIN ?? 'ahlipanggilan.id';
+
+analyticsInit({
+  providers: {
+    plausible: {
+      enabled: !!plausibleDomain,
+      options: { domain: plausibleDomain, siteDomain },
+      priority: 10,
+    },
+  },
+  autoTracking: {
+    pageview: true,
+    scroll: true,
+    engagement: true,
+    outboundLinks: true,
+    downloads: true,
+    errors: true,
+    performance: true,
+    visibility: true,
+    historyNavigation: true,
+  },
+});
+```
+
+##### Component Tracking
+
+| Component   | File                        | Event                                   |
+| ----------- | --------------------------- | --------------------------------------- |
+| Hero CTA    | Hero.astro                  | cta_click (Booking, Lihat Selengkapnya) |
+| WhatsApp    | WhatsAppFloating.astro      | whatsapp_click                          |
+| Footer nav  | Footer.astro                | navigation_click (event delegation)     |
+| FAQ         | FAQSection.astro            | faq_open                                |
+| Booking     | BookingForm.tsx             | booking_start, booking_submit           |
+| Corporate   | CorporateInquiryForm.tsx    | inquiry_submit                          |
+| Partner reg | PartnerRegistrationForm.tsx | partner_register_start/complete         |
+
+##### Env Vars untuk SDK
+
+| Env Var                 | Diperlukan | Default          |
+| ----------------------- | ---------- | ---------------- |
+| PUBLIC_PLAUSIBLE_DOMAIN | Yes (prod) | -                |
+| PUBLIC_SITE_DOMAIN      | Yes        | ahlipanggilan.id |
+
+> **Dev mode:** Jika PUBLIC_PLAUSIBLE_DOMAIN tidak diset, SDK berjalan dengan noop provider. Auto-tracking tetap berjalan (scroll, CWV, errors) tapi tidak dikirim ke Plausible.
+
+---const plausibleDomain = process.env.PLAUSIBLE_DOMAIN ?? ''
+const plausibleSrc = plausibleDomain ? `https://${plausibleDomain}/js/script.js` : ''
+---
+
+<!-- Di <head> -->
+
+{
+plausibleSrc && (
+<script defer data-domain="ahlipanggilan.id" src={plausibleSrc} />
+)
+}
+
 ```
 
 **Catatan:**
@@ -476,8 +568,10 @@ const plausibleSrc = plausibleDomain ? `https://${plausibleDomain}/js/script.js`
 ### Langkah 1: Konfigurasi DNS
 
 ```
-stats.ahlipanggilan.id  →  A record  →  <IP VPS>
-```
+
+stats.ahlipanggilan.id → A record → <IP VPS>
+
+````
 
 ### Langkah 2: SSL Certificate
 
@@ -497,7 +591,7 @@ docker run --rm \
 
 # Start nginx kembali
 docker start ahlipanggilan-nginx
-```
+````
 
 ### Langkah 3: Bootstrap Database
 

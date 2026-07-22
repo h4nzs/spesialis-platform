@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
+import { trackBookingStart, trackBookingSubmit } from '@spesialis/analytics';
 import { Button } from '@ahlipanggilan/ui';
 import {
   createBrowserClient,
@@ -103,6 +104,7 @@ export function BookingForm({ serviceId, initialAuth }: BookingFormProps) {
       .then((svc) => {
         setService(svc);
         setLoadingService(false);
+        trackBookingStart(serviceId, isCustomer ? 'registered' : 'guest');
       })
       .catch(() => {
         setLoadingService(false);
@@ -180,6 +182,9 @@ export function BookingForm({ serviceId, initialAuth }: BookingFormProps) {
         );
         setBookingResult(result);
         setSubmitted(true);
+        if (serviceId) {
+          trackBookingSubmit(serviceId, result.id, 'registered');
+        }
       } catch (err: unknown) {
         const { fieldErrors, generalError } = parseApiError(
           err,
@@ -227,6 +232,9 @@ export function BookingForm({ serviceId, initialAuth }: BookingFormProps) {
         );
         setBookingResult(result);
         setSubmitted(true);
+        if (serviceId) {
+          trackBookingSubmit(serviceId, result.id, 'guest');
+        }
       } catch (err: unknown) {
         const { fieldErrors, generalError } = parseApiError(
           err,

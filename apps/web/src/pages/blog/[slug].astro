@@ -255,6 +255,20 @@ const contentHtml = article?.content
 
         <RelatedArticles currentSlug={slug!} categorySlug={article.categorySlug} client:visible />
       </div>
+
+      <div id="article-tracking-data" data-id={article.id} data-category={article.categoryName ?? ''} data-slug={article.slug} style="display:none"></div>
+      <script>
+        import { trackArticleView } from '@spesialis/analytics'
+
+        var el = document.getElementById('article-tracking-data')
+        if (el) {
+          trackArticleView(
+            el.getAttribute('data-id') || '',
+            el.getAttribute('data-category') || '',
+            el.getAttribute('data-slug') || '',
+          )
+        }
+      </script>
     </BaseLayout>
   ) : (
     <BaseLayout

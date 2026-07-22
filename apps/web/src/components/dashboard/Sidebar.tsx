@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import type { UserRole } from '@ahlipanggilan/types';
 import { forceLogout } from '../../lib/auth.ts';
+import { trackNavigation } from '@spesialis/analytics';
 
 interface NavItem {
   href: string;
@@ -282,7 +283,10 @@ export function Sidebar({
                 <a
                   key={entry.href}
                   href={entry.href}
-                  onClick={() => setOpen(false)}
+                  onClick={() => {
+                    setOpen(false);
+                    trackNavigation(entry.href, entry.label, 'sidebar');
+                  }}
                   className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-body-sm font-medium transition-colors duration-150 ease-out ${
                     isActive(entry.href)
                       ? 'bg-primary-50 text-primary-700'
@@ -342,7 +346,10 @@ export function Sidebar({
                       <a
                         key={child.href}
                         href={child.href}
-                        onClick={() => setOpen(false)}
+                        onClick={() => {
+                          setOpen(false);
+                          trackNavigation(child.href, child.label, 'sidebar');
+                        }}
                         className={`flex items-center gap-2.5 rounded-lg px-3 py-2 text-body-sm font-medium transition-colors duration-150 ease-out ${
                           isActive(child.href)
                             ? 'bg-primary-50 text-primary-700'

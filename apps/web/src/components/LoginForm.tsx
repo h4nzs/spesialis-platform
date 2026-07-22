@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { trackImmediate } from '@spesialis/analytics';
 import { loginSchema } from '@ahlipanggilan/validation';
 import { Button } from '@ahlipanggilan/ui';
 import { parseApiError } from '@ahlipanggilan/shared';
@@ -42,6 +43,7 @@ export function LoginForm() {
       }>('/api/v1/auth/login', { body: parsed.data });
 
       api.getTokenStore().setTokens(result.token, result.refreshToken);
+      trackImmediate('login_success', { user_id: result.user.id, role: result.user.role });
       redirectToDashboard(result.user.role);
     } catch (err: unknown) {
       const { fieldErrors, generalError } = parseApiError(

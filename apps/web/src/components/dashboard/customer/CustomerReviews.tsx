@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
+import { track } from '@spesialis/analytics';
 import {
   createBrowserClient,
   formatDate,
@@ -81,6 +82,7 @@ export function CustomerReviews() {
     setRating('');
     setComment('');
     setShowModal(true);
+    track('review_start', { booking_id: '' });
 
     try {
       const data = await api.get<OrderItem[]>('/api/v1/bookings', { params: { limit: 100 } });
@@ -108,6 +110,10 @@ export function CustomerReviews() {
       });
       setShowModal(false);
       setPage(1);
+      track('review_submit', {
+        booking_id: orderId,
+        rating: Math.round(Number(rating)) as 1 | 2 | 3 | 4 | 5,
+      });
       await loadReviews();
     } catch (err: unknown) {
       const result = parseApiError(err, 'Gagal mengirim ulasan');

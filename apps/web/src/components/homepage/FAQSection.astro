@@ -63,7 +63,7 @@ try {
 }
 ---
 
-<section class="bg-bg-page" id="faq">
+<section class="bg-bg-page" id="faq-section">
   <div class="container-page py-16 md:py-24">
     <div class="mx-auto max-w-2xl text-center">
       <p class="text-overline text-primary-500 tracking-widest">FAQ</p>
@@ -103,3 +103,19 @@ try {
     </div>
   </div>
 </section>
+
+<script>
+  import { trackFAQOpen } from '../../analytics/astro-track.ts'
+
+  document.addEventListener('DOMContentLoaded', function () {
+    var detailsList = document.querySelectorAll('#faq-section details');
+    detailsList.forEach(function (details, index) {
+      details.addEventListener('toggle', function () {
+        if ((details as HTMLDetailsElement).open) {
+          var question = details.querySelector('summary')?.textContent?.trim() || '';
+          trackFAQOpen('faq-' + index, question, 'homepage');
+        }
+      });
+    });
+  });
+</script>

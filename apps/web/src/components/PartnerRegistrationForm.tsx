@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
+import { trackPartnerRegister, trackPartnerRegisterComplete } from '@spesialis/analytics';
 import { createBrowserClient, parseApiError } from '@ahlipanggilan/shared';
 import { Button, Input, Card } from '@ahlipanggilan/ui';
 import { partnerRegistrationSchema } from '@ahlipanggilan/validation';
@@ -65,6 +66,7 @@ export function PartnerRegistrationForm() {
   const [success, setSuccess] = useState(false);
 
   useEffect(() => {
+    trackPartnerRegister();
     Promise.all([
       api.get<CategoryItem[]>('/api/v1/public/service-categories'),
       api.get<ServiceItem[]>('/api/v1/services', { params: { limit: 200 } }),
@@ -172,8 +174,11 @@ export function PartnerRegistrationForm() {
     }
 
     try {
-      await api.post('/api/v1/partners/register', { body: parsed.data });
+      const result = await api.post<{ id?: string }>('/api/v1/partners/register', {
+        body: parsed.data,
+      });
       setSuccess(true);
+      trackPartnerRegisterComplete(result?.id ?? '');
     } catch (err: unknown) {
       const { fieldErrors, generalError } = parseApiError(err, 'Registrasi gagal');
       const newErrors: { field: string; message: string }[] = Object.entries(fieldErrors).map(

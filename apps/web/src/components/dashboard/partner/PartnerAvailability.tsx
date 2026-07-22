@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
+import { track } from '@spesialis/analytics';
 import { createBrowserClient } from '@ahlipanggilan/shared';
 import { Card, Button, Select, Skeleton } from '@ahlipanggilan/ui';
 
@@ -20,6 +21,7 @@ export function PartnerAvailability() {
     setSaving(true);
     try {
       await api.patch('/api/v1/partners/me/availability', { body: { availability: current } });
+      track('partner_availability_update', { status: current });
     } catch {
       // silent
     } finally {

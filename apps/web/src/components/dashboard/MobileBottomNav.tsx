@@ -1,4 +1,5 @@
 import type { UserRole } from '@ahlipanggilan/types';
+import { trackNavigation } from '@spesialis/analytics';
 
 interface NavItem {
   href: string;
@@ -95,6 +96,7 @@ export function MobileBottomNav({ role, currentPath }: { role: UserRole; current
           <a
             key={item.href}
             href={item.href}
+            onClick={() => trackNavigation(item.href, item.label, 'mobile-bottom-nav')}
             className={`flex flex-col items-center gap-0.5 px-2 py-2 text-caption font-medium transition-colors duration-150 ${
               active ? 'text-primary-600' : 'text-text-muted hover:text-text-secondary'
             }`}

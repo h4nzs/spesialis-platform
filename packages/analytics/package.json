@@ -1,0 +1,44 @@
+{
+  "name": "@spesialis/analytics",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Provider-agnostic analytics platform — core, registry, providers, taxonomy",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./types": "./src/types.ts",
+    "./core": "./src/core/index.ts",
+    "./providers": "./src/providers/index.ts",
+    "./registry": "./src/registry/index.ts",
+    "./events": "./src/events/index.ts",
+    "./properties": "./src/properties/index.ts",
+    "./helpers": "./src/helpers/index.ts",
+    "./hooks": "./src/hooks/index.ts",
+    "./client": "./src/client/index.ts",
+    "./debug": "./src/debug/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "lint": "eslint .",
+    "analytics:typegen": "tsx scripts/typegen.ts",
+    "analytics:typegen:write": "tsx scripts/typegen.ts --write",
+    "analytics:validate": "tsx scripts/validate-contract.ts",
+    "analytics:lint": "tsx scripts/analytics-lint.ts",
+    "analytics:check": "pnpm analytics:validate && pnpm analytics:lint"
+  },
+  "dependencies": {},
+  "peerDependencies": {
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.0",
+    "vitest": "^3.0.0",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  }
+}

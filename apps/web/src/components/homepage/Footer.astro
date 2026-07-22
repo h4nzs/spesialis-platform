@@ -79,3 +79,27 @@ const year = new Date().getFullYear();
     </div>
   </div>
 </footer>
+
+<script>
+  import { trackNavigation } from '../../analytics/astro-track.ts'
+
+  document.addEventListener('DOMContentLoaded', function () {
+    var footer = document.querySelector('footer');
+    if (!footer) return;
+
+    footer.addEventListener('click', function (e: MouseEvent) {
+      var target = e.target as HTMLElement | null;
+      if (!target) return;
+      var link = target.closest('a');
+      if (!link) return;
+
+      var label = link.textContent?.trim() || '';
+      var href = link.getAttribute('href') || '';
+
+      // Track internal navigation links
+      if (href.startsWith('/') && label) {
+        trackNavigation(href, label, 'footer');
+      }
+    });
+  });
+</script>

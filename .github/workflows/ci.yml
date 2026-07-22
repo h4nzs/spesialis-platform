@@ -48,6 +48,10 @@ jobs:
         run: pnpm install --frozen-lockfile
       - name: Lint
         run: pnpm lint
+      - name: Analytics Contract Validation
+        run: pnpm --filter @spesialis/analytics analytics:validate
+      - name: Analytics Codebase Lint
+        run: pnpm --filter @spesialis/analytics analytics:lint
       - name: Typecheck
         run: pnpm typecheck
       - name: Build

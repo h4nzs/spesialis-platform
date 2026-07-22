@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { trackInquirySubmit } from '@spesialis/analytics';
 import { createBrowserClient, parseApiError } from '@ahlipanggilan/shared';
 import { createCompanySchema } from '@ahlipanggilan/validation';
 import { Button, Input, Card } from '@ahlipanggilan/ui';
@@ -69,6 +70,7 @@ export function CorporateInquiryForm() {
     try {
       await api.post('/api/v1/companies', { body: { ...parsed.data, password: form.password } });
       setSuccess(true);
+      trackInquirySubmit(form.companyName, form.industry || 'General');
     } catch (err: unknown) {
       const result = parseApiError(err, 'Gagal mengirim. Silakan coba lagi.');
       setFieldErrors(result.fieldErrors);

@@ -25,6 +25,7 @@ const sidebarRole = initialUser?.role ?? (Array.isArray(role) ? role[0] : role);
   <AuthGuard client:load requiredRole={role} initialUser={initialUser}>
     <div class="mx-auto flex max-w-7xl gap-8 px-4 py-8 sm:px-6 lg:px-8">
       <Sidebar client:load role={sidebarRole as UserRole} currentPath={currentPath} userName={auth?.userName} userEmail={initialUser?.email} />
+      <div data-sidebar-role={sidebarRole} style="display:none"></div>
       <div class="min-w-0 flex-1 pb-16 pl-12 sm:pl-0">
         <div class="mb-6 flex items-center justify-between">
           <h1 class="text-h2 text-text-primary">{title}</h1>
@@ -36,3 +37,11 @@ const sidebarRole = initialUser?.role ?? (Array.isArray(role) ? role[0] : role);
     </div>
   </AuthGuard>
 </BaseLayout>
+
+<script>
+  import { trackDashboardView } from '@spesialis/analytics'
+
+  var role = document.querySelector('[data-sidebar-role]')?.getAttribute('data-sidebar-role') || 'unknown'
+  var section = window.location.pathname.replace('/dashboard/', '').split('/')[0] || 'home'
+  trackDashboardView(role, section)
+</script>

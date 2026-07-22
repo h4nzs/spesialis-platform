@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { trackImmediate } from '@spesialis/analytics';
 import { registerSchema } from '@ahlipanggilan/validation';
 import { Button } from '@ahlipanggilan/ui';
 import { getApiClient, redirectToDashboard } from '../lib/auth.ts';
@@ -41,6 +42,7 @@ export function RegisterForm() {
         token: string;
       }>('/api/v1/auth/register', { body: parsed.data });
 
+      trackImmediate('register_complete', { user_id: result.user.id, role: result.user.role });
       redirectToDashboard(result.user.role);
     } catch (err: unknown) {
       if (err instanceof Error) {

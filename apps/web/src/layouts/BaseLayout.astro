@@ -122,6 +122,11 @@ const plausibleSrc = plausibleDomain ? `https://${plausibleDomain}/js/script.js`
         <script defer data-domain="ahlipanggilan.id" src={plausibleSrc} />
       )
     }
+
+    <!-- ── Analytics Core (auto-tracking + custom events) ────── -->
+    <script>
+      import '../analytics/client.ts'
+    </script>
   </head>
   <body class="min-h-screen overflow-x-hidden bg-bg-page text-text-primary font-sans antialiased">
     <a href="#main-content" class="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-toast focus:rounded-md focus:bg-bg-surface focus:px-4 focus:py-2 focus:text-body focus:font-medium focus:text-text-primary focus:shadow-md">

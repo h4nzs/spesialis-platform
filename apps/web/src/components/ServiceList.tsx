@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { track } from '@spesialis/analytics';
 import { createBrowserClient } from '@ahlipanggilan/shared';
 
 interface ServiceItem {
@@ -26,10 +27,20 @@ export function ServiceList({ searchQuery }: { searchQuery?: string }) {
       .then((items) => {
         setServices(items);
         setLoading(false);
+        if (searchQuery) {
+          track('search_result', {
+            query: searchQuery,
+            result_count: items.length,
+            has_results: items.length > 0,
+          });
+        }
       })
       .catch((err: unknown) => {
         setError(err instanceof Error ? err.message : 'Gagal memuat layanan');
         setLoading(false);
+        if (searchQuery) {
+          track('search_result', { query: searchQuery, result_count: 0, has_results: false });
+        }
       });
   }, [searchQuery]);
 

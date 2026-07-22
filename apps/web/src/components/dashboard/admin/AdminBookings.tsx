@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
+import { track } from '@spesialis/analytics';
 import {
   createBrowserClient,
   formatCurrency,
@@ -82,8 +83,18 @@ export function AdminBookings() {
         // Fallback: export data yang sudah dimuat di halaman
         fallbackExport();
       }
+      track('dashboard_export', {
+        role: 'admin',
+        type: 'bookings_csv',
+        row_count: bookings.length,
+      });
     } catch {
       fallbackExport();
+      track('dashboard_export', {
+        role: 'admin',
+        type: 'bookings_csv_fallback',
+        row_count: bookings.length,
+      });
     } finally {
       setExporting(false);
     }
@@ -118,12 +129,15 @@ export function AdminBookings() {
         await api.post(`/api/v1/bookings/${booking.id}/confirm`, {
           body: { finalPrice: finalPrice || undefined, note },
         });
+        track('booking_confirm', { booking_id: booking.id });
       } else if (action === 'assign') {
         await api.post(`/api/v1/bookings/${booking.id}/assign`, {
           body: { partnerId, note },
         });
+        track('booking_assign', { booking_id: booking.id, partner_id: partnerId });
       } else if (action === 'cancel') {
         await api.post(`/api/v1/bookings/${booking.id}/cancel`, { body: { reason: note } });
+        track('booking_cancel', { booking_id: booking.id, reason: note });
       }
       setActionModal(null);
       setNote('');
@@ -243,7 +257,14 @@ export function AdminBookings() {
         keyExtractor={(b) => b.id}
         emptyState={<EmptyState title="Belum ada booking" />}
       />
-      <Pagination page={page} totalPages={hasMore ? page + 1 : page} onPageChange={setPage} />
+      <Pagination
+        page={page}
+        totalPages={hasMore ? page + 1 : page}
+        onPageChange={(newPage) => {
+          track('dashboard_filter', { role: 'admin', filter: 'page', value: newPage });
+          setPage(newPage);
+        }}
+      />
 
       <Modal
         open={!!actionModal}

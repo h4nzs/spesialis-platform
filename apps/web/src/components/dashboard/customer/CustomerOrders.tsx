@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
+import { track } from '@spesialis/analytics';
 import {
   createBrowserClient,
   formatCurrency,
@@ -42,6 +43,9 @@ export function CustomerOrders() {
         const items = Array.isArray(data) ? data : [];
         setOrders(items);
         setHasMore(items.length === 20);
+        if (page === 1) {
+          track('booking_list_view', { result_count: items.length });
+        }
       })
       .catch(() => setOrders([]))
       .finally(() => setLoading(false));

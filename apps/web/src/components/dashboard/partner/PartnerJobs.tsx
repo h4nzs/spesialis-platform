@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
+import { trackPartnerJobAccept, trackPartnerJobReject } from '@spesialis/analytics';
 import { createBrowserClient, formatDate, getStatusLabel } from '@ahlipanggilan/shared';
 import {
   Badge,
@@ -30,7 +31,10 @@ export function PartnerJobs() {
   const [jobs, setJobs] = useState<JobItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
-  const [rejectTarget, setRejectTarget] = useState<string | null>(null);
+  const [rejectTarget, setRejectTarget] = useState<{
+    assignmentId: string;
+    orderId: string;
+  } | null>(null);
   const [rejectReason, setRejectReason] = useState('');
 
   const loadJobs = useCallback(async () => {
@@ -49,9 +53,10 @@ export function PartnerJobs() {
     loadJobs();
   }, [loadJobs]);
 
-  async function handleAccept(orderId: string) {
+  async function handleAccept(assignmentId: string, bookingId: string) {
     try {
-      await api.post(`/api/v1/bookings/${orderId}/accept`);
+      await api.post(`/api/v1/bookings/${bookingId}/accept`);
+      trackPartnerJobAccept(assignmentId, bookingId);
       setPage(1);
       await loadJobs();
     } catch {
@@ -59,9 +64,10 @@ export function PartnerJobs() {
     }
   }
 
-  async function handleReject(orderId: string, reason: string) {
+  async function handleReject(assignmentId: string, bookingId: string, reason: string) {
     try {
-      await api.post(`/api/v1/bookings/${orderId}/reject`, { body: { reason } });
+      await api.post(`/api/v1/bookings/${bookingId}/reject`, { body: { reason } });
+      trackPartnerJobReject(assignmentId, bookingId, reason);
       setRejectTarget(null);
       setRejectReason('');
       setPage(1);
@@ -149,10 +155,14 @@ export function PartnerJobs() {
             <div className="flex flex-wrap gap-2">
               {job.orderStatus === 'Partner Assigned' && (
                 <>
-                  <Button size="sm" onClick={() => handleAccept(job.orderId)}>
+                  <Button size="sm" onClick={() => handleAccept(job.id, job.orderId)}>
                     Terima
                   </Button>
-                  <Button size="sm" variant="danger" onClick={() => setRejectTarget(job.orderId)}>
+                  <Button
+                    size="sm"
+                    variant="danger"
+                    onClick={() => setRejectTarget({ assignmentId: job.id, orderId: job.orderId })}
+                  >
                     Tolak
                   </Button>
                 </>
@@ -214,7 +224,10 @@ export function PartnerJobs() {
             <Button
               variant="danger"
               disabled={!rejectReason.trim()}
-              onClick={() => rejectTarget && handleReject(rejectTarget, rejectReason)}
+              onClick={() =>
+                rejectTarget &&
+                handleReject(rejectTarget.assignmentId, rejectTarget.orderId, rejectReason)
+              }
             >
               Kirim
             </Button>
