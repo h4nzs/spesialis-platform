@@ -1,0 +1,9 @@
+---
+export const prerender = false
+import DashboardLayout from '../../layouts/DashboardLayout.astro'
+import { NotificationsPage } from '../../components/dashboard/NotificationsPage.tsx'
+---
+
+<DashboardLayout title="Notifikasi" role={['admin', 'super_admin', 'finance', 'dispatcher', 'customer', 'partner', 'corporate', 'content_manager']}>
+  <NotificationsPage client:load />
+</DashboardLayout>

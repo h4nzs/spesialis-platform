@@ -2,6 +2,9 @@ import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { EmptyState } from '@ahlipanggilan/ui';
 import { createBrowserClient, formatDate } from '@ahlipanggilan/shared';
 
+const POLL_INTERVAL = 15_000; // 15 detik — lebih responsif dari 30s
+const NOTIF_UPDATED_EVENT = 'notifications:updated';
+
 interface NotificationItem {
   id: string;
   type: string;
@@ -43,16 +46,50 @@ export function NotificationBell() {
     }
   }, [api]);
 
+  // ── Periodic polling ─────────────────────────────────────────
   useEffect(() => {
     fetchUnread();
-    const interval = setInterval(fetchUnread, 30_000);
+    const interval = setInterval(fetchUnread, POLL_INTERVAL);
     return () => clearInterval(interval);
   }, [fetchUnread]);
 
+  // ── Visibility change: refetch saat tab kembali aktif ────────
+  useEffect(() => {
+    function handleVisibilityChange() {
+      if (document.visibilityState === 'visible') {
+        fetchUnread();
+      }
+    }
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+  }, [fetchUnread]);
+
+  // ── Window focus: refetch saat user kembali ke jendela ───────
+  useEffect(() => {
+    function handleFocus() {
+      fetchUnread();
+    }
+    window.addEventListener('focus', handleFocus);
+    return () => window.removeEventListener('focus', handleFocus);
+  }, [fetchUnread]);
+
+  // ── Custom event: refetch saat komponen lain (NotifPage) ─────
+  //    menandai notifikasi sebagai dibaca
+  useEffect(() => {
+    function handleNotifUpdated() {
+      fetchUnread();
+      if (open) fetchRecent();
+    }
+    window.addEventListener(NOTIF_UPDATED_EVENT, handleNotifUpdated);
+    return () => window.removeEventListener(NOTIF_UPDATED_EVENT, handleNotifUpdated);
+  }, [fetchUnread, fetchRecent, open]);
+
+  // ── Buka dropdown → fetch recent ─────────────────────────────
   useEffect(() => {
     if (open) fetchRecent();
   }, [open, fetchRecent]);
 
+  // ── Click outside → tutup dropdown ──────────────────────────
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
       if (ref.current && !ref.current.contains(e.target as Node)) {
@@ -69,7 +106,8 @@ export function NotificationBell() {
         body: { notificationIds: [id] },
       });
       setNotifications((prev) => prev.map((n) => (n.id === id ? { ...n, isRead: true } : n)));
-      await fetchUnread();
+      // Broadcast — event handler akan fetchUnread + fetchRecent
+      window.dispatchEvent(new CustomEvent(NOTIF_UPDATED_EVENT));
     } catch {
       // silent
     }
@@ -105,6 +143,7 @@ export function NotificationBell() {
 
       {open && (
         <div className="absolute right-0 z-50 mt-2 w-80 rounded-lg border border-border-default bg-bg-surface shadow-lg">
+          {/* ── Header ──────────────────────────────── */}
           <div className="flex items-center justify-between border-b border-border-default px-4 py-3">
             <span className="text-sm font-semibold text-text-primary">Notifikasi</span>
             {unread > 0 && (
@@ -115,6 +154,7 @@ export function NotificationBell() {
                     await api.post('/api/v1/notifications/read-all');
                     setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
                     setUnread(0);
+                    window.dispatchEvent(new CustomEvent(NOTIF_UPDATED_EVENT));
                   } catch {
                     await fetchUnread();
                   }
@@ -126,6 +166,7 @@ export function NotificationBell() {
             )}
           </div>
 
+          {/* ── List ────────────────────────────────── */}
           <div className="max-h-80 overflow-y-auto">
             {loading ? (
               <p className="px-4 py-6 text-center text-sm text-text-secondary">Memuat...</p>
@@ -161,6 +202,29 @@ export function NotificationBell() {
               ))
             )}
           </div>
+
+          {/* ── Footer: Link ke halaman notifikasi ───── */}
+          <a
+            href="/dashboard/notifications"
+            onClick={() => setOpen(false)}
+            className="flex items-center justify-center border-t border-border-default px-4 py-2.5 text-xs font-medium text-primary transition-colors hover:bg-neutral-50"
+          >
+            Lihat Semua Notifikasi
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="ml-1"
+            >
+              <path d="M9 18l6-6-6-6" />
+            </svg>
+          </a>
         </div>
       )}
     </div>

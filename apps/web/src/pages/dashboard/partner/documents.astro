@@ -1,0 +1,9 @@
+---
+export const prerender = false
+import DashboardLayout from '../../../layouts/DashboardLayout.astro'
+import { PartnerDocuments } from '../../../components/dashboard/partner/PartnerDocuments.tsx'
+---
+
+<DashboardLayout title="Dokumen Saya" role="partner">
+  <PartnerDocuments client:load />
+</DashboardLayout>

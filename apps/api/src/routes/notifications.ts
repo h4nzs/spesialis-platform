@@ -14,6 +14,12 @@ router.get('/', authMiddleware, async (c) => {
   const userId = c.get('userId');
   const limit = Math.min(Number(c.req.query('limit')) || 20, 100);
   const page = Math.max(Number(c.req.query('page')) || 1, 1);
+  const isReadParam = c.req.query('isRead');
+
+  const conditions: ReturnType<typeof eq>[] = [eq(notifications.userId, userId)];
+  if (isReadParam === 'true' || isReadParam === 'false') {
+    conditions.push(eq(notifications.isRead, isReadParam === 'true'));
+  }
 
   const items = await db
     .select({
@@ -26,7 +32,7 @@ router.get('/', authMiddleware, async (c) => {
       createdAt: notifications.createdAt,
     })
     .from(notifications)
-    .where(eq(notifications.userId, userId))
+    .where(and(...conditions))
     .orderBy(desc(notifications.createdAt))
     .limit(limit)
     .offset((page - 1) * limit);
@@ -34,7 +40,7 @@ router.get('/', authMiddleware, async (c) => {
   const countResult = await db
     .select({ count: sql<number>`count(*)` })
     .from(notifications)
-    .where(eq(notifications.userId, userId));
+    .where(and(...conditions));
   const total = Number(countResult[0]?.count ?? 0);
   const pagination = buildPaginationMeta(page, limit, total);
 

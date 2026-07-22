@@ -26,7 +26,7 @@ async function getInvoiceNumber(): Promise<string> {
   return `${prefix}${String(next).padStart(4, '0')}`;
 }
 
-router.get('/', requireRole('admin', 'super_admin', 'corporate'), async (c) => {
+router.get('/', requireRole('admin', 'super_admin', 'corporate', 'finance'), async (c) => {
   const page = Number(c.req.query('page') ?? 1);
   const limit = Number(c.req.query('limit') ?? 20);
   const companyId = c.req.query('companyId');
@@ -68,7 +68,7 @@ router.get('/', requireRole('admin', 'super_admin', 'corporate'), async (c) => {
   return successPaginated(c, items, pagination);
 });
 
-router.get('/:id', requireRole('admin', 'super_admin', 'corporate'), async (c) => {
+router.get('/:id', requireRole('admin', 'super_admin', 'corporate', 'finance'), async (c) => {
   const invoiceId = c.req.param('id')!;
   const userId = c.get('userId');
   const userRole = c.get('userRole');
@@ -90,7 +90,7 @@ router.get('/:id', requireRole('admin', 'super_admin', 'corporate'), async (c) =
 
 router.post(
   '/',
-  requireRole('admin', 'super_admin'),
+  requireRole('admin', 'super_admin', 'finance'),
   validateBody(createInvoiceSchema),
   async (c) => {
     const data = c.get('validated') as CreateInvoiceInput;
@@ -140,7 +140,7 @@ router.post(
 
 router.patch(
   '/:id/status',
-  requireRole('admin', 'super_admin'),
+  requireRole('admin', 'super_admin', 'finance'),
   validateBody(updateInvoiceStatusSchema),
   async (c) => {
     const invoiceId = c.req.param('id')!;

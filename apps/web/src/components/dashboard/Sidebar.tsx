@@ -19,6 +19,7 @@ type NavEntry = NavItem | NavSection;
 
 const NAV_MAP: Record<string, NavEntry[]> = {
   content_manager: [
+    { href: '/dashboard/notifications', label: 'Notifikasi', icon: 'bell' },
     { href: '/dashboard/admin', label: 'Ringkasan', icon: 'dashboard' },
     { href: '/dashboard/admin/articles', label: 'Artikel', icon: 'fileText' },
     { href: '/dashboard/admin/articles/categories', label: 'Kategori', icon: 'address' },
@@ -32,6 +33,7 @@ const NAV_MAP: Record<string, NavEntry[]> = {
     { href: '/dashboard/admin/settings', label: 'Pengaturan', icon: 'settings' },
   ],
   customer: [
+    { href: '/dashboard/notifications', label: 'Notifikasi', icon: 'bell' },
     { href: '/dashboard/customer', label: 'Ringkasan', icon: 'dashboard' },
     { href: '/dashboard/customer/orders', label: 'Pesanan', icon: 'orders' },
     { href: '/dashboard/customer/addresses', label: 'Alamat', icon: 'address' },
@@ -40,15 +42,19 @@ const NAV_MAP: Record<string, NavEntry[]> = {
     { href: '/dashboard/customer/settings', label: 'Pengaturan', icon: 'settings' },
   ],
   partner: [
+    { href: '/dashboard/notifications', label: 'Notifikasi', icon: 'bell' },
     { href: '/dashboard/partner', label: 'Ringkasan', icon: 'dashboard' },
     { href: '/dashboard/partner/jobs', label: 'Pekerjaan', icon: 'jobs' },
     { href: '/dashboard/partner/availability', label: 'Ketersediaan', icon: 'clock' },
+    { href: '/dashboard/partner/skills', label: 'Keahlian', icon: 'wrench' },
+    { href: '/dashboard/partner/documents', label: 'Dokumen', icon: 'file' },
     { href: '/dashboard/partner/earnings', label: 'Pendapatan', icon: 'wallet' },
     { href: '/dashboard/partner/penalties', label: 'Penalty', icon: 'ban' },
     { href: '/dashboard/partner/reviews', label: 'Ulasan', icon: 'review' },
     { href: '/dashboard/partner/settings', label: 'Pengaturan', icon: 'settings' },
   ],
   admin: [
+    { href: '/dashboard/notifications', label: 'Notifikasi', icon: 'bell' },
     { href: '/dashboard/admin', label: 'Ringkasan', icon: 'dashboard' },
     { href: '/dashboard/admin/bookings', label: 'Booking', icon: 'orders' },
     { href: '/dashboard/admin/partners', label: 'Partner', icon: 'partner' },
@@ -78,12 +84,14 @@ const NAV_MAP: Record<string, NavEntry[]> = {
     { href: '/dashboard/admin/media', label: 'Media', icon: 'file' },
     { href: '/dashboard/admin/cms-pages', label: 'Halaman', icon: 'fileText' },
     { href: '/dashboard/admin/audit-logs', label: 'Audit Log', icon: 'scrollText' },
+    { href: '/dashboard/admin/corporate-inquiries', label: 'Corporate Leads', icon: 'building' },
     { href: '/dashboard/admin/penalties', label: 'Penalty', icon: 'ban' },
     { href: '/dashboard/admin/funnels', label: 'Funnel', icon: 'funnel' },
     { href: '/dashboard/admin/reports', label: 'Laporan', icon: 'barChart' },
     { href: '/dashboard/admin/settings', label: 'Pengaturan', icon: 'settings' },
   ],
   super_admin: [
+    { href: '/dashboard/notifications', label: 'Notifikasi', icon: 'bell' },
     { href: '/dashboard/admin', label: 'Ringkasan', icon: 'dashboard' },
     { href: '/dashboard/admin/bookings', label: 'Booking', icon: 'orders' },
     { href: '/dashboard/admin/partners', label: 'Partner', icon: 'partner' },
@@ -113,23 +121,28 @@ const NAV_MAP: Record<string, NavEntry[]> = {
     { href: '/dashboard/admin/media', label: 'Media', icon: 'file' },
     { href: '/dashboard/admin/cms-pages', label: 'Halaman', icon: 'fileText' },
     { href: '/dashboard/admin/audit-logs', label: 'Audit Log', icon: 'scrollText' },
+    { href: '/dashboard/admin/corporate-inquiries', label: 'Corporate Leads', icon: 'building' },
     { href: '/dashboard/admin/penalties', label: 'Penalty', icon: 'ban' },
     { href: '/dashboard/admin/funnels', label: 'Funnel', icon: 'funnel' },
     { href: '/dashboard/admin/reports', label: 'Laporan', icon: 'barChart' },
     { href: '/dashboard/admin/settings', label: 'Pengaturan', icon: 'settings' },
   ],
   dispatcher: [
+    { href: '/dashboard/notifications', label: 'Notifikasi', icon: 'bell' },
     { href: '/dashboard/dispatcher', label: 'Ringkasan', icon: 'dashboard' },
     { href: '/dashboard/admin/bookings', label: 'Booking', icon: 'orders' },
     { href: '/dashboard/admin/partners', label: 'Partner', icon: 'partner' },
     { href: '/dashboard/admin/media', label: 'Media', icon: 'file' },
   ],
   finance: [
+    { href: '/dashboard/notifications', label: 'Notifikasi', icon: 'bell' },
     { href: '/dashboard/finance', label: 'Ringkasan', icon: 'dashboard' },
     { href: '/dashboard/admin/bookings', label: 'Booking', icon: 'orders' },
+    { href: '/dashboard/admin/invoices', label: 'Invoice', icon: 'receipt' },
     { href: '/dashboard/admin/reports', label: 'Laporan', icon: 'barChart' },
   ],
   corporate: [
+    { href: '/dashboard/notifications', label: 'Notifikasi', icon: 'bell' },
     { href: '/dashboard/corporate', label: 'Ringkasan', icon: 'dashboard' },
     { href: '/dashboard/corporate/orders', label: 'Pesanan', icon: 'orders' },
     { href: '/dashboard/corporate/branches', label: 'Cabang', icon: 'building' },
@@ -188,6 +201,7 @@ const ICON_SVGS: Record<string, string> = {
     '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>',
   funnel:
     '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 4 9 13.6V20l6-3.4V13.6L22 4Z"/><path d="M2 4h20"/><path d="M12 4v2"/></svg>',
+  bell: '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>',
 
   /* ── Mobile menu + logout ──────────────────────────────────── */
   menu: '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="18" y2="18"/></svg>',
