@@ -261,14 +261,14 @@ export function FunnelChart() {
   // ── Derived Chart Data ──────────────────────────────────────────
 
   const chartData = useMemo(() => {
-    if (!data) return [];
+    if (!data?.steps?.length) return [];
     return data.steps.map((step) => ({
       ...step,
       fill: `hsl(${220 + step.order * 20}, ${70 - step.order * 5}%, ${65 - step.order * 5}%)`,
     }));
   }, [data]);
 
-  const stepNames = useMemo(() => (data ? data.steps.map((s) => s.name) : []), [data]);
+  const stepNames = useMemo(() => (data?.steps ? data.steps.map((s) => s.name) : []), [data]);
 
   // ── Breakdown Data ──────────────────────────────────────────────
 
@@ -299,7 +299,7 @@ export function FunnelChart() {
               >
                 {funnels.map((f) => (
                   <option key={f.name} value={f.name}>
-                    {f.description} ({f.steps.length} langkah)
+                    {f.description} ({f.steps?.length ?? 0} langkah)
                   </option>
                 ))}
               </select>
@@ -349,7 +349,7 @@ export function FunnelChart() {
         </div>
 
         {/* KPI Display */}
-        {data && (
+        {data && typeof data.totalUsers === 'number' && (
           <div className="mt-4 flex flex-wrap gap-6 border-t border-border-default pt-4">
             <div>
               <p className="text-xs font-semibold uppercase tracking-wide text-text-muted">KPI</p>
@@ -365,38 +365,44 @@ export function FunnelChart() {
                 {formatNumber(data.totalUsers)}
               </p>
             </div>
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-wide text-text-muted">
-                Konversi
-              </p>
-              <p
-                className={`mt-0.5 text-sm font-bold ${
-                  data.overallConversionRate > 10
-                    ? 'text-success-500'
-                    : data.overallConversionRate > 5
-                      ? 'text-accent-500'
-                      : 'text-danger-500'
-                }`}
-              >
-                {data.overallConversionRate.toFixed(1)}%
-              </p>
-            </div>
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-wide text-text-muted">
-                Konversi
-              </p>
-              <p className="mt-0.5 text-sm text-text-primary">
-                {formatNumber(data.totalConverted)} / {formatNumber(data.totalUsers)}
-              </p>
-            </div>
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-wide text-text-muted">
-                Periode
-              </p>
-              <p className="mt-0.5 text-sm text-text-primary">
-                {data.period.start} — {data.period.end}
-              </p>
-            </div>
+            {typeof data.overallConversionRate === 'number' && (
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-wide text-text-muted">
+                  Konversi
+                </p>
+                <p
+                  className={`mt-0.5 text-sm font-bold ${
+                    data.overallConversionRate > 10
+                      ? 'text-success-500'
+                      : data.overallConversionRate > 5
+                        ? 'text-accent-500'
+                        : 'text-danger-500'
+                  }`}
+                >
+                  {data.overallConversionRate.toFixed(1)}%
+                </p>
+              </div>
+            )}
+            {typeof data.totalConverted === 'number' && (
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-wide text-text-muted">
+                  Konversi
+                </p>
+                <p className="mt-0.5 text-sm text-text-primary">
+                  {formatNumber(data.totalConverted)} / {formatNumber(data.totalUsers)}
+                </p>
+              </div>
+            )}
+            {data.period && typeof data.period.start === 'string' && (
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-wide text-text-muted">
+                  Periode
+                </p>
+                <p className="mt-0.5 text-sm text-text-primary">
+                  {data.period.start} — {data.period.end}
+                </p>
+              </div>
+            )}
           </div>
         )}
       </Card>
@@ -426,7 +432,7 @@ export function FunnelChart() {
             title="Pilih Funnel"
             description="Pilih funnel dari dropdown untuk melihat data konversi."
           />
-        ) : data.steps.length === 0 ? (
+        ) : !data?.steps?.length ? (
           <EmptyState
             title="Belum Ada Data"
             description="Belum ada cukup data untuk funnel ini. Coba perpanjang periode atau tunggu hingga ada pengguna yang melalui funnel."
@@ -475,52 +481,55 @@ export function FunnelChart() {
                 Alur Konversi
               </h4>
               <div className="flex flex-wrap items-center gap-2">
-                {data.steps.map((step, idx) => (
-                  <div key={step.order} className="flex items-center gap-2">
-                    {/* Step Card */}
-                    <div className="rounded-lg border border-border-default bg-bg-page px-3 py-2 text-center">
-                      <p className="text-xs font-medium text-text-secondary">{step.name}</p>
-                      <p className="text-sm font-bold text-text-primary">
-                        {formatNumber(step.users)}
-                      </p>
-                      {idx > 0 && (
-                        <p className="text-xs text-danger-500">-{formatNumber(step.dropOff)}</p>
+                {data.steps?.map((step, idx) => {
+                  const stepCount = data.steps?.length ?? 0;
+                  return (
+                    <div key={step.order} className="flex items-center gap-2">
+                      {/* Step Card */}
+                      <div className="rounded-lg border border-border-default bg-bg-page px-3 py-2 text-center">
+                        <p className="text-xs font-medium text-text-secondary">{step.name}</p>
+                        <p className="text-sm font-bold text-text-primary">
+                          {formatNumber(step.users)}
+                        </p>
+                        {idx > 0 && (
+                          <p className="text-xs text-danger-500">-{formatNumber(step.dropOff)}</p>
+                        )}
+                      </div>
+
+                      {/* Arrow */}
+                      {idx < stepCount - 1 && (
+                        <div className="flex flex-col items-center">
+                          <svg
+                            width="32"
+                            height="24"
+                            viewBox="0 0 32 24"
+                            fill="none"
+                            className="text-text-muted"
+                          >
+                            <path
+                              d="M2 12h24M20 4l8 8-8 8"
+                              stroke="currentColor"
+                              strokeWidth="2"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                            />
+                          </svg>
+                          <span
+                            className={`text-xs font-semibold ${
+                              step.conversionRate > 50
+                                ? 'text-success-500'
+                                : step.conversionRate > 20
+                                  ? 'text-accent-500'
+                                  : 'text-danger-500'
+                            }`}
+                          >
+                            {step.conversionRate.toFixed(1)}%
+                          </span>
+                        </div>
                       )}
                     </div>
-
-                    {/* Arrow */}
-                    {idx < data.steps.length - 1 && (
-                      <div className="flex flex-col items-center">
-                        <svg
-                          width="32"
-                          height="24"
-                          viewBox="0 0 32 24"
-                          fill="none"
-                          className="text-text-muted"
-                        >
-                          <path
-                            d="M2 12h24M20 4l8 8-8 8"
-                            stroke="currentColor"
-                            strokeWidth="2"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                          />
-                        </svg>
-                        <span
-                          className={`text-xs font-semibold ${
-                            step.conversionRate > 50
-                              ? 'text-success-500'
-                              : step.conversionRate > 20
-                                ? 'text-accent-500'
-                                : 'text-danger-500'
-                          }`}
-                        >
-                          {step.conversionRate.toFixed(1)}%
-                        </span>
-                      </div>
-                    )}
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
 
@@ -545,7 +554,7 @@ export function FunnelChart() {
                   </tr>
                 </thead>
                 <tbody>
-                  {data.steps.map((step) => (
+                  {data.steps?.map((step) => (
                     <tr
                       key={step.order}
                       className="border-b border-border-default last:border-b-0 hover:bg-neutral-100/50"
