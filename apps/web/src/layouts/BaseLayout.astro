@@ -1,9 +1,13 @@
 ---
 import '@fontsource-variable/inter';
 import '../styles/global.css'
+import { readFileSync } from 'fs'
 import { AuthNav } from '../components/AuthNav.tsx'
 import WhatsAppFloating from '../components/WhatsAppFloating.astro'
 import Footer from '../components/homepage/Footer.astro'
+
+// ── Critical CSS (inlined for zero render-blocking delay) ─────────
+const criticalCSS = readFileSync(new URL('../styles/critical.css', import.meta.url), 'utf-8')
 
 export interface Props {
   title?: string
@@ -75,6 +79,9 @@ const plausibleSrc = plausibleDomain ? `https://${plausibleDomain}/js/script.js`
     <meta name="color-scheme" content="light" />
     <meta name="theme-color" content="#2563eb" />
     <meta name="generator" content={Astro.generator} />
+
+    <!-- ── Critical CSS (inlined) — FCP optimization ────────── -->
+    <style is:inline>{criticalCSS}</style>
 
     <!-- ── Performance resource hints ──────────────────────── -->
     {Astro.url.pathname === '/' && (
