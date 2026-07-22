@@ -21,7 +21,7 @@ ev({
   businessObjective: 'Track filter feature usage',
   kpi: 'Filter Usage Rate',
   owner: 'product',
-  properties: { required: ['filter', 'value', 'result_count'], optional: [] },
+  properties: { required: ['filter', 'filter_value', 'result_count'], optional: [] },
   status: 'active',
 });
 

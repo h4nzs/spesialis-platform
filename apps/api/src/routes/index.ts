@@ -39,6 +39,7 @@ import { adminPageErrorsRouter } from './admin/page-errors.ts';
 import { adminCoverageAreasRouter } from './admin/coverage-areas.ts';
 import { adminServiceSuggestionsRouter } from './admin/service-suggestions.ts';
 import { adminTestimonialsRouter } from './admin/testimonials.ts';
+import { analyticsRouter } from './analytics.ts';
 import { sitemapSettingsRouter } from './sitemap-settings.ts';
 import { indexnowRouter } from './indexnow.ts';
 
@@ -95,5 +96,6 @@ router.route('/admin/service-suggestions', adminServiceSuggestionsRouter);
 router.route('/admin/testimonials', adminTestimonialsRouter);
 router.route('/sitemap-settings', sitemapSettingsRouter);
 router.route('/indexnow', indexnowRouter);
+router.route('/analytics', analyticsRouter);
 
 export { router as apiRouter };

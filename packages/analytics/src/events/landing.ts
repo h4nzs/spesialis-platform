@@ -124,15 +124,3 @@ ev({
   properties: { required: ['service_id', 'category', 'price'], optional: [] },
   status: 'active',
 });
-
-ev({
-  name: 'search_result',
-  category: 'landing',
-  version: 1,
-  description: 'User views search results',
-  businessObjective: 'Track search effectiveness',
-  kpi: 'Search → Booking Rate',
-  owner: 'product',
-  properties: { required: ['query', 'result_count'], optional: ['category'] },
-  status: 'active',
-});

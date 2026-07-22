@@ -77,6 +77,7 @@ const NAV_MAP: Record<string, NavEntry[]> = {
     { href: '/dashboard/admin/cms-pages', label: 'Halaman', icon: 'fileText' },
     { href: '/dashboard/admin/audit-logs', label: 'Audit Log', icon: 'scrollText' },
     { href: '/dashboard/admin/penalties', label: 'Penalty', icon: 'ban' },
+    { href: '/dashboard/admin/funnels', label: 'Funnel', icon: 'funnel' },
     { href: '/dashboard/admin/reports', label: 'Laporan', icon: 'barChart' },
     { href: '/dashboard/admin/settings', label: 'Pengaturan', icon: 'settings' },
   ],
@@ -110,6 +111,7 @@ const NAV_MAP: Record<string, NavEntry[]> = {
     { href: '/dashboard/admin/cms-pages', label: 'Halaman', icon: 'fileText' },
     { href: '/dashboard/admin/audit-logs', label: 'Audit Log', icon: 'scrollText' },
     { href: '/dashboard/admin/penalties', label: 'Penalty', icon: 'ban' },
+    { href: '/dashboard/admin/funnels', label: 'Funnel', icon: 'funnel' },
     { href: '/dashboard/admin/reports', label: 'Laporan', icon: 'barChart' },
     { href: '/dashboard/admin/settings', label: 'Pengaturan', icon: 'settings' },
   ],
@@ -181,6 +183,8 @@ const ICON_SVGS: Record<string, string> = {
   home: '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>',
   search:
     '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>',
+  funnel:
+    '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 4 9 13.6V20l6-3.4V13.6L22 4Z"/><path d="M2 4h20"/><path d="M12 4v2"/></svg>',
 
   /* ── Mobile menu + logout ──────────────────────────────────── */
   menu: '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="18" y2="18"/></svg>',

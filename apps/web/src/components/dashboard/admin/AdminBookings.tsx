@@ -261,7 +261,7 @@ export function AdminBookings() {
         page={page}
         totalPages={hasMore ? page + 1 : page}
         onPageChange={(newPage) => {
-          track('dashboard_filter', { role: 'admin', filter: 'page', value: newPage });
+          track('dashboard_filter', { role: 'admin', filter: 'page', filter_value: newPage });
           setPage(newPage);
         }}
       />

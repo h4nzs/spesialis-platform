@@ -56,19 +56,24 @@ export function trackBookingCancel(bookingId: string, reason?: string): void {
 export function trackPaymentSuccess(
   bookingId: string,
   amount: number,
-  method: string,
+  paymentMethod: string,
   paymentId: string,
 ): void {
-  track('payment_success', { booking_id: bookingId, amount, method, payment_id: paymentId });
+  track('payment_success', {
+    booking_id: bookingId,
+    amount,
+    payment_method: paymentMethod,
+    payment_id: paymentId,
+  });
 }
 
 export function trackPaymentFailed(
   bookingId: string,
   amount: number,
-  method: string,
+  paymentMethod: string,
   error?: string,
 ): void {
-  track('payment_failed', { booking_id: bookingId, amount, method, error });
+  track('payment_failed', { booking_id: bookingId, amount, payment_method: paymentMethod, error });
 }
 
 // ── Authentication ───────────────────────────────────────────
@@ -134,8 +139,6 @@ export function track404(path: string, referrer?: string): void {
   track('page_404', { path, referrer });
 }
 
-export function trackAPIError(endpoint: string, status: number, method: string): void {
-  // TODO(spesialis-997): Use distinct keys (http_status vs booking_status)
-  // instead of shared "status" key with conflicting types (number vs string)
-  track('api_error', { endpoint, status: status as unknown as string, method });
+export function trackAPIError(endpoint: string, httpStatus: number, httpMethod: string): void {
+  track('api_error', { endpoint, http_status: httpStatus, http_method: httpMethod });
 }

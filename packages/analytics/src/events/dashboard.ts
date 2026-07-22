@@ -21,7 +21,7 @@ ev({
   businessObjective: 'Track dashboard filter feature usage',
   kpi: 'Dashboard Filter Usage',
   owner: 'product',
-  properties: { required: ['role', 'filter', 'value'], optional: [] },
+  properties: { required: ['role', 'filter', 'filter_value'], optional: [] },
   status: 'active',
 });
 

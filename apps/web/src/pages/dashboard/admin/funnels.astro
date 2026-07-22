@@ -1,0 +1,15 @@
+---
+export const prerender = false;
+import DashboardLayout from '../../../layouts/DashboardLayout.astro';
+import { FunnelChart } from '../../../components/dashboard/admin/FunnelChart.tsx';
+---
+
+<DashboardLayout title="Analytics Funnel" role={['admin', 'super_admin']}>
+  <div class="mb-6">
+    <h2 class="text-h2 font-bold text-text-primary">Analytics Funnel</h2>
+    <p class="mt-1 text-body-sm text-text-secondary">
+      Visualisasi konversi pengguna di setiap tahap funnel — dari landing hingga konversi.
+    </p>
+  </div>
+  <FunnelChart client:load />
+</DashboardLayout>

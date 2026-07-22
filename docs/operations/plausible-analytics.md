@@ -553,6 +553,59 @@ plausibleSrc && (
 - **Tanpa cookie** — GDPR compliant out of the box
 - **Domain sendiri** (`stats.ahlipanggilan.id`) — first-party, tidak diblokir adblocker/DuckDuckGo/Brave Shield
 
+
+### ClickHouse Env Vars untuk Funnel API
+
+Selain Plausible, API service juga perlu akses ke ClickHouse untuk Funnel Analytics:
+
+| Env Var | Diperlukan | Default | Keterangan |
+|---|---|---|---|
+| `CLICKHOUSE_HOST` | Yes (prod) | `http://plausible-clickhouse:8123` | ClickHouse HTTP interface. Di Docker, pakai nama container. Di dev: `http://localhost:8123` |
+| `CLICKHOUSE_DATABASE` | Yes (prod) | `plausible` | Nama database ClickHouse. Harus sama dengan yang dipakai Plausible. |
+| `CLICKHOUSE_TIMEOUT` | No | `30000` | Query timeout dalam ms |
+
+> Di `docker-compose.prod.yml`, default `CLICKHOUSE_HOST=http://plausible-clickhouse:8123` (Docker internal network).
+> Di development (`clickhouse.ts`), fallback `http://localhost:8123`.
+
+#### Funnel Analytics — ClickHouse Query API
+
+Funnel API adalah custom endpoint di Hono yang membaca data Plausible dari ClickHouse secara langsung menggunakan SQL `windowFunnel()`.
+
+**Endpoint:** `POST /api/v1/analytics/funnels/query` (custom) / `POST /api/v1/analytics/funnels/:name` (predefined)
+
+**Source files (apps/api):**
+
+| File | Fungsi |
+|---|---|
+| `src/lib/clickhouse.ts` | ClickHouse HTTP client — native `fetch()`, parameterized queries, timeout via AbortController |
+| `src/lib/funnel-query.ts` | `FunnelQueryBuilder` — generates `windowFunnel()` SQL, parses results, 7 predefined funnels |
+| `src/routes/analytics.ts` | Hono routes — 4 endpoints with input validation (SAFE_NAME_RE regex + VALID_BREAKDOWN_COLUMNS whitelist) |
+
+**Alur Query:**
+
+```sql
+WITH funnel_data AS (
+  SELECT
+    user_id,
+    windowFunnel(3600)(timestamp, name='pageview', name='service_view', ...) AS steps
+  FROM plausible.events_v2
+  WHERE site_id = 1 AND timestamp BETWEEN '2024-01-01' AND '2024-01-31'
+  GROUP BY user_id
+)
+SELECT
+  countIf(steps >= 1) AS step_1,
+  countIf(steps >= 2) AS step_2,
+  ...
+FROM funnel_data
+```
+
+**Frontend:** `apps/web/src/components/dashboard/admin/FunnelChart.tsx` + `/dashboard/admin/funnels` (Recharts BarChart, period selector, breakdown)
+
+**Keamanan:**
+- Event names divalidasi via `/^[a-z_][a-z0-9_]*$/` (SQL injection prevention)
+- Breakdown columns di-whitelist (browser, country_code, screen_size, operating_system, utm_source)
+- Semua user input via parameterized ClickHouse `{name:Type}` placeholders
+
 ---
 
 ## 7. Setup Awal

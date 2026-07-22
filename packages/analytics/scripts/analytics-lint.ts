@@ -284,7 +284,9 @@ async function main(): Promise<number> {
       const objContent = pm[1] ?? '';
 
       // Extract property keys: word before : or ?:
-      const propKeys = objContent.matchAll(/([a-z_][a-z0-9_]*)\s*[:?,]/g);
+      // NOTE: Avoid matching value expressions (like `items.length` or `searchQuery,`)
+      // Only match `key:` or `key?:` patterns — NOT `word,` which catches value expressions.
+      const propKeys = objContent.matchAll(/([a-z_][a-z0-9_]*)\s*[:?]/g);
       for (const pk of propKeys) {
         const propName = pk[1];
         if (propName && !registeredProperties.has(propName)) {

@@ -7,7 +7,7 @@
 //
 // Generated from:
 //   - 80 event definitions in events/index.ts
-//   - 72 property definitions in properties/index.ts
+//   - 77 property definitions in properties/index.ts
 //   - 80 active events
 //   - 0 deprecated events
 //   - 0 removed events
@@ -107,7 +107,7 @@ export interface EventRegistry {
   dashboard_filter: {
     role: string;
     filter: string;
-    value: number;
+    filter_value: number;
   };
   dashboard_export: {
     role: string;
@@ -149,8 +149,8 @@ export interface EventRegistry {
   };
   api_error: {
     endpoint: string;
-    status: string;
-    method: string;
+    http_status: number;
+    http_method: string;
   };
   error_boundary_caught: {
     component: string;
@@ -223,7 +223,7 @@ export interface EventRegistry {
   history_navigation: {
     from: string;
     to: string;
-    method: string;
+    navigation_method: string;
   };
 
   // ── Partner ───────────────────────────────────────
@@ -249,23 +249,23 @@ export interface EventRegistry {
   payment_submit: {
     booking_id: string;
     amount: number;
-    method: string;
+    payment_method: string;
   };
   payment_start: {
     booking_id: string;
     amount: number;
-    method: string;
+    payment_method: string;
   };
   payment_success: {
     booking_id: string;
     amount: number;
-    method: string;
+    payment_method: string;
     payment_id: string;
   };
   payment_failed: {
     booking_id: string;
     amount: number;
-    method: string;
+    payment_method: string;
     error?: string;
   };
 
@@ -286,16 +286,16 @@ export interface EventRegistry {
   };
 
   // ── Search ───────────────────────────────────────
+  search_start: { query?: string };
+  search_filter: {
+    filter: string;
+    filter_value: number;
+    result_count: number;
+  };
   search_result: {
     query: string;
     result_count: number;
     has_results: boolean;
-  };
-  search_start: { query?: string };
-  search_filter: {
-    filter: string;
-    value: number;
-    result_count: number;
   };
 
   // ── Seo ───────────────────────────────────────

@@ -197,10 +197,8 @@ export function trackErrors(config: AnalyticsConfig['autoTracking']): () => void
       if ('src' in el) {
         track('api_error', {
           endpoint: (el as HTMLImageElement | HTMLScriptElement).src,
-          // TODO(spesialis-997): Use distinct keys (http_status vs booking_status)
-          // instead of shared "status" key with conflicting types (number vs string)
-          status: 0 as unknown as string,
-          method: 'GET',
+          http_status: 0,
+          http_method: 'GET',
         });
       }
       return;
@@ -360,7 +358,7 @@ export function trackHistoryNavigation(getPreviousUrl: () => string): () => void
     const from = getPreviousUrl();
     const to = window.location.href;
     if (from !== to) {
-      track('history_navigation', { from, to, method: 'popstate' });
+      track('history_navigation', { from, to, navigation_method: 'popstate' });
     }
   };
 
@@ -428,7 +426,7 @@ export function initAutoTracking(configOverrides?: Partial<AnalyticsConfig>): ()
     if (from !== to) {
       // Track history navigation
       if (autoConfig.historyNavigation !== false) {
-        track('history_navigation', { from, to, method: 'pushstate' });
+        track('history_navigation', { from, to, navigation_method: 'pushstate' });
       }
       previousUrl = to;
       pageViewCount++;
@@ -446,7 +444,7 @@ export function initAutoTracking(configOverrides?: Partial<AnalyticsConfig>): ()
     origReplaceState.apply(history, args);
     if (from !== to) {
       if (autoConfig.historyNavigation !== false) {
-        track('history_navigation', { from, to, method: 'replacestate' });
+        track('history_navigation', { from, to, navigation_method: 'replacestate' });
       }
       previousUrl = to;
     }

@@ -193,7 +193,7 @@ prop({
   version: 1,
 });
 prop({
-  key: 'method',
+  key: 'payment_method',
   type: 'string',
   description: 'Payment method (transfer, cash, etc.)',
   privacy: 'public',
@@ -365,9 +365,9 @@ prop({
   version: 1,
 });
 prop({
-  key: 'value',
-  type: 'string',
-  description: 'Filter value',
+  key: 'filter_value',
+  type: 'number',
+  description: 'Filter value (page number, sort order, etc.)',
   privacy: 'public',
   owner: 'product',
   version: 1,
@@ -434,7 +434,7 @@ prop({
   version: 1,
 });
 prop({
-  key: 'status',
+  key: 'http_status',
   type: 'number',
   description: 'HTTP status code',
   privacy: 'public',
@@ -632,6 +632,22 @@ prop({
   description: 'Destination URL after navigation',
   privacy: 'public',
   owner: 'product',
+  version: 1,
+});
+prop({
+  key: 'navigation_method',
+  type: 'string',
+  description: 'Navigation method (back, forward, pushState, replaceState)',
+  privacy: 'public',
+  owner: 'product',
+  version: 1,
+});
+prop({
+  key: 'http_method',
+  type: 'string',
+  description: 'HTTP method (GET, POST, PUT, DELETE)',
+  privacy: 'public',
+  owner: 'engineering',
   version: 1,
 });
 

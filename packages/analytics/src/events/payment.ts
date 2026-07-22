@@ -9,7 +9,7 @@ ev({
   businessObjective: 'Track payment submission rate',
   kpi: 'Payment Submission Rate',
   owner: 'finance',
-  properties: { required: ['booking_id', 'amount', 'method'], optional: [] },
+  properties: { required: ['booking_id', 'amount', 'payment_method'], optional: [] },
   status: 'active',
 });
 
@@ -21,7 +21,7 @@ ev({
   businessObjective: 'Track payment initiation rate',
   kpi: 'Payment Completion Rate > 90%',
   owner: 'finance',
-  properties: { required: ['booking_id', 'amount', 'method'], optional: [] },
+  properties: { required: ['booking_id', 'amount', 'payment_method'], optional: [] },
   status: 'active',
 });
 
@@ -33,7 +33,7 @@ ev({
   businessObjective: 'Track successful payment completions',
   kpi: 'Payment Success Rate > 90%',
   owner: 'finance',
-  properties: { required: ['booking_id', 'amount', 'method', 'payment_id'], optional: [] },
+  properties: { required: ['booking_id', 'amount', 'payment_method', 'payment_id'], optional: [] },
   goals: ['payment_completed'],
   status: 'active',
 });
@@ -46,6 +46,6 @@ ev({
   businessObjective: 'Track payment failures and diagnose issues',
   kpi: 'Payment Failure Rate < 10%',
   owner: 'finance',
-  properties: { required: ['booking_id', 'amount', 'method'], optional: ['error'] },
+  properties: { required: ['booking_id', 'amount', 'payment_method'], optional: ['error'] },
   status: 'active',
 });

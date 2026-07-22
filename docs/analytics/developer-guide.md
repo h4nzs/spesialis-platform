@@ -208,8 +208,8 @@ trackBookingSubmit(serviceId: string, bookingId: string, customerType: 'guest' |
 trackBookingCancel(bookingId: string, reason?: string): void
 
 // Payment
-trackPaymentSuccess(bookingId: string, amount: number, method: string, paymentId: string): void
-trackPaymentFailed(bookingId: string, amount: number, method: string, error?: string): void
+trackPaymentSuccess(bookingId: string, amount: number, paymentMethod: string, paymentId: string): void
+trackPaymentFailed(bookingId: string, amount: number, paymentMethod: string, error?: string): void
 
 // Authentication
 trackRegisterComplete(userId: string, role: string): void
@@ -233,7 +233,7 @@ trackDashboardView(role: string, section: string): void
 
 // Errors
 track404(path: string, referrer?: string): void
-trackAPIError(endpoint: string, status: number, method: string): void
+trackAPIError(endpoint: string, httpStatus: number, httpMethod: string): void
 ```
 
 ---
@@ -271,12 +271,131 @@ initAutoTracking({
 
 ---
 
+## Funnel API — ClickHouse-Powered Analytics
+
+Custom funnel visualization built on top of Plausible's ClickHouse data. Provides conversion funnel analysis without relying on Plausible Cloud's funnel feature.
+
+### Architecture
+
+```
+FunnelChart (React/Recharts)
+  ↓ GET/POST
+createBrowserClient → /api/v1/analytics/*
+  ↓
+Hono Router → FunnelQueryBuilder
+  ↓
+ClickHouse HTTP Client → ClickHouse (windowFunnel SQL)
+```
+
+### API Endpoints
+
+**List predefined funnels:**
+
+```
+GET /api/v1/analytics/funnels
+```
+
+Returns available funnel definitions with name, description, KPI, and step count.
+
+**Execute predefined funnel:**
+
+```
+POST /api/v1/analytics/funnels/:name
+```
+
+**Body:**
+
+```ts
+{
+  period: {
+    start: string; // YYYY-MM-DD
+    end: string;   // YYYY-MM-DD
+  },
+  breakdown?: string; // One of: browser, country_code, screen_size, operating_system, utm_source
+}
+```
+
+**Response:**
+
+```ts
+{
+  funnel: { name: string; label: string };
+  period: { start: string; end: string };
+  steps: {
+    order: number;
+    name: string;
+    event: string;
+    users: number;
+    conversionRate: number;
+    dropOff: number;
+    dropOffRate: number;
+  }[];
+  overallConversionRate: number;
+  totalUsers: number;
+  totalConverted: number;
+  // If breakdown was specified:
+  breakdown?: {
+    by: string;
+    segments: { value: string; users: number; steps: number[]; conversionRate: number }[];
+  };
+}
+```
+
+**Execute custom funnel:**
+
+```
+POST /api/v1/analytics/funnels/query
+```
+
+**Body:**
+
+```ts
+{
+  name: string;
+  steps: { event: string; name: string }[];
+  windowSeconds: number; // Max time between first and last step
+  period: { start: string; end: string };
+  breakdown?: string;
+}
+```
+
+### Predefined Funnels
+
+| Funnel Name            | Steps                                                                      | Window | KPI                             |
+| ---------------------- | -------------------------------------------------------------------------- | ------ | ------------------------------- |
+| `booking`              | pageview → service_view → booking_start → booking_submit → payment_success | 1h     | Booking Funnel Conversion > 15% |
+| `booking_core`         | booking_start → booking_submit → payment_success                           | 24h    | Booking Completion Rate         |
+| `partner_registration` | pageview → partner_cta_click → register_start → register_complete          | 2h     | Partner Registration Rate       |
+| `corporate_lead`       | pageview → corporate_cta_click → inquiry_start → inquiry_submit            | 1h     | Corporate Lead Conversion       |
+| `admin_assignment`     | booking_confirm → booking_assign → partner_job_accept                      | 24h    | Assignment Rate > 90%           |
+| `authentication`       | register_start → register_complete                                         | 30m    | Registration Completion Rate    |
+| `search_to_booking`    | search_result → service_view → booking_start → booking_submit              | 1h     | Search → Booking Rate           |
+
+### Properties Renamed (v1.1)
+
+To resolve type conflicts, these property keys were renamed in v1.1:
+
+| Old Key  | New Key             | Context                                                |
+| -------- | ------------------- | ------------------------------------------------------ |
+| `method` | `payment_method`    | Payment events (submit, start, success, failed)        |
+| `method` | `http_method`       | API error events (GET, POST, etc.)                     |
+| `method` | `navigation_method` | History navigation (popstate, pushstate, replacestate) |
+| `status` | `http_status`       | API error events (HTTP status code)                    |
+| `value`  | `filter_value`      | Dashboard filter & search filter events                |
+
+> `method` (auth — allowedValues: `['email', 'google']`) and `status` (booking status) remain unchanged.
+
+---
+
 ## Env Vars
 
-| Env Var                   | Required   | Default            | Description                                               |
-| ------------------------- | ---------- | ------------------ | --------------------------------------------------------- |
-| `PUBLIC_PLAUSIBLE_DOMAIN` | Yes (prod) | —                  | Plausible server hostname (e.g. `stats.ahlipanggilan.id`) |
-| `PUBLIC_SITE_DOMAIN`      | Yes        | `ahlipanggilan.id` | Site domain for `data-domain` attribute                   |
+| Env Var                   | Required   | Default                 | Description                                               |
+| ------------------------- | ---------- | ----------------------- | --------------------------------------------------------- |
+| `PUBLIC_PLAUSIBLE_DOMAIN` | Yes (prod) | —                       | Plausible server hostname (e.g. `stats.ahlipanggilan.id`) |
+| `PUBLIC_SITE_DOMAIN`      | Yes        | `ahlipanggilan.id`      | Site domain for `data-domain` attribute                   |
+| `CLICKHOUSE_HOST`         | Yes (prod) | `http://localhost:8123` | ClickHouse HTTP endpoint for funnel queries               |
+| `CLICKHOUSE_DATABASE`     | Yes (prod) | `plausible`             | ClickHouse database name (sama dengan Plausible)          |
+| `CLICKHOUSE_TIMEOUT`      | No         | `30000`                 | Query timeout in ms                                       |
 
 > **Dev mode:** If `PUBLIC_PLAUSIBLE_DOMAIN` is not set, the SDK runs with a **noop provider**. Auto-tracking still works locally (scroll, CWV, errors) but events are not sent to Plausible. Enable debug mode via `debug: import.meta.env.DEV` to see events in console.
 

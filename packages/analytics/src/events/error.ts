@@ -21,7 +21,7 @@ ev({
   businessObjective: 'Monitor API health',
   kpi: 'API Error Rate < 1%',
   owner: 'engineering',
-  properties: { required: ['endpoint', 'status', 'method'], optional: [] },
+  properties: { required: ['endpoint', 'http_status', 'http_method'], optional: [] },
   status: 'active',
 });
 

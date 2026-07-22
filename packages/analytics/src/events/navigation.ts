@@ -70,6 +70,6 @@ ev({
   businessObjective: 'Track internal navigation patterns',
   kpi: 'Navigation Flow',
   owner: 'product',
-  properties: { required: ['from', 'to', 'method'], optional: [] },
+  properties: { required: ['from', 'to', 'navigation_method'], optional: [] },
   status: 'active',
 });
