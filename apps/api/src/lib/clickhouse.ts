@@ -74,12 +74,12 @@ export async function query<T extends ClickHouseRow = ClickHouseRow>(
 
   // Build parameterized query — ClickHouse uses {name:Type} placeholders
   // We encode them as query parameters: param_name=value
-  const queryParams = new URLSearchParams();
+  // Add all params directly to the URL object so toString() produces a clean URL
   for (const [key, value] of Object.entries(params)) {
-    queryParams.set(`param_${key}`, String(value));
+    url.searchParams.set(`param_${key}`, String(value));
   }
 
-  const fullUrl = `${url.toString()}?${url.searchParams.toString()}&${queryParams.toString()}`;
+  const fullUrl = url.toString();
 
   const headers: Record<string, string> = {
     'Content-Type': 'application/x-www-form-urlencoded',
