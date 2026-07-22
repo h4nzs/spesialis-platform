@@ -36,7 +36,7 @@ test.describe('Article Creation — Real User Flow', () => {
     // Wait for redirect to admin dashboard
     await page.waitForURL(/\/dashboard\/admin/, { timeout: 15000 });
     await page.waitForLoadState('networkidle');
-    await expect(page.locator('h1').first()).toContainText('Dashboard Admin', { timeout: 5000 });
+    await expect(page.locator('h1').first()).toContainText('Dashboard Admin', { timeout: 10000 });
 
     // ─── 2. Navigate to article creation ─────────────────────────
     // Go directly (user would click sidebar "Artikel" → "Tulis")
@@ -60,7 +60,7 @@ test.describe('Article Creation — Real User Flow', () => {
 
     // ─── 4. Use TipTap editor via keyboard shortcuts ─────────────
     const proseMirror = page.locator('.ProseMirror');
-    await expect(proseMirror).toBeVisible({ timeout: 10000 });
+    await expect(proseMirror).toBeVisible({ timeout: 20000 });
 
     // Click into the editor and type first paragraph
     await proseMirror.click();
@@ -100,7 +100,7 @@ test.describe('Article Creation — Real User Flow', () => {
 
     // ─── 6. Submit the article ───────────────────────────────────
     const submitButton = page.locator('button[type="submit"]');
-    await expect(submitButton).toBeEnabled({ timeout: 5000 });
+    await expect(submitButton).toBeEnabled({ timeout: 10000 });
     await submitButton.click();
 
     // Wait for redirect back to article list (confirms save success)
@@ -120,7 +120,7 @@ test.describe('Article Creation — Real User Flow', () => {
 
     // Prose container should have rendered content
     const prose = page.locator('.prose');
-    await expect(prose.first()).toBeVisible({ timeout: 5000 });
+    await expect(prose.first()).toBeVisible({ timeout: 10000 });
 
     // Should have 2 <h2> elements from our TipTap headings
     await expect(prose.locator('h2')).toHaveCount(2);

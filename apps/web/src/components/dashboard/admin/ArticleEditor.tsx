@@ -1,4 +1,13 @@
-import { useState, useEffect, useCallback, useMemo, useRef, lazy, Suspense } from 'react';
+import {
+  useState,
+  useEffect,
+  useCallback,
+  useMemo,
+  useRef,
+  lazy,
+  Suspense,
+  Component,
+} from 'react';
 import { createBrowserClient, parseApiError } from '@ahlipanggilan/shared';
 import {
   Button,
@@ -11,6 +20,12 @@ import {
   SeoAnalyzerPanel,
   SchemaBuilder,
 } from '@ahlipanggilan/ui';
+// Eagerly start downloading the editor chunk at module evaluation time,
+// before React hydration. This reduces race conditions in CI/CD.
+void import('@ahlipanggilan/ui/editor').catch(() => {
+  // Preload only — actual import for rendering is handled by React.lazy below
+});
+
 const RichTextEditor = lazy(() =>
   import('@ahlipanggilan/ui/editor').then((m) => ({ default: m.RichTextEditor })),
 );
@@ -51,6 +66,42 @@ interface CategoryItem {
 
 interface ArticleEditorProps {
   editingId?: string;
+}
+
+// ── Error Boundary ────────────────────────────────────────────────
+
+interface ErrorBoundaryProps {
+  children: React.ReactNode;
+}
+
+interface ErrorBoundaryState {
+  hasError: boolean;
+}
+
+class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
+  constructor(props: ErrorBoundaryProps) {
+    super(props);
+    this.state = { hasError: false };
+  }
+
+  static getDerivedStateFromError(): ErrorBoundaryState {
+    return { hasError: true };
+  }
+
+  componentDidCatch(error: Error) {
+    console.error('RichTextEditor failed to load:', error);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="flex min-h-[300px] items-center justify-center rounded-md border border-border-default bg-bg-surface text-sm text-text-muted">
+          Gagal memuat editor. Silakan muat ulang halaman.
+        </div>
+      );
+    }
+    return this.props.children;
+  }
 }
 
 // ── Constants ────────────────────────────────────────────────────
@@ -427,22 +478,24 @@ export function ArticleEditor({ editingId }: ArticleEditorProps) {
             </Card>
 
             <Card>
-              <Suspense
-                fallback={
-                  <div className="flex min-h-[300px] items-center justify-center rounded-md border border-border-default bg-bg-surface text-sm text-text-muted">
-                    Memuat editor...
-                  </div>
-                }
-              >
-                <RichTextEditor
-                  label="Konten"
-                  value={form.content}
-                  onChange={(html) => setForm((f) => ({ ...f, content: html }))}
-                  placeholder="Tulis konten artikel di sini..."
-                  onImageUpload={openMediaForContent}
-                  error={undefined}
-                />
-              </Suspense>
+              <ErrorBoundary>
+                <Suspense
+                  fallback={
+                    <div className="flex min-h-[300px] items-center justify-center rounded-md border border-border-default bg-bg-surface text-sm text-text-muted">
+                      Memuat editor...
+                    </div>
+                  }
+                >
+                  <RichTextEditor
+                    label="Konten"
+                    value={form.content}
+                    onChange={(html) => setForm((f) => ({ ...f, content: html }))}
+                    placeholder="Tulis konten artikel di sini..."
+                    onImageUpload={openMediaForContent}
+                    error={undefined}
+                  />
+                </Suspense>
+              </ErrorBoundary>
 
               {/* ── Live Preview ─────────────────────────────── */}
               {form.content && (

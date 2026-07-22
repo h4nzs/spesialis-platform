@@ -170,6 +170,10 @@ test.describe('SEO E2E: SchemaBuilder (Article Editor)', () => {
     await page.goto('/dashboard/admin/articles/new');
     await page.waitForLoadState('networkidle');
 
+    // Wait for the page title to render (layout-level element) before checking React components
+    // This ensures Astro has fully hydrated the React tree
+    await expect(page.locator('h1, h2').first()).toBeVisible({ timeout: 15000 });
+
     // Wait for SchemaBuilder to render
     await expect(page.locator('[data-testid="schema-builder"]')).toBeVisible({ timeout: 15000 });
 
