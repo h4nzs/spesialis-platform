@@ -194,7 +194,7 @@ export function PillarClusterVisualizer() {
   if (loading) {
     return (
       <div className="space-y-6">
-        <h1 className="text-h3 font-bold text-text-primary">Cluster Visualizer</h1>
+        <div className="text-h3 font-bold text-text-primary">Cluster Visualizer</div>
         <TableSkeleton />
       </div>
     );
@@ -203,7 +203,7 @@ export function PillarClusterVisualizer() {
   if (!data) {
     return (
       <div className="space-y-6">
-        <h1 className="text-h3 font-bold text-text-primary">Cluster Visualizer</h1>
+        <div className="text-h3 font-bold text-text-primary">Cluster Visualizer</div>
         <Card>
           <EmptyState
             title="Gagal memuat data"
@@ -222,7 +222,7 @@ export function PillarClusterVisualizer() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-h3 font-bold text-text-primary">Cluster Visualizer</h1>
+        <h2 className="text-h3 font-bold text-text-primary">Cluster Visualizer</h2>
         <button
           type="button"
           onClick={() => window.location.reload()}

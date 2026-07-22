@@ -406,7 +406,9 @@ test.describe('SEOE2E-28: Cluster Visualizer Dashboard', () => {
     await page.waitForLoadState('networkidle');
 
     // Verify page title
-    await expect(page.locator('h1')).toContainText('Cluster Visualizer', { timeout: 15000 });
+    await expect(page.locator('h1').first()).toContainText('Cluster Visualizer', {
+      timeout: 15000,
+    });
   });
 
   test('Halaman menampilkan stat cards: Total, Pillar, Cluster, Orphan', async ({ page }) => {
@@ -414,7 +416,9 @@ test.describe('SEOE2E-28: Cluster Visualizer Dashboard', () => {
     await page.waitForLoadState('networkidle');
 
     // Wait for content to load
-    await expect(page.locator('h1')).toContainText('Cluster Visualizer', { timeout: 15000 });
+    await expect(page.locator('h1').first()).toContainText('Cluster Visualizer', {
+      timeout: 15000,
+    });
 
     // Stat cards should be present
     await expect(page.locator('text=Total Artikel').first()).toBeVisible({ timeout: 10000 });
@@ -428,7 +432,9 @@ test.describe('SEOE2E-28: Cluster Visualizer Dashboard', () => {
     await page.waitForLoadState('networkidle');
 
     // Wait for data to load
-    await expect(page.locator('h1')).toContainText('Cluster Visualizer', { timeout: 15000 });
+    await expect(page.locator('h1').first()).toContainText('Cluster Visualizer', {
+      timeout: 15000,
+    });
 
     // Connection status section
     await expect(page.locator('text=Konektivitas Cluster').first()).toBeVisible({ timeout: 10000 });
@@ -443,7 +449,9 @@ test.describe('SEOE2E-28: Cluster Visualizer Dashboard', () => {
     await page.waitForLoadState('networkidle');
 
     // Wait for data to load
-    await expect(page.locator('h1')).toContainText('Cluster Visualizer', { timeout: 15000 });
+    await expect(page.locator('h1').first()).toContainText('Cluster Visualizer', {
+      timeout: 15000,
+    });
 
     // Pillar table section
     await expect(page.locator('text=Artikel Pilar').first()).toBeVisible({ timeout: 10000 });
@@ -460,6 +468,8 @@ test.describe('SEOE2E-28: Cluster Visualizer Dashboard', () => {
     // Click refresh should not break the page
     await refreshBtn.click();
     await page.waitForLoadState('networkidle');
-    await expect(page.locator('h1')).toContainText('Cluster Visualizer', { timeout: 15000 });
+    await expect(page.locator('h1').first()).toContainText('Cluster Visualizer', {
+      timeout: 15000,
+    });
   });
 });
