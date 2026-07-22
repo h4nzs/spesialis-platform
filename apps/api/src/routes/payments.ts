@@ -1,11 +1,22 @@
 import { Hono } from 'hono';
-import { eq } from 'drizzle-orm';
+import { eq, and, desc, sql, alias } from 'drizzle-orm';
 import { db, orders, payments, customerProfiles, users } from '../lib/db.ts';
+
+// Alias untuk self-join ke users (verifier)
+const usersVerified = alias(users, 'verifier');
 import { authMiddleware, requireRole } from '../middleware/auth.ts';
 import { validateBody } from '../middleware/validation.ts';
 import { createPaymentSchema, verifyPaymentSchema } from '@ahlipanggilan/validation';
 import type { CreatePaymentInput, VerifyPaymentInput } from '@ahlipanggilan/validation';
-import { success, created, notFound, forbidden, conflict } from '../lib/response.ts';
+import {
+  success,
+  successPaginated,
+  created,
+  notFound,
+  forbidden,
+  conflict,
+} from '../lib/response.ts';
+import { buildPaginationMeta } from '../lib/pagination.ts';
 import type { OrderStatus } from '@ahlipanggilan/types';
 import { canTransition } from '@ahlipanggilan/shared';
 import { createAuditLog } from '../lib/audit.ts';
@@ -14,6 +25,103 @@ import { createNotification, notifyAdmins } from '../lib/notification.ts';
 import { sendPaymentVerifiedEmail } from '../lib/email.ts';
 
 const router = new Hono();
+
+router.get('/', authMiddleware, requireRole('admin', 'super_admin', 'finance'), async (c) => {
+  const page = Math.max(Number(c.req.query('page')) || 1, 1);
+  const limit = Math.min(Number(c.req.query('limit')) || 20, 100);
+  const status = c.req.query('status');
+  const method = c.req.query('method');
+
+  const conditions: ReturnType<typeof eq>[] = [];
+  if (status) conditions.push(eq(payments.status, status as never));
+  if (method) conditions.push(eq(payments.method, method as never));
+
+  const items = await db
+    .select({
+      id: payments.id,
+      orderId: payments.orderId,
+      method: payments.method,
+      amount: payments.amount,
+      status: payments.status,
+      paymentDate: payments.paymentDate,
+      verifiedBy: payments.verifiedBy,
+      verifiedAt: payments.verifiedAt,
+      notes: payments.notes,
+      createdAt: payments.createdAt,
+    })
+    .from(payments)
+    .where(conditions.length > 0 ? and(...conditions) : undefined)
+    .orderBy(desc(payments.createdAt))
+    .limit(limit)
+    .offset((page - 1) * limit);
+
+  const countResult = await db
+    .select({ count: sql<number>`count(*)` })
+    .from(payments)
+    .where(conditions.length > 0 ? and(...conditions) : undefined);
+  const total = Number(countResult[0]?.count ?? 0);
+  const pagination = buildPaginationMeta(page, limit, total);
+
+  return successPaginated(c, items, pagination);
+});
+
+router.get('/stats', authMiddleware, requireRole('admin', 'super_admin', 'finance'), async (c) => {
+  const [paidResult] = await db
+    .select({ total: sql<string>`COALESCE(SUM(CAST(amount AS DECIMAL)), 0)` })
+    .from(payments)
+    .where(eq(payments.status, 'Paid'));
+  const [waitingResult] = await db
+    .select({ count: sql<number>`count(*)` })
+    .from(payments)
+    .where(eq(payments.status, 'Waiting'));
+  const [failedResult] = await db
+    .select({ count: sql<number>`count(*)` })
+    .from(payments)
+    .where(eq(payments.status, 'Failed'));
+
+  return success(c, {
+    totalPaid: Number(paidResult?.total ?? 0),
+    waitingVerification: Number(waitingResult?.count ?? 0),
+    failedCount: Number(failedResult?.count ?? 0),
+  });
+});
+
+router.patch('/:id/refund', authMiddleware, requireRole('admin', 'super_admin'), async (c) => {
+  const paymentId = c.req.param('id')!;
+  const userId = c.get('userId');
+
+  const [payment] = await db
+    .select({ id: payments.id, status: payments.status, orderId: payments.orderId })
+    .from(payments)
+    .where(eq(payments.id, paymentId))
+    .limit(1);
+  if (!payment) return notFound(c, 'Pembayaran tidak ditemukan');
+  if (payment.status !== 'Paid') return conflict(c, 'Hanya pembayaran lunas yang bisa di-refund');
+
+  await db.transaction(async (tx) => {
+    await tx.update(payments).set({ status: 'Refunded' }).where(eq(payments.id, paymentId));
+    await tx.update(orders).set({ status: 'Cancelled' }).where(eq(orders.id, payment.orderId));
+    await recordStatusHistory(
+      payment.orderId,
+      'Paid' as OrderStatus,
+      'Cancelled' as OrderStatus,
+      userId,
+      'Refund pembayaran',
+      tx,
+    );
+  });
+
+  await createAuditLog(c, {
+    userId,
+    action: 'payment.refund',
+    entity: 'payment',
+    entityId: paymentId,
+    newValue: { status: 'Refunded' },
+    oldValue: { status: payment.status },
+  });
+
+  return success(c, { id: paymentId, status: 'Refunded' }, 'Pembayaran berhasil di-refund');
+});
 
 router.post('/', authMiddleware, validateBody(createPaymentSchema), async (c) => {
   const userId = c.get('userId');
@@ -85,30 +193,49 @@ router.get('/:id', authMiddleware, async (c) => {
   const userId = c.get('userId');
   const userRole = c.get('userRole');
 
-  const [payment] = await db
+  const [rows] = await db
     .select({
       id: payments.id,
       orderId: payments.orderId,
       method: payments.method,
       amount: payments.amount,
       status: payments.status,
+      paymentDate: payments.paymentDate,
       proofMediaId: payments.proofMediaId,
       verifiedBy: payments.verifiedBy,
       verifiedAt: payments.verifiedAt,
       notes: payments.notes,
       createdAt: payments.createdAt,
+      // ── Join: Order info ──────────────────────────────
+      bookingNumber: orders.bookingNumber,
+      orderStatus: orders.status,
+      orderBasePrice: orders.basePrice,
+      orderFinalPrice: orders.finalPrice,
+      orderCreatedAt: orders.createdAt,
+      // ── Join: Customer info ───────────────────────────
+      customerName: customerProfiles.fullName,
+      customerEmail: users.email,
+      customerPhone: customerProfiles.phone,
+      // ── Join: Verifier info ────────────────────────────
+      verifierName: usersVerified.name,
     })
     .from(payments)
+    .leftJoin(orders, eq(payments.orderId, orders.id))
+    .leftJoin(customerProfiles, eq(orders.customerId, customerProfiles.id))
+    .leftJoin(users, eq(customerProfiles.userId, users.id))
+    .leftJoin(usersVerified, eq(payments.verifiedBy, usersVerified.id))
     .where(eq(payments.id, paymentId))
     .limit(1);
 
-  if (!payment) return notFound(c, 'Pembayaran tidak ditemukan');
+  if (!rows) return notFound(c, 'Pembayaran tidak ditemukan');
 
+  // Customer authorization check
   if (userRole === 'customer') {
+    if (!rows.orderId) return forbidden(c);
     const [order] = await db
       .select({ customerId: orders.customerId })
       .from(orders)
-      .where(eq(orders.id, payment.orderId))
+      .where(eq(orders.id, rows.orderId))
       .limit(1);
     if (!order) return notFound(c, 'Order tidak ditemukan');
     const [profile] = await db
@@ -119,7 +246,39 @@ router.get('/:id', authMiddleware, async (c) => {
     if (!profile || order.customerId !== profile.id) return forbidden(c);
   }
 
-  return success(c, payment);
+  // Structure the response
+  return success(c, {
+    payment: {
+      id: rows.id,
+      orderId: rows.orderId,
+      method: rows.method,
+      amount: rows.amount,
+      status: rows.status,
+      proofMediaId: rows.proofMediaId,
+      verifiedBy: rows.verifiedBy,
+      verifiedAt: rows.verifiedAt,
+      notes: rows.notes,
+      createdAt: rows.createdAt,
+    },
+    order: rows.orderId
+      ? {
+          id: rows.orderId,
+          bookingNumber: rows.bookingNumber,
+          status: rows.orderStatus,
+          basePrice: rows.orderBasePrice,
+          finalPrice: rows.orderFinalPrice,
+          createdAt: rows.orderCreatedAt,
+        }
+      : null,
+    customer: rows.customerName
+      ? {
+          name: rows.customerName,
+          email: rows.customerEmail,
+          phone: rows.customerPhone,
+        }
+      : null,
+    verifier: rows.verifierName ? { name: rows.verifierName } : null,
+  });
 });
 
 router.post(

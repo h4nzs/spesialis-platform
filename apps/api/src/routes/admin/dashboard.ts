@@ -5,13 +5,16 @@ import {
   users,
   orders,
   partnerProfiles,
+  partnerSkills,
+  serviceCategories,
   complaints,
   companies,
   customerProfiles,
   auditLogs,
 } from '../../lib/db.ts';
 import { authMiddleware, requireRole } from '../../middleware/auth.ts';
-import { success } from '../../lib/response.ts';
+import { success, successPaginated } from '../../lib/response.ts';
+import { buildPaginationMeta } from '../../lib/pagination.ts';
 
 const router = new Hono();
 
@@ -174,5 +177,174 @@ router.get('/activity', authMiddleware, requireRole('admin', 'super_admin'), asy
 
   return success(c, items);
 });
+
+// ── Dispatcher: Assignment Queue ────────────────────────────────
+// Returns orders in 'Waiting Assignment' status with customer info
+
+router.get(
+  '/dispatcher/queue',
+  authMiddleware,
+  requireRole('admin', 'super_admin', 'dispatcher'),
+  async (c) => {
+    const page = Number(c.req.query('page') ?? 1);
+    const limit = Number(c.req.query('limit') ?? 20);
+    const search = c.req.query('search');
+
+    const conditions: ReturnType<typeof eq>[] = [eq(orders.status, 'Waiting Assignment')];
+    if (search) {
+      conditions.push(sql`${orders.bookingNumber} ILIKE ${'%' + search + '%'}`);
+    }
+
+    const items = await db
+      .select({
+        id: orders.id,
+        bookingNumber: orders.bookingNumber,
+        status: orders.status,
+        bookingDate: orders.bookingDate,
+        bookingTime: orders.bookingTime,
+        basePrice: orders.basePrice,
+        finalPrice: orders.finalPrice,
+        notes: orders.notes,
+        createdAt: orders.createdAt,
+        customerId: orders.customerId,
+        customerName: customerProfiles.fullName,
+        customerPhone: customerProfiles.phone,
+      })
+      .from(orders)
+      .leftJoin(customerProfiles, eq(orders.customerId, customerProfiles.id))
+      .where(and(...conditions))
+      .orderBy(desc(orders.createdAt))
+      .limit(limit)
+      .offset((page - 1) * limit);
+
+    // Elapsed time since creation for SLA tracking
+    const now = Date.now();
+    const queueWithSla = items.map((item) => ({
+      ...item,
+      waitingHours:
+        Math.round(((now - new Date(item.createdAt).getTime()) / (1000 * 60 * 60)) * 10) / 10,
+    }));
+
+    const [countResult] = await db
+      .select({ count: sql<number>`count(*)` })
+      .from(orders)
+      .where(and(...conditions));
+    const total = Number(countResult?.count ?? 0);
+    const pagination = buildPaginationMeta(page, limit, total);
+
+    return successPaginated(c, queueWithSla, pagination);
+  },
+);
+
+// ── Dispatcher: Available Partners ─────────────────────────────
+
+router.get(
+  '/dispatcher/available-partners',
+  authMiddleware,
+  requireRole('admin', 'super_admin', 'dispatcher'),
+  async (c) => {
+    const categoryId = c.req.query('categoryId');
+
+    const conditions: ReturnType<typeof eq>[] = [
+      eq(partnerProfiles.availability, 'Available' as const),
+      eq(partnerProfiles.verificationStatus, 'Approved' as const),
+    ];
+
+    if (categoryId) {
+      const partnerIds = await db
+        .select({ id: partnerSkills.partnerId })
+        .from(partnerSkills)
+        .where(eq(partnerSkills.categoryId, categoryId));
+      conditions.push(eq(partnerProfiles.id, sql`ANY(${partnerIds.map((p) => p.id)})`));
+    }
+
+    const partners = await db
+      .select({
+        id: partnerProfiles.id,
+        fullName: partnerProfiles.fullName,
+        avatar: partnerProfiles.avatar,
+        ratingAverage: partnerProfiles.ratingAverage,
+        completedJobs: partnerProfiles.completedJobs,
+        experienceYear: partnerProfiles.experienceYear,
+        domicile: partnerProfiles.domicile,
+        bio: partnerProfiles.bio,
+        availability: partnerProfiles.availability,
+      })
+      .from(partnerProfiles)
+      .where(and(...conditions))
+      .orderBy(desc(partnerProfiles.ratingAverage));
+
+    // Attach skills for each partner
+    const partnerIds = partners.map((p) => p.id);
+    const allSkills =
+      partnerIds.length > 0
+        ? await db
+            .select({
+              partnerId: partnerSkills.partnerId,
+              id: partnerSkills.id,
+              categoryId: partnerSkills.categoryId,
+              categoryName: serviceCategories.name,
+              proficiency: partnerSkills.proficiency,
+            })
+            .from(partnerSkills)
+            .innerJoin(serviceCategories, eq(partnerSkills.categoryId, serviceCategories.id))
+            .where(sql`${partnerSkills.partnerId} = ANY(${partnerIds})`)
+        : [];
+
+    const skillsByPartner = new Map<string, typeof allSkills>();
+    for (const skill of allSkills) {
+      const existing = skillsByPartner.get(skill.partnerId) ?? [];
+      existing.push(skill);
+      skillsByPartner.set(skill.partnerId, existing);
+    }
+
+    const result = partners.map((p) => ({
+      ...p,
+      skills: skillsByPartner.get(p.id) ?? [],
+    }));
+
+    // Count how many partners are currently assigned (online)
+    const [assignedCount] = await db
+      .select({ count: sql<number>`count(*)` })
+      .from(orders)
+      .where(
+        and(sql`status NOT IN ('Cancelled', 'Closed', 'Completed')`, sql`partner_id IS NOT NULL`),
+      );
+
+    return success(c, {
+      partners: result,
+      totalAvailable: partners.length,
+      currentlyAssigned: Number(assignedCount?.count ?? 0),
+      categoryId: categoryId ?? null,
+    });
+  },
+);
+
+// ── Dispatcher: SLA Breach Stats ───────────────────────────────
+// Count orders that have been waiting for assignment > 24 hours
+
+router.get(
+  '/dispatcher/sla-stats',
+  authMiddleware,
+  requireRole('admin', 'super_admin', 'dispatcher'),
+  async (c) => {
+    const [breached] = await db
+      .select({ count: sql<number>`count(*)` })
+      .from(orders)
+      .where(
+        and(eq(orders.status, 'Waiting Assignment'), sql`created_at < NOW() - INTERVAL '24 hours'`),
+      );
+
+    const [waitingToday] = await db
+      .select({ count: sql<number>`count(*)` })
+      .from(orders)
+      .where(and(eq(orders.status, 'Waiting Assignment'), sql`created_at >= CURRENT_DATE`));
+
+    return success(c, {
+      slaBreached: Number(breached?.count ?? 0),
+      waitingToday: Number(waitingToday?.count ?? 0),
+    });
+  },
+);
 
 export { router as dashboardRouter };

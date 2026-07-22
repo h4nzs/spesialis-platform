@@ -1,0 +1,15 @@
+---
+export const prerender = false
+import DashboardLayout from '../../../layouts/DashboardLayout.astro'
+import { DispatcherOverview } from '../../../components/dashboard/admin/DispatcherOverview.tsx'
+---
+
+<DashboardLayout title="Antrian Assignment | Dispatcher" role="dispatcher">
+  <div class="mb-6">
+    <h1 class="text-h2 font-bold text-text-primary">Antrian Assignment</h1>
+    <p class="mt-1 text-body-sm text-text-muted">
+      Daftar booking yang menunggu penugasan partner. Prioritaskan yang melebihi SLA.
+    </p>
+  </div>
+  <DispatcherOverview client:load />
+</DashboardLayout>
