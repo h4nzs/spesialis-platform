@@ -1,118 +1,269 @@
+import { useState } from 'react';
 import type { UserRole } from '@ahlipanggilan/types';
+import { NAV_MAP, NAV_ICONS, isNavItem, type NavEntry, type NavSection } from './Sidebar.tsx';
+import { forceLogout } from '../../lib/auth.ts';
 import { trackNavigation } from '@spesialis/analytics';
 
-interface NavItem {
-  href: string;
-  label: string;
-  icon: string;
+function Icon({ name, size = 22, className }: { name: string; size?: number; className?: string }) {
+  const svg = NAV_ICONS[name];
+  if (!svg) return null;
+  const sized = svg
+    .replace(/width="\d+"/, `width="${size}"`)
+    .replace(/height="\d+"/, `height="${size}"`)
+    .replace(/stroke-width="\d+(\.\d+)?"/g, 'stroke-width="2"');
+  return (
+    <span aria-hidden="true" className={className} dangerouslySetInnerHTML={{ __html: sized }} />
+  );
 }
 
-// A curated subset of nav items — most-used pages only, to fit on mobile
-const MOBILE_NAV_MAP: Record<string, NavItem[]> = {
-  customer: [
-    { href: '/dashboard/customer', label: 'Ringkasan', icon: 'dashboard' },
-    { href: '/dashboard/customer/orders', label: 'Pesanan', icon: 'orders' },
-    { href: '/dashboard/customer/settings', label: 'Pengaturan', icon: 'settings' },
-  ],
-  partner: [
-    { href: '/dashboard/partner', label: 'Ringkasan', icon: 'dashboard' },
-    { href: '/dashboard/partner/jobs', label: 'Pekerjaan', icon: 'jobs' },
-    { href: '/dashboard/partner/earnings', label: 'Pendapatan', icon: 'wallet' },
-    { href: '/dashboard/partner/settings', label: 'Pengaturan', icon: 'settings' },
-  ],
-  admin: [
-    { href: '/dashboard/admin', label: 'Ringkasan', icon: 'dashboard' },
-    { href: '/dashboard/admin/bookings', label: 'Booking', icon: 'orders' },
-    { href: '/dashboard/admin/media', label: 'Media', icon: 'file' },
-    { href: '/dashboard/admin/invoices', label: 'Invoice', icon: 'receipt' },
-    { href: '/dashboard/admin/contracts', label: 'Kontrak', icon: 'scrollText' },
-    { href: '/dashboard/admin/settings', label: 'Pengaturan', icon: 'settings' },
-  ],
-  super_admin: [
-    { href: '/dashboard/admin', label: 'Ringkasan', icon: 'dashboard' },
-    { href: '/dashboard/admin/bookings', label: 'Booking', icon: 'orders' },
-    { href: '/dashboard/admin/media', label: 'Media', icon: 'file' },
-    { href: '/dashboard/admin/invoices', label: 'Invoice', icon: 'receipt' },
-    { href: '/dashboard/admin/contracts', label: 'Kontrak', icon: 'scrollText' },
-    { href: '/dashboard/admin/settings', label: 'Pengaturan', icon: 'settings' },
-  ],
-  finance: [
-    { href: '/dashboard/finance', label: 'Ringkasan', icon: 'dashboard' },
-    { href: '/dashboard/admin/bookings', label: 'Booking', icon: 'orders' },
-    { href: '/dashboard/admin/invoices', label: 'Invoice', icon: 'receipt' },
-    { href: '/dashboard/admin/contracts', label: 'Kontrak', icon: 'scrollText' },
-    { href: '/dashboard/admin/reports', label: 'Laporan', icon: 'barChart' },
-  ],
-  corporate: [
-    { href: '/dashboard/corporate', label: 'Ringkasan', icon: 'dashboard' },
-    { href: '/dashboard/corporate/orders', label: 'Pesanan', icon: 'orders' },
-    { href: '/dashboard/corporate/invoices', label: 'Invoice', icon: 'receipt' },
-    { href: '/dashboard/corporate/settings', label: 'Pengaturan', icon: 'settings' },
-  ],
-};
-
-// Lucide icon SVGs as raw HTML strings (reused subset from Sidebar.tsx)
-const ICON_SVGS: Record<string, string> = {
-  dashboard:
-    '<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="7" height="9" x="3" y="3"/><rect width="7" height="5" x="14" y="3"/><rect width="7" height="9" x="14" y="12"/><rect width="7" height="5" x="3" y="16"/></svg>',
-  orders:
-    '<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect width="8" height="4" x="8" y="2"/></svg>',
-  jobs: '<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 20V4a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/><rect width="20" height="14" x="2" y="6" rx="2"/></svg>',
-  wallet:
-    '<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4Z"/></svg>',
-  settings:
-    '<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>',
-  receipt:
-    '<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1-2 1Z"/><path d="M8 7h8"/><path d="M8 11h8"/><path d="M8 15h5"/></svg>',
-  scrollText:
-    '<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 12h-5"/><path d="M15 8h-5"/><path d="M19 17V5a2 2 0 0 0-2-2H4"/><path d="M8 21h12a2 2 0 0 0 2-2v-1a1 1 0 0 0-1-1H11a1 1 0 0 0-1 1v1a2 2 0 0 0 2 2"/></svg>',
-  barChart:
-    '<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" x2="12" y1="20" y2="10"/><line x1="18" x2="18" y1="20" y2="4"/><line x1="6" x2="6" y1="20" y2="16"/></svg>',
-  file: '<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/></svg>',
-};
-
-function Icon({ name }: { name: string }) {
-  const svg = ICON_SVGS[name];
-  if (!svg) return null;
-  return <span aria-hidden="true" dangerouslySetInnerHTML={{ __html: svg }} />;
+function isActive(href: string, path: string): boolean {
+  return path === href || (path.startsWith(href + '/') && href !== '/dashboard/notifications');
 }
 
 export function MobileBottomNav({ role, currentPath }: { role: UserRole; currentPath?: string }) {
-  const items = MOBILE_NAV_MAP[role] ?? MOBILE_NAV_MAP.customer!;
+  const [sheetOpen, setSheetOpen] = useState(false);
+  const [sectionsOpen, setSectionsOpen] = useState<Record<string, boolean>>({ seo: true });
+
+  const allItems: NavEntry[] = (NAV_MAP[role] ?? NAV_MAP.customer) as NavEntry[];
   const path = currentPath ?? (typeof window !== 'undefined' ? window.location.pathname : '');
 
-  function isActive(href: string) {
-    return path === href || path.startsWith(href + '/');
+  // First 5 simple nav items (skip sections) for the bottom bar
+  const visibleItems = allItems.filter(isNavItem).slice(0, 5);
+  const hasMore = allItems.length > 5;
+
+  function isSectionActive(section: NavSection): boolean {
+    return section.children.some((child) => isActive(child.href, path));
+  }
+
+  function toggleSection(label: string) {
+    setSectionsOpen((prev) => ({ ...prev, [label.toLowerCase()]: !prev[label.toLowerCase()] }));
   }
 
   return (
-    <nav
-      className="fixed bottom-0 left-0 right-0 z-50 flex items-center justify-around border-t border-border-default bg-bg-surface pb-1 sm:hidden"
-      aria-label="Navigasi mobile"
-    >
-      {items.map((item) => {
-        const active = isActive(item.href);
-        return (
-          <a
-            key={item.href}
-            href={item.href}
-            onClick={() => trackNavigation(item.href, item.label, 'mobile-bottom-nav')}
-            className={`flex flex-col items-center gap-0.5 px-2 py-2 text-caption font-medium transition-colors duration-150 ${
-              active ? 'text-primary-600' : 'text-text-muted hover:text-text-secondary'
-            }`}
-          >
-            <span
-              className={`transition-colors duration-150 ${active ? 'text-primary-500' : 'text-text-muted'}`}
+    <>
+      {/* ── Bottom Nav Bar (mobile only) ────────────────────────── */}
+      <nav
+        className="fixed bottom-0 left-0 right-0 z-50 flex items-center justify-around border-t border-border-default bg-bg-surface pb-1 sm:hidden"
+        aria-label="Navigasi mobile"
+      >
+        {visibleItems.map((item) => {
+          const active = isActive(item.href, path);
+          return (
+            <a
+              key={item.href}
+              href={item.href}
+              onClick={() => trackNavigation(item.href, item.label, 'mobile-bottom-nav')}
+              className={`flex flex-col items-center gap-0.5 px-2 py-2 text-caption font-medium transition-colors duration-150 ${
+                active ? 'text-primary-600' : 'text-text-muted hover:text-text-secondary'
+              }`}
             >
-              <Icon name={item.icon} />
+              <span
+                className={`transition-colors duration-150 ${active ? 'text-primary-500' : 'text-text-muted'}`}
+              >
+                <Icon name={item.icon} />
+              </span>
+              <span>{item.label}</span>
+              {active && (
+                <span className="mt-0.5 h-1 w-5 rounded-full bg-primary-500" aria-hidden="true" />
+              )}
+            </a>
+          );
+        })}
+
+        {/* ── "Lainnya" button ──────────────────────────────── */}
+        {hasMore && (
+          <button
+            type="button"
+            onClick={() => setSheetOpen(true)}
+            className={`flex flex-col items-center gap-0.5 px-2 py-2 text-caption font-medium transition-colors duration-150 ${
+              sheetOpen ? 'text-primary-600' : 'text-text-muted hover:text-text-secondary'
+            }`}
+            aria-label="Buka menu lainnya"
+          >
+            <span className="text-text-muted">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="22"
+                height="22"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <circle cx="12" cy="12" r="1" />
+                <circle cx="19" cy="12" r="1" />
+                <circle cx="5" cy="12" r="1" />
+              </svg>
             </span>
-            <span>{item.label}</span>
-            {active && (
-              <span className="mt-0.5 h-1 w-5 rounded-full bg-primary-500" aria-hidden="true" />
-            )}
-          </a>
-        );
-      })}
-    </nav>
+            <span>Lainnya</span>
+          </button>
+        )}
+      </nav>
+
+      {/* ── Overlay ─────────────────────────────────────────────── */}
+      {sheetOpen && (
+        <div
+          className="fixed inset-0 z-[60] bg-black/30 sm:hidden"
+          onClick={() => setSheetOpen(false)}
+          aria-hidden="true"
+        />
+      )}
+
+      {/* ── Bottom Sheet ────────────────────────────────────────── */}
+      <div
+        className={`fixed bottom-0 left-0 right-0 z-[60] flex max-h-[85vh] flex-col rounded-t-2xl bg-bg-surface shadow-xl transition-transform duration-300 ease-out sm:hidden ${
+          sheetOpen ? 'translate-y-0' : 'translate-y-full'
+        }`}
+        role="dialog"
+        aria-modal="true"
+        aria-label="Menu navigasi lengkap"
+      >
+        {/* Drag handle */}
+        <div className="mx-auto mt-2 h-1.5 w-10 shrink-0 rounded-full bg-border-default" />
+
+        {/* Header */}
+        <div className="flex items-center justify-between border-b border-border-default px-4 py-3">
+          <span className="text-body font-semibold text-text-primary">Menu</span>
+          <button
+            type="button"
+            onClick={() => setSheetOpen(false)}
+            className="flex h-8 w-8 items-center justify-center rounded-md text-text-muted hover:bg-neutral-100 hover:text-text-primary transition-colors"
+            aria-label="Tutup menu"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="M18 6 6 18" />
+              <path d="m6 6 12 12" />
+            </svg>
+          </button>
+        </div>
+
+        {/* Scrollable menu items */}
+        <div className="flex-1 overflow-y-auto px-3 py-2 pb-20">
+          {allItems.map((entry) => {
+            if (isNavItem(entry)) {
+              const active = isActive(entry.href, path);
+              return (
+                <a
+                  key={entry.href}
+                  href={entry.href}
+                  onClick={() => {
+                    setSheetOpen(false);
+                    trackNavigation(entry.href, entry.label, 'mobile-sheet');
+                  }}
+                  className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-body-sm font-medium transition-colors duration-150 ease-out ${
+                    active
+                      ? 'bg-primary-50 text-primary-700'
+                      : 'text-text-secondary hover:bg-neutral-100 hover:text-text-primary'
+                  }`}
+                >
+                  <Icon
+                    name={entry.icon}
+                    size={18}
+                    className={`shrink-0 ${active ? 'text-primary-600' : 'text-text-muted'}`}
+                  />
+                  {entry.label}
+                </a>
+              );
+            }
+
+            // ── Collapsible section ──────────────────────────────
+            const section: NavSection = entry;
+            const sectionKey = section.label.toLowerCase();
+            const isOpen = sectionsOpen[sectionKey] ?? true;
+            const anyChildActive = isSectionActive(section);
+
+            return (
+              <div key={`section:${section.label}`} className="space-y-0.5">
+                <button
+                  type="button"
+                  onClick={() => toggleSection(section.label)}
+                  className={`flex w-full items-center gap-3 rounded-lg px-3 py-2 text-body-sm font-medium transition-colors duration-150 ease-out ${
+                    anyChildActive
+                      ? 'text-primary-700'
+                      : 'text-text-secondary hover:text-text-primary'
+                  }`}
+                >
+                  <Icon name={section.icon} size={18} />
+                  <span className="flex-1 text-left">{section.label}</span>
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="14"
+                    height="14"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    className={`text-text-muted transition-transform duration-200 ${
+                      isOpen ? 'rotate-180' : ''
+                    }`}
+                  >
+                    <path d="m6 9 6 6 6-6" />
+                  </svg>
+                </button>
+
+                {isOpen && (
+                  <div className="ml-3 space-y-0.5 border-l-2 border-border-default pl-3">
+                    {section.children.map((child) => {
+                      const childActive = isActive(child.href, path);
+                      return (
+                        <a
+                          key={child.href}
+                          href={child.href}
+                          onClick={() => {
+                            setSheetOpen(false);
+                            trackNavigation(child.href, child.label, 'mobile-sheet');
+                          }}
+                          className={`flex items-center gap-2.5 rounded-lg px-3 py-2 text-body-sm font-medium transition-colors duration-150 ease-out ${
+                            childActive
+                              ? 'bg-primary-50 text-primary-700'
+                              : 'text-text-secondary hover:bg-neutral-100 hover:text-text-primary'
+                          }`}
+                        >
+                          <span
+                            className={`h-1.5 w-1.5 shrink-0 rounded-full ${
+                              childActive ? 'bg-primary-500' : 'bg-text-muted'
+                            }`}
+                          />
+                          {child.label}
+                        </a>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+
+          {/* ── Logout ──────────────────────────────────────────── */}
+          <div className="mt-3 border-t border-border-default pt-3">
+            <button
+              type="button"
+              onClick={() => {
+                setSheetOpen(false);
+                forceLogout();
+              }}
+              className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-body-sm font-medium text-text-secondary transition-colors duration-150 ease-out hover:bg-danger-50 hover:text-danger-600"
+            >
+              <Icon name="logout" size={18} />
+              Keluar
+            </button>
+          </div>
+        </div>
+      </div>
+    </>
   );
 }

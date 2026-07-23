@@ -3,21 +3,21 @@ import type { UserRole } from '@ahlipanggilan/types';
 import { forceLogout } from '../../lib/auth.ts';
 import { trackNavigation } from '@spesialis/analytics';
 
-interface NavItem {
+export interface NavItem {
   href: string;
   label: string;
   icon: string;
 }
 
-interface NavSection {
+export interface NavSection {
   label: string;
   icon: string;
   children: NavItem[];
 }
 
-type NavEntry = NavItem | NavSection;
+export type NavEntry = NavItem | NavSection;
 
-const NAV_MAP: Record<string, NavEntry[]> = {
+export const NAV_MAP: Record<string, NavEntry[]> = {
   content_manager: [
     { href: '/dashboard/notifications', label: 'Notifikasi', icon: 'bell' },
     { href: '/dashboard/admin', label: 'Ringkasan', icon: 'dashboard' },
@@ -158,7 +158,7 @@ const NAV_MAP: Record<string, NavEntry[]> = {
 };
 
 // Lucide icon SVGs as raw HTML strings
-const ICON_SVGS: Record<string, string> = {
+export const NAV_ICONS: Record<string, string> = {
   dashboard:
     '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="7" height="9" x="3" y="3"/><rect width="7" height="5" x="14" y="3"/><rect width="7" height="9" x="14" y="12"/><rect width="7" height="5" x="3" y="16"/></svg>',
   orders:
@@ -219,16 +219,16 @@ async function handleLogout() {
   await forceLogout();
 }
 
+export function isNavItem(entry: NavEntry): entry is NavItem {
+  return 'href' in entry;
+}
+
 function Icon({ name, className }: { name: string; className?: string }) {
-  const svg = ICON_SVGS[name];
+  const svg = NAV_ICONS[name];
   if (!svg) return null;
   return (
     <span className={className} aria-hidden="true" dangerouslySetInnerHTML={{ __html: svg }} />
   );
-}
-
-function isNavItem(entry: NavEntry): entry is NavItem {
-  return 'href' in entry;
 }
 
 export function Sidebar({
@@ -242,7 +242,6 @@ export function Sidebar({
   userName?: string;
   userEmail?: string;
 }) {
-  const [open, setOpen] = useState(false);
   const [sectionsOpen, setSectionsOpen] = useState<Record<string, boolean>>({
     seo: true,
   });
@@ -262,153 +261,125 @@ export function Sidebar({
   }
 
   return (
-    <>
-      {/* Mobile hamburger */}
-      <button
-        type="button"
-        className="fixed left-4 top-4 z-[60] flex h-10 w-10 items-center justify-center rounded-lg border border-border-default bg-bg-sidebar text-text-primary shadow-xs sm:hidden"
-        onClick={() => setOpen((v) => !v)}
-        aria-label="Buka menu navigasi"
-      >
-        <Icon name={open ? 'x' : 'menu'} />
-      </button>
-
-      {/* Mobile overlay */}
-      {open && (
-        <div
-          className="fixed inset-0 z-[55] bg-black/30 sm:hidden"
-          onClick={() => setOpen(false)}
-          aria-hidden="true"
-        />
-      )}
-
-      {/* Sidebar navigation */}
-      <nav
-        className={`fixed left-0 top-0 z-[55] flex h-full w-60 flex-col border-r border-border-default bg-bg-sidebar shadow-lg transition-transform duration-200 ease-out sm:sticky sm:top-20 sm:h-[calc(100vh-5rem)] sm:max-h-[calc(100vh-5rem)] sm:shrink-0 sm:rounded-xl sm:border sm:shadow-sm sm:z-0 ${
-          open ? 'translate-x-0' : '-translate-x-full sm:translate-x-0'
-        }`}
-      >
-        {/* User info / branding */}
-        <div className="flex items-center gap-3 border-b border-border-default px-4 py-5">
-          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary-500 text-body font-bold text-white">
-            S
-          </div>
-          <div className="min-w-0">
-            <p className="truncate text-body-sm font-semibold text-text-primary">
-              {userName ?? userEmail ?? 'Ahli Panggilan'}
-            </p>
-            <p className="text-caption capitalize text-text-muted">{role}</p>
-          </div>
+    <nav className="hidden sm:flex sticky top-20 h-[calc(100vh-5rem)] max-h-[calc(100vh-5rem)] w-60 shrink-0 flex-col rounded-xl border border-border-default bg-bg-sidebar shadow-sm">
+      {/* User info / branding */}
+      <div className="flex items-center gap-3 border-b border-border-default px-4 py-5">
+        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary-500 text-body font-bold text-white">
+          S
         </div>
+        <div className="min-w-0">
+          <p className="truncate text-body-sm font-semibold text-text-primary">
+            {userName ?? userEmail ?? 'Ahli Panggilan'}
+          </p>
+          <p className="text-caption capitalize text-text-muted">{role}</p>
+        </div>
+      </div>
 
-        {/* Nav items & sections */}
-        <div className="flex-1 overflow-y-auto px-3 py-4">
-          {entries.map((entry) => {
-            if (isNavItem(entry)) {
-              return (
-                <a
-                  key={entry.href}
-                  href={entry.href}
-                  onClick={() => {
-                    setOpen(false);
-                    trackNavigation(entry.href, entry.label, 'sidebar');
-                  }}
-                  className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-body-sm font-medium transition-colors duration-150 ease-out ${
-                    isActive(entry.href)
-                      ? 'bg-primary-50 text-primary-700'
-                      : 'text-text-secondary hover:bg-neutral-100 hover:text-text-primary'
-                  }`}
-                >
-                  <Icon
-                    name={entry.icon}
-                    className={`flex shrink-0 items-center justify-center ${
-                      isActive(entry.href) ? 'text-primary-600' : 'text-text-muted'
-                    }`}
-                  />
-                  {entry.label}
-                </a>
-              );
-            }
-
-            // ── Collapsible section ──────────────────────────────
-            const sectionKey = entry.label.toLowerCase();
-            const isOpen = sectionsOpen[sectionKey] ?? true;
-            const anyChildActive = isSectionActive(entry);
-
+      {/* Nav items & sections */}
+      <div className="flex-1 overflow-y-auto px-3 py-4">
+        {entries.map((entry) => {
+          if (isNavItem(entry)) {
             return (
-              <div key={`section:${entry.label}`} className="space-y-0.5">
-                <button
-                  type="button"
-                  onClick={() => toggleSection(entry.label)}
-                  className={`flex w-full items-center gap-3 rounded-lg px-3 py-2 text-body-sm font-medium transition-colors duration-150 ease-out ${
-                    anyChildActive
-                      ? 'text-primary-700'
-                      : 'text-text-secondary hover:text-text-primary'
+              <a
+                key={entry.href}
+                href={entry.href}
+                onClick={() => {
+                  trackNavigation(entry.href, entry.label, 'sidebar');
+                }}
+                className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-body-sm font-medium transition-colors duration-150 ease-out ${
+                  isActive(entry.href)
+                    ? 'bg-primary-50 text-primary-700'
+                    : 'text-text-secondary hover:bg-neutral-100 hover:text-text-primary'
+                }`}
+              >
+                <Icon
+                  name={entry.icon}
+                  className={`flex shrink-0 items-center justify-center ${
+                    isActive(entry.href) ? 'text-primary-600' : 'text-text-muted'
+                  }`}
+                />
+                {entry.label}
+              </a>
+            );
+          }
+
+          // ── Collapsible section ──────────────────────────────
+          const sectionKey = entry.label.toLowerCase();
+          const isOpen = sectionsOpen[sectionKey] ?? true;
+          const anyChildActive = isSectionActive(entry);
+
+          return (
+            <div key={`section:${entry.label}`} className="space-y-0.5">
+              <button
+                type="button"
+                onClick={() => toggleSection(entry.label)}
+                className={`flex w-full items-center gap-3 rounded-lg px-3 py-2 text-body-sm font-medium transition-colors duration-150 ease-out ${
+                  anyChildActive
+                    ? 'text-primary-700'
+                    : 'text-text-secondary hover:text-text-primary'
+                }`}
+              >
+                <Icon name={entry.icon} className="shrink-0 text-text-muted" />
+                <span className="flex-1 text-left">{entry.label}</span>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className={`text-text-muted transition-transform duration-200 ${
+                    isOpen ? 'rotate-180' : ''
                   }`}
                 >
-                  <Icon name={entry.icon} className="shrink-0 text-text-muted" />
-                  <span className="flex-1 text-left">{entry.label}</span>
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="14"
-                    height="14"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    className={`text-text-muted transition-transform duration-200 ${
-                      isOpen ? 'rotate-180' : ''
-                    }`}
-                  >
-                    <path d="m6 9 6 6 6-6" />
-                  </svg>
-                </button>
+                  <path d="m6 9 6 6 6-6" />
+                </svg>
+              </button>
 
-                {isOpen && (
-                  <div className="ml-3 space-y-0.5 border-l-2 border-border-default pl-3">
-                    {entry.children.map((child) => (
-                      <a
-                        key={child.href}
-                        href={child.href}
-                        onClick={() => {
-                          setOpen(false);
-                          trackNavigation(child.href, child.label, 'sidebar');
-                        }}
-                        className={`flex items-center gap-2.5 rounded-lg px-3 py-2 text-body-sm font-medium transition-colors duration-150 ease-out ${
-                          isActive(child.href)
-                            ? 'bg-primary-50 text-primary-700'
-                            : 'text-text-secondary hover:bg-neutral-100 hover:text-text-primary'
+              {isOpen && (
+                <div className="ml-3 space-y-0.5 border-l-2 border-border-default pl-3">
+                  {entry.children.map((child) => (
+                    <a
+                      key={child.href}
+                      href={child.href}
+                      onClick={() => {
+                        trackNavigation(child.href, child.label, 'sidebar');
+                      }}
+                      className={`flex items-center gap-2.5 rounded-lg px-3 py-2 text-body-sm font-medium transition-colors duration-150 ease-out ${
+                        isActive(child.href)
+                          ? 'bg-primary-50 text-primary-700'
+                          : 'text-text-secondary hover:bg-neutral-100 hover:text-text-primary'
+                      }`}
+                    >
+                      <span
+                        className={`h-1.5 w-1.5 shrink-0 rounded-full ${
+                          isActive(child.href) ? 'bg-primary-500' : 'bg-text-muted'
                         }`}
-                      >
-                        <span
-                          className={`h-1.5 w-1.5 shrink-0 rounded-full ${
-                            isActive(child.href) ? 'bg-primary-500' : 'bg-text-muted'
-                          }`}
-                        />
-                        {child.label}
-                      </a>
-                    ))}
-                  </div>
-                )}
-              </div>
-            );
-          })}
-        </div>
+                      />
+                      {child.label}
+                    </a>
+                  ))}
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
 
-        {/* Logout */}
-        <div className="border-t border-border-default p-3">
-          <button
-            type="button"
-            onClick={handleLogout}
-            className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-body-sm font-medium text-text-secondary transition-colors duration-150 ease-out hover:bg-danger-50 hover:text-danger-600"
-          >
-            <Icon name="logout" className="shrink-0 text-text-muted" />
-            Keluar
-          </button>
-        </div>
-      </nav>
-    </>
+      {/* Logout */}
+      <div className="border-t border-border-default p-3">
+        <button
+          type="button"
+          onClick={handleLogout}
+          className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-body-sm font-medium text-text-secondary transition-colors duration-150 ease-out hover:bg-danger-50 hover:text-danger-600"
+        >
+          <Icon name="logout" className="shrink-0 text-text-muted" />
+          Keluar
+        </button>
+      </div>
+    </nav>
   );
 }
