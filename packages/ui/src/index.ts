@@ -81,5 +81,8 @@ export { SnippetPreview, type SnippetPreviewProps } from './components/SnippetPr
 export { ReadabilityScore, type ReadabilityScoreProps } from './components/ReadabilityScore.tsx';
 export { SeoAnalyzerPanel, type SeoAnalyzerPanelProps } from './components/SeoAnalyzerPanel.tsx';
 
+// ─── Lock Badge ────────────────────────────────────────────────
+export { LockBadge, type LockBadgeProps } from './components/LockBadge.tsx';
+
 // ─── Utilities ──────────────────────────────────────────────────────────
 export { cn } from './utils/cn.ts';

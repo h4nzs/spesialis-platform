@@ -39,6 +39,7 @@ export { coverageAreas } from './coverage-areas.ts';
 export { serviceSuggestions } from './service-suggestions.ts';
 export { cmsTestimonials } from './cms-testimonials.ts';
 export { articleLinks } from './article-links.ts';
+export { resourceLocks } from './resource-locks.ts';
 
 export { indexnowLogsRelations } from './relations.ts';
 

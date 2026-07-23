@@ -13,6 +13,8 @@ import {
 } from '@ahlipanggilan/ui';
 import { LazyFallback } from '../../ui/LazyFallback';
 import type { Column } from '@ahlipanggilan/ui';
+import { useLockPolling } from '../../../lib/useLockPolling.ts';
+import { LockBadge } from '@ahlipanggilan/ui';
 
 interface FaqItem {
   id: string;
@@ -72,6 +74,8 @@ export function AdminFaq() {
   }, [loadData]);
 
   // ── Filter items by search query + category ───────────────
+
+  // ── Filter items by search query + category ───────────────
   const filteredItems = useMemo(() => {
     let result = items;
 
@@ -92,6 +96,13 @@ export function AdminFaq() {
 
     return result;
   }, [items, categoryFilter, searchQuery]);
+
+  // Visible item IDs for lock polling (uses filtered items — what's shown in the table)
+  const visibleIds = useMemo(
+    () => filteredItems.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE).map((i) => i.id),
+    [filteredItems, page],
+  );
+  const lockMap = useLockPolling(visibleIds, 'faq', api);
 
   function openCreate() {
     setEditing(null);
@@ -157,18 +168,38 @@ export function AdminFaq() {
           : '-',
     },
     {
+      key: 'lock',
+      header: 'Dikunci',
+      render: (item) => {
+        const lockInfo = lockMap[item.id];
+        if (!lockInfo?.locked) return <span className="text-text-muted">-</span>;
+        return <LockBadge lockedByEmail={lockInfo.lockedByEmail} />;
+      },
+    },
+    {
       key: 'id',
       header: 'Aksi',
-      render: (item) => (
-        <div className="flex gap-2">
-          <Button size="sm" onClick={() => openEdit(item)}>
-            Edit
-          </Button>
-          <Button size="sm" variant="danger" onClick={() => handleDelete(item)}>
-            Hapus
-          </Button>
-        </div>
-      ),
+      render: (item) => {
+        const lockInfo = lockMap[item.id];
+        const isLocked = lockInfo?.locked === true;
+        const lockedByEmail = lockInfo?.lockedByEmail;
+
+        return (
+          <div className="flex gap-2">
+            <Button
+              size="sm"
+              disabled={isLocked}
+              onClick={() => openEdit(item)}
+              title={isLocked ? `Diedit oleh ${lockedByEmail}` : 'Edit FAQ'}
+            >
+              {isLocked ? 'Dikunci' : 'Edit'}
+            </Button>
+            <Button size="sm" variant="danger" onClick={() => handleDelete(item)}>
+              Hapus
+            </Button>
+          </div>
+        );
+      },
     },
   ];
 

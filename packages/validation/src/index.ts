@@ -177,3 +177,16 @@ export type { CreateCoverageAreaInput, UpdateCoverageAreaInput } from './coverag
 
 export { createTestimonialSchema, updateTestimonialSchema } from './cms-testimonials.ts';
 export type { CreateTestimonialInput, UpdateTestimonialInput } from './cms-testimonials.ts';
+
+export {
+  acquireLockSchema,
+  releaseLockSchema,
+  heartbeatLockSchema,
+  RESOURCE_TYPES,
+} from './lock.ts';
+export type {
+  AcquireLockInput,
+  ReleaseLockInput,
+  HeartbeatLockInput,
+  ResourceType,
+} from './lock.ts';

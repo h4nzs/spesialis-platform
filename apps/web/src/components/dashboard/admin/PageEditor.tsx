@@ -3,6 +3,8 @@ import { createBrowserClient, parseApiError } from '@ahlipanggilan/shared';
 import { Button, Input, Select, Card, SEOEditor, SeoAnalyzerPanel } from '@ahlipanggilan/ui';
 import { RichTextEditor } from '@ahlipanggilan/ui/editor';
 import type { SeoData } from '@ahlipanggilan/ui';
+import { useContentLock } from '../../../lib/useContentLock.ts';
+import { LockBanner } from './LockBanner.tsx';
 
 // ── Types ────────────────────────────────────────────────────────
 
@@ -94,6 +96,9 @@ export function PageEditor({ editingId }: PageEditorProps) {
     window.location.href = '/dashboard/admin/cms-pages';
   }
 
+  // ── Content Lock ────────────────────────────────────────────
+  const lock = useContentLock(editingId ? 'cms_page' : undefined, editingId);
+
   // Load page detail if editing
   useEffect(() => {
     if (!editingId) {
@@ -177,6 +182,9 @@ export function PageEditor({ editingId }: PageEditorProps) {
       } else {
         await api.post('/api/v1/admin/cms-pages', { body });
       }
+
+      // Release lock after successful save
+      await lock.release();
       goBack();
     } catch (err) {
       const { fieldErrors: fe, generalError } = parseApiError(err, 'Gagal menyimpan halaman');
@@ -185,6 +193,12 @@ export function PageEditor({ editingId }: PageEditorProps) {
     } finally {
       setSubmitting(false);
     }
+  }
+
+  // ── Cancel handler with lock release ─────────────────────────
+  function handleCancel() {
+    lock.release();
+    goBack();
   }
 
   if (loading) {
@@ -201,11 +215,23 @@ export function PageEditor({ editingId }: PageEditorProps) {
 
   return (
     <>
+      {/* ── Content Lock Banners ──────────────────────────────── */}
+      {lock.locked && !lock.isLockedByMe && (
+        <LockBanner
+          type="locked"
+          resourceName="Halaman"
+          lockedByEmail={lock.lockedByEmail}
+          onTakeover={() => lock.takeover()}
+          onBack={handleCancel}
+        />
+      )}
+      {lock.lockLost && <LockBanner type="lockLost" resourceName="Halaman" />}
+
       {/* ── Back button ─────────────────────────────────────── */}
       <div className="mb-6">
         <button
           type="button"
-          onClick={goBack}
+          onClick={handleCancel}
           className="flex items-center gap-1 text-sm text-text-muted hover:text-text-primary transition-colors"
         >
           <svg
@@ -226,7 +252,7 @@ export function PageEditor({ editingId }: PageEditorProps) {
         </button>
       </div>
 
-      {error && (
+      {error && !lock.locked && (
         <div className="mb-6 rounded-lg border border-danger-200 bg-danger-50 px-4 py-3 text-sm text-danger-700">
           {error}
         </div>
@@ -326,11 +352,17 @@ export function PageEditor({ editingId }: PageEditorProps) {
 
         {/* ── Actions ──────────────────────────────────────────── */}
         <div className="mt-6 flex justify-end gap-3 border-t border-border-default pt-6">
-          <Button variant="ghost" type="button" onClick={goBack}>
+          <Button variant="ghost" type="button" onClick={handleCancel}>
             Batal
           </Button>
-          <Button type="submit" disabled={submitting}>
-            {submitting ? 'Menyimpan...' : editingId ? 'Simpan Perubahan' : 'Buat Halaman'}
+          <Button type="submit" disabled={submitting || lock.locked}>
+            {lock.locked && !lock.isLockedByMe
+              ? 'Tidak Dapat Menyimpan'
+              : submitting
+                ? 'Menyimpan...'
+                : editingId
+                  ? 'Simpan Perubahan'
+                  : 'Buat Halaman'}
           </Button>
         </div>
       </form>

@@ -13,6 +13,8 @@ import {
 } from '@ahlipanggilan/ui';
 import { RichTextEditor } from '@ahlipanggilan/ui/editor';
 import type { SeoData } from '@ahlipanggilan/ui';
+import { useContentLock } from '../../../lib/useContentLock.ts';
+import { LockBanner } from './LockBanner.tsx';
 import { renderMarkdown } from '../../../lib/markdown.ts';
 import { PillarLinkSuggestions } from './PillarLinkSuggestions.tsx';
 import { PillarSeoScore } from './PillarSeoScore.tsx';
@@ -284,6 +286,9 @@ export function ArticleEditor({ editingId }: ArticleEditorProps) {
     setForm((f) => ({ ...f, schemaJson: schema }));
   }, []);
 
+  // ── Content Lock ────────────────────────────────────────────
+  const lock = useContentLock(editingId ? 'article' : undefined, editingId);
+
   // ── Submit handler ─────────────────────────────────────────────
   async function handleSave(e: React.SyntheticEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -321,6 +326,9 @@ export function ArticleEditor({ editingId }: ArticleEditorProps) {
       } else {
         await api.post('/api/v1/admin/articles', { body });
       }
+
+      // Release lock after successful save
+      await lock.release();
       goBack();
     } catch (err) {
       const { fieldErrors: fe, generalError } = parseApiError(err, 'Gagal menyimpan artikel');
@@ -329,6 +337,12 @@ export function ArticleEditor({ editingId }: ArticleEditorProps) {
     } finally {
       setSubmitting(false);
     }
+  }
+
+  // ── Cancel handler with lock release ─────────────────────────
+  function handleCancel() {
+    lock.release();
+    goBack();
   }
 
   if (loading) {
@@ -355,11 +369,23 @@ export function ArticleEditor({ editingId }: ArticleEditorProps) {
         onSelect={handleMediaSelect}
       />
 
+      {/* ── Content Lock Banners ──────────────────────────────── */}
+      {lock.locked && !lock.isLockedByMe && (
+        <LockBanner
+          type="locked"
+          resourceName="Artikel"
+          lockedByEmail={lock.lockedByEmail}
+          onTakeover={() => lock.takeover()}
+          onBack={handleCancel}
+        />
+      )}
+      {lock.lockLost && <LockBanner type="lockLost" resourceName="Artikel" />}
+
       {/* ── Back button ─────────────────────────────────────── */}
       <div className="mb-6">
         <button
           type="button"
-          onClick={goBack}
+          onClick={handleCancel}
           className="flex items-center gap-1 text-sm text-text-muted hover:text-text-primary transition-colors"
         >
           <svg
@@ -380,7 +406,7 @@ export function ArticleEditor({ editingId }: ArticleEditorProps) {
         </button>
       </div>
 
-      {error && (
+      {error && !lock.locked && (
         <div className="mb-6 rounded-lg border border-danger-200 bg-danger-50 px-4 py-3 text-sm text-danger-700">
           {error}
         </div>
@@ -639,11 +665,17 @@ export function ArticleEditor({ editingId }: ArticleEditorProps) {
 
         {/* ── Actions ──────────────────────────────────────────── */}
         <div className="mt-6 flex justify-end gap-3 border-t border-border-default pt-6">
-          <Button variant="ghost" type="button" onClick={goBack}>
+          <Button variant="ghost" type="button" onClick={handleCancel}>
             Batal
           </Button>
-          <Button type="submit" disabled={submitting}>
-            {submitting ? 'Menyimpan...' : editingId ? 'Simpan Perubahan' : 'Terbitkan Artikel'}
+          <Button type="submit" disabled={submitting || lock.locked}>
+            {lock.locked && !lock.isLockedByMe
+              ? 'Tidak Dapat Menyimpan'
+              : submitting
+                ? 'Menyimpan...'
+                : editingId
+                  ? 'Simpan Perubahan'
+                  : 'Terbitkan Artikel'}
           </Button>
         </div>
       </form>

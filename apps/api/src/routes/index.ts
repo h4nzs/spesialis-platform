@@ -42,6 +42,7 @@ import { adminTestimonialsRouter } from './admin/testimonials.ts';
 import { analyticsRouter } from './analytics.ts';
 import { sitemapSettingsRouter } from './sitemap-settings.ts';
 import { indexnowRouter } from './indexnow.ts';
+import { adminLocksRouter } from './admin/locks.ts';
 
 const router = new Hono();
 
@@ -97,5 +98,6 @@ router.route('/admin/testimonials', adminTestimonialsRouter);
 router.route('/sitemap-settings', sitemapSettingsRouter);
 router.route('/indexnow', indexnowRouter);
 router.route('/analytics', analyticsRouter);
+router.route('/admin/locks', adminLocksRouter);
 
 export { router as apiRouter };

@@ -2,6 +2,8 @@ import { useState, useEffect, useMemo } from 'react';
 import { createBrowserClient, parseApiError } from '@ahlipanggilan/shared';
 import { Button, Input, Select, Modal, type SelectOption } from '@ahlipanggilan/ui';
 import { RichTextEditor } from '@ahlipanggilan/ui/editor';
+import { useContentLock } from '../../../lib/useContentLock.ts';
+import { LockBanner } from './LockBanner.tsx';
 
 // ── Types ────────────────────────────────────────────────────────
 
@@ -58,6 +60,7 @@ export default function FaqFormModal({ open, onClose, editingId, onSaved }: FaqF
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+  const lock = useContentLock(editingId ? 'faq' : undefined, editingId);
 
   // ── Fetch category options ────────────────────────────────────
   const [categoryOptions, setCategoryOptions] = useState<SelectOption[]>([]);
@@ -128,6 +131,9 @@ export default function FaqFormModal({ open, onClose, editingId, onSaved }: FaqF
       } else {
         await api.post('/api/v1/admin/faq', { body });
       }
+
+      // Release lock after successful save
+      await lock.release();
       onClose();
       onSaved();
     } catch (err) {
@@ -139,10 +145,29 @@ export default function FaqFormModal({ open, onClose, editingId, onSaved }: FaqF
     }
   }
 
+  // ── Modal close handler with lock release ───────────────────
+  function handleClose() {
+    lock.release();
+    onClose();
+  }
+
   return (
-    <Modal open={open} onClose={onClose} title={editingId ? 'Edit FAQ' : 'Tambah FAQ'}>
+    <Modal open={open} onClose={handleClose} title={editingId ? 'Edit FAQ' : 'Tambah FAQ'}>
       <form onSubmit={handleSave} className="space-y-4">
-        {error && <p className="text-sm text-danger-500">{error}</p>}
+        {/* ── Content Lock Banners ────────────────────────────── */}
+        {lock.locked && !lock.isLockedByMe && (
+          <LockBanner
+            compact
+            type="locked"
+            resourceName="FAQ"
+            lockedByEmail={lock.lockedByEmail}
+            onTakeover={() => lock.takeover()}
+            onBack={handleClose}
+            backLabel="Tutup"
+          />
+        )}
+        {lock.lockLost && <LockBanner compact type="lockLost" resourceName="FAQ" />}
+        {error && !lock.locked && <p className="text-sm text-danger-500">{error}</p>}
         {/* ── Question ────────────────────────────────────────── */}{' '}
         <Input
           label="Pertanyaan"
@@ -188,10 +213,10 @@ export default function FaqFormModal({ open, onClose, editingId, onSaved }: FaqF
         />
         {/* ── Actions ─────────────────────────────────────────── */}
         <div className="flex justify-end gap-2 border-t border-border-default pt-4">
-          <Button variant="ghost" type="button" onClick={onClose}>
+          <Button variant="ghost" type="button" onClick={handleClose}>
             Batal
           </Button>
-          <Button type="submit" disabled={submitting}>
+          <Button type="submit" disabled={submitting || lock.locked}>
             {submitting ? 'Menyimpan...' : editingId ? 'Simpan' : 'Buat'}
           </Button>
         </div>
