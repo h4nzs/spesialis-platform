@@ -158,9 +158,16 @@ const LOCK_LOST_ICON = `<svg class="lock-icon" viewBox="0 0 24 24" fill="none" s
 
 const ERROR_ICON = `<svg class="lock-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>`;
 
+// ─── SSR Guard ──────────────────────────────────────────────────
+// HTMLElement hanya tersedia di browser. Saat modul ini di-import
+// oleh barrel @ahlipanggilan/ui, Node.js (SSR) akan throw karena
+// HTMLElement tidak didefinisikan. Gunakan base class kondisional.
+const _HTMLElement: typeof HTMLElement =
+  typeof HTMLElement !== 'undefined' ? HTMLElement : (class {} as unknown as typeof HTMLElement);
+
 // ─── Component ──────────────────────────────────────────────────
 
-class ContentLockWidget extends HTMLElement {
+class ContentLockWidget extends _HTMLElement {
   static observedAttributes = ['resource-type', 'resource-id', 'resource-name'] as const;
 
   private state: LockState = { status: 'loading' };
@@ -517,6 +524,8 @@ class ContentLockWidget extends HTMLElement {
  * @param tag - Custom element tag name (default: 'content-lock-widget')
  */
 export function defineContentLockWidget(tag = 'content-lock-widget'): void {
+  // SSR guard — customElements tidak tersedia di Node.js
+  if (typeof customElements === 'undefined' || typeof customElements.get !== 'function') return;
   if (!customElements.get(tag)) {
     customElements.define(tag, ContentLockWidget);
   }
