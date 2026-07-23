@@ -17,7 +17,13 @@ function Icon({ name, size = 22, className }: { name: string; size?: number; cla
 }
 
 function isActive(href: string, path: string): boolean {
-  return path === href || (path.startsWith(href + '/') && href !== '/dashboard/notifications');
+  if (path === href) return true;
+  // Only match subpaths for non-root pages (≥3 segments).
+  // /dashboard/admin should not match /dashboard/admin/bookings —
+  // otherwise Ringkasan (dashboard root) lights up on every page.
+  const segments = href.split('/').filter(Boolean);
+  if (segments.length <= 2) return false;
+  return path.startsWith(href + '/');
 }
 
 export function MobileBottomNav({ role, currentPath }: { role: UserRole; currentPath?: string }) {
