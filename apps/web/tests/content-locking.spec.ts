@@ -84,6 +84,11 @@ test('Two users editing same article — lock banner + takeover flow', async ({
     await setAuthCookie(page2, admin2Auth);
 
     // ── Step 1: Admin1 opens article editor → acquires lock ──
+    // Start listening BEFORE navigation so we don't miss the response
+    const lockAcquired = page1.waitForResponse(
+      (res) => res.url().includes('/admin/locks/acquire'),
+      { timeout: 15000 },
+    );
     await page1.goto(`/dashboard/admin/articles/edit/${articleId}`);
     await page1.waitForLoadState('networkidle');
 
@@ -94,6 +99,10 @@ test('Two users editing same article — lock banner + takeover flow', async ({
     await expect(page1.locator('[data-testid="lock-banner"]')).toHaveCount(0, { timeout: 5000 });
     // Submit button is enabled (not locked)
     await expect(page1.locator('button[type="submit"]')).toBeEnabled({ timeout: 5000 });
+
+    // 🕐 Confirm Admin1's lock acquire completed before proceeding
+    // Tanpa ini, Admin2 bisa acquire lock secara bersamaan (race condition).
+    await lockAcquired;
 
     // ── Step 2: Admin2 opens same article → sees lock banner ──
     await page2.goto(`/dashboard/admin/articles/edit/${articleId}`);

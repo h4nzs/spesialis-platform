@@ -1,5 +1,10 @@
 import { useState } from 'react';
-import { Button } from '@ahlipanggilan/ui';
+import {
+  Button,
+  TAKEOVER_BUTTON_LABELS,
+  TAKEOVER_BUTTON_ARIA,
+  createTakeoverHandler,
+} from '@ahlipanggilan/ui';
 
 interface LockBannerProps {
   /** `'locked'` = warning banner (someone else is editing), `'lockLost'` = danger banner (lock hijacked) */
@@ -172,12 +177,10 @@ export function LockBanner({
               size="sm"
               variant="secondary"
               disabled={takeoverLoading}
-              onClick={() => {
-                setTakeoverLoading(true);
-                onTakeover();
-              }}
+              aria-label={takeoverLoading ? TAKEOVER_BUTTON_ARIA.loading : undefined}
+              onClick={createTakeoverHandler(onTakeover, setTakeoverLoading)}
             >
-              {takeoverLoading ? 'Mengambil alih...' : 'Ambil Alih'}
+              {takeoverLoading ? TAKEOVER_BUTTON_LABELS.loading : TAKEOVER_BUTTON_LABELS.default}
             </Button>
           )}
           {onBack && (

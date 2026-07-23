@@ -107,9 +107,17 @@ test('Article list shows lock indicator when article is being edited', async ({
     await setAuthCookie(page2, admin2Auth);
 
     // ── Admin1 opens article editor → acquires lock ──
+    // Start listening BEFORE navigation so we don't miss the response
+    const lockAcquired = page1.waitForResponse(
+      (res) => res.url().includes('/admin/locks/acquire'),
+      { timeout: 15000 },
+    );
     await page1.goto(`/dashboard/admin/articles/edit/${articleId}`);
     await page1.waitForLoadState('networkidle');
     await expect(page1.locator('.ProseMirror')).toBeVisible({ timeout: 30000 });
+
+    // 🕐 Confirm Admin1's lock acquire completed before Admin2 checks list
+    await lockAcquired;
 
     // ── Admin2 opens article list → sees lock indicator ──
     await page2.goto('/dashboard/admin/articles');
@@ -169,14 +177,19 @@ test('CMS pages list shows lock indicator when page is being edited', async ({
     await setAuthCookie(page2, admin2Auth);
 
     // ── Admin1 opens page editor → acquires lock ──
+    // Start listening BEFORE navigation so we don't miss the response
+    const lockAcquired = page1.waitForResponse(
+      (res) => res.url().includes('/admin/locks/acquire'),
+      { timeout: 15000 },
+    );
     await page1.goto(`/dashboard/admin/cms-pages/edit/${pageId}`);
     await page1.waitForLoadState('networkidle');
     // Wait for React editor to hydrate (look for the title input rendered by React)
     await expect(page1.locator('input[name="title"], textarea[name="title"]')).toBeVisible({
       timeout: 30000,
     });
-    // Give React useEffect (useContentLock) time to acquire the lock
-    await page1.waitForTimeout(500);
+    // 🕐 Confirm Admin1's lock acquire completed before Admin2 checks list
+    await lockAcquired;
 
     // ── Admin2 opens CMS pages list → sees lock indicator ──
     await page2.goto('/dashboard/admin/cms-pages');
@@ -286,12 +299,18 @@ test('FAQ list shows lock indicator when FAQ is being edited', async ({ browser,
       .filter({ hasText: 'Lock List E2E FAQ' })
       .locator('button:has-text("Edit")');
     await expect(editBtn.first()).toBeVisible({ timeout: 15000 });
+
+    // Start listening BEFORE click so we don't miss the acquire response
+    const lockAcquired = page1.waitForResponse(
+      (res) => res.url().includes('/admin/locks/acquire'),
+      { timeout: 15000 },
+    );
     await editBtn.first().click();
 
     // Wait for the FAQ modal to open
     await expect(page1.locator('[role="dialog"]')).toBeVisible({ timeout: 15000 });
-    // Wait for React lazy chunk + useContentLock hook to finish acquiring the lock
-    await page1.waitForTimeout(1000);
+    // 🕐 Confirm Admin1's lock acquire completed before Admin2 checks list
+    await lockAcquired;
 
     // ── Admin2 opens FAQ list → sees lock indicator ──
     await page2.goto('/dashboard/admin/faq');

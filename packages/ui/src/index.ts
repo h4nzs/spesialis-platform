@@ -84,5 +84,17 @@ export { SeoAnalyzerPanel, type SeoAnalyzerPanelProps } from './components/SeoAn
 // ─── Lock Badge ────────────────────────────────────────────────
 export { LockBadge, type LockBadgeProps } from './components/LockBadge.tsx';
 
+// ─── Content Lock Web Component ────────────────────────────────
+export { defineContentLockWidget, ContentLockWidget } from './components/content-lock-widget.ts';
+export type { LockStatus, LockState } from './components/content-lock-widget.ts';
+
+// ─── Shared Lock Utilities ────────────────────────────────────
+export {
+  TAKEOVER_BUTTON_LABELS,
+  TAKEOVER_BUTTON_ARIA,
+  createTakeoverHandler,
+} from './shared/takeover-button.ts';
+export type { TakeoverAction, TakeoverLoadingState } from './shared/takeover-button.ts';
+
 // ─── Utilities ──────────────────────────────────────────────────────────
 export { cn } from './utils/cn.ts';

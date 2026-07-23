@@ -237,7 +237,7 @@ describe('ref-based ids', () => {
     const { result, rerender } = renderHook(
       ({ ids }: { ids: string[] }) => useLockPolling(ids, 'article'),
       {
-        initialProps: { ids: [] },
+        initialProps: { ids: [] as string[] },
       },
     );
 
