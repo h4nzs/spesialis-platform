@@ -13,7 +13,7 @@ import type {
   ReleaseLockInput,
   HeartbeatLockInput,
 } from '@ahlipanggilan/validation';
-import { success, created, error, notFound, forbidden } from '../../lib/response.ts';
+import { success, created, error } from '../../lib/response.ts';
 
 const router = new Hono();
 
