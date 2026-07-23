@@ -22,12 +22,12 @@ import {
 } from '@ahlipanggilan/ui';
 // Eagerly start downloading the editor chunk at module evaluation time,
 // before React hydration. This reduces race conditions in CI/CD.
-void import('@ahlipanggilan/ui/editor').catch(() => {
+void import('../../../lib/editor-lazy.ts').catch(() => {
   // Preload only — actual import for rendering is handled by React.lazy below
 });
 
 const RichTextEditor = lazy(() =>
-  import('@ahlipanggilan/ui/editor').then((m) => ({ default: m.RichTextEditor })),
+  import('../../../lib/editor-lazy.ts').then((m) => ({ default: m.RichTextEditor })),
 );
 import type { SeoData } from '@ahlipanggilan/ui';
 import { renderMarkdown } from '../../../lib/markdown.ts';

@@ -7,8 +7,3 @@ import { ArticleEditor } from '../../../../components/dashboard/admin/ArticleEdi
 <DashboardLayout title="Tulis Artikel Baru" role={['admin', 'super_admin', 'content_manager']}>
   <ArticleEditor client:load />
 </DashboardLayout>
-
-<script>
-  // Preload editor chunk during HTML parsing, before island bundle finishes.
-  import('@ahlipanggilan/ui/editor').catch(() => {});
-</script>
