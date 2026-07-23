@@ -9,3 +9,8 @@ const { id } = Astro.params
 <DashboardLayout title="Edit Artikel" role={['admin', 'super_admin', 'content_manager']}>
   <ArticleEditor client:load editingId={id} />
 </DashboardLayout>
+
+<script>
+  // Preload editor chunk during HTML parsing, before island bundle finishes.
+  import('@ahlipanggilan/ui/editor').catch(() => {});
+</script>

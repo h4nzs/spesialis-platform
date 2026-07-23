@@ -60,7 +60,11 @@ test.describe('Article Creation — Real User Flow', () => {
 
     // ─── 4. Use TipTap editor via keyboard shortcuts ─────────────
     const proseMirror = page.locator('.ProseMirror');
-    await expect(proseMirror).toBeVisible({ timeout: 20000 });
+
+    // Fail fast if ErrorBoundary caught a chunk load error
+    await expect(page.locator('text=Gagal memuat editor')).toHaveCount(0, { timeout: 5000 });
+    // Allow up to 30s for vendor-editor chunk (136KB) to load in slow CI/CD
+    await expect(proseMirror).toBeVisible({ timeout: 30000 });
 
     // Click into the editor and type first paragraph
     await proseMirror.click();
