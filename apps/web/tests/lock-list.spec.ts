@@ -213,7 +213,6 @@ test.beforeEach(async ({ request }) => {
     TEST_CREDENTIALS.admin.password,
   );
 
-  const slug = `lock-list-e2e-faq-${Date.now()}`;
   const res = await request.post('http://localhost:3000/api/v1/admin/faq', {
     headers: { Authorization: `Bearer ${auth.token}` },
     data: {

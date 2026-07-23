@@ -40,7 +40,7 @@ afterEach(() => {
 // ── Helpers ────────────────────────────────────────────────────
 /** Spy on setInterval and capture the callback for manual invocation */
 function captureHeartbeat() {
-  heartbeatSpy = vi.spyOn(global, 'setInterval').mockImplementation((cb, _ms, ...args) => {
+  heartbeatSpy = vi.spyOn(global, 'setInterval').mockImplementation((cb, _ms, ..._args) => {
     heartbeatCallback = cb as () => Promise<void>;
     setIntervalId = setIntervalId ?? (1 as unknown as ReturnType<typeof setInterval>);
     return setIntervalId;

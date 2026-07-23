@@ -4,7 +4,6 @@ import { loginViaApi, setAuthCookie, TEST_CREDENTIALS } from './helpers.ts';
 test.describe.configure({ mode: 'serial' });
 
 let articleId: string | undefined;
-let articleSlug: string;
 
 test.beforeAll(async ({ request }) => {
   // Create an article via API to use for testing locks
