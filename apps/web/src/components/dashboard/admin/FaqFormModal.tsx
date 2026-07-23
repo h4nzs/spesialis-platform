@@ -1,14 +1,7 @@
-import { useState, useEffect, useMemo, lazy, Suspense } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { createBrowserClient, parseApiError } from '@ahlipanggilan/shared';
 import { Button, Input, Select, Modal, type SelectOption } from '@ahlipanggilan/ui';
-// Eagerly start downloading the editor chunk at module evaluation time
-void import('../../../lib/editor-lazy.ts').catch(() => {
-  // Preload only — actual import for rendering is handled by React.lazy below
-});
-
-const RichTextEditor = lazy(() =>
-  import('../../../lib/editor-lazy.ts').then((m) => ({ default: m.RichTextEditor })),
-);
+import { RichTextEditor } from '@ahlipanggilan/ui/editor';
 
 // ── Types ────────────────────────────────────────────────────────
 
@@ -160,20 +153,12 @@ export default function FaqFormModal({ open, onClose, editingId, onSaved }: FaqF
           error={fieldErrors['question']}
         />
         {/* ── Answer (RichTextEditor) ─────────────────────────── */}
-        <Suspense
-          fallback={
-            <div className="flex min-h-[200px] items-center justify-center rounded-md border border-border-default bg-bg-surface text-sm text-text-muted">
-              Memuat editor...
-            </div>
-          }
-        >
-          <RichTextEditor
-            label="Jawaban"
-            value={form.answer}
-            onChange={(html) => setForm((f) => ({ ...f, answer: html }))}
-            placeholder="Tulis jawaban di sini..."
-          />
-        </Suspense>
+        <RichTextEditor
+          label="Jawaban"
+          value={form.answer}
+          onChange={(html) => setForm((f) => ({ ...f, answer: html }))}
+          placeholder="Tulis jawaban di sini..."
+        />
         {/* ── Category & Display Order ────────────────────────── */}
         <div className="grid grid-cols-2 gap-3">
           <Select

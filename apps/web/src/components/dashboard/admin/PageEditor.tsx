@@ -1,14 +1,7 @@
-import { useState, useEffect, useCallback, useMemo, lazy, Suspense } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { createBrowserClient, parseApiError } from '@ahlipanggilan/shared';
 import { Button, Input, Select, Card, SEOEditor, SeoAnalyzerPanel } from '@ahlipanggilan/ui';
-// Eagerly start downloading the editor chunk at module evaluation time
-void import('../../../lib/editor-lazy.ts').catch(() => {
-  // Preload only — actual import for rendering is handled by React.lazy below
-});
-
-const RichTextEditor = lazy(() =>
-  import('../../../lib/editor-lazy.ts').then((m) => ({ default: m.RichTextEditor })),
-);
+import { RichTextEditor } from '@ahlipanggilan/ui/editor';
 import type { SeoData } from '@ahlipanggilan/ui';
 
 // ── Types ────────────────────────────────────────────────────────
@@ -267,20 +260,12 @@ export function PageEditor({ editingId }: PageEditorProps) {
             </Card>
 
             <Card>
-              <Suspense
-                fallback={
-                  <div className="flex min-h-[300px] items-center justify-center rounded-md border border-border-default bg-bg-surface text-sm text-text-muted">
-                    Memuat editor...
-                  </div>
-                }
-              >
-                <RichTextEditor
-                  label="Konten"
-                  value={form.content}
-                  onChange={(html) => setForm((f) => ({ ...f, content: html }))}
-                  placeholder="Tulis konten halaman di sini..."
-                />
-              </Suspense>
+              <RichTextEditor
+                label="Konten"
+                value={form.content}
+                onChange={(html) => setForm((f) => ({ ...f, content: html }))}
+                placeholder="Tulis konten halaman di sini..."
+              />
 
               {/* ── Live Preview ─────────────────────────────── */}
               {form.content && (
