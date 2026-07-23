@@ -234,9 +234,12 @@ describe('ref-based ids', () => {
 
     vi.useFakeTimers();
 
-    const { result, rerender } = renderHook(({ ids }) => useLockPolling(ids, 'article'), {
-      initialProps: { ids: [] },
-    });
+    const { result, rerender } = renderHook(
+      ({ ids }: { ids: string[] }) => useLockPolling(ids, 'article'),
+      {
+        initialProps: { ids: [] },
+      },
+    );
 
     // No initial fetch since ids is empty
     await act(async () => {});

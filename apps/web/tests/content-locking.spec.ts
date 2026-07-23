@@ -27,7 +27,6 @@ test.beforeAll(async ({ request }) => {
   expect(res.ok()).toBeTruthy();
   const body = (await res.json()) as { data?: { id: string } };
   articleId = body.data?.id;
-  articleSlug = slug;
 });
 
 test.afterAll(async ({ request }) => {

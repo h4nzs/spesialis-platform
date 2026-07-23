@@ -130,7 +130,7 @@ test('Article list shows lock indicator when article is being edited', async ({
       .locator(`table tr:has-text("Lock List E2E Test Article")`)
       .locator('button:has-text("Dikunci")');
     await expect(editBtn).toBeDisabled({ timeout: 5000 });
-    await expect(editBtn).toHaveTitle(/Diedit oleh/, { timeout: 5000 });
+    await expect(editBtn).toHaveAttribute('title', /Diedit oleh/, { timeout: 5000 });
   } finally {
     await ctx1.close();
     await ctx2.close();
@@ -310,7 +310,7 @@ test('FAQ list shows lock indicator when FAQ is being edited', async ({ browser,
       .filter({ hasText: 'Lock List E2E FAQ' })
       .locator('button:has-text("Dikunci")');
     await expect(dikunciBtn).toBeDisabled({ timeout: 5000 });
-    await expect(dikunciBtn).toHaveTitle(/Diedit oleh/, { timeout: 5000 });
+    await expect(dikunciBtn).toHaveAttribute('title', /Diedit oleh/, { timeout: 5000 });
   } finally {
     await ctx1.close();
     await ctx2.close();
