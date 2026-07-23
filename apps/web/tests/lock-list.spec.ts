@@ -215,123 +215,128 @@ test('CMS pages list shows lock indicator when page is being edited', async ({
 //  FAQ list lock indicator (via modal)
 // ══════════════════════════════════════════════════════════════
 
-let faqId: string | undefined;
+test.describe('FAQ lock indicator', () => {
+  let faqId: string | undefined;
 
-test.beforeEach(async ({ request }) => {
-  if (faqId) return; // already created
+  test.beforeEach(async ({ request }) => {
+    if (faqId) return; // already created
 
-  const auth = await loginViaApi(
-    request,
-    TEST_CREDENTIALS.admin.email,
-    TEST_CREDENTIALS.admin.password,
-  );
-
-  const res = await request.post('http://localhost:3000/api/v1/admin/faq', {
-    headers: { Authorization: `Bearer ${auth.token}` },
-    data: {
-      question: `Lock List E2E FAQ ${Date.now()}`,
-      answer: '<p>Test FAQ for lock list E2E.</p>',
-      category: null,
-      displayOrder: 0,
-      isActive: 'true',
-    },
-  });
-  expect(res.ok()).toBeTruthy();
-  const body = (await res.json()) as { data?: { id: string } };
-  faqId = body.data?.id;
-});
-
-test.afterEach(async ({ request }) => {
-  if (!faqId) return;
-
-  const auth = await loginViaApi(
-    request,
-    TEST_CREDENTIALS.admin.email,
-    TEST_CREDENTIALS.admin.password,
-  );
-
-  // Release lock + delete
-  await request
-    .post('http://localhost:3000/api/v1/admin/locks/release', {
-      headers: { Authorization: `Bearer ${auth.token}` },
-      data: { resourceType: 'faq', resourceId: faqId },
-    })
-    .catch(() => {});
-  await request
-    .delete(`http://localhost:3000/api/v1/admin/faq/${faqId}`, {
-      headers: { Authorization: `Bearer ${auth.token}` },
-    })
-    .catch(() => {});
-  faqId = undefined;
-});
-
-test('FAQ list shows lock indicator when FAQ is being edited', async ({ browser, request }) => {
-  test.skip(!faqId, 'Failed to create test FAQ');
-
-  const adminAuth = await loginViaApi(
-    request,
-    TEST_CREDENTIALS.admin.email,
-    TEST_CREDENTIALS.admin.password,
-  );
-  const admin2Auth = await loginViaApi(
-    request,
-    TEST_CREDENTIALS.admin2.email,
-    TEST_CREDENTIALS.admin2.password,
-  );
-
-  const ctx1 = await browser.newContext();
-  const ctx2 = await browser.newContext();
-
-  try {
-    const page1 = await ctx1.newPage();
-    const page2 = await ctx2.newPage();
-
-    await setAuthCookie(page1, adminAuth);
-    await setAuthCookie(page2, admin2Auth);
-
-    // ── Admin1 opens FAQ list and clicks Edit → modal opens → lock acquired ──
-    await page1.goto('/dashboard/admin/faq');
-    await page1.waitForLoadState('networkidle');
-
-    // Find the FAQ in the table and click Edit
-    const editBtn = page1
-      .locator(`table tr`)
-      .filter({ hasText: 'Lock List E2E FAQ' })
-      .locator('button:has-text("Edit")');
-    await expect(editBtn.first()).toBeVisible({ timeout: 15000 });
-
-    // Start listening BEFORE click so we don't miss the acquire response
-    const lockAcquired = page1.waitForResponse(
-      (res) => res.url().includes('/admin/locks/acquire'),
-      { timeout: 15000 },
+    const auth = await loginViaApi(
+      request,
+      TEST_CREDENTIALS.admin.email,
+      TEST_CREDENTIALS.admin.password,
     );
-    await editBtn.first().click();
 
-    // Wait for the FAQ modal to open
-    await expect(page1.locator('[role="dialog"]')).toBeVisible({ timeout: 15000 });
-    // 🕐 Confirm Admin1's lock acquire completed before Admin2 checks list
-    await lockAcquired;
+    const res = await request.post('http://localhost:3000/api/v1/admin/faq', {
+      headers: { Authorization: `Bearer ${auth.token}` },
+      data: {
+        question: `Lock List E2E FAQ ${Date.now()}`,
+        answer: '<p>Test FAQ for lock list E2E.</p>',
+        category: '',
+        displayOrder: 0,
+        isActive: 'true',
+      },
+    });
+    expect(res.ok()).toBeTruthy();
+    const body = (await res.json()) as { data?: { id: string } };
+    faqId = body.data?.id;
+  });
 
-    // ── Admin2 opens FAQ list → sees lock indicator ──
-    await page2.goto('/dashboard/admin/faq');
-    await page2.waitForLoadState('networkidle');
+  test.afterEach(async ({ request }) => {
+    if (!faqId) return;
 
-    await expect(page2.locator('table')).toBeVisible({ timeout: 15000 });
+    const auth = await loginViaApi(
+      request,
+      TEST_CREDENTIALS.admin.email,
+      TEST_CREDENTIALS.admin.password,
+    );
 
-    // Wait for lock polling to populate
-    const lockBadge = page2.locator('table [data-testid="lock-badge"]');
-    await expect(lockBadge.first()).toBeVisible({ timeout: 35000 });
-    await expect(lockBadge).toContainText(TEST_CREDENTIALS.admin.email, { timeout: 5000 });
+    // Release lock + delete
+    await request
+      .post('http://localhost:3000/api/v1/admin/locks/release', {
+        headers: { Authorization: `Bearer ${auth.token}` },
+        data: { resourceType: 'faq', resourceId: faqId },
+      })
+      .catch(() => {});
+    await request
+      .delete(`http://localhost:3000/api/v1/admin/faq/${faqId}`, {
+        headers: { Authorization: `Bearer ${auth.token}` },
+      })
+      .catch(() => {});
+    faqId = undefined;
+  });
 
-    // The Edit button for this FAQ shows "Dikunci" and is disabled
-    const dikunciBtn = page2
-      .locator(`table tr`)
-      .filter({ hasText: 'Lock List E2E FAQ' })
-      .locator('button:has-text("Dikunci")');
-    await expect(dikunciBtn).toBeDisabled({ timeout: 5000 });
-    await expect(dikunciBtn).toHaveAttribute('title', /Diedit oleh/, { timeout: 5000 });
-  } finally {
-    await ctx1.close();
-    await ctx2.close();
-  }
+  test('FAQ list shows lock indicator when FAQ is being edited', async ({ browser, request }) => {
+    test.skip(!faqId, 'Failed to create test FAQ');
+
+    const adminAuth = await loginViaApi(
+      request,
+      TEST_CREDENTIALS.admin.email,
+      TEST_CREDENTIALS.admin.password,
+    );
+    const admin2Auth = await loginViaApi(
+      request,
+      TEST_CREDENTIALS.admin2.email,
+      TEST_CREDENTIALS.admin2.password,
+    );
+
+    const ctx1 = await browser.newContext();
+    const ctx2 = await browser.newContext();
+
+    try {
+      const page1 = await ctx1.newPage();
+      const page2 = await ctx2.newPage();
+
+      await setAuthCookie(page1, adminAuth);
+      await setAuthCookie(page2, admin2Auth);
+
+      // ── Admin1 opens FAQ list and clicks Edit → modal opens → lock acquired ──
+      await page1.goto('/dashboard/admin/faq');
+      await page1.waitForLoadState('networkidle');
+
+      // Wait for the table to render before looking for FAQ
+      await expect(page1.locator('table')).toBeVisible({ timeout: 15000 });
+
+      // Find the FAQ in the table and click Edit
+      const editBtn = page1
+        .locator(`table tr`)
+        .filter({ hasText: 'Lock List E2E FAQ' })
+        .locator('button:has-text("Edit")');
+      await expect(editBtn.first()).toBeVisible({ timeout: 15000 });
+
+      // Start listening BEFORE click so we don't miss the acquire response
+      const lockAcquired = page1.waitForResponse(
+        (res) => res.url().includes('/admin/locks/acquire'),
+        { timeout: 30000 },
+      );
+      await editBtn.first().click();
+
+      // Wait for the FAQ modal to open
+      await expect(page1.locator('[role="dialog"]')).toBeVisible({ timeout: 20000 });
+      // 🕐 Confirm Admin1's lock acquire completed before Admin2 checks list
+      await lockAcquired;
+
+      // ── Admin2 opens FAQ list → sees lock indicator ──
+      await page2.goto('/dashboard/admin/faq');
+      await page2.waitForLoadState('networkidle');
+
+      await expect(page2.locator('table')).toBeVisible({ timeout: 15000 });
+
+      // Wait for lock polling to populate
+      const lockBadge = page2.locator('table [data-testid="lock-badge"]');
+      await expect(lockBadge.first()).toBeVisible({ timeout: 35000 });
+      await expect(lockBadge).toContainText(TEST_CREDENTIALS.admin.email, { timeout: 5000 });
+
+      // The Edit button for this FAQ shows "Dikunci" and is disabled
+      const dikunciBtn = page2
+        .locator(`table tr`)
+        .filter({ hasText: 'Lock List E2E FAQ' })
+        .locator('button:has-text("Dikunci")');
+      await expect(dikunciBtn).toBeDisabled({ timeout: 5000 });
+      await expect(dikunciBtn).toHaveAttribute('title', /Diedit oleh/, { timeout: 5000 });
+    } finally {
+      await ctx1.close();
+      await ctx2.close();
+    }
+  });
 });

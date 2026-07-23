@@ -2,12 +2,16 @@ import type { ApiError as ApiErrorResponse, ValidationError } from '@ahlipanggil
 
 /**
  * Error yang dilempar oleh ApiClient saat request gagal.
- * Field `code`, `status`, dan `errors` sudah terparsing dari response API.
+ * Field `code`, `status`, `errors`, dan `response` sudah terparsing dari response API.
+ * `response` berisi full JSON body dari respons error — berguna untuk
+ * mengakses field kustom seperti `lockedByEmail` dari lock 409 conflict.
  */
 export class ApiClientError extends Error {
   public readonly code: string;
   public readonly status: number;
   public readonly errors: ValidationError[] | undefined;
+  /** Raw JSON response body from the API error response */
+  public readonly response: Record<string, unknown>;
 
   constructor(response: ApiErrorResponse, status: number) {
     super(response.message);
@@ -15,6 +19,7 @@ export class ApiClientError extends Error {
     this.code = response.code;
     this.status = status;
     this.errors = response.errors;
+    this.response = response as unknown as Record<string, unknown>;
   }
 }
 

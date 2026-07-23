@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useMemo, Suspense } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { createBrowserClient } from '@ahlipanggilan/shared';
 import {
   Button,
@@ -11,24 +11,10 @@ import {
   Select,
   type SelectOption,
 } from '@ahlipanggilan/ui';
-import { LazyFallback } from '../../ui/LazyFallback';
 import type { Column } from '@ahlipanggilan/ui';
 import { useLockPolling } from '../../../lib/useLockPolling.ts';
 import { LockBadge } from '@ahlipanggilan/ui';
-
-interface FaqItem {
-  id: string;
-  question: string;
-  answer: string;
-  category: string | null;
-  displayOrder: number;
-  isActive: string;
-  createdAt: string;
-  updatedAt: string;
-}
-
-// ── Lazy-loaded form modal ──────────────────────────────────────
-const FaqFormModal = React.lazy(() => import('./FaqFormModal'));
+import FaqFormModal from './FaqFormModal';
 
 const PAGE_SIZE = 20;
 
@@ -298,18 +284,20 @@ export function AdminFaq() {
         />
       )}
 
-      {/* ── FAQ Form Modal (lazy-loaded) ───────────────────── */}
-      <Suspense fallback={<LazyFallback />}>
-        <FaqFormModal
-          open={showModal}
-          onClose={() => setShowModal(false)}
-          editingId={editing}
-          onSaved={() => {
-            setPage(1);
-            loadData();
-          }}
-        />
-      </Suspense>
+      {/* ── FAQ Form Modal ───────────────────────────────────── */}
+      {/* Key based on editingId ensures React remounts the component
+          when editing different FAQs — this makes useContentLock fire
+          fresh acquire() calls instead of relying on stale effect. */}
+      <FaqFormModal
+        key={editing || 'new-faq'}
+        open={showModal}
+        onClose={() => setShowModal(false)}
+        editingId={editing}
+        onSaved={() => {
+          setPage(1);
+          loadData();
+        }}
+      />
     </div>
   );
 }

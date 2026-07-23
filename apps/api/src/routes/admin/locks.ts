@@ -25,7 +25,7 @@ const LOCK_TIMEOUT_MS = 60_000;
 
 /** Clean up expired lock for a specific resource */
 async function cleanupExpiredLock(resourceType: string, resourceId: string) {
-  const cutoff = new Date(Date.now() - LOCK_TIMEOUT_MS);
+  const cutoff = new Date(Date.now() - LOCK_TIMEOUT_MS).toISOString();
   await db
     .delete(resourceLocks)
     .where(
@@ -39,7 +39,7 @@ async function cleanupExpiredLock(resourceType: string, resourceId: string) {
 
 /** Clean up ALL expired locks (used by batch endpoint) */
 async function cleanupAllExpiredLocks() {
-  const cutoff = new Date(Date.now() - LOCK_TIMEOUT_MS);
+  const cutoff = new Date(Date.now() - LOCK_TIMEOUT_MS).toISOString();
   await db.delete(resourceLocks).where(sql`${resourceLocks.heartbeatAt} < ${cutoff}`);
 }
 
