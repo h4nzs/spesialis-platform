@@ -34,9 +34,12 @@ describe('Button', () => {
     expect(btn.className).toContain('py-2');
   });
 
-  it('renders with secondary variant', () => {
+  it('renders with secondary variant (white bg + blue border)', () => {
     render(<Button variant="secondary">Secondary</Button>);
-    expect(screen.getByRole('button').className).toContain('bg-secondary');
+    const btn = screen.getByRole('button');
+    expect(btn.className).toContain('bg-white');
+    expect(btn.className).toContain('border-primary');
+    expect(btn.className).toContain('text-primary');
   });
 
   it('renders with outline variant', () => {
