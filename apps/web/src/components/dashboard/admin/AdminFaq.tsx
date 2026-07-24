@@ -16,6 +16,18 @@ import { useLockPolling } from '../../../lib/useLockPolling.ts';
 import { LockBadge } from '@ahlipanggilan/ui';
 import FaqFormModal from './FaqFormModal';
 
+// ── Types ────────────────────────────────────────────────────────
+
+interface FaqItem {
+  id: string;
+  question: string;
+  answer: string;
+  category: string | null;
+  displayOrder: number;
+  isActive: string;
+  updatedAt: string | null;
+}
+
 const PAGE_SIZE = 20;
 
 export function AdminFaq() {
