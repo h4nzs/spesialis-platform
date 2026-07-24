@@ -355,3 +355,155 @@ Saat halaman pilar diakses oleh publik (atau oleh bot Google/AI), backend CMS An
     </script>
 
 </head>
+
+Berikut alur end-to-end dari nol hingga cluster terbentuk, sesuai implementasi aktual di kode:
+Fase 1: Membuat Artikel Pilar
+
+1. Buka /dashboard/admin/articles/create → ArticleEditor.tsx
+2. Isi form (judul, konten, tags, dll)
+3. Centang checkbox "Jadikan sebagai Content Pillar" (baris 513-528, ArticleEditor.tsx)
+
+- UI menampilkan info teks: "Artikel ini akan menjadi artikel pilar utama..."
+
+4. Klik "Terbitkan Artikel"
+5. Backend (API): POST /api/v1/admin/articles (baris 820-876, articles.ts)
+
+- isPillarContent: true tersimpan di DB
+- populateArticleLinks(created_article.id) dipanggil — parse konten artikel, resolv slug, insert ke article_links table (fire-and-forget)
+- Jika status Published → IndexNow ping dikirim
+
+6. Sidebar ArticleEditor — komponen PillarLinkSuggestions melihat isPillarContent === true → menampilkan pesan info: "Tidak ada rekomendasi tautan yang diperlukan" (baris 89-116, PillarLinkSuggestions.tsx)
+7. Sidebar — komponen PillarSeoScore melihat isPillarContent === true → return null (tidak ditampilkan, baris 298-299, PillarSeoScore.tsx)
+   Fase 2: Membuat Artikel Cluster (biasa)
+8. Buat artikel baru tanpa centang "Jadikan sebagai Content Pillar"
+9. Simpan → sidebar PillarLinkSuggestions langsung memanggil:
+   GET /api/v1/admin/articles/suggestions?articleId={id}
+10. Backend suggestions API (baris 203-308, articles.ts):
+
+- Fetch semua artikel dengan isPillarContent: true (kecuali artikel yang sedang diedit)
+- Hitung relevance score untuk setiap pillar menggunakan 3 metrik:
+- Tag overlap (50%) — berapa banyak tag yang cocok
+- Trigram similarity (30%) — kesamaan judul menggunakan trigram
+- Tag-in-title (20%) — berapa banyak tag artikel yang muncul di judul pillar
+- Filter hanya yang score ≥ 0.1, ambil top 10, sort descending
+
+4. UI menampilkan daftar pillar yang relevan dengan:
+
+- Nama pillar + link ke artikel
+- Persentase relevance score (warna: hijau ≥70%, kuning 40-69%, abu <40%)
+- Tag yang cocok (ditampilkan sebagai badge)
+- Alasan rekomendasi (mis: "Artikel memiliki tag yang sama")
+- Saran anchor text — teks yang disarankan untuk link
+- Tombol "Salin Link" → copy URL pillar ke clipboard
+
+5. Sejalan, komponen PillarSeoScore memanggil:
+   GET /api/v1/admin/articles/seo-score?articleId={id}
+6. Backend SEO Score API (baris 330-585, articles.ts):
+
+- Cek apakah artikel punya link ke pillar (via article_links DB atau fallback HTML parsing)
+- Hitung skor 3 item:
+- Pillar Link Found (50pts) — apakah artikel menautkan ke setidaknya satu pillar
+- Anchor Text Optimization (30pts) — apakah anchor text mengandung keyword relevan
+- Link Dilution Check (20pts) — apakah artikel menautkan ke terlalu banyak artikel berbeda
+- Tentukan status koneksi pillar: complete / partial / incomplete
+
+7. UI menampilkan:
+
+- Circular score widget (warna: hijau ≥80, kuning 50-79, merah <50)
+- Status koneksi dengan ikon ✅ / ⚠️ / ❌
+- Checklist 3 item dengan status per item + label dampak (Kritis/Sedang/Ringan)
+- Tombol refresh untuk menghitung ulang
+  Fase 3: Menambahkan Link ke Pillar
+
+1. Di editor artikel cluster, klik "Salin Link" pada suggestion yang relevan
+2. Tempel link tersebut ke dalam konten artikel (Rich Text Editor)
+3. Simpan artikel → Backend memanggil populateArticleLinks(updated.id) (baris 940, articles.ts):
+
+- Parse HTML content → extract semua <a href="..."> tags
+- Resolve href ke slug blog (/blog/{slug})
+- Cari ID artikel target dari slug
+- Hapus semua link lama di article_links untuk source article ini
+- Insert pasangan (source_article_id, target_article_id) baru
+
+4. Setelah simpan, sidebar SEO Score otomatis refresh:
+
+- pillarLinkFound → true (karena link sekarang terdeteksi)
+- Score naik (bisa 50-100 tergantung kualitas)
+- Status koneksi berubah jadi complete
+  Fase 4: Verifikasi Cluster
+
+1. Buka /dashboard/admin/pillar-clusters → komponen PillarClusterVisualizer
+2. Backend memanggil GET /api/v1/admin/articles/pillar-overview (baris 615-771, articles.ts)
+3. Data yang ditampilkan:
+   4 Kartu Statistik:
+
+- Total Artikel — semua artikel non-deleted, non-archived
+- Pillar — jumlah artikel dengan isPillarContent: true
+- Cluster — jumlah artikel non-pillar yang menautkan ke setidaknya satu pillar
+- Orphan — jumlah artikel non-pillar yang TIDAK menautkan ke pillar manapun
+  Progress Bar:
+- Connection rate = (totalPillars + totalClusters) / totalArticles * 100
+  Tabel Pillar (expandable):
+- Setiap baris: judul, slug, status (Published/Draft), jumlah cluster articles
+- Klik baris → expand untuk lihat daftar artikel cluster yang menautkan ke pillar ini
+- Setiap cluster article bisa diklik → langsung ke editor artikel
+  Daftar Orphan:
+- Artikel yang belum terhubung ke pillar manapun
+- Menampilkan: judul, status, kategori, tanggal publish
+- Link ke editor masing-masing
+
+4. Tombol Refresh — reload halaman untuk data terkini
+   Fase 5: Efek ke Luar (Publik)
+1. Sitemap XML (/sitemap.xml.ts baris 85-138):
+
+- Artikel pillar mendapat <priority>1.0</priority> + <changefreq>daily</changefreq>
+- Artikel biasa mendapat priority configurable (default 0.7 + weekly)
+- Diatur via SitemapSettings admin UI
+
+2. JSON-LD CollectionPage (/blog/[slug].astro baris 137-150):
+
+- Jika artikel adalah pillar → CollectionPage schema auto-injected
+- Tidak ada CollectionPage untuk artikel biasa
+- Ini untuk optimasi AEO (Answer Engine Optimization) dan GEO (Generative Engine Optimization)
+
+3. IndexNow ping — saat pillar dipublikasi, search engine langsung dinotifikasi
+   Fase 6: Rebuild Massal (Opsional)
+1. Admin bisa memanggil endpoint POST /api/v1/admin/articles/rebuild-links (baris 982-996)
+1. Fungsi rebuildAllArticleLinks() (article-links.ts):
+
+- Pass 1: Hapus semua baris dari article_links
+- Pass 2: Untuk setiap artikel non-deleted dengan konten, parse HTML → extract links → resolve slugs → insert ke article_links
+
+3. Mengembalikan: { articlesProcessed, totalLinksCreated, message }
+   Diagram Alur
+   CREATE PILLAR ARTICLE
+   │
+   ▼
+   CREATE CLUSTER ARTICLE ──→ SUGGESTIONS API ──→ Daftar pillar relevan + score
+   │ │
+   │ ▼
+   │ Copy link pillar → tempel ke konten
+   │ │
+   │ ▼
+   └──────────────────────────── SIMPAN ──→ populateArticleLinks()
+   │
+   ▼
+   SEO SCORE naik
+   Pillar terkoneksi
+   │
+   ▼
+   CEK di Cluster Visualizer
+   (stats, progress, orphans)
+   │
+   ▼
+   Sitemap priority ↑
+   JSON-LD CollectionPage auto-inject
+   Fakta Penting
+   Fakta Detail
+   Scoring suggestions Tag overlap 50%, trigram similarity 30%, tag-in-title 20% — threshold minimal 0.1, max 10 results
+   SEO Score weighting pillarLinkFound 50pts, anchorTextOptimization 30pts, linkDilutionCheck 20pts
+   Link detection dual-path Cek article_links DB dulu (cepat), fallback ke HTML regex parsing (lengkap)
+   Auto-tracking populateArticleLinks() dipanggil otomatis di create & update — fire-and-forget, tidak blocking response
+   Tidak ada manual link assignment Tidak ada UI untuk assign pillar secara manual — 100% berdasarkan konten aktual
+   Orphan detection Artikel non-pillar tanpa link ke pillar manapun — baik via DB maupun HTML parsing
+   Graceful degradation Semua API error/catch → return data kosong/null, bukan 500
