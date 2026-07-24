@@ -141,9 +141,8 @@ test('lock indicator appears real-time via SSE when another user acquires lock',
     await expect(initialLockBadge).toContainText(TEST_CREDENTIALS.admin.email, { timeout: 5000 });
 
     // Verify the Edit button shows "Dikunci" and is disabled
-    const editBtn = articleRow.locator('button:has-text("Dikunci")');
+    const editBtn = articleRow.locator('button[title^="Diedit oleh"]');
     await expect(editBtn).toBeDisabled({ timeout: 5000 });
-    await expect(editBtn).toHaveAttribute('title', /Diedit oleh/, { timeout: 5000 });
 
     // ── Step 4: Admin1 releases the lock ──
     // Note: we use API directly because the editor page doesn't auto-release on navigation
