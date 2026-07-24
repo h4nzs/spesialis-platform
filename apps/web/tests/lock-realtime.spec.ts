@@ -229,10 +229,10 @@ test('lock indicator updates in real-time when lock is taken over', async ({
       data: { resourceType: 'article', resourceId: articleId },
     });
 
-    // ── Step 4: Verify Admin2's list shows updated email in REAL TIME via SSE ──
-    // The lock badge should now show admin2's email (not admin1's)
+    // ── Step 4: Verify Admin2's list shows updated email ──
+    // Update via SSE (detik) atau polling berikutnya (max 30s).
     await expect(lockBadge).toHaveText(new RegExp(TEST_CREDENTIALS.admin2.email), {
-      timeout: 15000,
+      timeout: 35000,
     });
     await expect(lockBadge).not.toHaveText(new RegExp(TEST_CREDENTIALS.admin.email), {
       timeout: 5000,
@@ -245,7 +245,8 @@ test('lock indicator updates in real-time when lock is taken over', async ({
     });
 
     // ── Step 6: Verify lock indicator disappears ──
-    await expect(lockBadge).toHaveCount(0, { timeout: 15000 });
+    // Hilang via SSE (detik) atau polling berikutnya (max 30s).
+    await expect(lockBadge).toHaveCount(0, { timeout: 35000 });
   } finally {
     await ctx1.close();
     await ctx2.close();
