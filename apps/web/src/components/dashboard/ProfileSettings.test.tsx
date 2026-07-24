@@ -73,8 +73,8 @@ vi.mock('@ahlipanggilan/ui', () => ({
   EmptyState: ({ title, children }: { title?: string; children?: React.ReactNode }) => (
     <div>{title ?? children}</div>
   ),
-  Pagination: (_props: { [key: string]: unknown }) => <div />,
-  ConfirmDialog: (_props: { [key: string]: unknown }) => null,
+  Pagination: () => <div />,
+  ConfirmDialog: () => null,
   Spinner: () => <div aria-hidden="true" />,
 }));
 

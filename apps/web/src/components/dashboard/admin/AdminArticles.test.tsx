@@ -73,19 +73,15 @@ vi.mock('@ahlipanggilan/ui', () => ({
     </button>
   ),
   TableSkeleton: () => <div data-testid="table-skeleton" />,
-  Card: ({ children, ..._props }: { children: React.ReactNode; [key: string]: unknown }) => (
-    <div>{children}</div>
-  ),
+  Card: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
   Grid: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
   Modal: ({
     children,
     open,
-    _onClose,
     title,
   }: {
     children: React.ReactNode;
     open: boolean;
-    _onClose?: () => void;
     title?: string;
   }) =>
     open ? (
@@ -94,8 +90,8 @@ vi.mock('@ahlipanggilan/ui', () => ({
         {children}
       </div>
     ) : null,
-  Pagination: ({ ..._props }: { [key: string]: unknown }) => <div />,
-  ConfirmDialog: ({ ..._props }: { [key: string]: unknown }) => null,
+  Pagination: () => <div />,
+  ConfirmDialog: () => null,
   Spinner: () => <div aria-hidden="true" />,
 }));
 

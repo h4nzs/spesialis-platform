@@ -116,20 +116,16 @@ vi.mock('@ahlipanggilan/ui', () => ({
     <div>{title ?? children}</div>
   ),
   TableSkeleton: () => <div data-testid="table-skeleton" />,
-  Card: ({ children, ..._props }: { children: React.ReactNode; [key: string]: unknown }) => (
-    <div>{children}</div>
-  ),
+  Card: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
   Grid: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
   CSVExportButton: ({
     data,
     columns,
     filename,
-    ..._props
   }: {
     data?: Record<string, unknown>[];
     columns?: { key: string; label?: string; format?: (v: unknown) => string }[];
     filename?: string;
-    [key: string]: unknown;
   }) => (
     <button
       type="button"
@@ -148,8 +144,8 @@ vi.mock('@ahlipanggilan/ui', () => ({
       Export CSV
     </button>
   ),
-  Pagination: ({ ..._props }: { [key: string]: unknown }) => <div />,
-  ConfirmDialog: ({ ..._props }: { [key: string]: unknown }) => null,
+  Pagination: () => <div />,
+  ConfirmDialog: () => null,
   Spinner: () => <div aria-hidden="true" />,
 }));
 

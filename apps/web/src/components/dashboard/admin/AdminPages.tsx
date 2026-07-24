@@ -124,8 +124,14 @@ export function AdminPages() {
             >
               {isLocked ? 'Dikunci' : 'Edit'}
             </Button>
-            <Button size="sm" variant="danger" onClick={() => handleDelete(item)}>
-              Hapus
+            <Button
+              size="sm"
+              variant="danger"
+              disabled={isLocked}
+              onClick={() => handleDelete(item)}
+              title={isLocked ? `Sedang diedit oleh ${lockedByEmail}` : 'Hapus halaman'}
+            >
+              {isLocked ? 'Dikunci' : 'Hapus'}
             </Button>
           </div>
         );

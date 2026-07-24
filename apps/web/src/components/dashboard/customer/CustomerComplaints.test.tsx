@@ -23,12 +23,10 @@ vi.mock('@ahlipanggilan/ui', () => ({
   Modal: ({
     children,
     open,
-    _onClose,
     title,
   }: {
     children: React.ReactNode;
     open: boolean;
-    _onClose?: () => void;
     title?: string;
   }) =>
     open ? (
@@ -42,8 +40,8 @@ vi.mock('@ahlipanggilan/ui', () => ({
       Export CSV
     </button>
   ),
-  Pagination: ({ ..._props }: { [key: string]: unknown }) => <div />,
-  ConfirmDialog: ({ ..._props }: { [key: string]: unknown }) => null,
+  Pagination: () => <div />,
+  ConfirmDialog: () => null,
   Spinner: () => <div aria-hidden="true" />,
 }));
 

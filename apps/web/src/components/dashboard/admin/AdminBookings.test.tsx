@@ -151,9 +151,7 @@ vi.mock('@ahlipanggilan/ui', () => ({
     <div>{title ?? children}</div>
   ),
   TableSkeleton: () => <div data-testid="table-skeleton" />,
-  Card: ({ children, ..._props }: { children: React.ReactNode; [key: string]: unknown }) => (
-    <div>{children}</div>
-  ),
+  Card: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
   Grid: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
   CSVExportButton: ({
     onClick,
@@ -170,7 +168,7 @@ vi.mock('@ahlipanggilan/ui', () => ({
       {loading ? (loadingLabel ?? 'Loading...') : 'Export CSV'}
     </button>
   ),
-  ConfirmDialog: ({ ..._props }: { [key: string]: unknown }) => null,
+  ConfirmDialog: () => null,
   Spinner: () => <div aria-hidden="true" />,
 }));
 

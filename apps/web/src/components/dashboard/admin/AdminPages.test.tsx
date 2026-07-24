@@ -145,17 +145,15 @@ vi.mock('@ahlipanggilan/ui', () => ({
       />
     </div>
   ),
-  Card: ({ children, ..._props }: { children: React.ReactNode; [key: string]: unknown }) => (
-    <div>{children}</div>
-  ),
+  Card: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
   Grid: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
   CSVExportButton: ({ onClick }: { onClick?: () => void }) => (
     <button type="button" onClick={onClick}>
       Export CSV
     </button>
   ),
-  Pagination: ({ ..._props }: { [key: string]: unknown }) => <div />,
-  ConfirmDialog: ({ ..._props }: { [key: string]: unknown }) => null,
+  Pagination: () => <div />,
+  ConfirmDialog: () => null,
 }));
 
 // Mock the lazy-loaded PageFormModal

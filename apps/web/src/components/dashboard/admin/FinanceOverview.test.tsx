@@ -28,18 +28,14 @@ vi.mock('@ahlipanggilan/ui', () => ({
   ),
   TableSkeleton: () => <div data-testid="table-skeleton" />,
   Grid: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
-  Badge: ({ children, ..._props }: { children: React.ReactNode; [key: string]: unknown }) => (
-    <span>{children}</span>
-  ),
+  Badge: ({ children }: { children: React.ReactNode }) => <span>{children}</span>,
   Modal: ({
     children,
     open,
-    _onClose,
     title,
   }: {
     children: React.ReactNode;
     open: boolean;
-    _onClose?: () => void;
     title?: string;
   }) =>
     open ? (
@@ -53,8 +49,8 @@ vi.mock('@ahlipanggilan/ui', () => ({
       Export CSV
     </button>
   ),
-  Pagination: ({ ..._props }: { [key: string]: unknown }) => <div />,
-  ConfirmDialog: ({ ..._props }: { [key: string]: unknown }) => null,
+  Pagination: () => <div />,
+  ConfirmDialog: () => null,
   Spinner: () => <div aria-hidden="true" />,
 }));
 
