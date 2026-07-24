@@ -246,7 +246,7 @@ export function Sidebar({
     seo: true,
   });
   const entries = (NAV_MAP[role] ?? NAV_MAP.customer)!;
-  const path = currentPath ?? (typeof window !== 'undefined' ? window.location.pathname : '');
+  const path = currentPath ?? '';
 
   function isActive(href: string) {
     return path === href;

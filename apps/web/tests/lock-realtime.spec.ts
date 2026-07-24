@@ -21,6 +21,11 @@ import { loginViaApi, setAuthCookie, TEST_CREDENTIALS } from './helpers.ts';
 
 test.describe.configure({ mode: 'serial' });
 
+// Test ini membutuhkan: 2 browser context + login + 2 page loads +
+// 1 page editor loading (lazy TipTap chunk) + polling fallback 30s.
+// 60s default tidak cukup — timeout dinaikkan jadi 120s.
+test.setTimeout(120_000);
+
 // ── Shared resources ───────────────────────────────────────────
 let articleId: string | undefined;
 
