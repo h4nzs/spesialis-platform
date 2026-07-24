@@ -38,6 +38,37 @@ services:
         reservations:
           memory: 256M
 
+  # ── Redis (Rate-limit + Lock Pub/Sub) ──────────────────────────────
+  redis:
+    image: redis:8-alpine
+    container_name: ahlipanggilan-redis
+    restart: unless-stopped
+
+    # Only expose to internal network — no host port needed in production
+    expose:
+      - '6379'
+    volumes:
+      - redis_data:/data
+    networks:
+      - specialist
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    deploy:
+      resources:
+        limits:
+          memory: 64M
+        reservations:
+          memory: 32M
+    logging:
+      driver: 'json-file'
+      options:
+        max-size: '10m'
+        max-file: '3'
+
   # ── Hono API ──────────────────────────────────────────────────────
   api:
     image: ${IMAGE_REGISTRY:-ghcr.io}/${IMAGE_OWNER:-h4nzs}/api:${IMAGE_TAG:-latest}
@@ -50,6 +81,8 @@ services:
       NODE_ENV: production
       PORT: '3000'
       DATABASE_URL: postgres://${DATABASE_USER:-specialist}:${DATABASE_PASSWORD}@postgres:5432/${DATABASE_NAME:-specialist}
+      REDIS_HOST: redis
+      REDIS_PORT: '6379'
       JWT_SECRET: ${JWT_SECRET}
       CORS_ORIGIN: ${CORS_ORIGIN:-https://ahlipanggilan.id,https://www.ahlipanggilan.id}
       APP_URL: ${APP_URL:-https://ahlipanggilan.id}
@@ -78,6 +111,8 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+      redis:
+        condition: service_started
     networks:
       - specialist
     healthcheck:
@@ -314,6 +349,7 @@ services:
 
 volumes:
   postgres_data:
+  redis_data:
   nginx_cache:
   plausible_db_data:
   plausible_clickhouse_data:

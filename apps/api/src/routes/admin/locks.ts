@@ -1,4 +1,5 @@
 import { Hono } from 'hono';
+import { stream } from 'hono/streaming';
 import { eq, and, sql } from 'drizzle-orm';
 import { db, resourceLocks, users } from '../../lib/db.ts';
 import { authMiddleware, requireRole } from '../../middleware/auth.ts';
@@ -14,6 +15,8 @@ import type {
   HeartbeatLockInput,
 } from '@ahlipanggilan/validation';
 import { success, created, error } from '../../lib/response.ts';
+import { publishLockEvent, subscribeLockEvents } from '../../lib/lock-pubsub.ts';
+import type { LockEvent } from '../../lib/lock-pubsub.ts';
 
 const router = new Hono();
 
@@ -41,6 +44,16 @@ async function cleanupExpiredLock(resourceType: string, resourceId: string) {
 async function cleanupAllExpiredLocks() {
   const cutoff = new Date(Date.now() - LOCK_TIMEOUT_MS).toISOString();
   await db.delete(resourceLocks).where(sql`${resourceLocks.heartbeatAt} < ${cutoff}`);
+}
+
+/** Quick lookup user email by ID — untuk publishLockEvent. */
+async function getUserEmail(userId: string): Promise<string> {
+  const [user] = await db
+    .select({ email: users.email })
+    .from(users)
+    .where(eq(users.id, userId))
+    .limit(1);
+  return user?.email ?? 'Unknown';
 }
 
 /**
@@ -249,6 +262,14 @@ router.post(
 
     if (inserted) {
       // ── Step 3: We got the lock! ──────────────────────────────
+      const userEmail = await getUserEmail(userId);
+      publishLockEvent({
+        type: 'acquired',
+        resourceType: data.resourceType,
+        resourceId: data.resourceId,
+        lockedBy: userId,
+        lockedByEmail: userEmail,
+      });
       return created(c, { acquired: true, lockId: inserted.id }, 'Sumber daya berhasil dikunci');
     }
 
@@ -329,6 +350,15 @@ router.post(
       return error(c, 'SERVER_ERROR', 'Gagal mengambil alih kunci', 500);
     }
 
+    const userEmail = await getUserEmail(userId);
+    publishLockEvent({
+      type: 'takeover',
+      resourceType: data.resourceType,
+      resourceId: data.resourceId,
+      lockedBy: userId,
+      lockedByEmail: userEmail,
+    });
+
     return success(c, { acquired: true, lockId: lock.id }, 'Kunci berhasil diambil alih');
   },
 );
@@ -365,6 +395,12 @@ router.post(
       // Lock might already be gone (expired or taken over) — still return success
       return success(c, { released: true });
     }
+
+    publishLockEvent({
+      type: 'released',
+      resourceType: data.resourceType,
+      resourceId: data.resourceId,
+    });
 
     return success(c, { released: true }, 'Kunci berhasil dilepaskan');
   },
@@ -407,6 +443,48 @@ router.post(
 
     return success(c, {
       heartbeatAt: updated.heartbeatAt.toISOString(),
+    });
+  },
+);
+
+// ── SSE endpoint: Real-time lock events ───────────────────────
+
+/**
+ * GET /locks/events
+ * Server-Sent Events stream for real-time lock status updates.
+ *
+ * Digunakan oleh frontend useLockPolling untuk update lock status
+ * secara real-time tanpa perlu nunggu interval polling 30s.
+ *
+ * Flow:
+ * 1. Client (EventSource) connect ke endpoint ini
+ * 2. Server subscribe ke Redis Pub/Sub channel lock:events
+ * 3. Setiap ada lock event (acquire/release/takeover), server push
+ *    ke semua SSE client yang terhubung
+ * 4. Jika Redis tidak tersedia, hanya kirim event 'connected'
+ *    — client tetap andalkan polling fallback
+ */
+router.get(
+  '/events',
+  authMiddleware,
+  requireRole('admin', 'super_admin', 'content_manager'),
+  (c) => {
+    return stream(c, async (stream) => {
+      // Kirim event koneksi awal
+      await stream.write(`event: connected\ndata: {}\n\n`);
+
+      // Subscribe ke Redis Pub/Sub lock events
+      const unsubscribe = subscribeLockEvents((event: LockEvent) => {
+        const data = JSON.stringify(event);
+        stream.write(`event: lock\ndata: ${data}\n\n`).catch(() => {
+          /* client disconnected — cleanup via stream.onAbort */
+        });
+      });
+
+      // Cleanup saat client disconnect
+      stream.onAbort(() => {
+        unsubscribe();
+      });
     });
   },
 );

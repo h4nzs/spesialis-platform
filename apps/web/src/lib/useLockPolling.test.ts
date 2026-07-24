@@ -11,6 +11,10 @@ vi.mock('@ahlipanggilan/shared', () => ({
   createBrowserClient: () => ({ get: mockGet }),
 }));
 
+vi.mock('./lockEventBus.ts', () => ({
+  subscribeLockEvents: () => () => {},
+}));
+
 let setIntervalSpy: ReturnType<typeof vi.spyOn> | undefined;
 
 beforeEach(() => {

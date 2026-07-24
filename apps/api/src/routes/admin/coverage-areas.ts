@@ -7,6 +7,7 @@ import { createCoverageAreaSchema, updateCoverageAreaSchema } from '@ahlipanggil
 import type { CreateCoverageAreaInput, UpdateCoverageAreaInput } from '@ahlipanggilan/validation';
 import { success, created, notFound, serverError } from '../../lib/response.ts';
 import { omitUndefined } from '../../lib/update.ts';
+import { invalidateCollectionCache } from '../../lib/cache.ts';
 
 const router = new Hono();
 
@@ -46,6 +47,7 @@ router.post(
       .returning();
 
     if (!created_item) return serverError(c, 'Gagal membuat area layanan');
+    await invalidateCollectionCache('cms_coverage_areas');
     return created(c, created_item, 'Area layanan berhasil dibuat');
   },
 );
@@ -72,6 +74,7 @@ router.patch(
       .where(eq(coverageAreas.id, id))
       .returning();
 
+    await invalidateCollectionCache('cms_coverage_areas');
     return success(c, updated, 'Area layanan berhasil diperbarui');
   },
 );
@@ -87,6 +90,7 @@ router.delete('/:id', authMiddleware, requireRole('admin', 'super_admin'), async
   if (!item) return notFound(c, 'Area layanan tidak ditemukan');
 
   await db.delete(coverageAreas).where(eq(coverageAreas.id, id));
+  await invalidateCollectionCache('cms_coverage_areas');
   return success(c, null, 'Area layanan berhasil dihapus');
 });
 

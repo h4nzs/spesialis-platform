@@ -61,6 +61,7 @@ const TABLE_NAMES = [
   'invoicesRelations',
   'partnerPenalties',
   'partnerPenaltiesRelations',
+  'resourceLocks',
   'articleLinks',
   'articleLinksRelations',
 ];

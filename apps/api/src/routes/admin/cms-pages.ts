@@ -102,7 +102,7 @@ router.post(
     if (!record) return serverError(c, 'Gagal membuat halaman');
 
     // Invalidate CMS cache so public endpoints reflect the new page
-    invalidateCollectionCache('cms_pages');
+    await invalidateCollectionCache('cms_pages');
 
     return created(c, record, 'Halaman berhasil dibuat');
   },
@@ -140,7 +140,7 @@ router.patch(
       .returning();
 
     // Invalidate CMS cache — content or status may have changed
-    invalidateCollectionCache('cms_pages');
+    await invalidateCollectionCache('cms_pages');
 
     return success(c, record, 'Halaman berhasil diperbarui');
   },
@@ -159,7 +159,7 @@ router.delete('/:id', authMiddleware, requireRole('admin', 'super_admin'), async
   await db.update(cmsPages).set({ deletedAt: new Date() }).where(eq(cmsPages.id, id));
 
   // Invalidate CMS cache after deletion
-  invalidateCollectionCache('cms_pages');
+  await invalidateCollectionCache('cms_pages');
 
   return success(c, null, 'Halaman berhasil dihapus');
 });

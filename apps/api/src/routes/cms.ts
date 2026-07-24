@@ -25,7 +25,7 @@ cmsRouter.use('*', async (c, next) => {
 cmsRouter.get('/faq', async (c) => {
   const category = c.req.query('category');
   const cacheKey = `cms:faq${category ? `:cat:${category}` : ''}`;
-  const cached = cmsCache.get(cacheKey);
+  const cached = await cmsCache.get(cacheKey);
   if (cached.hit) return success(c, cached.data);
 
   try {
@@ -44,7 +44,7 @@ cmsRouter.get('/faq', async (c) => {
       .where(and(...conditions))
       .orderBy(asc(faq.displayOrder));
 
-    cmsCache.set(cacheKey, items);
+    await cmsCache.set(cacheKey, items);
     return success(c, items);
   } catch {
     return success(c, []);
@@ -54,7 +54,7 @@ cmsRouter.get('/faq', async (c) => {
 cmsRouter.get('/articles', async (c) => {
   const limit = Number(c.req.query('limit')) || 50;
   const cacheKey = `cms:articles:limit:${limit}`;
-  const cached = cmsCache.get(cacheKey);
+  const cached = await cmsCache.get(cacheKey);
   if (cached.hit) return success(c, cached.data);
 
   try {
@@ -77,7 +77,7 @@ cmsRouter.get('/articles', async (c) => {
       .orderBy(desc(articles.publishedAt))
       .limit(limit);
 
-    cmsCache.set(cacheKey, items);
+    await cmsCache.set(cacheKey, items);
     return success(c, items);
   } catch {
     return success(c, []);
@@ -87,7 +87,7 @@ cmsRouter.get('/articles', async (c) => {
 cmsRouter.get('/articles/:slug', async (c) => {
   const slug = c.req.param('slug')!;
   const cacheKey = `cms:articles:slug:${slug}`;
-  const cached = cmsCache.get(cacheKey);
+  const cached = await cmsCache.get(cacheKey);
   if (cached.hit) return success(c, cached.data);
 
   try {
@@ -121,7 +121,7 @@ cmsRouter.get('/articles/:slug', async (c) => {
       )
       .limit(1);
 
-    cmsCache.set(cacheKey, item ?? null);
+    await cmsCache.set(cacheKey, item ?? null);
     return success(c, item ?? null);
   } catch {
     return success(c, null);
@@ -130,7 +130,7 @@ cmsRouter.get('/articles/:slug', async (c) => {
 
 cmsRouter.get('/testimonials', async (c) => {
   const cacheKey = 'cms:testimonials';
-  const cached = cmsCache.get(cacheKey);
+  const cached = await cmsCache.get(cacheKey);
   if (cached.hit) return success(c, cached.data);
 
   try {
@@ -148,7 +148,7 @@ cmsRouter.get('/testimonials', async (c) => {
       .where(eq(cmsTestimonials.isActive, 'true'))
       .orderBy(asc(cmsTestimonials.displayOrder));
 
-    cmsCache.set(cacheKey, items);
+    await cmsCache.set(cacheKey, items);
     return success(c, items);
   } catch {
     return success(c, []);
@@ -157,7 +157,7 @@ cmsRouter.get('/testimonials', async (c) => {
 
 cmsRouter.get('/coverage-areas', async (c) => {
   const cacheKey = 'cms:coverage-areas';
-  const cached = cmsCache.get(cacheKey);
+  const cached = await cmsCache.get(cacheKey);
   if (cached.hit) return success(c, cached.data);
 
   try {
@@ -167,7 +167,7 @@ cmsRouter.get('/coverage-areas', async (c) => {
       .where(eq(coverageAreas.isActive, 'true'))
       .orderBy(asc(coverageAreas.displayOrder));
 
-    cmsCache.set(cacheKey, items);
+    await cmsCache.set(cacheKey, items);
     return success(c, items);
   } catch {
     return success(c, []);
@@ -177,7 +177,7 @@ cmsRouter.get('/coverage-areas', async (c) => {
 cmsRouter.get('/pages/:slug', async (c) => {
   const slug = c.req.param('slug')!;
   const cacheKey = `cms:pages:slug:${slug}`;
-  const cached = cmsCache.get(cacheKey);
+  const cached = await cmsCache.get(cacheKey);
   if (cached.hit) return success(c, cached.data);
 
   try {
@@ -195,7 +195,7 @@ cmsRouter.get('/pages/:slug', async (c) => {
       )
       .limit(1);
 
-    cmsCache.set(cacheKey, item ?? null);
+    await cmsCache.set(cacheKey, item ?? null);
     return success(c, item ?? null);
   } catch {
     return success(c, null);

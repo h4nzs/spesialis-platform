@@ -16,21 +16,22 @@ Browser ──► HTTPS ──► Nginx (443)
                     │         │
                Hono API   Astro (SSR)
                (:3000)     (:4321)
-                    │         │
-                    └────┬────┘
-                         │
-                    PostgreSQL
-                    (:5432)
+                    │
+               ┌────┴────┐
+               │         │
+          PostgreSQL  Redis
+          (:5432)    (:6379)
 ```
 
 Semua service berjalan dalam 1 VPS via Docker Compose:
 
-| Service  | Container           | Port Internal | Role                        |
-| -------- | ------------------- | ------------- | --------------------------- |
-| Nginx    | specialist-nginx    | 80 / 443      | Reverse proxy, SSL, caching |
-| API      | specialist-api      | 3000          | Hono API server             |
-| Web      | specialist-web      | 4321          | Astro SSR + static assets   |
-| Postgres | specialist-postgres | 5432          | Database                    |
+| Service  | Container           | Port Internal | Role                            |
+| -------- | ------------------- | ------------- | ------------------------------- |
+| Nginx    | specialist-nginx    | 80 / 443      | Reverse proxy, SSL, caching     |
+| API      | specialist-api      | 3000          | Hono API server                 |
+| Web      | specialist-web      | 4321          | Astro SSR + static assets       |
+| Postgres | specialist-postgres | 5432          | Database                        |
+| Redis    | specialist-redis    | 6379          | Cache, rate-limit, lock Pub/Sub |
 
 ---
 

@@ -15,6 +15,7 @@ env:
   PNPM_VERSION: '11.10.0'
   DATABASE_URL: postgres://specialist:specialist@localhost:5432/specialist
   JWT_SECRET: test-secret
+  REDIS_HOST: localhost
 
 jobs:
   format:
@@ -89,6 +90,15 @@ jobs:
           - 5432:5432
         options: >-
           --health-cmd "pg_isready -U specialist"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      redis:
+        image: redis:8-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5

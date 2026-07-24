@@ -25,7 +25,7 @@ router.post('/revalidate', async (c) => {
   console.info('[CMS Revalidation] Received:', { collection, event });
 
   // Invalidate in-memory cache before forwarding to Astro
-  invalidateCollectionCache(collection);
+  await invalidateCollectionCache(collection);
 
   try {
     const astroRes = await fetch(`${ASTRO_URL}/api/revalidate`, {
