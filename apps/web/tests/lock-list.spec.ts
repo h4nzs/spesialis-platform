@@ -134,9 +134,10 @@ test('Article list shows lock indicator when article is being edited', async ({
     await expect(lockBadge).toContainText(TEST_CREDENTIALS.admin.email, { timeout: 5000 });
 
     // The Edit button for this article should show "Dikunci" and be disabled
+    // Gunakan title^="Diedit oleh" untuk membedakan dari tombol Hapus yang juga "Dikunci"
     const editBtn = page2
       .locator(`table tr:has-text("Lock List E2E Test Article")`)
-      .locator('button:has-text("Dikunci")');
+      .locator('button[title^="Diedit oleh"]');
     await expect(editBtn).toBeDisabled({ timeout: 5000 });
     await expect(editBtn).toHaveAttribute('title', /Diedit oleh/, { timeout: 5000 });
   } finally {
@@ -203,8 +204,9 @@ test('CMS pages list shows lock indicator when page is being edited', async ({
     await expect(lockBadge).toContainText(TEST_CREDENTIALS.admin.email, { timeout: 5000 });
 
     // Edit button shows "Dikunci" and is disabled
-    const editBtn = page2.locator(`table button:has-text("Dikunci")`);
-    await expect(editBtn.first()).toBeDisabled({ timeout: 5000 });
+    // Gunakan title^="Diedit oleh" untuk membedakan dari tombol Hapus yang juga "Dikunci"
+    const editBtn = page2.locator(`table button[title^="Diedit oleh"]`);
+    await expect(editBtn).toBeDisabled({ timeout: 5000 });
   } finally {
     await ctx1.close();
     await ctx2.close();
@@ -328,10 +330,11 @@ test.describe('FAQ lock indicator', () => {
       await expect(lockBadge).toContainText(TEST_CREDENTIALS.admin.email, { timeout: 5000 });
 
       // The Edit button for this FAQ shows "Dikunci" and is disabled
+      // Gunakan title^="Diedit oleh" untuk membedakan dari tombol Hapus yang juga "Dikunci"
       const dikunciBtn = page2
         .locator(`table tr`)
         .filter({ hasText: 'Lock List E2E FAQ' })
-        .locator('button:has-text("Dikunci")');
+        .locator('button[title^="Diedit oleh"]');
       await expect(dikunciBtn).toBeDisabled({ timeout: 5000 });
       await expect(dikunciBtn).toHaveAttribute('title', /Diedit oleh/, { timeout: 5000 });
     } finally {
