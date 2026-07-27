@@ -1,5 +1,6 @@
 import { defineMiddleware } from 'astro/middleware';
 import { verifyAccessToken, extractCookie } from './lib/jwt.ts';
+import { getMarkdownForPath } from './lib/markdown-agent.ts';
 
 export interface AuthLocals {
   userId: string;
@@ -55,6 +56,58 @@ export function setTokenCookies(response: Response, token: string, refreshToken:
   );
 }
 
+/**
+ * Enrich a response with agent discovery features:
+ * Link headers (RFC 8288) and Markdown for Agents content negotiation.
+ * Always runs regardless of authentication status.
+ */
+function addAgentDiscovery(
+  response: Response,
+  request: Request,
+  url: URL,
+  skipMarkdown: boolean,
+): Response {
+  // ── Link Headers (RFC 8288) ──
+  const contentType = response.headers.get('Content-Type') ?? '';
+  if (contentType.includes('text/html')) {
+    const linkHeaders = [
+      `</.well-known/api-catalog>; rel="api-catalog"`,
+      `</auth.md>; rel="service-doc"`,
+      `</llms.txt>; rel="describedby"`,
+      `</sitemap.xml>; rel="sitemap"`,
+    ];
+    for (const link of linkHeaders) {
+      response.headers.append('Link', link);
+    }
+  }
+
+  // ── Markdown for Agents (Content Negotiation) ──
+  if (!skipMarkdown) {
+    const accept = request.headers.get('Accept') ?? '';
+    const prefersMarkdown =
+      accept.includes('text/markdown') &&
+      (!accept.includes('text/html') ||
+        accept.indexOf('text/markdown') < accept.indexOf('text/html'));
+
+    if (prefersMarkdown) {
+      const md = getMarkdownForPath(url.pathname);
+      if (md) {
+        return new Response(md.content, {
+          status: 200,
+          headers: {
+            'Content-Type': 'text/markdown; charset=utf-8',
+            'Cache-Control': 'public, max-age=3600',
+            'Access-Control-Allow-Origin': '*',
+            'X-Markdown-Tokens': String(md.tokenCount),
+          },
+        });
+      }
+    }
+  }
+
+  return response;
+}
+
 export const onRequest = defineMiddleware(async ({ locals, request }, next) => {
   const cookieHeader = request.headers.get('cookie') ?? '';
   const url = new URL(request.url);
@@ -66,7 +119,8 @@ export const onRequest = defineMiddleware(async ({ locals, request }, next) => {
     if (url.pathname === '/dashboard' || url.pathname.startsWith('/dashboard/')) {
       return Response.redirect(new URL('/login', url), 302);
     }
-    return next();
+    const response = await next();
+    return addAgentDiscovery(response, request, url, false);
   }
 
   const jwtSecret =
@@ -76,11 +130,11 @@ export const onRequest = defineMiddleware(async ({ locals, request }, next) => {
   if (!jwtSecret) {
     console.error('[Middleware] JWT_SECRET is not configured');
     locals.auth = null;
-    // Only redirect for dashboard routes — never redirect /login to itself
     if (url.pathname.startsWith('/dashboard')) {
       return Response.redirect(new URL('/login', url), 302);
     }
-    return next();
+    const response = await next();
+    return addAgentDiscovery(response, request, url, false);
   }
 
   let payload = await verifyAccessToken(token, jwtSecret);
@@ -103,7 +157,8 @@ export const onRequest = defineMiddleware(async ({ locals, request }, next) => {
     if (url.pathname.startsWith('/dashboard')) {
       return Response.redirect(new URL('/login', url), 302);
     }
-    return next();
+    const response = await next();
+    return addAgentDiscovery(response, request, url, false);
   }
 
   locals.auth = {
@@ -139,15 +194,13 @@ export const onRequest = defineMiddleware(async ({ locals, request }, next) => {
 
   // Role-based access control — protect dashboard routes by role
   if (path.startsWith('/dashboard/')) {
-    const dashboardPrefix = path.split('/')[2] ?? ''; // customer|partner|corporate|admin
-
+    const dashboardPrefix = path.split('/')[2] ?? '';
     const roleMap: Record<string, string[]> = {
       customer: ['customer'],
       partner: ['partner'],
       corporate: ['corporate'],
       admin: ['admin', 'super_admin', 'dispatcher', 'finance', 'content_manager'],
     };
-
     const allowedRoles = roleMap[dashboardPrefix];
     if (allowedRoles && !allowedRoles.includes(role)) {
       return Response.redirect(new URL('/403', url), 302);
@@ -161,5 +214,6 @@ export const onRequest = defineMiddleware(async ({ locals, request }, next) => {
     setTokenCookies(response, newTokens.token, newTokens.refreshToken);
   }
 
-  return response;
+  // Skip markdown during token refresh — let the original response through
+  return addAgentDiscovery(response, request, url, !!newTokens);
 });

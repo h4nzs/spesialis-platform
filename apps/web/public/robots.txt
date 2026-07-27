@@ -1,7 +1,13 @@
 # ──────────────────────────────────────────────────────────────
 # robots.txt — Ahli Panggilan (ahlipanggilan.id)
-# Last updated: 2026-07-21
+# Last updated: 2026-07-27
 # ──────────────────────────────────────────────────────────────
+#
+# ── AI Content Signals ────────────────────────────────────────────
+# Preferences for AI agents regarding content usage.
+# See https://contentsignals.org/ for specification.
+#
+Content-Signal: ai-train=no, search=yes, ai-input=no
 #
 # Strategy: "Balanced" — Allow AI search/retrieval bots that
 # drive traffic, block AI training bots that consume content
@@ -120,3 +126,14 @@ Crawl-Delay: 1
 #                    SITEMAP REFERENCE
 # ──────────────────────────────────────────────────────────────
 Sitemap: https://ahlipanggilan.id/sitemap.xml
+
+# ──────────────────────────────────────────────────────────────
+#                    AGENT DISCOVERY
+# ──────────────────────────────────────────────────────────────
+# Link to agent-accessible resources (RFC 8288 style)
+# Full API catalog, auth documentation, and service metadata
+# are available via well-known endpoints:
+#   /.well-known/api-catalog      — Full API linkset
+#   /.well-known/mcp/server-card.json — MCP Server Card
+#   /.well-known/agent-skills/index.json — Agent Skills Index
+#   /auth.md                      — Agent authentication docs
