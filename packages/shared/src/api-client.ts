@@ -68,29 +68,38 @@ export class MemoryTokenStore implements TokenStore {
 }
 
 /**
- * No-op token store for browser clients.
+ * Memory-backed token store for browser clients.
  *
- * Authentication is handled exclusively via httpOnly cookies set by the server.
- * The browser automatically includes these cookies on every request via
- * `credentials: 'include'`, so no client-side token management is needed.
+ * HTTP-only cookies remain the primary authentication mechanism (sent
+ * automatically via `credentials: 'include'`). This store mirrors tokens
+ * in JavaScript memory so the auto-refresh rotation in `ApiClient` can
+ * read the refresh token when a 401 occurs.
  *
- * This eliminates the XSS vulnerability of storing tokens in localStorage.
+ * On page reload, the memory is cleared (no localStorage persistence).
+ * This is intentional — SSR page loads are handled by the Astro middleware
+ * which verifies the httpOnly cookie directly.
  *
- * SSR clients (Astro server-side) should use `createServerClient()` which
- * accepts tokens as constructor arguments via `MemoryTokenStore`.
+ * Storing only in memory (not localStorage) eliminates persistent XSS
+ * token exfiltration while still enabling seamless token refresh within
+ * a continuous browsing session.
  */
 export class NoopTokenStore implements TokenStore {
+  private accessToken: string | null = null;
+  private refreshToken: string | null = null;
+
   getAccessToken(): string | null {
-    return null;
+    return this.accessToken;
   }
   getRefreshToken(): string | null {
-    return null;
+    return this.refreshToken;
   }
-  setTokens(_access: string, _refresh: string): void {
-    // Tokens are managed via httpOnly cookies — nothing to store client-side.
+  setTokens(access: string, refresh: string): void {
+    this.accessToken = access;
+    this.refreshToken = refresh;
   }
   clearTokens(): void {
-    // No client-side tokens to clear.
+    this.accessToken = null;
+    this.refreshToken = null;
   }
 }
 

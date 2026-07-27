@@ -63,7 +63,7 @@ function statusBadgeStyle(status: string): string {
     Completed: 'bg-primary-500/10 text-primary',
     Working: 'bg-accent-500/10 text-accent-500',
     Cancelled: 'bg-danger-500/10 text-danger-500',
-    Closed: 'bg-secondary/10 text-secondary',
+    Closed: 'bg-primary-500/10 text-primary-600',
   };
   return map[status] ?? 'bg-bg-page text-text-secondary';
 }

@@ -8,7 +8,7 @@ const COOKIE_OPTIONS = {
   secure: process.env.APP_ENV === 'production',
   sameSite: 'strict' as const,
   path: '/',
-  maxAge: 15 * 60, // 15 menit — sesuai access token expiry
+  maxAge: 120 * 60, // 2 jam — sesuai access token expiry
 };
 
 const REFRESH_COOKIE_OPTIONS = {

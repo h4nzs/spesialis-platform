@@ -60,7 +60,7 @@ export function signAccessToken(
       role,
       ...(name ? { name } : {}),
       iat: Math.floor(Date.now() / 1000),
-      exp: Math.floor(Date.now() / 1000) + 15 * 60,
+      exp: Math.floor(Date.now() / 1000) + 120 * 60,
     },
     JWT_SECRET,
     'HS256',

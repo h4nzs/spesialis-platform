@@ -68,7 +68,7 @@ router.post('/register', rateLimit(10, 60_000), validateBody(registerSchema), as
   }
 
   const passwordHash = await hashPassword(password);
-  const { user, token } = await db.transaction(async (tx) => {
+  const result = await db.transaction(async (tx) => {
     const [createdUser] = await tx
       .insert(users)
       .values({
@@ -94,18 +94,22 @@ router.post('/register', rateLimit(10, 60_000), validateBody(registerSchema), as
       fullName,
     );
 
-    const vt = generateRefreshToken();
-    await tx.insert(passwordResets).values({
+    const refreshToken = generateRefreshToken();
+    await tx.insert(refreshTokens).values({
       userId: createdUser.id,
-      tokenHash: hashToken(vt),
+      tokenHash: hashToken(refreshToken),
       expiresAt: getRefreshTokenExpiry(),
     });
 
-    return { user: createdUser, token: jwtToken };
+    return { user: createdUser, token: jwtToken, refreshToken };
   });
 
-  setAuthCookies(c, token);
-  return created(c, { user: { id: user.id, email: user.email, role: user.role }, token });
+  setAuthCookies(c, result.token, result.refreshToken);
+  return created(c, {
+    user: { id: result.user.id, email: result.user.email, role: result.user.role },
+    token: result.token,
+    refreshToken: result.refreshToken,
+  });
 });
 
 router.post(

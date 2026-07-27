@@ -17,6 +17,44 @@ declare global {
   }
 }
 
+/**
+ * Attempt to refresh an expired access token using the httpOnly refresh token.
+ */
+export async function tryRefreshToken(
+  refreshToken: string,
+): Promise<{ token: string; refreshToken: string } | null> {
+  const apiUrl = process.env.API_URL ?? 'http://localhost:3000';
+  try {
+    const response = await fetch(`${apiUrl}/api/v1/auth/refresh`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ refreshToken }),
+    });
+    if (!response.ok) return null;
+    const json = (await response.json()) as {
+      data: { token: string; refreshToken: string };
+    };
+    return json.data;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Set new auth cookies on the outgoing response (same params as the API).
+ */
+export function setTokenCookies(response: Response, token: string, refreshToken: string): void {
+  const isSecure = process.env.APP_ENV === 'production';
+  response.headers.append(
+    'Set-Cookie',
+    `token=${token}; HttpOnly; ${isSecure ? 'Secure; ' : ''}SameSite=Strict; Path=/; Max-Age=${120 * 60}`,
+  );
+  response.headers.append(
+    'Set-Cookie',
+    `refreshToken=${refreshToken}; HttpOnly; ${isSecure ? 'Secure; ' : ''}SameSite=Strict; Path=/api/v1/auth; Max-Age=${7 * 24 * 60 * 60}`,
+  );
+}
+
 export const onRequest = defineMiddleware(async ({ locals, request }, next) => {
   const cookieHeader = request.headers.get('cookie') ?? '';
   const url = new URL(request.url);
@@ -45,7 +83,20 @@ export const onRequest = defineMiddleware(async ({ locals, request }, next) => {
     return next();
   }
 
-  const payload = await verifyAccessToken(token, jwtSecret);
+  let payload = await verifyAccessToken(token, jwtSecret);
+
+  // ── Auto-refresh on expired token ──
+  let newTokens: { token: string; refreshToken: string } | null = null;
+
+  if (!payload) {
+    const refreshToken = extractCookie(cookieHeader, 'refreshToken');
+    if (refreshToken) {
+      newTokens = await tryRefreshToken(refreshToken);
+      if (newTokens) {
+        payload = await verifyAccessToken(newTokens.token, jwtSecret);
+      }
+    }
+  }
 
   if (!payload) {
     locals.auth = null;
@@ -78,23 +129,17 @@ export const onRequest = defineMiddleware(async ({ locals, request }, next) => {
 
   // Redirect authenticated users away from /login
   if (path === '/login' && role) {
-    const target = dashboardRootMap[role] ?? '/';
-    return Response.redirect(new URL(target, url), 302);
+    return Response.redirect(new URL(dashboardRootMap[role] ?? '/', url), 302);
   }
 
   // Redirect /dashboard to role-appropriate dashboard
   if (path === '/dashboard') {
-    const target = role ? dashboardRootMap[role] : '/login';
-    return Response.redirect(new URL(target ?? '/login', url), 302);
+    return Response.redirect(new URL(dashboardRootMap[role] ?? '/login', url), 302);
   }
 
   // Role-based access control — protect dashboard routes by role
   if (path.startsWith('/dashboard/')) {
     const dashboardPrefix = path.split('/')[2] ?? ''; // customer|partner|corporate|admin
-
-    if (!role) {
-      return Response.redirect(new URL('/login', url), 302);
-    }
 
     const roleMap: Record<string, string[]> = {
       customer: ['customer'],
@@ -109,5 +154,12 @@ export const onRequest = defineMiddleware(async ({ locals, request }, next) => {
     }
   }
 
-  return next();
+  const response = await next();
+
+  // Set new token cookies on the response if a refresh occurred
+  if (newTokens) {
+    setTokenCookies(response, newTokens.token, newTokens.refreshToken);
+  }
+
+  return response;
 });
