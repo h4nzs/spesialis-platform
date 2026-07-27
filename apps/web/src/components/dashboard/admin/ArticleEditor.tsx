@@ -18,6 +18,7 @@ import { LockBanner } from './LockBanner.tsx';
 import { renderMarkdown } from '../../../lib/markdown.ts';
 import { PillarLinkSuggestions } from './PillarLinkSuggestions.tsx';
 import { PillarSeoScore } from './PillarSeoScore.tsx';
+import { TableOfContents } from '../../../components/blog/TableOfContents.tsx';
 
 // ── Types ────────────────────────────────────────────────────────
 
@@ -629,6 +630,13 @@ export function ArticleEditor({ editingId }: ArticleEditorProps) {
                 suggestions={[]}
               />
             </Card>
+
+            {/* ── Table of Contents ────────────────────────────── */}
+            {form.content && (
+              <div className="rounded-xl border border-border-default bg-bg-surface p-4">
+                <TableOfContents contentHtml={form.content} />
+              </div>
+            )}
 
             <PillarLinkSuggestions editingId={editingId} isPillarContent={form.isPillarContent} />
 

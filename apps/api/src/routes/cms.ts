@@ -8,6 +8,7 @@ import {
   cmsPages,
   cmsTestimonials,
   coverageAreas,
+  blogAds,
 } from '../lib/db.ts';
 import { success } from '../lib/response.ts';
 import { cmsCache } from '../lib/cache.ts';
@@ -166,6 +167,32 @@ cmsRouter.get('/coverage-areas', async (c) => {
       .from(coverageAreas)
       .where(eq(coverageAreas.isActive, 'true'))
       .orderBy(asc(coverageAreas.displayOrder));
+
+    await cmsCache.set(cacheKey, items);
+    return success(c, items);
+  } catch {
+    return success(c, []);
+  }
+});
+
+cmsRouter.get('/ads', async (c) => {
+  const cacheKey = 'cms:blog-ads';
+  const cached = await cmsCache.get(cacheKey);
+  if (cached.hit) return success(c, cached.data);
+
+  try {
+    const items = await db
+      .select({
+        id: blogAds.id,
+        title: blogAds.title,
+        imageUrl: blogAds.imageUrl,
+        caption: blogAds.caption,
+        linkUrl: blogAds.linkUrl,
+        displayOrder: blogAds.displayOrder,
+      })
+      .from(blogAds)
+      .where(and(eq(blogAds.isActive, 'true'), isNull(blogAds.deletedAt)))
+      .orderBy(asc(blogAds.displayOrder));
 
     await cmsCache.set(cacheKey, items);
     return success(c, items);

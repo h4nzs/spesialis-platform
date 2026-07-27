@@ -178,6 +178,9 @@ export type { CreateCoverageAreaInput, UpdateCoverageAreaInput } from './coverag
 export { createTestimonialSchema, updateTestimonialSchema } from './cms-testimonials.ts';
 export type { CreateTestimonialInput, UpdateTestimonialInput } from './cms-testimonials.ts';
 
+export { createBlogAdSchema, updateBlogAdSchema } from './blog-ads.ts';
+export type { CreateBlogAdInput, UpdateBlogAdInput } from './blog-ads.ts';
+
 export {
   acquireLockSchema,
   releaseLockSchema,

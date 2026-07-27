@@ -34,6 +34,7 @@ const TABLE_NAMES = [
   'invoices',
   'faq',
   'cmsTestimonials',
+  'blogAds',
   'corporateInquiries',
   'usersRelations',
   'customerProfilesRelations',
