@@ -139,7 +139,10 @@ const plausibleSrc = plausibleDomain ? `https://${plausibleDomain}/js/script.js`
     }
 
     <!-- ── WebMCP — AI Agent Tools ──────────────────────────── -->
-    <WebMCPProvider client:load />
+    <script>
+      import { registerWebMCPTools } from '../lib/webmcp.ts'
+      registerWebMCPTools()
+    </script>
 
     <!-- ── Analytics Core (auto-tracking + custom events) ────── -->
     <script>
