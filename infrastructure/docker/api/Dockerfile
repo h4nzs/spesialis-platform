@@ -2,28 +2,25 @@ FROM node:24-alpine
 
 WORKDIR /app
 
-# ── 1️⃣ Dependency manifests only ──────────────────────────────────
-# Layer ini FULLY CACHED — hanya invalid jika ada perubahan di
-# package.json / pnpm-lock.yaml / pnpm-workspace.yaml.
+# ── 1️⃣ Fetch packages to virtual store ────────────────────────────
+# Layer ini FULLY CACHED — hanya invalid jika pnpm-lock.yaml berubah.
+# pnpm fetch mendownload semua packages ke content-addressable store
+# tanpa perlu source code workspace packages.
 COPY package.json pnpm-workspace.yaml pnpm-lock.yaml ./
 
-# Copy ONLY package.json files — Docker preserves directory structure
-# sehingga hasilnya: packages/database/package.json, packages/shared/..., etc.
-# Ini cukup untuk pnpm resolve workspace dependencies tanpa perlu source code.
-COPY packages/*/package.json packages/
-COPY apps/*/package.json apps/
-
-# ── 2️⃣ Install dependencies ──────────────────────────────────────
-# FULLY CACHED selama manifest di atas tidak berubah.
-# Tidak peduli perubahan source code — tetap cache hit!
 ENV CI=true
-RUN corepack enable && pnpm install --frozen-lockfile
+RUN corepack enable && pnpm fetch --frozen-lockfile
 
-# ── 3️⃣ Copy actual source code ───────────────────────────────────
-# Layer ini sering berubah (setiap ada perubahan kode),
-# TAPI TIDAK perlu re-install dependencies — Ratusan MB tersimpan.
+# ── 2️⃣ Copy source code ───────────────────────────────────────────
+# Layer ini sering berubah (setiap ada perubahan kode), tapi pnpm install
+# di step 3 hanya perlu LINK dari store — TIDAK download ulang.
 COPY packages/ ./packages/
 COPY apps/api/ ./apps/api/
+
+# ── 3️⃣ Install from store (fast) ──────────────────────────────────
+# --prefer-offline: packages SUDAH di store dari step 1.
+# Hanya linking symlinks — sangat cepat meski layer invalid.
+RUN pnpm install --frozen-lockfile --prefer-offline
 
 EXPOSE 3000
 
