@@ -3,36 +3,47 @@ import type { APIRoute } from 'astro';
 const SITE = 'https://ahlipanggilan.id';
 
 /**
- * OAuth Authorization Server Metadata — RFC 8414
+ * OAuth Authorization Server Metadata — RFC 8414 + WorkOS auth.md
  *
  * Describes the authorization server for agents to discover
  * how to authenticate with the platform.
  * See: https://www.rfc-editor.org/rfc/rfc8414
+ *      https://github.com/workos/auth.md
  */
 export const GET: APIRoute = async () => {
   const metadata = {
     issuer: SITE,
     authorization_endpoint: `${SITE}/login`,
     token_endpoint: `${SITE}/api/v1/auth/login`,
+    revocation_endpoint: `${SITE}/api/v1/auth/logout`,
     refresh_endpoint: `${SITE}/api/v1/auth/refresh`,
     registration_endpoint: `${SITE}/register`,
+
     // JWKS not available — auth is JWT-based with symmetric signing (HMAC)
-    // Custom agent_auth block per auth.md spec (WorkOS Auth.md)
+
+    // ── agent_auth block (WorkOS auth.md spec) ────────────────
     agent_auth: {
+      skill: `${SITE}/auth.md`,
       register_uri: `${SITE}/register`,
-      supported_identity_types: ['email_password', 'google_oauth'],
-      credential_types: ['bearer_token', 'http_cookie'],
-      token_revocation: {
-        endpoint: `${SITE}/api/v1/auth/logout`,
-        method: 'POST',
+      identity_endpoint: `${SITE}/api/v1/auth/agent/identity`,
+      claim_endpoint: `${SITE}/api/v1/auth/agent/claim`,
+      events_endpoint: `${SITE}/api/v1/auth/agent/events`,
+      credential_types_supported: ['access_token', 'refresh_token'],
+      identity_types_supported: ['anonymous', 'identity_assertion', 'service_auth'],
+      identity_assertion: {
+        assertion_types_supported: ['urn:ietf:params:oauth:token-type:id-jag'],
       },
-      documentation_uri: `${SITE}/auth.md`,
-      mcp_server_card: `${SITE}/.well-known/mcp/server-card.json`,
-      agent_skills: `${SITE}/.well-known/agent-skills/index.json`,
+      events_supported: ['https://schemas.workos.com/events/agent/auth/identity/assertion/revoked'],
     },
+
     token_endpoint_auth_methods_supported: ['client_secret_basic', 'private_key_jwt'],
     token_endpoint_auth_signing_alg_values_supported: ['RS256', 'ES256'],
-    grant_types_supported: ['authorization_code', 'refresh_token', 'client_credentials'],
+    grant_types_supported: [
+      'authorization_code',
+      'refresh_token',
+      'client_credentials',
+      'urn:ietf:params:oauth:grant-type:jwt-bearer',
+    ],
     response_types_supported: ['code', 'token'],
     scopes_supported: [
       'openid',

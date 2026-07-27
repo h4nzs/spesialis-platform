@@ -1,9 +1,6 @@
-auth.md
+# auth.md
 
-# Ahli Panggilan — Agent Authentication Guide
-
-> Ahli Panggilan is an on-demand professional service booking platform in Indonesia.
-> This document describes how AI agents can authenticate with our APIs.
+You are an agent. This service supports **agentic registration**: discover → register → (claim if needed) → exchange for an access_token → call API → handle revocation.
 
 ## Base URL
 
@@ -93,6 +90,15 @@ Content-Type: application/json
 ```
 
 Roles available: `customer`, `partner`, `corporate`
+
+## Token Revocation
+
+To revoke an active access token:
+
+```http
+POST /api/v1/auth/logout
+Authorization: Bearer <token>
+```
 
 ## API Catalog
 
