@@ -1,3 +1,5 @@
+auth.md
+
 # Ahli Panggilan — Agent Authentication Guide
 
 > Ahli Panggilan is an on-demand professional service booking platform in Indonesia.
