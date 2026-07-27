@@ -208,7 +208,7 @@ test.describe('Agent Discovery — Well-Known Endpoints', () => {
       expect(body).toHaveProperty('registration_endpoint');
     });
 
-    test('AGENT-16: Memiliki agent_auth block dengan register_uri dan credential_types', async ({
+    test('AGENT-16: Memiliki agent_auth block dengan register_uri dan identity_types_supported', async ({
       request,
     }) => {
       const res = await request.get('/.well-known/oauth-authorization-server');
@@ -216,11 +216,12 @@ test.describe('Agent Discovery — Well-Known Endpoints', () => {
 
       expect(body).toHaveProperty('agent_auth');
       expect(body.agent_auth).toHaveProperty('register_uri');
-      expect(body.agent_auth).toHaveProperty('supported_identity_types');
-      expect(body.agent_auth).toHaveProperty('credential_types');
-      expect(body.agent_auth.credential_types).toContain('bearer_token');
-      expect(body.agent_auth).toHaveProperty('documentation_uri');
-      expect(body.agent_auth.documentation_uri).toContain('/auth.md');
+      expect(body.agent_auth).toHaveProperty('identity_types_supported');
+      expect(body.agent_auth.identity_types_supported).toContain('anonymous');
+      expect(body.agent_auth).toHaveProperty('credential_types_supported');
+      expect(body.agent_auth.credential_types_supported).toContain('access_token');
+      expect(body.agent_auth).toHaveProperty('skill');
+      expect(body.agent_auth.skill).toContain('/auth.md');
     });
 
     test('AGENT-17: Memiliki grant_types_supported dan scopes_supported', async ({ request }) => {
@@ -259,7 +260,9 @@ test.describe('Agent Discovery — Well-Known Endpoints', () => {
       expect(body.resource).toContain('ahlipanggilan.id');
       expect(body).toHaveProperty('authorization_servers');
       expect(Array.isArray(body.authorization_servers)).toBe(true);
-      expect(body.authorization_servers[0]).toContain('oauth-authorization-server');
+      expect(body.authorization_servers[0]).toContain('ahlipanggilan.id');
+      expect(body).toHaveProperty('resource_name');
+      expect(body.resource_name).toBe('Ahli Panggilan');
       expect(body).toHaveProperty('scopes_supported');
       expect(body.scopes_supported).toContain('admin:read');
       expect(body).toHaveProperty('bearer_methods_supported');
