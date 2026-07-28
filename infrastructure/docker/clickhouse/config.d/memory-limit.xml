@@ -2,19 +2,19 @@
     <!--
       Memory limit config for ClickHouse in Docker.
       
-      Docker cgroup limit: 768MB
-      max_server_memory_usage: 650MB — leaves ~118MB headroom for:
-        - Background merge operations (main cause of crashes)
+      Docker cgroup limit: 1GB (1024MB)
+      max_server_memory_usage: 900MB — leaves ~124MB headroom for:
+        - Background merge operations
         - Temporary allocations during query processing
         - System caches (mark cache, uncompressed cache)
       
-      Without this limit, ClickHouse tries to use all memory within the
-      cgroup (max_memory_usage = 0 = unlimited), and crashes with
-      MEMORY_LIMIT_EXCEEDED when background merges spike above the limit.
+      Upped from 650MB/768MB because the TrafficChangeNotifier spike
+      detection query needs ~1.34 GiB to complete. 900MB is the max
+      we can allocate before hitting Docker cgroup limit.
       
       listen_try: 1 — prevents startup failure if a listen address
       cannot be bound (e.g., IPv6 disabled on VPS).
     -->
-    <max_server_memory_usage>681574400</max_server_memory_usage>
+    <max_server_memory_usage>943718400</max_server_memory_usage>
     <listen_try>1</listen_try>
 </clickhouse>
