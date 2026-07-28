@@ -119,6 +119,7 @@ export const NAV_MAP: Record<string, NavEntry[]> = {
     },
     { href: '/dashboard/admin/faq', label: 'FAQ', icon: 'helpCircle' },
     { href: '/dashboard/admin/testimonials', label: 'Testimoni', icon: 'review' },
+    { href: '/dashboard/admin/blog-ads', label: 'Iklan Blog', icon: 'fileText' },
     { href: '/dashboard/admin/coverage-areas', label: 'Area Layanan', icon: 'address' },
     { href: '/dashboard/admin/service-suggestions', label: 'Usulan Layanan', icon: 'helpCircle' },
     { href: '/dashboard/admin/media', label: 'Media', icon: 'file' },
