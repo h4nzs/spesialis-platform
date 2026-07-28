@@ -40,8 +40,11 @@ export const GET: APIRoute = async () => {
         claim_uri: `${SITE}/api/v1/auth/agent/claim`,
       },
       // Identity assertion: ID-JAG + Verified Email
+      // Per WorkOS spec: identity_assertion MUST include credential_types_supported
       identity_assertion: {
         assertion_types_supported: ['urn:ietf:params:oauth:token-type:id-jag', 'verified_email'],
+        credential_types_supported: ['access_token', 'refresh_token'],
+        revocation_uri: `${SITE}/api/v1/auth/logout`,
       },
       events_supported: ['https://schemas.workos.com/events/agent/auth/identity/assertion/revoked'],
     },
