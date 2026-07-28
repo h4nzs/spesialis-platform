@@ -50,6 +50,10 @@ export const GET: APIRoute = async () => {
             href: `${SITE}/.well-known/oauth-authorization-server`,
             type: 'application/json',
           },
+          {
+            href: `${SITE}/.well-known/openid-configuration`,
+            type: 'application/json',
+          },
         ],
         'service-meta': [
           {

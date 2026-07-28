@@ -288,6 +288,99 @@ test.describe('Agent Discovery — Well-Known Endpoints', () => {
     });
   });
 
+  test.describe('OpenID Connect Discovery (OpenID.Core)', () => {
+    test('AGENT-34: openid-configuration mengembalikan 200 dengan Content-Type application/json', async ({
+      request,
+    }) => {
+      const res = await request.get('/.well-known/openid-configuration');
+      expect(res.status()).toBe(200);
+      expect(res.headers()['content-type']).toContain('application/json');
+    });
+
+    test('AGENT-35: Memiliki issuer, authorization_endpoint, token_endpoint', async ({
+      request,
+    }) => {
+      const res = await request.get('/.well-known/openid-configuration');
+      const body = await res.json();
+
+      expect(body).toHaveProperty('issuer');
+      expect(body.issuer).toContain('ahlipanggilan.id');
+      expect(body).toHaveProperty('authorization_endpoint');
+      expect(body.authorization_endpoint).toContain('/login');
+      expect(body).toHaveProperty('token_endpoint');
+      expect(body.token_endpoint).toContain('/auth/login');
+      expect(body).toHaveProperty('jwks_uri');
+      expect(body.jwks_uri).toContain('/.well-known/jwks.json');
+    });
+
+    test('AGENT-36: Memiliki response_types_supported, subject_types_supported, id_token_signing_alg_values_supported', async ({
+      request,
+    }) => {
+      const res = await request.get('/.well-known/openid-configuration');
+      const body = await res.json();
+
+      expect(body).toHaveProperty('response_types_supported');
+      expect(Array.isArray(body.response_types_supported)).toBe(true);
+      expect(body.response_types_supported).toContain('code');
+
+      expect(body).toHaveProperty('subject_types_supported');
+      expect(body.subject_types_supported).toContain('public');
+
+      expect(body).toHaveProperty('id_token_signing_alg_values_supported');
+      expect(Array.isArray(body.id_token_signing_alg_values_supported)).toBe(true);
+      expect(body.id_token_signing_alg_values_supported).toContain('HS256');
+      expect(body.id_token_signing_alg_values_supported).not.toContain('RS256');
+    });
+
+    test('AGENT-37: Memiliki scopes_supported termasuk openid dan claims_supported', async ({
+      request,
+    }) => {
+      const res = await request.get('/.well-known/openid-configuration');
+      const body = await res.json();
+
+      expect(body).toHaveProperty('scopes_supported');
+      expect(body.scopes_supported).toContain('openid');
+      expect(body.scopes_supported).toContain('email');
+
+      expect(body).toHaveProperty('claims_supported');
+      expect(body.claims_supported).toContain('sub');
+      expect(body.claims_supported).toContain('email');
+    });
+
+    test('AGENT-38: Memiliki grant_types dan token_endpoint_auth config', async ({ request }) => {
+      const res = await request.get('/.well-known/openid-configuration');
+      const body = await res.json();
+
+      expect(body).toHaveProperty('grant_types_supported');
+      expect(body.grant_types_supported).toContain('refresh_token');
+
+      expect(body).toHaveProperty('token_endpoint_auth_methods_supported');
+      expect(Array.isArray(body.token_endpoint_auth_methods_supported)).toBe(true);
+
+      expect(body).toHaveProperty('code_challenge_methods_supported');
+      expect(body.code_challenge_methods_supported).toContain('S256');
+    });
+
+    test('AGENT-39: Memiliki service_documentation, policy_uri, dan tos_uri', async ({
+      request,
+    }) => {
+      const res = await request.get('/.well-known/openid-configuration');
+      const body = await res.json();
+
+      expect(body).toHaveProperty('service_documentation');
+      expect(body.service_documentation).toContain('/auth.md');
+      expect(body).toHaveProperty('op_policy_uri');
+      expect(body.op_policy_uri).toContain('/kebijakan-privasi');
+      expect(body).toHaveProperty('op_tos_uri');
+      expect(body.op_tos_uri).toContain('/syarat-ketentuan');
+    });
+
+    test('AGENT-40: Memiliki Access-Control-Allow-Origin header', async ({ request }) => {
+      const res = await request.get('/.well-known/openid-configuration');
+      expect(res.headers()['access-control-allow-origin']).toBe('*');
+    });
+  });
+
   test.describe('OAuth Protected Resource (RFC 9728)', () => {
     test('AGENT-18: Mengembalikan 200 dengan Content-Type application/json', async ({
       request,
