@@ -138,6 +138,12 @@ export const GET: APIRoute = async () => {
         type: 'application/xml',
         description: 'XML sitemap of the entire site',
       },
+      {
+        name: 'content-signals',
+        url: `${SITE}/.well-known/content-signal.json`,
+        type: 'application/json',
+        description: 'Content usage preferences for AI agents (IETF AIPREF Content Signals)',
+      },
     ],
     rateLimiting: {
       general: '30 requests/second per IP',

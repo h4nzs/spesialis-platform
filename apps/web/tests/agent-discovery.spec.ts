@@ -208,20 +208,67 @@ test.describe('Agent Discovery — Well-Known Endpoints', () => {
       expect(body).toHaveProperty('registration_endpoint');
     });
 
-    test('AGENT-16: Memiliki agent_auth block dengan register_uri dan identity_types_supported', async ({
+    test('AGENT-16: Memiliki agent_auth block lengkap dengan semua field WorkOS auth.md spec', async ({
       request,
     }) => {
       const res = await request.get('/.well-known/oauth-authorization-server');
       const body = await res.json();
 
       expect(body).toHaveProperty('agent_auth');
-      expect(body.agent_auth).toHaveProperty('register_uri');
-      expect(body.agent_auth).toHaveProperty('identity_types_supported');
-      expect(body.agent_auth.identity_types_supported).toContain('anonymous');
-      expect(body.agent_auth).toHaveProperty('credential_types_supported');
-      expect(body.agent_auth.credential_types_supported).toContain('access_token');
-      expect(body.agent_auth).toHaveProperty('skill');
-      expect(body.agent_auth.skill).toContain('/auth.md');
+      const auth = body.agent_auth;
+
+      // ── Core registration fields ──
+      expect(auth).toHaveProperty('skill');
+      expect(auth.skill).toContain('/auth.md');
+      expect(auth).toHaveProperty('documentation_uri');
+      expect(auth.documentation_uri).toContain('/auth.md');
+      expect(auth).toHaveProperty('register_uri');
+      expect(auth.register_uri).toContain('/register');
+
+      // ── Claim & Revocation URIs ──
+      expect(auth).toHaveProperty('claim_uri');
+      expect(auth.claim_uri).toContain('/agent/claim');
+      expect(auth).toHaveProperty('revocation_uri');
+      expect(auth.revocation_uri).toContain('/auth/logout');
+
+      // ── Identity endpoints ──
+      expect(auth).toHaveProperty('identity_endpoint');
+      expect(auth).toHaveProperty('claim_endpoint');
+      expect(auth).toHaveProperty('events_endpoint');
+
+      // ── Credential types ──
+      expect(auth).toHaveProperty('credential_types_supported');
+      expect(Array.isArray(auth.credential_types_supported)).toBe(true);
+      expect(auth.credential_types_supported).toContain('access_token');
+      expect(auth.credential_types_supported).toContain('refresh_token');
+
+      // ── Identity types ──
+      expect(auth).toHaveProperty('identity_types_supported');
+      expect(Array.isArray(auth.identity_types_supported)).toBe(true);
+      expect(auth.identity_types_supported).toContain('anonymous');
+      expect(auth.identity_types_supported).toContain('identity_assertion');
+      expect(auth.identity_types_supported).toContain('service_auth');
+
+      // ── Anonymous block ──
+      expect(auth).toHaveProperty('anonymous');
+      expect(auth.anonymous).toHaveProperty('credential_types_supported');
+      expect(Array.isArray(auth.anonymous.credential_types_supported)).toBe(true);
+      expect(auth.anonymous).toHaveProperty('claim_uri');
+      expect(auth.anonymous.claim_uri).toContain('/agent/claim');
+
+      // ── Identity assertion block ──
+      expect(auth).toHaveProperty('identity_assertion');
+      expect(auth.identity_assertion).toHaveProperty('assertion_types_supported');
+      expect(Array.isArray(auth.identity_assertion.assertion_types_supported)).toBe(true);
+      expect(auth.identity_assertion.assertion_types_supported).toContain(
+        'urn:ietf:params:oauth:token-type:id-jag',
+      );
+      expect(auth.identity_assertion.assertion_types_supported).toContain('verified_email');
+
+      // ── Events ──
+      expect(auth).toHaveProperty('events_supported');
+      expect(Array.isArray(auth.events_supported)).toBe(true);
+      expect(auth.events_supported.length).toBeGreaterThanOrEqual(1);
     });
 
     test('AGENT-17: Memiliki grant_types_supported dan scopes_supported', async ({ request }) => {
@@ -281,6 +328,74 @@ test.describe('Agent Discovery — Well-Known Endpoints', () => {
       expect(text).toContain('Bearer Token');
       expect(text).toContain('/api/v1');
       expect(text).toContain('httpOnly');
+    });
+  });
+
+  test.describe('Content Signal JSON', () => {
+    test('AGENT-28: content-signal.json mengembalikan 200 dengan Content-Type application/json', async ({
+      request,
+    }) => {
+      const res = await request.get('/.well-known/content-signal.json');
+      expect(res.status()).toBe(200);
+      expect(res.headers()['content-type']).toContain('application/json');
+    });
+
+    test('AGENT-29: Memiliki signals.global dengan ai-train, search, ai-input', async ({
+      request,
+    }) => {
+      const res = await request.get('/.well-known/content-signal.json');
+      const body = await res.json();
+
+      expect(body).toHaveProperty('signals');
+      expect(body.signals).toHaveProperty('global');
+      expect(body.signals.global).toHaveProperty('ai-train');
+      expect(body.signals.global).toHaveProperty('search');
+      expect(body.signals.global).toHaveProperty('ai-input');
+    });
+
+    test('AGENT-30: Memiliki signals.agents array dengan userAgent dan signal preferences', async ({
+      request,
+    }) => {
+      const res = await request.get('/.well-known/content-signal.json');
+      const body = await res.json();
+
+      expect(body).toHaveProperty('signals');
+      expect(body.signals).toHaveProperty('agents');
+      expect(Array.isArray(body.signals.agents)).toBe(true);
+      expect(body.signals.agents.length).toBeGreaterThan(0);
+
+      // Setiap agent harus punya userAgent dan signal fields
+      for (const agent of body.signals.agents) {
+        expect(agent).toHaveProperty('userAgent');
+        expect(typeof agent.userAgent).toBe('string');
+        expect(agent).toHaveProperty('ai-train');
+        expect(agent).toHaveProperty('search');
+        expect(agent).toHaveProperty('ai-input');
+      }
+    });
+
+    test('AGENT-31: Global default ai-train adalah false', async ({ request }) => {
+      const res = await request.get('/.well-known/content-signal.json');
+      const body = await res.json();
+
+      expect(body.signals.global['ai-train']).toBe(false);
+      expect(body.signals.global.search).toBe(true);
+    });
+
+    test('AGENT-32: Memiliki Access-Control-Allow-Origin header', async ({ request }) => {
+      const res = await request.get('/.well-known/content-signal.json');
+      expect(res.headers()['access-control-allow-origin']).toBe('*');
+    });
+
+    test('AGENT-33: Memiliki platform dan policy informasi', async ({ request }) => {
+      const res = await request.get('/.well-known/content-signal.json');
+      const body = await res.json();
+
+      expect(body).toHaveProperty('platform');
+      expect(body.platform).toHaveProperty('name');
+      expect(body.platform.name).toBe('Ahli Panggilan');
+      expect(body).toHaveProperty('policy');
+      expect(body.policy).toHaveProperty('strategy');
     });
   });
 

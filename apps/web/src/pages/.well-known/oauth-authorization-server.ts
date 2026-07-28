@@ -22,16 +22,26 @@ export const GET: APIRoute = async () => {
     // JWKS not available — auth is JWT-based with symmetric signing (HMAC)
 
     // ── agent_auth block (WorkOS auth.md spec) ────────────────
+    // See: https://github.com/workos/auth.md
     agent_auth: {
       skill: `${SITE}/auth.md`,
+      documentation_uri: `${SITE}/auth.md`,
       register_uri: `${SITE}/register`,
+      claim_uri: `${SITE}/api/v1/auth/agent/claim`,
+      revocation_uri: `${SITE}/api/v1/auth/logout`,
       identity_endpoint: `${SITE}/api/v1/auth/agent/identity`,
       claim_endpoint: `${SITE}/api/v1/auth/agent/claim`,
       events_endpoint: `${SITE}/api/v1/auth/agent/events`,
       credential_types_supported: ['access_token', 'refresh_token'],
       identity_types_supported: ['anonymous', 'identity_assertion', 'service_auth'],
+      // Anonymous: credential-less registration flow
+      anonymous: {
+        credential_types_supported: ['temporary_token'],
+        claim_uri: `${SITE}/api/v1/auth/agent/claim`,
+      },
+      // Identity assertion: ID-JAG + Verified Email
       identity_assertion: {
-        assertion_types_supported: ['urn:ietf:params:oauth:token-type:id-jag'],
+        assertion_types_supported: ['urn:ietf:params:oauth:token-type:id-jag', 'verified_email'],
       },
       events_supported: ['https://schemas.workos.com/events/agent/auth/identity/assertion/revoked'],
     },

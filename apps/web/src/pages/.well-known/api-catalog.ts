@@ -65,6 +65,10 @@ export const GET: APIRoute = async () => {
             type: 'application/json',
           },
           {
+            href: `${SITE}/.well-known/content-signal.json`,
+            type: 'application/json',
+          },
+          {
             href: `${SITE}/sitemap.xml`,
             type: 'application/xml',
           },
