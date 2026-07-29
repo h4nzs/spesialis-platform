@@ -203,9 +203,9 @@ const plausibleSrc = plausibleDomain ? `https://${plausibleDomain}/js/script.js`
     {!hideFooter && (
       <div id="global-footer-area">
         <Footer />
-        {showWa && <WhatsAppFloating phoneNumber={whatsappPhone} />}
       </div>
     )}
+    {showWa && <WhatsAppFloating phoneNumber={whatsappPhone} />}
     <div id="app-settings" data-whatsapp-phone={whatsappPhone || ''} style="display:none"></div>
   </body>
 </html>

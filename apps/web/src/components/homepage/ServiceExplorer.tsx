@@ -315,15 +315,17 @@ export function ServiceExplorer() {
                     key={cat.id}
                     type="button"
                     onClick={() => handleCategoryClick(cat.slug)}
-                    className={`group relative flex flex-col items-center gap-2 px-2 py-1 text-center transition-all duration-200 ease-out focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-500 ${
-                      isActive ? 'scale-105' : 'hover:scale-105'
-                    }`}
+                    className={`group relative flex flex-col items-center gap-2 px-2 py-2.5 text-center transition-all duration-200 ease-out transform-gpu rounded-xl border ${
+                      isActive
+                        ? 'border-primary-300 bg-primary-50 shadow-sm scale-[1.02]'
+                        : 'border-border-default bg-white hover:border-primary-200 hover:shadow-md hover:-translate-y-1 hover:bg-primary-50/30'
+                    } focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-500`}
                   >
                     <div
-                      className={`flex h-12 w-12 items-center justify-center transition-all duration-200 md:h-14 md:w-14 ${
+                      className={`flex h-11 w-11 items-center justify-center rounded-xl transition-all duration-200 md:h-14 md:w-14 ${
                         isActive
-                          ? 'text-primary-700'
-                          : 'text-primary-800 group-hover:text-primary-600'
+                          ? 'bg-primary-100 text-primary-700 scale-110'
+                          : 'bg-primary-50/60 text-primary-600 group-hover:bg-primary-100 group-hover:text-primary-700 group-hover:scale-110'
                       }`}
                       aria-hidden="true"
                     >
@@ -331,13 +333,15 @@ export function ServiceExplorer() {
                     </div>
                     <span
                       className={`text-[11px] font-semibold leading-snug transition-colors duration-200 ${
-                        isActive ? 'text-primary-700' : 'text-primary-900'
+                        isActive
+                          ? 'text-primary-700'
+                          : 'text-primary-900 group-hover:text-primary-700'
                       }`}
                     >
                       {cat.name}
                     </span>
                     {isActive && (
-                      <span className="absolute -bottom-1 left-1/2 h-0.5 w-5 -translate-x-1/2 rounded-full bg-warning-500" />
+                      <span className="absolute -bottom-0.5 left-1/2 h-0.5 w-5 -translate-x-1/2 rounded-full bg-primary-500" />
                     )}
                   </button>
                 );
@@ -354,15 +358,17 @@ export function ServiceExplorer() {
                     setActiveCatSlug(null);
                     handleServiceClick(svc);
                   }}
-                  className={`group relative flex flex-col items-center gap-2 px-2 py-1 text-center transition-all duration-200 ease-out focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-500 ${
-                    isSelected ? 'scale-105' : 'hover:scale-105'
-                  }`}
+                  className={`group relative flex flex-col items-center gap-2 px-2 py-2.5 text-center transition-all duration-200 ease-out transform-gpu rounded-xl border ${
+                    isSelected
+                      ? 'border-warning-300 bg-warning-50 shadow-sm scale-[1.02]'
+                      : 'border-border-default bg-white hover:border-warning-200 hover:shadow-md hover:-translate-y-1 hover:bg-warning-50/30'
+                  } focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-500`}
                 >
                   <div
-                    className={`flex h-12 w-12 items-center justify-center transition-all duration-200 md:h-14 md:w-14 ${
+                    className={`flex h-11 w-11 items-center justify-center rounded-xl transition-all duration-200 md:h-14 md:w-14 ${
                       isSelected
-                        ? 'text-warning-600'
-                        : 'text-primary-800 group-hover:text-primary-600'
+                        ? 'bg-warning-100 text-warning-600 scale-110'
+                        : 'bg-primary-50/60 text-primary-600 group-hover:bg-warning-100 group-hover:text-warning-600 group-hover:scale-110'
                     }`}
                     aria-hidden="true"
                   >
@@ -370,13 +376,15 @@ export function ServiceExplorer() {
                   </div>
                   <span
                     className={`text-[11px] font-semibold leading-snug transition-colors duration-200 ${
-                      isSelected ? 'text-warning-600' : 'text-primary-900'
+                      isSelected
+                        ? 'text-warning-700'
+                        : 'text-primary-900 group-hover:text-warning-700'
                     }`}
                   >
                     {svc.name}
                   </span>
                   {isSelected && (
-                    <span className="absolute -bottom-1 left-1/2 h-0.5 w-5 -translate-x-1/2 rounded-full bg-warning-500" />
+                    <span className="absolute -bottom-0.5 left-1/2 h-0.5 w-5 -translate-x-1/2 rounded-full bg-warning-500" />
                   )}
                 </button>
               );
@@ -391,25 +399,31 @@ export function ServiceExplorer() {
                     key={cat.id}
                     type="button"
                     onClick={() => handleCategoryClick(cat.slug)}
-                    className={`group relative flex flex-col items-center gap-2 px-2 py-1 text-center transition-all duration-200 ease-out focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-500 ${
-                      isActive ? 'scale-105' : 'hover:scale-105'
-                    }`}
+                    className={`group relative flex flex-col items-center gap-2 px-2 py-2.5 text-center transition-all duration-200 ease-out transform-gpu rounded-xl border ${
+                      isActive
+                        ? 'border-blue-300 bg-blue-50 shadow-sm scale-[1.02]'
+                        : 'border-border-default bg-white hover:border-blue-200 hover:shadow-md hover:-translate-y-1 hover:bg-blue-50/30'
+                    } focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-500`}
                   >
                     <div
-                      className="flex h-12 w-12 items-center justify-center rounded-xl bg-blue-100 text-blue-600 transition-all duration-200 md:h-14 md:w-14"
+                      className={`flex h-11 w-11 items-center justify-center rounded-xl transition-all duration-200 md:h-14 md:w-14 ${
+                        isActive
+                          ? 'bg-blue-200 text-blue-700 scale-110'
+                          : 'bg-blue-100 text-blue-600 group-hover:bg-blue-200 group-hover:text-blue-700 group-hover:scale-110'
+                      }`}
                       aria-hidden="true"
                     >
                       <span dangerouslySetInnerHTML={{ __html: getIcon(cat.icon) }} />
                     </div>
                     <span
                       className={`text-[11px] font-semibold leading-snug transition-colors duration-200 ${
-                        isActive ? 'text-blue-700' : 'text-blue-600'
+                        isActive ? 'text-blue-700' : 'text-blue-600 group-hover:text-blue-800'
                       }`}
                     >
                       {cat.name}
                     </span>
                     {isActive && (
-                      <span className="absolute -bottom-1 left-1/2 h-0.5 w-5 -translate-x-1/2 rounded-full bg-warning-500" />
+                      <span className="absolute -bottom-0.5 left-1/2 h-0.5 w-5 -translate-x-1/2 rounded-full bg-blue-500" />
                     )}
                   </button>
                 );
