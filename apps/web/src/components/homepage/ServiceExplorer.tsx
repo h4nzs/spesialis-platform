@@ -304,7 +304,7 @@ export function ServiceExplorer() {
           {/* ── Category Row — 2 baris (grid responsif) ──────────── */}
           {/* ⚠️  CLS guard: 12rem ≈ 2 rows of items (2 × ~88px + 16px gap)
                prevents push-down when client data fills the SSR-empty grid. */}
-          <div className="grid grid-cols-3 gap-x-3 gap-y-4 sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-9 md:gap-x-5 md:gap-y-5 justify-items-center min-h-[12rem]">
+          <div className="grid grid-cols-3 gap-x-3 gap-y-4 sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-9 md:gap-x-5 md:gap-y-5 min-h-[12rem]">
             {/* ── Kategori biasa (kecuali Layanan Lainnya) ───────── */}
             {categories
               .filter((cat) => cat.icon !== 'more-horizontal')
@@ -315,7 +315,7 @@ export function ServiceExplorer() {
                     key={cat.id}
                     type="button"
                     onClick={() => handleCategoryClick(cat.slug)}
-                    className={`group relative flex flex-col items-center gap-2 px-2 py-2.5 text-center transition-all duration-200 ease-out transform-gpu rounded-xl border ${
+                    className={`group relative flex w-full min-h-[108px] flex-col items-center justify-center gap-2 px-2 py-2.5 text-center transition-all duration-200 ease-out transform-gpu rounded-xl border md:min-h-[124px] ${
                       isActive
                         ? 'border-primary-300 bg-primary-50 shadow-sm scale-[1.02]'
                         : 'border-border-default bg-white hover:border-primary-200 hover:shadow-md hover:-translate-y-1 hover:bg-primary-50/30'
@@ -358,7 +358,7 @@ export function ServiceExplorer() {
                     setActiveCatSlug(null);
                     handleServiceClick(svc);
                   }}
-                  className={`group relative flex flex-col items-center gap-2 px-2 py-2.5 text-center transition-all duration-200 ease-out transform-gpu rounded-xl border ${
+                  className={`group relative flex w-full min-h-[108px] flex-col items-center justify-center gap-2 px-2 py-2.5 text-center transition-all duration-200 ease-out transform-gpu rounded-xl border md:min-h-[124px] ${
                     isSelected
                       ? 'border-warning-300 bg-warning-50 shadow-sm scale-[1.02]'
                       : 'border-border-default bg-white hover:border-warning-200 hover:shadow-md hover:-translate-y-1 hover:bg-warning-50/30'
@@ -399,7 +399,7 @@ export function ServiceExplorer() {
                     key={cat.id}
                     type="button"
                     onClick={() => handleCategoryClick(cat.slug)}
-                    className={`group relative flex flex-col items-center gap-2 px-2 py-2.5 text-center transition-all duration-200 ease-out transform-gpu rounded-xl border ${
+                    className={`group relative flex w-full min-h-[108px] flex-col items-center justify-center gap-2 px-2 py-2.5 text-center transition-all duration-200 ease-out transform-gpu rounded-xl border md:min-h-[124px] ${
                       isActive
                         ? 'border-blue-300 bg-blue-50 shadow-sm scale-[1.02]'
                         : 'border-border-default bg-white hover:border-blue-200 hover:shadow-md hover:-translate-y-1 hover:bg-blue-50/30'
