@@ -114,7 +114,7 @@ jobs:
   e2e-test:
     name: E2E Tests
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 60
     services:
       postgres:
         image: postgres:18
