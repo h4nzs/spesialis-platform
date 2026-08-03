@@ -128,8 +128,8 @@ export function BookingForm({ serviceId, initialAuth }: BookingFormProps) {
       .get<Record<string, string>>('/api/v1/public/settings')
 
       .then((result) => {
-        if (!result?.data) return;
-        const data = result.data;
+        if (!result) return;
+        const data = result;
         if (data.whatsapp_phone_number) setWhatsappPhone(data.whatsapp_phone_number);
       })
       .catch(() => {});

@@ -1,5 +1,5 @@
 ---
-export const prerender = true;
+export const prerender = false;
 import BaseLayout from '../layouts/BaseLayout.astro'
 import { createServerClient } from '@ahlipanggilan/shared'
 import { FaqList } from '../components/faq/FaqList'
@@ -16,9 +16,9 @@ const api = createServerClient('', '', apiUrl)
 let faqs: FaqItem[] = []
 try {
   const result = await api.get('/api/v1/cms/faq')
-  if (result?.data) {
+  if (result) {
     
-    const raw = result.data
+    const raw = result
     if (Array.isArray(raw) && raw.length > 0) {
       faqs = raw.map((item: { question: string; answer: string }) => ({
         q: item.question,

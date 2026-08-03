@@ -1,5 +1,5 @@
 ---
-export const prerender = true;
+export const prerender = false;
 
 import BaseLayout from '../../layouts/BaseLayout.astro'
 import { ServiceDetail } from '../../components/services/ServiceDetail'
@@ -7,12 +7,6 @@ import type { ServiceData, ReviewData, FaqItem, RelatedServiceItem } from '../..
 import { inferCategorySlug } from '@ahlipanggilan/shared'
 import { createServerClient } from '@ahlipanggilan/shared'
 
-export async function getStaticPaths() {
-  const apiUrl = process.env.PUBLIC_API_URL ?? process.env.API_URL ?? 'http://localhost:3000'
-  const api = createServerClient('', '', apiUrl)
-  const result = await api.get<Array<{ slug: string }>>('/api/v1/services?limit=500')
-  return (result.data ?? []).map((s) => ({ params: { slug: s.slug } }))
-}
 
 const { slug } = Astro.params
 
@@ -33,13 +27,13 @@ try {
     api.get<ServiceData>(`/api/v1/services/${slug}`),
     api.get<ReviewData>(`/api/v1/services/${slug}/reviews`).catch(() => null),
   ])
-  service = serviceResult.data
-  reviews = reviewsResult?.data ?? null
+  service = serviceResult
+  reviews = reviewsResult ?? null
 
   // ── Fetch coverage areas for areaServed JSON-LD ────────────
   try {
     const covResult = await api.get<Array<{ city: string }>>('/api/v1/cms/coverage-areas')
-    coverageCities = (covResult?.data ?? []).map((c) => c.city)
+    coverageCities = (covResult ?? []).map((c) => c.city)
   } catch {}
 
   // ── Fetch category slug for AEO + HowTo ──────────────────
@@ -47,7 +41,7 @@ try {
   if (service?.categoryId) {
     try {
       const catResult = await api.get<Array<{ id: string; slug: string }>>('/api/v1/service-categories')
-      const categories = catResult?.data ?? []
+      const categories = catResult ?? []
       const cat = categories.find((c) => c.id === service!.categoryId)
       if (cat?.slug) matchedCategorySlug = cat.slug
     } catch {}
@@ -59,7 +53,7 @@ try {
       const faqResult = await api.get<Array<{ question: string; answer: string }>>(
         `/api/v1/cms/faq?category=${matchedCategorySlug}`,
       )
-      const rawFaqs = faqResult?.data ?? []
+      const rawFaqs = faqResult ?? []
       if (rawFaqs.length > 0) {
         serviceFaqs = rawFaqs.map((f) => ({ question: f.question, answer: f.answer }))
       }
@@ -98,7 +92,7 @@ try {
       const relatedResult = await api.get<RelatedServiceItem[]>(
         `/api/v1/services?categoryId=${service.categoryId}&limit=6`,
       )
-      relatedServices = (relatedResult?.data ?? []).filter((r) => r.slug !== service!.slug)
+      relatedServices = (relatedResult ?? []).filter((r) => r.slug !== service!.slug)
     } catch {}
   }
 

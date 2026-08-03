@@ -1,5 +1,5 @@
 ---
-export const prerender = true;
+export const prerender = false;
 
 import BaseLayout from '../layouts/BaseLayout.astro'
 import Hero from '../components/homepage/Hero.astro'
@@ -52,9 +52,9 @@ try {
     api.get<Array<{ title: string; slug: string; summary: string | null; cover_image: string | null; category: string | null; published_at: string | null }>>('/api/v1/cms/articles?limit=3').catch(() => null),
     api.get<CoverageArea[]>('/api/v1/public/coverage-areas').catch(() => null),
   ])
-  services = servicesResult?.data ?? []
-  if (articlesResult?.data) {
-    articles = articlesResult.data.map((a) => ({
+  services = servicesResult ?? []
+  if (articlesResult) {
+    articles = articlesResult.map((a) => ({
       title: a.title,
       slug: a.slug,
       summary: a.summary,
@@ -63,7 +63,7 @@ try {
       publishedAt: a.published_at,
     }))
   }
-  totalCities = coverageResult?.data?.length ?? 0
+  totalCities = coverageResult?.length ?? 0
 } catch {}
 // Fallback jika fetch gagal — pakai jumlah dari fallback Coverage.astro
 if (totalCities === 0) {

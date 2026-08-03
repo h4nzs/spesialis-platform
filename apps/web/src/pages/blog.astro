@@ -1,5 +1,5 @@
 ---
-export const prerender = true;
+export const prerender = false;
 import BaseLayout from '../layouts/BaseLayout.astro'
 import { createServerClient } from '@ahlipanggilan/shared'
 import { ClientRouter } from 'astro:transitions'
@@ -28,9 +28,9 @@ let articlesForSeo: ArticleFeedItem[] = []
 let categories: CategoryItem[] = []
 try {
   const result = await api.get('/api/v1/cms/articles?limit=20')
-  if (result?.data) {
+  if (result) {
     
-    const raw = result.data
+    const raw = result
     if (Array.isArray(raw) && raw.length > 0) {
       articlesForSeo = raw.map((a: { title: string; slug: string; published_at: string | null; author: string | null; category: string | null }) => ({
         title: a.title,

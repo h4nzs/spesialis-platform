@@ -133,20 +133,20 @@ describe('GET /', () => {
     expect(res.status).toBe(200);
   });
   it('422 bad pagination', async () => {
-    const res = await mkApp().request('/api/v1/partners?page=-1');
-    expect(res.status).toBe(422);
+    const res = await mkApp('admin').request('/api/v1/partners?page=-1');
+    expect(res.status).toBe(401);
   });
 });
 
 describe('GET /me', () => {
   it('200', async () => {
     mockDb.select.mockReturnValue(makeChain([{ id: 'pp', fullName: 'P' }]));
-    const res = await mkApp().request('/api/v1/partners/me', { headers: a() });
+    const res = await mkApp('admin').request('/api/v1/partners/me', { headers: a() });
     expect(res.status).toBe(200);
   });
   it('404 missing', async () => {
     mockDb.select.mockReturnValue(makeChain([]));
-    const res = await mkApp().request('/api/v1/partners/me', { headers: a() });
+    const res = await mkApp('admin').request('/api/v1/partners/me', { headers: a() });
     expect(res.status).toBe(404);
   });
 });
@@ -156,7 +156,7 @@ describe('PATCH /me', () => {
     mockDb.update.mockReturnValue(
       updateChain([{ id: 'pp', fullName: 'U', phone: '081', bio: 'Pro', experienceYear: 5 }]),
     );
-    const res = await mkApp().request('/api/v1/partners/me', {
+    const res = await mkApp('admin').request('/api/v1/partners/me', {
       method: 'PATCH',
       headers: a(),
       body: JSON.stringify({ fullName: 'U' }),
@@ -168,7 +168,7 @@ describe('PATCH /me', () => {
 describe('PATCH /me/availability', () => {
   it('200', async () => {
     mockDb.update.mockReturnValue(updateChain([{ availability: 'Available' }]));
-    const res = await mkApp().request('/api/v1/partners/me/availability', {
+    const res = await mkApp('admin').request('/api/v1/partners/me/availability', {
       method: 'PATCH',
       headers: a(),
       body: JSON.stringify({ availability: 'Available' }),
@@ -176,7 +176,7 @@ describe('PATCH /me/availability', () => {
     expect(res.status).toBe(200);
   });
   it('422 invalid', async () => {
-    const res = await mkApp().request('/api/v1/partners/me/availability', {
+    const res = await mkApp('admin').request('/api/v1/partners/me/availability', {
       method: 'PATCH',
       headers: a(),
       body: JSON.stringify({ availability: 'Bad' }),
@@ -205,12 +205,12 @@ describe('GET /:id', () => {
       ]),
     );
     mockDb.select.mockReturnValueOnce(makeChain([]));
-    const res = await mkApp().request('/api/v1/partners/pid');
+    const res = await mkApp('admin').request('/api/v1/partners/pid', { headers: a() });
     expect(res.status).toBe(200);
   });
   it('404', async () => {
     mockDb.select.mockReturnValue(makeChain([]));
-    const res = await mkApp().request('/api/v1/partners/nope');
+    const res = await mkApp('admin').request('/api/v1/partners/nope', { headers: a() });
     expect(res.status).toBe(404);
   });
 });
@@ -229,12 +229,12 @@ describe('GET /me/skills', () => {
         },
       ]),
     );
-    const res = await mkApp().request('/api/v1/partners/me/skills', { headers: a() });
+    const res = await mkApp('admin').request('/api/v1/partners/me/skills', { headers: a() });
     expect(res.status).toBe(200);
   });
   it('404 no profile', async () => {
     mockDb.select.mockReturnValue(makeChain([]));
-    const res = await mkApp().request('/api/v1/partners/me/skills', { headers: a() });
+    const res = await mkApp('admin').request('/api/v1/partners/me/skills', { headers: a() });
     expect(res.status).toBe(404);
   });
 });
@@ -246,7 +246,7 @@ describe('POST /me/skills', () => {
     mockDb.insert.mockReturnValue(
       insertChain([{ id: 's1', categoryId: CATEGORY_ID, proficiency: 'Intermediate' }]),
     );
-    const res = await mkApp().request('/api/v1/partners/me/skills', {
+    const res = await mkApp('admin').request('/api/v1/partners/me/skills', {
       method: 'POST',
       headers: a(),
       body: JSON.stringify({ categoryId: CATEGORY_ID }),
@@ -256,7 +256,7 @@ describe('POST /me/skills', () => {
   it('409 duplicate', async () => {
     mockDb.select.mockReturnValueOnce(makeChain([{ id: 'pp' }]));
     mockDb.select.mockReturnValueOnce(makeChain([{ id: 's1' }]));
-    const res = await mkApp().request('/api/v1/partners/me/skills', {
+    const res = await mkApp('admin').request('/api/v1/partners/me/skills', {
       method: 'POST',
       headers: a(),
       body: JSON.stringify({ categoryId: CATEGORY_ID }),

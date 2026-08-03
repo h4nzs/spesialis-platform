@@ -68,7 +68,7 @@ function addAgentDiscovery(
   skipMarkdown: boolean,
 ): Response {
   // ── Link Headers (RFC 8288) ──
-  const contentType = response.headers.get('Content-Type') ?? '';
+  const contentType = response.headers?.get?.('Content-Type') ?? '';
   if (contentType.includes('text/html')) {
     const linkHeaders = [
       `</.well-known/api-catalog>; rel="api-catalog"`,
@@ -83,7 +83,7 @@ function addAgentDiscovery(
 
   // ── Markdown for Agents (Content Negotiation) ──
   if (!skipMarkdown) {
-    const accept = request.headers.get('Accept') ?? '';
+    const accept = request.headers?.get?.('Accept') ?? '';
     const prefersMarkdown =
       accept.includes('text/markdown') &&
       (!accept.includes('text/html') ||
@@ -109,8 +109,14 @@ function addAgentDiscovery(
 }
 
 export const onRequest = defineMiddleware(async ({ locals, request }, next) => {
-  const cookieHeader = request.headers.get('cookie') ?? '';
   const url = new URL(request.url);
+
+  const cookieHeader = request.headers?.get?.('cookie') ?? '';
+  if (!cookieHeader && !request.headers?.get) {
+    locals.auth = null;
+    const response = await next();
+    return response;
+  }
 
   const token = extractCookie(cookieHeader, 'token');
 

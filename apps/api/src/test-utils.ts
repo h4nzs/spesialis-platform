@@ -24,6 +24,7 @@ export function makeChain<T>(result: T) {
     leftJoin: vi.fn().mockReturnThis(),
     groupBy: vi.fn().mockReturnThis(),
     having: vi.fn().mockReturnThis(),
+    for: vi.fn().mockReturnThis(),
     then: (onfulfilled: (v: T) => unknown) => Promise.resolve(result).then(onfulfilled),
   };
   return c;

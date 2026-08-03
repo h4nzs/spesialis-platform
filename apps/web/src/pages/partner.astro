@@ -77,8 +77,8 @@ try {
   const apiUrl = process.env.API_URL ?? process.env.PUBLIC_API_URL ?? 'http://localhost:3000'
 const api = createServerClient('', '', apiUrl);
   const result = await api.get('/api/v1/cms/testimonials');
-  if (result?.data) {
-    const raw = result.data;
+  if (result) {
+    const raw = result;
     if (Array.isArray(raw) && raw.length > 0) {
       testimonials = raw.map((item: { name: string; location: string | null; role: string | null; quote: string; rating: string }) => ({
         name: item.name,

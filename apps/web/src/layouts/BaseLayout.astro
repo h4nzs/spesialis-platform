@@ -51,7 +51,7 @@ const api = createServerClient('', '', apiUrl)
 let whatsappPhone = ''
 try {
   const result = await api.get<Record<string, string>>('/api/v1/public/settings')
-  whatsappPhone = result.data?.whatsapp_phone_number ?? ''
+  whatsappPhone = result?.whatsapp_phone_number ?? ''
 } catch {}
 
 const waPages = ['/', '/services', '/blog', '/tracking', '/partner', '/corporate']

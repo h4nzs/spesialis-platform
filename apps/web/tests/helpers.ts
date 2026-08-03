@@ -36,11 +36,14 @@ export async function loginViaApi(
   }
 
   const body = (await res.json()) as {
-    data: { token: string; user: { id: string; email: string; role: string } };
+    data: { user: { id: string; email: string; role: string } };
   };
 
+  const setCookie = res.headers()['set-cookie'] ?? '';
+  const tokenMatch = setCookie.match(/token=([^;]+)/);
+
   return {
-    token: body.data.token,
+    token: tokenMatch?.[1] ?? '',
     user: body.data.user,
   };
 }

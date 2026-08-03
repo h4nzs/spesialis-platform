@@ -20,13 +20,12 @@ let useCms = false
 
 try {
   const result = await api.get<CmsPage>(`/api/v1/cms/pages/${pageSlug}`).catch(() => null)
-  const cmsPage = result?.data
+  const cmsPage = result
   if (cmsPage) {
       pageTitle = cmsPage.title
       pageDescription = (cmsPage.meta as Record<string, string> | null)?.description ?? pageDescription
       pageHtml = cmsPage.content ?? ''
       useCms = true
-    }
   }
 } catch {
   

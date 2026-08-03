@@ -1,5 +1,5 @@
 ---
-export const prerender = true;
+export const prerender = false;
 
 import BaseLayout from '../../layouts/BaseLayout.astro'
 import { BlogSidebar } from '../../components/blog/BlogSidebar'
@@ -7,12 +7,6 @@ import type { CmsArticle } from '../../components/blog/utils'
 import { renderMarkdown } from '../../lib/markdown.ts'
 import { createServerClient } from '@ahlipanggilan/shared'
 
-export async function getStaticPaths() {
-  const apiUrl = process.env.API_URL ?? process.env.PUBLIC_API_URL ?? 'http://localhost:3000'
-  const api = createServerClient('', '', apiUrl)
-  const result = await api.get<Array<{ slug: string }>>('/api/v1/cms/articles?limit=500')
-  return (result.data ?? []).map((a) => ({ params: { slug: a.slug } }))
-}
 
 const { slug } = Astro.params
 
@@ -44,9 +38,10 @@ let article: ArticleData | null = null
 let error: string | null = null
 
 try {
+  const apiUrl = process.env.API_URL ?? process.env.PUBLIC_API_URL ?? 'http://localhost:3000'
   const api = createServerClient('', '', apiUrl)
   const result = await api.get<CmsArticle>(`/api/v1/cms/articles/${slug!}`)
-  const raw = result?.data
+  const raw = result
   if (raw) {
       const r = raw as CmsArticle & {
         meta_title?: string | null

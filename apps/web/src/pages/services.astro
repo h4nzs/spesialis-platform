@@ -1,5 +1,5 @@
 ---
-export const prerender = true;
+export const prerender = false;
 import BaseLayout from '../layouts/BaseLayout.astro'
 import { ServiceList } from '../components/ServiceList.tsx'
 import { createServerClient } from '@ahlipanggilan/shared'
@@ -17,7 +17,7 @@ let services: ServiceItem[] = []
 
 try {
   const result = await api.get<ServiceItem[]>('/api/v1/services?limit=100')
-  services = result.data ?? []
+  services = result ?? []
 } catch {}
 ---
 

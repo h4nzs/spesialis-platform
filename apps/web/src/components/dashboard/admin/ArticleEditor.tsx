@@ -20,8 +20,12 @@ const SeoAnalyzerPanel = lazy(() =>
 const SchemaBuilder = lazy(() =>
   import('@ahlipanggilan/ui').then((m) => ({ default: m.SchemaBuilder })),
 );
-const PillarLinkSuggestions = lazy(() => import('./PillarLinkSuggestions.tsx'));
-const PillarSeoScore = lazy(() => import('./PillarSeoScore.tsx'));
+const PillarLinkSuggestions = lazy(() =>
+  import('./PillarLinkSuggestions.tsx').then((m) => ({ default: m.PillarLinkSuggestions })),
+);
+const PillarSeoScore = lazy(() =>
+  import('./PillarSeoScore.tsx').then((m) => ({ default: m.PillarSeoScore })),
+);
 
 // ── Types ────────────────────────────────────────────────────────
 

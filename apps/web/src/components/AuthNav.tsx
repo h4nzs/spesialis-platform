@@ -69,7 +69,7 @@ export function AuthNav({ initialAuth }: AuthNavProps) {
         const api = createBrowserClient();
         const result = await api.get<{ user: { role: string } }>('/api/v1/auth/me');
         if (!cancelled) {
-          setClientAuth({ role: result.data.user.role });
+          setClientAuth({ role: result.user.role });
         }
       } catch {
         if (!cancelled) {

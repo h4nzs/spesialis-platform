@@ -227,6 +227,11 @@ describe('POST /refresh', () => {
       ]),
     );
     mockDb.select.mockReturnValueOnce(makeChain([{ id: 'uid', role: 'customer' }]));
+    mockDb.select.mockReturnValueOnce(
+      makeChain([
+        { id: 'rt1', userId: 'uid', revoked: false, expiresAt: new Date(Date.now() + 86400000) },
+      ]),
+    );
     const res = await mkApp().request('/api/v1/auth/refresh', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -372,7 +377,7 @@ describe('PATCH /change-password', () => {
       body: JSON.stringify({ currentPassword: 'Bad', newPassword: 'NewStr0ng!1' }),
     });
     const body = (await res.json()) as ApiTestResponse;
-    expect(res.status).toBe(401);
+    expect(res.status).toBe(403);
     expect(body.success).toBe(false);
   });
 });
@@ -398,7 +403,7 @@ describe('DELETE /account', () => {
       body: JSON.stringify({ password: 'Bad' }),
     });
     const body = (await res.json()) as ApiTestResponse;
-    expect(res.status).toBe(401);
+    expect(res.status).toBe(403);
     expect(body.success).toBe(false);
   });
   it('422 missing password', async () => {
