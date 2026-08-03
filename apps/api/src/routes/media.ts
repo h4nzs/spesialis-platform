@@ -1,11 +1,10 @@
 import { Hono, type Context } from 'hono';
-import { eq, desc, isNull, and } from 'drizzle-orm';
+import { eq, desc, sql } from 'drizzle-orm';
 import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { db, media } from '../lib/db.ts';
 import { authMiddleware } from '../middleware/auth.ts';
 import { buildPaginationMeta } from '../lib/pagination.ts';
-import { sql } from 'drizzle-orm';
 import {
   saveFile,
   deleteFile,
@@ -52,7 +51,6 @@ async function handleListMedia(c: Context) {
   if (userRole !== 'admin' && userRole !== 'super_admin') {
     conditions.push(eq(media.uploadedBy, userId));
   }
-  conditions.push(sql`${media.deletedAt} IS NULL`);
 
   if (search) {
     conditions.push(sql`${media.filename} ILIKE ${'%' + search + '%'}`);
@@ -155,8 +153,8 @@ router.post('/upload', authMiddleware, async (c) => {
       'File berhasil diupload',
     );
   } catch (err) {
-    console.error('Upload failed:', err);
-    return serverError(c, 'Gagal mengupload file');
+    console.error('Upload failed:', (err as Error).message);
+    return serverError(c, `Gagal mengupload file: ${(err as Error).message}`);
   }
 });
 
@@ -165,11 +163,7 @@ router.get('/:id', authMiddleware, async (c) => {
   const userId = c.get('userId');
   const userRole = c.get('userRole');
 
-  const [record] = await db
-    .select()
-    .from(media)
-    .where(and(eq(media.id, mediaId), isNull(media.deletedAt)))
-    .limit(1);
+  const [record] = await db.select().from(media).where(eq(media.id, mediaId)).limit(1);
 
   if (!record) return notFound(c, 'Media tidak ditemukan');
 
@@ -195,11 +189,7 @@ router.get('/:id/file', authMiddleware, async (c) => {
   const userId = c.get('userId');
   const userRole = c.get('userRole');
 
-  const [record] = await db
-    .select()
-    .from(media)
-    .where(and(eq(media.id, mediaId), isNull(media.deletedAt)))
-    .limit(1);
+  const [record] = await db.select().from(media).where(eq(media.id, mediaId)).limit(1);
 
   if (!record) return notFound(c, 'Media tidak ditemukan');
 
@@ -252,7 +242,7 @@ router.delete('/:id', authMiddleware, async (c) => {
     return serverError(c, 'Gagal menghapus file dari storage');
   }
 
-  await db.update(media).set({ deletedAt: new Date() }).where(eq(media.id, mediaId));
+  await db.execute(sql`UPDATE media SET deleted_at = NOW() WHERE id = ${mediaId}`);
 
   return success(c, null, 'Media berhasil dihapus');
 });

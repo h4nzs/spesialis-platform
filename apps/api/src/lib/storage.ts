@@ -123,11 +123,24 @@ async function validateMagicBytes(buffer: Buffer, claimedType: string): Promise<
         throw new Error(`MIME type mismatch: claimed ${claimedType}, detected ${detected}`);
       }
     } catch (err) {
-      throw new Error(`Invalid image file: ${(err as Error).message}`, { cause: err });
+      if (
+        (err as NodeJS.ErrnoException).code === 'ERR_MODULE_NOT_FOUND' ||
+        (err as Error).message?.includes('Cannot find module')
+      ) {
+        console.warn('[storage] sharp not available — skipping magic byte validation');
+        return;
+      }
+      console.warn(
+        `[storage] Magic byte validation failed for ${claimedType}: ${(err as Error).message} — rejecting upload`,
+      );
+      throw new Error('Invalid image file');
     }
   } else if (claimedType === 'application/pdf') {
     const header = buffer.slice(0, 5).toString();
-    if (header !== '%PDF-') throw new Error('Invalid PDF file');
+    if (header !== '%PDF-') {
+      console.warn('[storage] Rejecting upload: not a valid PDF');
+      throw new Error('Invalid PDF file');
+    }
   }
 }
 

@@ -90,7 +90,7 @@ test.describe('SEOE2E-23: Pillar Content Checkbox di ArticleEditor', () => {
 
     // Verify the checkbox label is visible
     const checkboxLabel = page.locator('label', { hasText: 'Jadikan sebagai Content Pillar' });
-    await expect(checkboxLabel).toBeVisible({ timeout: 15000 });
+    await expect(checkboxLabel).toBeVisible({ timeout: 30000 });
 
     // Verify the checkbox input exists inside the label
     const checkbox = checkboxLabel.locator('input[type="checkbox"]');

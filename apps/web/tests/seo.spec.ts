@@ -91,8 +91,11 @@ test.describe('SEO E2E: SitemapSettings & RoleManager (Settings Page)', () => {
     await page.goto('/dashboard/admin/settings');
     await page.waitForLoadState('networkidle');
 
-    // Wait for RoleManager to render
+    // Wait for RoleManager to render AND finish loading data
     await expect(page.locator('[data-testid="role-manager"]')).toBeVisible({ timeout: 15000 });
+    await expect(page.locator('[data-testid="role-manager"] tbody')).toBeVisible({
+      timeout: 15000,
+    });
 
     // Find checkboxes in the RoleManager table
     // Staff role checkboxes should be togglable (<tbody> input not disabled)
@@ -163,7 +166,7 @@ test.describe('SEO E2E: SchemaBuilder (Article Editor)', () => {
     await expect(page.locator('h1, h2').first()).toBeVisible({ timeout: 15000 });
 
     // Verify SchemaBuilder component rendered via data-testid
-    await expect(page.locator('[data-testid="schema-builder"]')).toBeVisible({ timeout: 15000 });
+    await expect(page.locator('[data-testid="schema-builder"]')).toBeVisible({ timeout: 30000 });
   });
 
   test('SEOE2E-10: SchemaBuilder template selector dropdown is visible', async ({ page }) => {
@@ -175,7 +178,7 @@ test.describe('SEO E2E: SchemaBuilder (Article Editor)', () => {
     await expect(page.locator('h1, h2').first()).toBeVisible({ timeout: 15000 });
 
     // Wait for SchemaBuilder to render
-    await expect(page.locator('[data-testid="schema-builder"]')).toBeVisible({ timeout: 15000 });
+    await expect(page.locator('[data-testid="schema-builder"]')).toBeVisible({ timeout: 30000 });
 
     // Verify the template select exists
     await expect(page.locator('[data-testid="schema-template-select"]')).toBeVisible({

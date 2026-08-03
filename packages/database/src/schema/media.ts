@@ -18,7 +18,6 @@ export const media = pgTable(
       .references(() => users.id)
       .notNull(),
     createdAt: timestamp('created_at').defaultNow().notNull(),
-    deletedAt: timestamp('deleted_at'),
   },
   (table) => ({
     uploadedByIdx: index('idx_media_uploaded_by').on(table.uploadedBy),

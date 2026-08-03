@@ -80,100 +80,105 @@ router.post(
   rateLimit(5, 60_000),
   validateBody(partnerRegistrationSchema),
   async (c) => {
-    const {
-      email,
-      phone,
-      password,
-      fullName,
-      ktpNumber,
-      domicile,
-      skillIds,
-      suggestedServiceName,
-      suggestedServiceDescription,
-    } = c.get('validated') as PartnerRegistrationInput;
-
-    const existing = await db
-      .select({ id: users.id })
-      .from(users)
-      .where(eq(users.email, email))
-      .limit(1);
-
-    if (existing[0]) return conflict(c, 'Email sudah terdaftar');
-
-    const passwordHash = await hashPassword(password);
-
-    const [user] = await db
-      .insert(users)
-      .values({
+    try {
+      const {
         email,
         phone,
-        passwordHash,
-        role: 'partner',
-        status: 'active',
-      })
-      .returning({ id: users.id, email: users.email, role: users.role });
-
-    if (!user) return serverError(c, 'Gagal membuat user');
-
-    const [profile] = await db
-      .insert(partnerProfiles)
-      .values({
-        userId: user.id,
+        password,
         fullName,
-        phone,
         ktpNumber,
-        domicile: domicile ?? null,
-      })
-      .returning({ id: partnerProfiles.id });
+        domicile,
+        skillIds,
+        suggestedServiceName,
+        suggestedServiceDescription,
+      } = c.get('validated') as PartnerRegistrationInput;
 
-    // Insert partner skills if provided
-    if (skillIds && skillIds.length > 0 && profile) {
-      await db.insert(partnerSkills).values(
-        skillIds.map((categoryId) => ({
-          partnerId: profile.id,
-          categoryId,
-          proficiency: 'Intermediate',
-        })),
-      );
-    }
+      const existing = await db
+        .select({ id: users.id })
+        .from(users)
+        .where(eq(users.email, email))
+        .limit(1);
 
-    // Simpan usulan layanan baru ke database + notifikasi admin
-    if (suggestedServiceName) {
-      try {
-        await db.insert(serviceSuggestions).values({
-          partnerName: fullName,
-          partnerEmail: email,
-          serviceName: suggestedServiceName,
-          description: suggestedServiceDescription ?? null,
-          status: 'pending',
-        });
-      } catch {
-        // silent — jangan sampai gagal menyimpan suggestion menggagalkan registrasi
+      if (existing[0]) return conflict(c, 'Email sudah terdaftar');
+
+      const passwordHash = await hashPassword(password);
+
+      const [user] = await db
+        .insert(users)
+        .values({
+          email,
+          phone,
+          passwordHash,
+          role: 'partner',
+          status: 'active',
+        })
+        .returning({ id: users.id, email: users.email, role: users.role });
+
+      if (!user) return serverError(c, 'Gagal membuat user');
+
+      const [profile] = await db
+        .insert(partnerProfiles)
+        .values({
+          userId: user.id,
+          fullName,
+          phone,
+          ktpNumber,
+          domicile: domicile ?? null,
+        })
+        .returning({ id: partnerProfiles.id });
+
+      // Insert partner skills if provided
+      if (skillIds && skillIds.length > 0 && profile) {
+        await db.insert(partnerSkills).values(
+          skillIds.map((categoryId) => ({
+            partnerId: profile.id,
+            categoryId,
+            proficiency: 'Intermediate',
+          })),
+        );
       }
 
+      // Simpan usulan layanan baru ke database + notifikasi admin
+      if (suggestedServiceName) {
+        try {
+          await db.insert(serviceSuggestions).values({
+            partnerName: fullName,
+            partnerEmail: email,
+            serviceName: suggestedServiceName,
+            description: suggestedServiceDescription ?? null,
+            status: 'pending',
+          });
+        } catch {
+          // silent — jangan sampai gagal menyimpan suggestion menggagalkan registrasi
+        }
+
+        notifyAdmins(
+          'partner.suggested_service',
+          'Usulan Layanan Baru dari Mitra',
+          `Mitra ${fullName} (${email}) mengusulkan layanan baru: ${suggestedServiceName}${suggestedServiceDescription ? ` — ${suggestedServiceDescription}` : ''}`,
+        );
+      }
+
+      // Generate verification token & send email (fire-and-forget)
+      const verificationToken = generateRefreshToken();
+      await db.insert(passwordResets).values({
+        userId: user.id,
+        tokenHash: hashToken(verificationToken),
+        expiresAt: getRefreshTokenExpiry(),
+      });
+      sendVerificationEmail(email, fullName, verificationToken);
+
       notifyAdmins(
-        'partner.suggested_service',
-        'Usulan Layanan Baru dari Mitra',
-        `Mitra ${fullName} (${email}) mengusulkan layanan baru: ${suggestedServiceName}${suggestedServiceDescription ? ` — ${suggestedServiceDescription}` : ''}`,
+        'partner.registered',
+        'Partner Baru',
+        `Mitra baru mendaftar: ${fullName} (${email})`,
       );
+
+      return created(c, { user }, 'Registrasi partner berhasil');
+    } catch (err) {
+      console.error('[partner/register]', err);
+      return serverError(c, 'Gagal mendaftarkan partner');
     }
-
-    // Generate verification token & send email (fire-and-forget)
-    const verificationToken = generateRefreshToken();
-    await db.insert(passwordResets).values({
-      userId: user.id,
-      tokenHash: hashToken(verificationToken),
-      expiresAt: getRefreshTokenExpiry(),
-    });
-    sendVerificationEmail(email, fullName, verificationToken);
-
-    notifyAdmins(
-      'partner.registered',
-      'Partner Baru',
-      `Mitra baru mendaftar: ${fullName} (${email})`,
-    );
-
-    return created(c, { user }, 'Registrasi partner berhasil');
   },
 );
 

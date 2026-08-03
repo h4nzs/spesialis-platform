@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { loginViaApi } from './helpers.ts';
 
 const API_URL = 'http://localhost:3000';
 
@@ -124,18 +125,11 @@ test.describe('Partner Registration - E2E-012', () => {
   });
 
   test('E2E-012: Registered partner profile shows Pending verification', async ({ request }) => {
-    // Login first
-    const loginRes = await request.post(`${API_URL}/api/v1/auth/login`, {
-      data: { email: TEST_PARTNER.email, password: TEST_PARTNER.password },
-    });
-    expect(loginRes.status()).toBe(200);
-    const loginBody = (await loginRes.json()) as { data: { token: string } };
-    const token = loginBody.data.token;
-    expect(token).toBeTruthy();
+    const auth = await loginViaApi(request, TEST_PARTNER.email, TEST_PARTNER.password);
+    expect(auth.token).toBeTruthy();
 
-    // Get partner profile
     const profileRes = await request.get(`${API_URL}/api/v1/partners/me`, {
-      headers: { Authorization: `Bearer ${token}` },
+      headers: { Authorization: `Bearer ${auth.token}` },
     });
     expect(profileRes.status()).toBe(200);
     const profileBody = (await profileRes.json()) as {
@@ -146,15 +140,9 @@ test.describe('Partner Registration - E2E-012', () => {
   });
 
   test('E2E-012: Admin can verify the new partner', async ({ request }) => {
-    // Login as admin
-    const adminLoginRes = await request.post(`${API_URL}/api/v1/auth/login`, {
-      data: { email: 'admin@ahlipanggilan.id', password: 'password123' },
-    });
-    expect(adminLoginRes.status()).toBe(200);
-    const adminBody = (await adminLoginRes.json()) as { data: { token: string } };
-    const adminToken = adminBody.data.token;
+    const adminAuth = await loginViaApi(request, 'admin@ahlipanggilan.id', 'password123');
+    const adminToken = adminAuth.token;
 
-    // List partners to find our test partner
     const partnersRes = await request.get(`${API_URL}/api/v1/partners`, {
       headers: { Authorization: `Bearer ${adminToken}` },
     });
@@ -176,19 +164,12 @@ test.describe('Partner Registration - E2E-012', () => {
   });
 
   test('E2E-012: Verified partner can access dashboard UI', async ({ page, request }) => {
-    // Login as the new partner
-    const loginRes = await request.post(`${API_URL}/api/v1/auth/login`, {
-      data: { email: TEST_PARTNER.email, password: TEST_PARTNER.password },
-    });
-    expect(loginRes.status()).toBe(200);
-    const loginBody = (await loginRes.json()) as { data: { token: string } };
-    const token = loginBody.data.token;
+    const auth = await loginViaApi(request, TEST_PARTNER.email, TEST_PARTNER.password);
 
-    // Set auth cookie directly (consistent with other tests that inline this)
     await page.context().addCookies([
       {
         name: 'token',
-        value: token,
+        value: auth.token,
         domain: 'localhost',
         path: '/',
         httpOnly: true,
