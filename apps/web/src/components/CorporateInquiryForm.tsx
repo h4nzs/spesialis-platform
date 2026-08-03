@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { trackInquirySubmit } from '@spesialis/analytics';
+import { trackInquirySubmit } from '@ahlipanggilan/analytics';
 import { createBrowserClient, parseApiError } from '@ahlipanggilan/shared';
 import { createCompanySchema } from '@ahlipanggilan/validation';
 import { Button, Input, Card } from '@ahlipanggilan/ui';

@@ -1,5 +1,6 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro'
+import { createServerClient } from '@ahlipanggilan/shared'
 interface CmsPage {
   id: string;
   title: string;
@@ -13,15 +14,14 @@ let pageTitle = 'Syarat & Ketentuan'
 let pageDescription = 'Syarat dan ketentuan penggunaan layanan Ahli Panggilan.'
 let pageHtml = ''
 const apiUrl = process.env.API_URL ?? process.env.PUBLIC_API_URL ?? 'http://localhost:3000'
+const api = createServerClient('', '', apiUrl)
 
 let useCms = false
 
 try {
-  const res = await fetch(`${apiUrl}/api/v1/cms/pages/${pageSlug}`).catch(() => null)
-  if (res?.ok) {
-    const json = await res.json()
-    const cmsPage: CmsPage | undefined = json.data ?? undefined
-    if (cmsPage) {
+  const result = await api.get<CmsPage>(`/api/v1/cms/pages/${pageSlug}`).catch(() => null)
+  const cmsPage = result?.data
+  if (cmsPage) {
       pageTitle = cmsPage.title
       pageDescription = (cmsPage.meta as Record<string, string> | null)?.description ?? pageDescription
       pageHtml = cmsPage.content ?? ''
@@ -29,7 +29,7 @@ try {
     }
   }
 } catch {
-  // fallback to hardcoded content below
+  
 }
 
 if (!useCms) {

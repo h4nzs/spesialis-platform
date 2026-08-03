@@ -10,7 +10,7 @@
 //   PUBLIC_SITE_DOMAIN       — Site domain (e.g. ahlipanggilan.id)
 // =============================================================================
 
-import { analyticsInit } from '@spesialis/analytics';
+import { analyticsInit } from '@ahlipanggilan/analytics';
 
 const plausibleDomain = import.meta.env.PUBLIC_PLAUSIBLE_DOMAIN ?? '';
 const siteDomain = import.meta.env.PUBLIC_SITE_DOMAIN ?? 'ahlipanggilan.id';

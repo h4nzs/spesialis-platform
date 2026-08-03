@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { createBrowserClient } from '@ahlipanggilan/shared';
 
 interface InitialAuth {
   userId: string;
@@ -65,16 +66,10 @@ export function AuthNav({ initialAuth }: AuthNavProps) {
 
     async function checkAuth() {
       try {
-        const res = await fetch('/api/v1/auth/me', { credentials: 'include' });
+        const api = createBrowserClient();
+        const result = await api.get<{ user: { role: string } }>('/api/v1/auth/me');
         if (!cancelled) {
-          if (res.ok) {
-            const json = (await res.json()) as {
-              data: { user: { role: string } };
-            };
-            setClientAuth({ role: json.data.user.role });
-          } else {
-            setClientAuth('guest');
-          }
+          setClientAuth({ role: result.data.user.role });
         }
       } catch {
         if (!cancelled) {

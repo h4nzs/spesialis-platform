@@ -1,16 +1,23 @@
 ---
-export const prerender = false;
+export const prerender = true;
 
 import BaseLayout from '../../layouts/BaseLayout.astro'
 import { ServiceDetail } from '../../components/services/ServiceDetail'
 import type { ServiceData, ReviewData, FaqItem, RelatedServiceItem } from '../../components/services/utils'
 import { inferCategorySlug } from '@ahlipanggilan/shared'
+import { createServerClient } from '@ahlipanggilan/shared'
+
+export async function getStaticPaths() {
+  const apiUrl = process.env.PUBLIC_API_URL ?? process.env.API_URL ?? 'http://localhost:3000'
+  const api = createServerClient('', '', apiUrl)
+  const result = await api.get<Array<{ slug: string }>>('/api/v1/services?limit=500')
+  return (result.data ?? []).map((s) => ({ params: { slug: s.slug } }))
+}
 
 const { slug } = Astro.params
 
-// ── SSR data fetching ───────────────────────────────────────────
-// Fetch service + reviews + category FAQs for JSON-LD structured data
-// ServiceDetail client component handles visual rendering with skeleton
+// ── Pre-render data fetching ────────────────────────────────────────
+// Runs at build time via getStaticPaths + prerender = true
 let service: ServiceData | null = null
 let reviews: ReviewData | null = null
 let error: string | null = null
@@ -21,64 +28,42 @@ let coverageCities: string[] = [];
 
 try {
   const apiUrl = process.env.PUBLIC_API_URL ?? process.env.API_URL ?? 'http://localhost:3000'
-  const [serviceRes, reviewsRes] = await Promise.all([
-    fetch(`${apiUrl}/api/v1/services/${slug}`),
-    fetch(`${apiUrl}/api/v1/services/${slug}/reviews`),
+  const api = createServerClient('', '', apiUrl)
+  const [serviceResult, reviewsResult] = await Promise.all([
+    api.get<ServiceData>(`/api/v1/services/${slug}`),
+    api.get<ReviewData>(`/api/v1/services/${slug}/reviews`).catch(() => null),
   ])
-  if (!serviceRes.ok) throw new Error('Layanan tidak ditemukan')
-  const serviceJson = await serviceRes.json()
-  service = serviceJson.data
-  if (reviewsRes.ok) {
-    const reviewsJson = await reviewsRes.json()
-    reviews = reviewsJson.data
-  }
+  service = serviceResult.data
+  reviews = reviewsResult?.data ?? null
 
   // ── Fetch coverage areas for areaServed JSON-LD ────────────
   try {
-    const covRes = await fetch(`${apiUrl}/api/v1/cms/coverage-areas`);
-    if (covRes.ok) {
-      const covJson = await covRes.json();
-      const rawCities: Array<{ city: string }> = covJson.data ?? [];
-      coverageCities = rawCities.map((c) => c.city);
-    }
-  } catch {
-    // Silent — areaServed will be omitted
-  }
+    const covResult = await api.get<Array<{ city: string }>>('/api/v1/cms/coverage-areas')
+    coverageCities = (covResult?.data ?? []).map((c) => c.city)
+  } catch {}
 
   // ── Fetch category slug for AEO + HowTo ──────────────────
   let matchedCategorySlug: string | null = null
   if (service?.categoryId) {
     try {
-      const catRes = await fetch(`${apiUrl}/api/v1/service-categories`)
-      if (catRes.ok) {
-        const catJson = await catRes.json()
-        const categories: Array<{ id: string; slug: string }> = catJson.data ?? []
-        const cat = categories.find((c) => c.id === service!.categoryId)
-        if (cat?.slug) {
-          matchedCategorySlug = cat.slug
-        }
-      }
-    } catch {
-      // Silent — fall back to generated FAQ + generic HowTo below
-    }
+      const catResult = await api.get<Array<{ id: string; slug: string }>>('/api/v1/service-categories')
+      const categories = catResult?.data ?? []
+      const cat = categories.find((c) => c.id === service!.categoryId)
+      if (cat?.slug) matchedCategorySlug = cat.slug
+    } catch {}
   }
 
   // ── Fetch category-specific FAQs for AEO ───────────────────
   if (matchedCategorySlug) {
     try {
-      const faqRes = await fetch(
-        `${apiUrl}/api/v1/cms/faq?category=${matchedCategorySlug}`,
+      const faqResult = await api.get<Array<{ question: string; answer: string }>>(
+        `/api/v1/cms/faq?category=${matchedCategorySlug}`,
       )
-      if (faqRes.ok) {
-        const faqJson = await faqRes.json()
-        const rawFaqs: Array<{ question: string; answer: string }> = faqJson.data ?? []
-        if (rawFaqs.length > 0) {
-          serviceFaqs = rawFaqs.map((f) => ({ question: f.question, answer: f.answer }))
-        }
+      const rawFaqs = faqResult?.data ?? []
+      if (rawFaqs.length > 0) {
+        serviceFaqs = rawFaqs.map((f) => ({ question: f.question, answer: f.answer }))
       }
-    } catch {
-      // Silent — fall back to generated FAQs below
-    }
+    } catch {}
   }
 
   // ── Fallback: auto-generate FAQs if none from CMS ─────────
@@ -110,18 +95,11 @@ try {
   // ── Fetch related services from same category (internal linking) ─
   if (service?.categoryId) {
     try {
-      const relatedRes = await fetch(
-        `${apiUrl}/api/v1/services?categoryId=${service.categoryId}&limit=6`,
+      const relatedResult = await api.get<RelatedServiceItem[]>(
+        `/api/v1/services?categoryId=${service.categoryId}&limit=6`,
       )
-      if (relatedRes.ok) {
-        const relatedJson = await relatedRes.json()
-        const raw: RelatedServiceItem[] = relatedJson.data ?? []
-        // Exclude the current service from related list
-        relatedServices = raw.filter((r) => r.slug !== service!.slug)
-      }
-    } catch {
-      // Silent — related services section will not appear
-    }
+      relatedServices = (relatedResult?.data ?? []).filter((r) => r.slug !== service!.slug)
+    } catch {}
   }
 
   // ── Determine category slug for HowTo schema ─────────────

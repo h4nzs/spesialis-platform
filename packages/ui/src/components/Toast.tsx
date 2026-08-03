@@ -159,7 +159,7 @@ export function showToast(options: ToastOptions) {
   };
 
   const borderClass = TOAST_BORDER_CLASSES[options.variant ?? 'info'] ?? 'border-info-200';
-  el.outerHTML = `<div id="toast-${id}" class="pointer-events-auto animate-slide-up rounded-xl border ${borderClass} bg-bg-surface px-4 py-3 text-body-sm shadow-lg">${options.message}</div>`;
+  el.outerHTML = `<div id="toast-${id}" role="alert" aria-live="assertive" class="pointer-events-auto animate-slide-up rounded-xl border ${borderClass} bg-bg-surface px-4 py-3 text-body-sm shadow-lg">${options.message}</div>`;
 
   const dur = options.duration ?? 4000;
   if (dur > 0) {

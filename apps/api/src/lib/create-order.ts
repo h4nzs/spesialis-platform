@@ -138,7 +138,8 @@ export async function createOrderTransaction(
     for (const item of items) {
       const svc = priceLookup.get(item.serviceId);
       const snapName = svc?.name ?? '';
-      const unitPrice = (svc?.price ?? 0) * item.quantity;
+      const unitPrice = svc?.price ?? 0;
+      const subtotal = unitPrice * item.quantity;
 
       await tx.insert(orderItems).values({
         orderId: order.id,
@@ -146,7 +147,7 @@ export async function createOrderTransaction(
         serviceNameSnapshot: snapName,
         quantity: item.quantity,
         unitPrice: String(unitPrice),
-        subtotal: String(unitPrice),
+        subtotal: String(subtotal),
       });
     }
 

@@ -2,7 +2,7 @@ import { useState } from 'react';
 import type { UserRole } from '@ahlipanggilan/types';
 import { NAV_MAP, NAV_ICONS, isNavItem, type NavEntry, type NavSection } from './Sidebar.tsx';
 import { forceLogout } from '../../lib/auth.ts';
-import { trackNavigation } from '@spesialis/analytics';
+import { trackNavigation } from '@ahlipanggilan/analytics';
 
 function Icon({ name, size = 22, className }: { name: string; size?: number; className?: string }) {
   const svg = NAV_ICONS[name];

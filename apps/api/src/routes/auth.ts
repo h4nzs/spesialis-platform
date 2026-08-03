@@ -107,8 +107,6 @@ router.post('/register', rateLimit(10, 60_000), validateBody(registerSchema), as
   setAuthCookies(c, result.token, result.refreshToken);
   return created(c, {
     user: { id: result.user.id, email: result.user.email, role: result.user.role },
-    token: result.token,
-    refreshToken: result.refreshToken,
   });
 });
 
@@ -189,12 +187,9 @@ router.post('/login', rateLimit(10, 60_000), validateBody(loginSchema), async (c
     return unauthorized(c, 'Email atau password salah');
   }
 
-  if (user.status !== 'active') {
-    return error(c, 'AUTH_ACCOUNT_BLOCKED', 'Akun tidak aktif', 403);
-  }
-
   const valid = await verifyPassword(user.passwordHash, password);
-  if (!valid) {
+
+  if (!valid || user.status !== 'active') {
     return unauthorized(c, 'Email atau password salah');
   }
 
@@ -212,8 +207,6 @@ router.post('/login', rateLimit(10, 60_000), validateBody(loginSchema), async (c
   setAuthCookies(c, token, refreshToken);
   return success(c, {
     user: { id: user.id, email: user.email, role: user.role },
-    token,
-    refreshToken,
   });
 });
 
@@ -249,19 +242,37 @@ router.post('/refresh', rateLimit(20, 60_000), validateBody(refreshTokenSchema),
 
   const displayName = await getUserDisplayName(user.id);
 
-  await db.update(refreshTokens).set({ revoked: true }).where(eq(refreshTokens.id, stored.id));
+  const result = await db.transaction(async (tx) => {
+    const [locked] = await tx
+      .select({ id: refreshTokens.id })
+      .from(refreshTokens)
+      .where(and(eq(refreshTokens.id, stored.id), eq(refreshTokens.revoked, false)))
+      .for('update')
+      .limit(1);
 
-  const newRefreshToken = generateRefreshToken();
-  await db.insert(refreshTokens).values({
-    userId: user.id,
-    tokenHash: hashToken(newRefreshToken),
-    expiresAt: getRefreshTokenExpiry(),
+    if (!locked) {
+      return { success: false };
+    }
+
+    await tx.update(refreshTokens).set({ revoked: true }).where(eq(refreshTokens.id, stored.id));
+
+    const newRefreshToken = generateRefreshToken();
+    await tx.insert(refreshTokens).values({
+      userId: user.id,
+      tokenHash: hashToken(newRefreshToken),
+      expiresAt: getRefreshTokenExpiry(),
+    });
+
+    const newToken = await signAccessToken(user.id, user.email, user.role, displayName);
+    return { success: true, token: newToken, refreshToken: newRefreshToken };
   });
 
-  const token = await signAccessToken(user.id, user.email, user.role, displayName);
+  if (!result.success) {
+    return unauthorized(c, 'Refresh token telah digunakan — kemungkinan token dicuri');
+  }
 
-  setAuthCookies(c, token, newRefreshToken);
-  return success(c, { token, refreshToken: newRefreshToken });
+  setAuthCookies(c, result.token!, result.refreshToken!);
+  return success(c, { token: result.token!, refreshToken: result.refreshToken! });
 });
 
 router.post('/logout', authMiddleware, rateLimit(10, 60_000), async (c) => {
@@ -337,6 +348,10 @@ router.post(
     await db.transaction(async (tx) => {
       await tx.update(users).set({ passwordHash }).where(eq(users.id, stored.userId));
       await tx.update(passwordResets).set({ used: true }).where(eq(passwordResets.id, stored.id));
+      await tx
+        .update(refreshTokens)
+        .set({ revoked: true })
+        .where(and(eq(refreshTokens.userId, stored.userId), eq(refreshTokens.revoked, false)));
     });
 
     return success(c, null, 'Password berhasil direset');

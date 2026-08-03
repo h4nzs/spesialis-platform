@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { trackImmediate } from '@spesialis/analytics';
+import { trackImmediate } from '@ahlipanggilan/analytics';
 import { registerSchema } from '@ahlipanggilan/validation';
 import { Button } from '@ahlipanggilan/ui';
 import { getApiClient, redirectToDashboard } from '../lib/auth.ts';

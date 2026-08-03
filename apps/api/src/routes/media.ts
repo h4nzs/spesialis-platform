@@ -44,8 +44,15 @@ async function handleListMedia(c: Context) {
   const limit = Number(c.req.query('limit') ?? 20);
   const search = c.req.query('search');
   const mediaType = c.req.query('mediaType');
+  const userId = c.get('userId');
+  const userRole = c.get('userRole');
 
   const conditions: ReturnType<typeof sql>[] = [];
+
+  if (userRole !== 'admin' && userRole !== 'super_admin') {
+    conditions.push(eq(media.uploadedBy, userId));
+  }
+
   if (search) {
     conditions.push(sql`${media.filename} ILIKE ${'%' + search + '%'}`);
   }
@@ -154,10 +161,16 @@ router.post('/upload', authMiddleware, async (c) => {
 
 router.get('/:id', authMiddleware, async (c) => {
   const mediaId = c.req.param('id')!;
+  const userId = c.get('userId');
+  const userRole = c.get('userRole');
 
   const [record] = await db.select().from(media).where(eq(media.id, mediaId)).limit(1);
 
   if (!record) return notFound(c, 'Media tidak ditemukan');
+
+  if (record.uploadedBy !== userId && userRole !== 'admin' && userRole !== 'super_admin') {
+    return forbidden(c, 'Tidak dapat mengakses media milik user lain');
+  }
 
   return success(c, {
     id: record.id,
@@ -172,14 +185,20 @@ router.get('/:id', authMiddleware, async (c) => {
   });
 });
 
-router.get('/:id/file', async (c) => {
+router.get('/:id/file', authMiddleware, async (c) => {
   const mediaId = c.req.param('id')!;
+  const userId = c.get('userId');
+  const userRole = c.get('userRole');
 
   const [record] = await db.select().from(media).where(eq(media.id, mediaId)).limit(1);
 
   if (!record) return notFound(c, 'Media tidak ditemukan');
 
-  // R2: redirect to public URL
+  if (record.uploadedBy !== userId && userRole !== 'admin' && userRole !== 'super_admin') {
+    return forbidden(c, 'Tidak dapat mengakses media milik user lain');
+  }
+
+  // R2: redirect to public URL (auth already checked above)
   if (record.disk === 'Cloudflare R2' || (record.disk as StorageDisk) === 'Cloudflare R2') {
     try {
       const publicUrl = getR2PublicUrl(record.filename);

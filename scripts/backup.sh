@@ -30,16 +30,15 @@ if [ -f "$PROJECT_DIR/.env" ]; then
   set +a
 fi
 
-DB_URL="${DATABASE_URL:-postgres://specialist:specialist@localhost:5432/specialist}"
+DB_URL="${DATABASE_URL:?DATABASE_URL is required}"
 
 echo "📦 Backing up database to ${OUTPUT_DIR}/${FILENAME}..."
 
 pg_dump "$DB_URL" \
   --no-owner \
   --no-acl \
-  --format=custom \
-  --compress=9 \
-  --file="${OUTPUT_DIR}/${FILENAME}"
+  --format=plain \
+  | gzip -9 > "${OUTPUT_DIR}/${FILENAME}"
 
 echo "✅ Backup created: ${FILENAME} ($(du -h "${OUTPUT_DIR}/${FILENAME}" | cut -f1))"
 

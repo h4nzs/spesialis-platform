@@ -25,7 +25,7 @@
     "@astrojs/node": "^11.0.2",
     "@astrojs/sitemap": "^3.7.3",
     "@fontsource-variable/inter": "^5.2.8",
-    "@spesialis/analytics": "workspace:*",
+    "@ahlipanggilan/analytics": "workspace:*",
     "astro": "^7.0.3",
     "hono": "^4.12.27",
     "lucide-react": "^1.23.0",

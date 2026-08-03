@@ -54,7 +54,7 @@ export const FINAL_ORDER_STATUSES: OrderStatus[] = [
 /** Status transisi yang valid untuk setiap status */
 export const ORDER_STATUS_TRANSITIONS: Record<OrderStatus, OrderStatus[]> = {
   Draft: ['Pending Confirmation'],
-  'Pending Confirmation': ['Confirmed', 'Cancelled'],
+  'Pending Confirmation': ['Confirmed', 'Waiting Assignment', 'Cancelled'],
   Confirmed: ['Waiting Assignment', 'Cancelled'],
   'Waiting Assignment': ['Partner Assigned', 'Cancelled'],
   'Partner Assigned': ['Partner Accepted', 'Waiting Assignment', 'Cancelled'],

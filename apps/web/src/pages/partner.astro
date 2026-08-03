@@ -1,5 +1,6 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro'
+import { createServerClient } from '@ahlipanggilan/shared'
 
 const benefits = [
   {
@@ -73,11 +74,11 @@ const FALLBACK_TESTIMONIALS = [
 
 let testimonials = FALLBACK_TESTIMONIALS;
 try {
-  const apiUrl = process.env.API_URL ?? process.env.PUBLIC_API_URL ?? 'http://localhost:3000';
-  const res = await fetch(`${apiUrl}/api/v1/cms/testimonials`);
-  if (res.ok) {
-    const json = await res.json();
-    const raw = json.data ?? [];
+  const apiUrl = process.env.API_URL ?? process.env.PUBLIC_API_URL ?? 'http://localhost:3000'
+const api = createServerClient('', '', apiUrl);
+  const result = await api.get('/api/v1/cms/testimonials');
+  if (result?.data) {
+    const raw = result.data;
     if (Array.isArray(raw) && raw.length > 0) {
       testimonials = raw.map((item: { name: string; location: string | null; role: string | null; quote: string; rating: string }) => ({
         name: item.name,

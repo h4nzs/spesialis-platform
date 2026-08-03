@@ -25,8 +25,21 @@ import { db } from '@ahlipanggilan/database';
 import { users } from '@ahlipanggilan/database';
 import { hashPassword } from '../lib/auth.ts';
 
+if (process.env.NODE_ENV === 'production' || process.env.APP_ENV === 'production') {
+  console.error('❌ seed-admin cannot be run in production. Use a migration script instead.');
+  process.exit(1);
+}
+
 const email = process.env['ADMIN_EMAIL'] ?? 'admin@ahlipanggilan.id';
-const password = process.env['ADMIN_PASSWORD'] ?? 'password123';
+const password = process.env['ADMIN_PASSWORD'];
+
+if (!password) {
+  console.error(
+    '❌ ADMIN_PASSWORD environment variable is required.\n' +
+      '   Example: ADMIN_PASSWORD=<your-strong-password> pnpm db:seed-admin',
+  );
+  process.exit(1);
+}
 
 async function main() {
   console.log('👤 Creating super_admin user...\n');
@@ -40,11 +53,10 @@ async function main() {
 
   if (existing) {
     console.log(`  ⚠️  User "${email}" already exists — skipping`);
-    console.log(`\n  Login: ${email} / ${password}`);
     return;
   }
 
-  const passwordHash = await hashPassword(password);
+  const passwordHash = await hashPassword(password!);
 
   const [user] = await db
     .insert(users)

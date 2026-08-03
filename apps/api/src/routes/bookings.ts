@@ -416,6 +416,15 @@ router.get('/:id', authMiddleware, async (c) => {
       .where(eq(partnerProfiles.userId, userId))
       .limit(1);
     if (!profile || order.partnerId !== profile.id) return forbidden(c);
+  } else if (userRole === 'corporate') {
+    const [cu] = await db
+      .select({ companyId: companyUsers.companyId })
+      .from(companyUsers)
+      .where(eq(companyUsers.userId, userId))
+      .limit(1);
+    if (!cu || order.companyId !== cu.companyId) return forbidden(c);
+  } else if (userRole === 'content_manager') {
+    return forbidden(c, 'Content manager tidak dapat mengakses order detail');
   }
 
   const items = await db.select().from(orderItems).where(eq(orderItems.orderId, orderId));
@@ -458,10 +467,10 @@ router.post(
       .limit(1);
     if (!order) return notFound(c, 'Booking tidak ditemukan');
 
-    // Guard: verify the booking can be confirmed (state machine: Pending Confirmation → Confirmed)
-    // The transaction skips to 'Waiting Assignment' because there is no separate endpoint to
-    // move a confirmed booking into the assignment queue.
-    if (!canTransition(order.status, 'Confirmed')) {
+    // Guard: verify the booking can be confirmed.
+    // Transitions directly to 'Waiting Assignment' — the 'Confirmed' state
+    // is available for future use when a separate confirmation step is needed.
+    if (!canTransition(order.status, 'Waiting Assignment')) {
       return conflict(c, `Tidak bisa konfirmasi dari status ${order.status}`);
     }
 
@@ -549,11 +558,24 @@ router.post(
     }
 
     const [partner] = await db
-      .select({ id: partnerProfiles.id, availability: partnerProfiles.availability })
+      .select({
+        id: partnerProfiles.id,
+        availability: partnerProfiles.availability,
+        verificationStatus: partnerProfiles.verificationStatus,
+      })
       .from(partnerProfiles)
       .where(eq(partnerProfiles.userId, data.partnerId))
       .limit(1);
     if (!partner) return error(c, 'PARTNER_NOT_FOUND', 'Partner tidak ditemukan', 404);
+
+    if (partner.verificationStatus !== 'Approved') {
+      return error(
+        c,
+        'PARTNER_NOT_VERIFIED',
+        'Partner belum diverifikasi — verifikasi dulu sebelum assign',
+        400,
+      );
+    }
 
     await db.transaction(async (tx) => {
       await tx
@@ -620,11 +642,15 @@ router.post('/:id/accept', authMiddleware, async (c) => {
   const userId = c.get('userId');
 
   const [profile] = await db
-    .select({ id: partnerProfiles.id })
+    .select({ id: partnerProfiles.id, verificationStatus: partnerProfiles.verificationStatus })
     .from(partnerProfiles)
     .where(eq(partnerProfiles.userId, userId))
     .limit(1);
   if (!profile) return forbidden(c, 'Hanya partner yang bisa accept');
+
+  if (profile.verificationStatus !== 'Approved') {
+    return forbidden(c, 'Akun partner Anda belum diverifikasi — silahkan tunggu verifikasi admin');
+  }
 
   const [order] = await db
     .select({ id: orders.id, status: orders.status })

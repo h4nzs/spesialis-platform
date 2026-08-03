@@ -9,7 +9,7 @@
 //   </script>
 //
 // Only helpers suitable for Astro inline scripts are re-exported here.
-// React components should import from '@spesialis/analytics' directly.
+// React components should import from '@ahlipanggilan/analytics' directly.
 // =============================================================================
 
 import {
@@ -23,7 +23,7 @@ import {
   trackArticleView,
   trackBookingStart,
   trackBookingSubmit,
-} from '@spesialis/analytics';
+} from '@ahlipanggilan/analytics';
 
 export {
   trackCTA,

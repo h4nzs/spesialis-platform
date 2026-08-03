@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { track } from '@spesialis/analytics';
+import { track } from '@ahlipanggilan/analytics';
 import { createBrowserClient } from '@ahlipanggilan/shared';
 
 interface ServiceItem {

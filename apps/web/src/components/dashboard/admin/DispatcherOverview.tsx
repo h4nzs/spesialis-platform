@@ -10,7 +10,7 @@ import {
   Modal,
   Input,
 } from '@ahlipanggilan/ui';
-import { track } from '@spesialis/analytics';
+import { track } from '@ahlipanggilan/analytics';
 
 // ── Types ─────────────────────────────────────────────────────
 

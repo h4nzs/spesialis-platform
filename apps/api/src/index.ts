@@ -17,11 +17,34 @@ function validateEnv(): void {
     }
   }
 
-  if (process.env.JWT_SECRET === 'change-me') {
+  const weakSecrets = ['change-me', 'secret', 'jwt-secret', 'ahlipanggilan', 'password123', 'test'];
+
+  if (weakSecrets.includes(process.env.JWT_SECRET!)) {
     console.error(
-      '❌ JWT_SECRET is still set to the default value "change-me". Generate a strong secret.',
+      `❌ JWT_SECRET is set to a weak/default value "${process.env.JWT_SECRET}". Generate a strong secret.`,
     );
     console.error('   Run: openssl rand -hex 32');
+    process.exit(1);
+  }
+
+  if (process.env.JWT_SECRET!.length < 32) {
+    console.error('❌ JWT_SECRET is too short (< 32 characters). Generate a strong secret.');
+    console.error('   Run: openssl rand -hex 32');
+    process.exit(1);
+  }
+
+  if (process.env.APP_ENV === 'production' && process.env.JWT_SECRET!.length < 64) {
+    console.error(
+      '❌ JWT_SECRET is too short for production (< 64 characters). Generate a strong secret.',
+    );
+    console.error('   Run: openssl rand -hex 32');
+    process.exit(1);
+  }
+
+  if (process.env.RATE_LIMIT_DISABLED === 'true' && process.env.APP_ENV === 'production') {
+    console.error(
+      '❌ RATE_LIMIT_DISABLED is set to true in production. Rate limiting must be enabled.',
+    );
     process.exit(1);
   }
 
@@ -39,6 +62,8 @@ import { cors } from 'hono/cors';
 import { logger } from 'hono/logger';
 import { prettyJSON } from 'hono/pretty-json';
 import { secureHeaders } from 'hono/secure-headers';
+import { bodyLimit } from 'hono/body-limit';
+import { compress } from 'hono/compress';
 
 import { success } from './lib/response.ts';
 import { errorHandler } from './middleware/error-handler.ts';
@@ -93,6 +118,9 @@ app.use(
   }),
 );
 app.use('*', logger());
+
+app.use('*', bodyLimit({ maxSize: 10 * 1024 * 1024 }));
+app.use('*', compress());
 
 app.onError(errorHandler);
 

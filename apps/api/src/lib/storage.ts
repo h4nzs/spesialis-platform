@@ -1,6 +1,6 @@
 import { writeFile, mkdir, unlink } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
-import { join, extname, resolve } from 'node:path';
+import { join, extname, resolve, basename, sep } from 'node:path';
 import { randomUUID } from 'node:crypto';
 
 /* ── Constants ───────────────────────────────────────────────────── */
@@ -24,8 +24,10 @@ export interface StoredFile {
 
 /* ── R2 / S3 Client (lazy — tidak blocking module loading) ──────── */
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-let _s3Client: any = null;
+// Dynamic import of @aws-sdk/client-s3 — not available in all environments
+type S3ClientType = InstanceType<typeof import('@aws-sdk/client-s3').S3Client>;
+
+let _s3Client: S3ClientType | null = null;
 
 function getR2Config() {
   const endpoint = process.env.R2_ENDPOINT;
@@ -38,8 +40,7 @@ function getR2Config() {
   return null;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-async function getS3Client(): Promise<any> {
+async function getS3Client(): Promise<S3ClientType> {
   if (!_s3Client) {
     const cfg = getR2Config();
     if (!cfg)
@@ -89,6 +90,8 @@ export function getR2PublicUrl(filename: string): string {
 
 /* ── Sharp (lazy — tidak blocking module loading) ──────────────────── */
 
+/* ── Sharp (lazy — tidak blocking module loading) ──────────────────── */
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 let _sharp: any = null;
 
@@ -107,6 +110,25 @@ export function isAllowedMimeType(mimeType: string): boolean {
 
 export function isWithinSizeLimit(size: number): boolean {
   return size > 0 && size <= MAX_FILE_SIZE;
+}
+
+async function validateMagicBytes(buffer: Buffer, claimedType: string): Promise<void> {
+  if (claimedType.startsWith('image/')) {
+    try {
+      const s = await getSharp();
+      const metadata = await s(buffer).metadata();
+      if (!metadata.format) throw new Error('Unknown image format');
+      const detected = `image/${metadata.format}`;
+      if (detected !== claimedType && detected !== 'image/svg+xml') {
+        throw new Error(`MIME type mismatch: claimed ${claimedType}, detected ${detected}`);
+      }
+    } catch (err) {
+      throw new Error(`Invalid image file: ${(err as Error).message}`);
+    }
+  } else if (claimedType === 'application/pdf') {
+    const header = buffer.slice(0, 5).toString();
+    if (header !== '%PDF-') throw new Error('Invalid PDF file');
+  }
 }
 
 export async function ensureUploadDir(): Promise<void> {
@@ -129,6 +151,7 @@ export async function saveFile(file: File): Promise<StoredFile> {
   const ext = extname(file.name) || '';
   const uniqueName = `${randomUUID()}${ext}`;
   let buffer = Buffer.from(await file.arrayBuffer());
+  await validateMagicBytes(buffer, file.type);
 
   // ── Image compression (lazy sharp) ─────────────────────────
   if (file.type.startsWith('image/')) {
@@ -203,9 +226,14 @@ export async function deleteFile(path: string, disk?: StorageDisk): Promise<void
     return;
   }
 
-  // Local filesystem
+  // Local filesystem — validate path to prevent traversal
   try {
-    await unlink(path);
+    const resolved = resolve(UPLOAD_DIR, basename(path));
+    if (!resolved.startsWith(UPLOAD_DIR + sep)) {
+      console.warn(`[storage] Path traversal attempt blocked: ${path}`);
+      return;
+    }
+    await unlink(resolved);
   } catch {
     // Ignore
   }

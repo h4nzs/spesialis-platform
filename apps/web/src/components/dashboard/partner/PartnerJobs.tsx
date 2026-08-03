@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { trackPartnerJobAccept, trackPartnerJobReject } from '@spesialis/analytics';
+import { trackPartnerJobAccept, trackPartnerJobReject } from '@ahlipanggilan/analytics';
 import { createBrowserClient, formatDate, getStatusLabel } from '@ahlipanggilan/shared';
 import {
   Badge,

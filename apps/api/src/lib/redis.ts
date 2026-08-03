@@ -36,7 +36,7 @@ function initClient(host: string, port: number): Redis | null {
     const instance = new Redis({
       host,
       port,
-      lazyConnect: true,
+      lazyConnect: false,
       maxRetriesPerRequest: 0,
       retryStrategy: () => null,
       enableOfflineQueue: false,

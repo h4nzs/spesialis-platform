@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { createBrowserClient } from '@ahlipanggilan/shared';
-import { track } from '@spesialis/analytics';
+import { track } from '@ahlipanggilan/analytics';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, LabelList } from 'recharts';
 import { Card, EmptyState, Spinner } from '@ahlipanggilan/ui';
 

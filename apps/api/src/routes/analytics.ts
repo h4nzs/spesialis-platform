@@ -20,8 +20,12 @@ import {
   listPredefinedFunnels,
 } from '../lib/funnel-query.ts';
 import type { FunnelQueryParams } from '../lib/funnel-query.ts';
+import { authMiddleware } from '../middleware/auth.ts';
+import { requireRole } from '../middleware/auth.ts';
 
 const router = new Hono();
+
+router.use('*', authMiddleware, requireRole('admin', 'super_admin', 'finance'));
 
 // ── Validation helpers ────────────────────────────────────────────
 // Prevent SQL injection by restricting event names and breakdown columns

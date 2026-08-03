@@ -27,6 +27,11 @@ import {
   faq,
 } from '@ahlipanggilan/database';
 
+if (process.env.NODE_ENV === 'production' || process.env.APP_ENV === 'production') {
+  console.error('❌ seed-data cannot be run in production. This would TRUNCATE data.');
+  process.exit(1);
+}
+
 async function seedData() {
   console.log('🌱 Seeding data (DATA ONLY — no users/orders)...\n');
 

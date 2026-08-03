@@ -27,7 +27,11 @@ const POLL_INTERVAL = 30_000;
  * @returns A map of `resourceId → { locked, lockedByEmail }`
  */
 export function useLockPolling(ids: string[], resourceType: string, api?: ApiClient): LockMap {
-  const client = api ?? useRef(createBrowserClient()).current;
+  const clientRef = useRef<ApiClient | null>(null);
+  if (!clientRef.current) {
+    clientRef.current = api ?? createBrowserClient();
+  }
+  const client = clientRef.current;
   const [lockMap, setLockMap] = useState<LockMap>({});
 
   // Keep resourceType in ref for SSE event handler

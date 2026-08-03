@@ -28,6 +28,11 @@ import {
 import { hashPassword } from '../lib/auth.ts';
 import type { OrderStatus, PaymentMethod, PaymentStatus } from '@ahlipanggilan/types';
 
+if (process.env.NODE_ENV === 'production' || process.env.APP_ENV === 'production') {
+  console.error('❌ Seeds cannot be run in production. This would TRUNCATE all data.');
+  process.exit(1);
+}
+
 async function seed() {
   console.log('🌱 Seeding database...\n');
 

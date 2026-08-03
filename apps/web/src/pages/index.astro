@@ -1,5 +1,5 @@
 ---
-export const prerender = false;
+export const prerender = true;
 
 import BaseLayout from '../layouts/BaseLayout.astro'
 import Hero from '../components/homepage/Hero.astro'
@@ -14,7 +14,10 @@ import CorporateCTA from '../components/homepage/CorporateCTA.astro'
 import LatestArticles from '../components/homepage/LatestArticles.astro'
 import FAQSection from '../components/homepage/FAQSection.astro'
 import FinalCTA from '../components/homepage/FinalCTA.astro'
+import { createServerClient } from '@ahlipanggilan/shared'
 
+const apiUrl = process.env.API_URL ?? process.env.PUBLIC_API_URL ?? 'http://localhost:3000'
+const api = createServerClient('', '', apiUrl)
 interface ServiceItem {
   id: string;
   name: string;
@@ -44,38 +47,24 @@ let services: ServiceItem[] = []
 let articles: ArticleItem[] = []
 let totalCities = 0
 try {
-  const [servicesRes, articlesRes, coverageRes] = await Promise.all([
-    fetch(`${process.env.API_URL ?? process.env.PUBLIC_API_URL ?? 'http://localhost:3000'}/api/v1/services?limit=12`),
-    fetch(`${process.env.API_URL ?? process.env.PUBLIC_API_URL ?? 'http://localhost:3000'}/api/v1/cms/articles?limit=3`),
-    fetch(`${process.env.API_URL ?? process.env.PUBLIC_API_URL ?? 'http://localhost:3000'}/api/v1/public/coverage-areas`),
+  const [servicesResult, articlesResult, coverageResult] = await Promise.all([
+    api.get<ServiceItem[]>('/api/v1/services?limit=12').catch(() => null),
+    api.get<Array<{ title: string; slug: string; summary: string | null; cover_image: string | null; category: string | null; published_at: string | null }>>('/api/v1/cms/articles?limit=3').catch(() => null),
+    api.get<CoverageArea[]>('/api/v1/public/coverage-areas').catch(() => null),
   ])
-  if (servicesRes.ok) {
-    const json = await servicesRes.json()
-    services = json.data ?? []
+  services = servicesResult?.data ?? []
+  if (articlesResult?.data) {
+    articles = articlesResult.data.map((a) => ({
+      title: a.title,
+      slug: a.slug,
+      summary: a.summary,
+      coverImage: a.cover_image,
+      category: a.category,
+      publishedAt: a.published_at,
+    }))
   }
-  if (articlesRes.ok) {
-    const json = await articlesRes.json()
-    const rawArticles = json.data ?? []
-    if (Array.isArray(rawArticles)) {
-      articles = (rawArticles as Array<{ title: string; slug: string; summary: string | null; cover_image: string | null; category: string | null; published_at: string | null }>).map((a) => ({
-        title: a.title,
-        slug: a.slug,
-        summary: a.summary,
-        coverImage: a.cover_image,
-        category: a.category,
-        publishedAt: a.published_at,
-      }))
-    }
-  }
-  if (coverageRes.ok) {
-    const json = await coverageRes.json()
-    const areas: CoverageArea[] = json.data ?? []
-    totalCities = areas.length
-  }
-} catch {
-  // silent — components handle empty state with fallback
-}
-
+  totalCities = coverageResult?.data?.length ?? 0
+} catch {}
 // Fallback jika fetch gagal — pakai jumlah dari fallback Coverage.astro
 if (totalCities === 0) {
   totalCities = 6 // ['Jakarta', 'Bandung', 'Tangerang', 'Bekasi', 'Depok', 'Bogor']

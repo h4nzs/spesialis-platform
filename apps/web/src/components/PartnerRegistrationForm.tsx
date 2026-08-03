@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { trackPartnerRegister, trackPartnerRegisterComplete } from '@spesialis/analytics';
+import { trackPartnerRegister, trackPartnerRegisterComplete } from '@ahlipanggilan/analytics';
 import { createBrowserClient, parseApiError } from '@ahlipanggilan/shared';
 import { Button, Input, Card } from '@ahlipanggilan/ui';
 import { partnerRegistrationSchema } from '@ahlipanggilan/validation';

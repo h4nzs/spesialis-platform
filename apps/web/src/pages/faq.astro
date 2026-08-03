@@ -1,6 +1,7 @@
 ---
-export const prerender = false;
+export const prerender = true;
 import BaseLayout from '../layouts/BaseLayout.astro'
+import { createServerClient } from '@ahlipanggilan/shared'
 import { FaqList } from '../components/faq/FaqList'
 interface FaqItem {
   q: string
@@ -8,15 +9,16 @@ interface FaqItem {
 }
 
 const apiUrl = process.env.API_URL ?? process.env.PUBLIC_API_URL ?? 'http://localhost:3000'
+const api = createServerClient('', '', apiUrl)
 
 // SSR: fetch FAQ from Hono CMS proxy for JSON-LD structured data
 // FaqList client component handles visual rendering with skeleton
 let faqs: FaqItem[] = []
 try {
-  const res = await fetch(`${apiUrl}/api/v1/cms/faq`)
-  if (res.ok) {
-    const json = await res.json()
-    const raw = json.data ?? []
+  const result = await api.get('/api/v1/cms/faq')
+  if (result?.data) {
+    
+    const raw = result.data
     if (Array.isArray(raw) && raw.length > 0) {
       faqs = raw.map((item: { question: string; answer: string }) => ({
         q: item.question,

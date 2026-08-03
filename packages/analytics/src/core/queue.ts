@@ -27,7 +27,7 @@ export function getQueue(): QueueInstance {
   return instance;
 }
 
-const STORAGE_KEY = '@spesialis/analytics/queue';
+const STORAGE_KEY = '@ahlipanggilan/analytics/queue';
 
 function createQueue(): QueueInstance {
   const queue: NormalizedEvent[] = [];

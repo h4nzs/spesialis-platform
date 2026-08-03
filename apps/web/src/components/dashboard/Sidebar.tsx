@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import type { UserRole } from '@ahlipanggilan/types';
 import { forceLogout } from '../../lib/auth.ts';
-import { trackNavigation } from '@spesialis/analytics';
+import { trackNavigation } from '@ahlipanggilan/analytics';
 
 export interface NavItem {
   href: string;

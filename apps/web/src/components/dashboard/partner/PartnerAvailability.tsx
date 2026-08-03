@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { track } from '@spesialis/analytics';
+import { track } from '@ahlipanggilan/analytics';
 import { createBrowserClient } from '@ahlipanggilan/shared';
 import { Card, Button, Select, Skeleton } from '@ahlipanggilan/ui';
 

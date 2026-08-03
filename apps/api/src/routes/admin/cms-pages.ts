@@ -16,6 +16,7 @@ import {
 import { buildPaginationMeta } from '../../lib/pagination.ts';
 import { omitUndefined } from '../../lib/update.ts';
 import { invalidateCollectionCache } from '../../lib/cache.ts';
+import { sanitizeHtml } from '../../lib/sanitize.ts';
 
 const router = new Hono();
 
@@ -93,7 +94,7 @@ router.post(
       .values({
         title: data.title,
         slug: data.slug,
-        content: data.content ?? null,
+        content: data.content ? sanitizeHtml(data.content) : null,
         meta: data.meta ?? null,
         status: data.status ?? 'Published',
       })
@@ -131,6 +132,10 @@ router.patch(
         .where(and(eq(cmsPages.slug, data.slug), sql`${cmsPages.id} != ${id}`))
         .limit(1);
       if (existing) return error(c, 'SLUG_EXISTS', 'Slug sudah digunakan', 409);
+    }
+
+    if (data.content) {
+      data.content = sanitizeHtml(data.content);
     }
 
     const [record] = await db

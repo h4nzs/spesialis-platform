@@ -4,6 +4,7 @@ import '../styles/global.css'
 import { AuthNav } from '../components/AuthNav.tsx'
 import WhatsAppFloating from '../components/WhatsAppFloating.astro'
 import Footer from '../components/homepage/Footer.astro'
+import { createServerClient } from '@ahlipanggilan/shared'
 
 // ── Critical CSS (inlined for zero render-blocking delay) ─────────
 // Uses ?raw import — bundled at build time, no filesystem access at runtime
@@ -46,16 +47,12 @@ const canonical = canonicalUrl ? `${siteUrl}${canonicalUrl}` : undefined
 
 // ── WhatsApp settings ─────────────────────────────────────────
 const apiUrl = process.env.API_URL ?? process.env.PUBLIC_API_URL ?? 'http://localhost:3000'
+const api = createServerClient('', '', apiUrl)
 let whatsappPhone = ''
 try {
-  const res = await fetch(`${apiUrl}/api/v1/public/settings`)
-  if (res.ok) {
-    const body = await res.json() as { data: Record<string, string> }
-    whatsappPhone = (body.data ?? body).whatsapp_phone_number ?? ''
-  }
-} catch {
-  // Non-critical — WA button will not render
-}
+  const result = await api.get<Record<string, string>>('/api/v1/public/settings')
+  whatsappPhone = result.data?.whatsapp_phone_number ?? ''
+} catch {}
 
 const waPages = ['/', '/services', '/blog', '/tracking', '/partner', '/corporate']
 const showWa = whatsappPhone && waPages.some(

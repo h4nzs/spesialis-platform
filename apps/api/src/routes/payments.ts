@@ -124,72 +124,78 @@ router.patch('/:id/refund', authMiddleware, requireRole('admin', 'super_admin'),
   return success(c, { id: paymentId, status: 'Refunded' }, 'Pembayaran berhasil di-refund');
 });
 
-router.post('/', authMiddleware, validateBody(createPaymentSchema), async (c) => {
-  const userId = c.get('userId');
-  const userRole = c.get('userRole');
-  const data = c.get('validated') as CreatePaymentInput;
+router.post(
+  '/',
+  authMiddleware,
+  requireRole('customer', 'admin', 'super_admin', 'finance'),
+  validateBody(createPaymentSchema),
+  async (c) => {
+    const userId = c.get('userId');
+    const userRole = c.get('userRole');
+    const data = c.get('validated') as CreatePaymentInput;
 
-  const [order] = await db
-    .select({
-      id: orders.id,
-      status: orders.status,
-      customerId: orders.customerId,
-    })
-    .from(orders)
-    .where(eq(orders.id, data.orderId))
-    .limit(1);
-
-  if (!order) return notFound(c, 'Order tidak ditemukan');
-
-  if (userRole === 'customer') {
-    const [profile] = await db
-      .select({ id: customerProfiles.id })
-      .from(customerProfiles)
-      .where(eq(customerProfiles.userId, userId))
+    const [order] = await db
+      .select({
+        id: orders.id,
+        status: orders.status,
+        customerId: orders.customerId,
+      })
+      .from(orders)
+      .where(eq(orders.id, data.orderId))
       .limit(1);
-    if (!profile || order.customerId !== profile.id) return forbidden(c);
-  }
 
-  const existingPayment = await db
-    .select({ id: payments.id })
-    .from(payments)
-    .where(eq(payments.orderId, order.id))
-    .limit(1);
-  if (existingPayment[0]) return conflict(c, 'Pembayaran sudah ada untuk order ini');
+    if (!order) return notFound(c, 'Order tidak ditemukan');
 
-  const [payment] = await db
-    .insert(payments)
-    .values({
-      orderId: order.id,
-      method: data.method,
-      amount: String(data.amount),
-      proofMediaId: data.proofMediaId ?? null,
-      notes: data.notes ?? null,
-      status: 'Waiting',
-    })
-    .returning();
+    if (userRole === 'customer') {
+      const [profile] = await db
+        .select({ id: customerProfiles.id })
+        .from(customerProfiles)
+        .where(eq(customerProfiles.userId, userId))
+        .limit(1);
+      if (!profile || order.customerId !== profile.id) return forbidden(c);
+    }
 
-  if (canTransition(order.status, 'Waiting Payment')) {
-    await db.update(orders).set({ status: 'Waiting Payment' }).where(eq(orders.id, order.id));
-    await recordStatusHistory(
-      order.id,
-      order.status as OrderStatus,
-      'Waiting Payment',
-      userId,
-      'Pembayaran diajukan',
+    const existingPayment = await db
+      .select({ id: payments.id })
+      .from(payments)
+      .where(eq(payments.orderId, order.id))
+      .limit(1);
+    if (existingPayment[0]) return conflict(c, 'Pembayaran sudah ada untuk order ini');
+
+    const [payment] = await db
+      .insert(payments)
+      .values({
+        orderId: order.id,
+        method: data.method,
+        amount: String(data.amount),
+        proofMediaId: data.proofMediaId ?? null,
+        notes: data.notes ?? null,
+        status: 'Waiting',
+      })
+      .returning();
+
+    if (canTransition(order.status, 'Waiting Payment')) {
+      await db.update(orders).set({ status: 'Waiting Payment' }).where(eq(orders.id, order.id));
+      await recordStatusHistory(
+        order.id,
+        order.status as OrderStatus,
+        'Waiting Payment',
+        userId,
+        'Pembayaran diajukan',
+      );
+    }
+
+    notifyAdmins(
+      'payment.submitted',
+      'Pembayaran Baru',
+      `Pembayaran baru untuk order #${order.id} — ${data.method} ${data.amount}`,
     );
-  }
 
-  notifyAdmins(
-    'payment.submitted',
-    'Pembayaran Baru',
-    `Pembayaran baru untuk order #${order.id} — ${data.method} ${data.amount}`,
-  );
+    return created(c, payment, 'Pembayaran berhasil diajukan');
+  },
+);
 
-  return created(c, payment, 'Pembayaran berhasil diajukan');
-});
-
-router.get('/:id', authMiddleware, async (c) => {
+router.get('/:id', authMiddleware, requireRole('admin', 'super_admin', 'finance'), async (c) => {
   const paymentId = c.req.param('id')!;
   const userId = c.get('userId');
   const userRole = c.get('userRole');

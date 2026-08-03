@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { trackBookingStart, trackBookingSubmit } from '@spesialis/analytics';
+import { trackBookingStart, trackBookingSubmit } from '@ahlipanggilan/analytics';
 import { Button } from '@ahlipanggilan/ui';
 import {
   createBrowserClient,
@@ -124,11 +124,12 @@ export function BookingForm({ serviceId, initialAuth }: BookingFormProps) {
   }, [isCustomer, api]);
 
   useEffect(() => {
-    fetch('/api/v1/public/settings')
-      .then((r) => (r.ok ? r.json() : null))
-      .then((body) => {
-        if (!body) return;
-        const data = body.data ?? body;
+    createBrowserClient()
+      .get<Record<string, string>>('/api/v1/public/settings')
+
+      .then((result) => {
+        if (!result?.data) return;
+        const data = result.data;
         if (data.whatsapp_phone_number) setWhatsappPhone(data.whatsapp_phone_number);
       })
       .catch(() => {});

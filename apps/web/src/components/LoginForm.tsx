@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { trackImmediate } from '@spesialis/analytics';
+import { trackImmediate } from '@ahlipanggilan/analytics';
 import { loginSchema } from '@ahlipanggilan/validation';
 import { Button } from '@ahlipanggilan/ui';
 import { parseApiError } from '@ahlipanggilan/shared';
@@ -64,7 +64,10 @@ export function LoginForm() {
   return (
     <form onSubmit={handleSubmit} className="space-y-5" noValidate>
       {generalError && (
-        <div className="rounded-md border border-danger-500/30 bg-danger-500/5 px-4 py-3 text-body text-danger-500">
+        <div
+          role="alert"
+          className="rounded-md border border-danger-500/30 bg-danger-500/5 px-4 py-3 text-body text-danger-500"
+        >
           {generalError}
         </div>
       )}
@@ -81,9 +84,13 @@ export function LoginForm() {
           className="w-full rounded-md border border-border-default bg-bg-surface px-4 py-2.5 text-body text-text-primary outline-none transition-colors focus:border-primary focus:ring-1 focus:ring-primary placeholder:text-text-muted"
           placeholder="nama@email.com"
           autoComplete="email"
+          aria-invalid={!!getFieldError('email')}
+          aria-describedby={getFieldError('email') ? 'email-error' : undefined}
         />
         {getFieldError('email') && (
-          <p className="mt-1 text-caption text-danger-500">{getFieldError('email')}</p>
+          <p id="email-error" className="mt-1 text-caption text-danger-500">
+            {getFieldError('email')}
+          </p>
         )}
       </div>
 
@@ -102,9 +109,13 @@ export function LoginForm() {
           className="w-full rounded-md border border-border-default bg-bg-surface px-4 py-2.5 text-body text-text-primary outline-none transition-colors focus:border-primary focus:ring-1 focus:ring-primary placeholder:text-text-muted"
           placeholder="Min. 8 karakter"
           autoComplete="current-password"
+          aria-invalid={!!getFieldError('password')}
+          aria-describedby={getFieldError('password') ? 'password-error' : undefined}
         />
         {getFieldError('password') && (
-          <p className="mt-1 text-caption text-danger-500">{getFieldError('password')}</p>
+          <p id="password-error" className="mt-1 text-caption text-danger-500">
+            {getFieldError('password')}
+          </p>
         )}
       </div>
 

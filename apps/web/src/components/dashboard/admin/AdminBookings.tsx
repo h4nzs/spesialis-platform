@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { track } from '@spesialis/analytics';
+import { track } from '@ahlipanggilan/analytics';
 import {
   createBrowserClient,
   formatCurrency,

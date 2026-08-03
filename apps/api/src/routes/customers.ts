@@ -1,13 +1,14 @@
 import { Hono } from 'hono';
-import { eq, desc } from 'drizzle-orm';
+import { eq, desc, sql } from 'drizzle-orm';
 import { db, customerProfiles, users } from '../lib/db.ts';
 import { authMiddleware, requireRole } from '../middleware/auth.ts';
 import { validateBody } from '../middleware/validation.ts';
 import { updateCustomerSchema, updateCustomerStatusSchema } from '@ahlipanggilan/validation';
 import type { UpdateCustomerInput, UpdateCustomerStatusInput } from '@ahlipanggilan/validation';
-import { success, error, notFound, serverError } from '../lib/response.ts';
+import { success, successPaginated, error, notFound, serverError } from '../lib/response.ts';
 import { omitUndefined } from '../lib/update.ts';
 import { createAuditLog } from '../lib/audit.ts';
+import { buildPaginationMeta } from '../lib/pagination.ts';
 const router = new Hono();
 
 router.get('/me', authMiddleware, async (c) => {
@@ -58,6 +59,9 @@ router.patch('/me', authMiddleware, validateBody(updateCustomerSchema), async (c
 });
 
 router.get('/', authMiddleware, requireRole('admin', 'super_admin'), async (c) => {
+  const page = Number(c.req.query('page') ?? 1);
+  const limit = Math.min(Number(c.req.query('limit') ?? 20), 100);
+
   const items = await db
     .select({
       id: users.id,
@@ -70,9 +74,20 @@ router.get('/', authMiddleware, requireRole('admin', 'super_admin'), async (c) =
     .from(users)
     .innerJoin(customerProfiles, eq(customerProfiles.userId, users.id))
     .where(eq(users.role, 'customer'))
-    .orderBy(desc(users.createdAt));
+    .orderBy(desc(users.createdAt))
+    .limit(limit)
+    .offset((page - 1) * limit);
 
-  return success(c, items);
+  const countResult = await db
+    .select({ count: sql<number>`count(*)` })
+    .from(users)
+    .innerJoin(customerProfiles, eq(customerProfiles.userId, users.id))
+    .where(eq(users.role, 'customer'));
+  const total = Number(countResult[0]?.count ?? 0);
+
+  const pagination = buildPaginationMeta(page, limit, total);
+
+  return successPaginated(c, items, pagination);
 });
 
 router.patch(

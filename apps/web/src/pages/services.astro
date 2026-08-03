@@ -1,9 +1,11 @@
 ---
-export const prerender = false;
+export const prerender = true;
 import BaseLayout from '../layouts/BaseLayout.astro'
 import { ServiceList } from '../components/ServiceList.tsx'
+import { createServerClient } from '@ahlipanggilan/shared'
 
 const apiUrl = process.env.API_URL ?? process.env.PUBLIC_API_URL ?? 'http://localhost:3000'
+const api = createServerClient('', '', apiUrl)
 
 interface ServiceItem {
   id: string
@@ -14,14 +16,9 @@ interface ServiceItem {
 let services: ServiceItem[] = []
 
 try {
-  const res = await fetch(`${apiUrl}/api/v1/services?limit=100`)
-  if (res.ok) {
-    const json = await res.json()
-    services = json.data ?? []
-  }
-} catch {
-  // silent
-}
+  const result = await api.get<ServiceItem[]>('/api/v1/services?limit=100')
+  services = result.data ?? []
+} catch {}
 ---
 
 <BaseLayout

@@ -177,56 +177,62 @@ router.post(
   },
 );
 
-router.get('/', validateQuery(paginationQuerySchema), async (c) => {
-  const query = c.get('validated') as { page: number; limit: number };
+router.get(
+  '/',
+  authMiddleware,
+  requireRole('admin', 'super_admin', 'dispatcher'),
+  validateQuery(paginationQuerySchema),
+  async (c) => {
+    const query = c.get('validated') as { page: number; limit: number };
 
-  const availability = c.req.query('availability');
-  const verification = c.req.query('verification');
-  const categoryId = c.req.query('categoryId');
+    const availability = c.req.query('availability');
+    const verification = c.req.query('verification');
+    const categoryId = c.req.query('categoryId');
 
-  const conditions: ReturnType<typeof eq>[] = [];
-  if (availability)
-    conditions.push(eq(partnerProfiles.availability, availability as PartnerAvailability));
-  if (verification)
-    conditions.push(
-      eq(partnerProfiles.verificationStatus, verification as PartnerVerificationStatus),
-    );
-  if (categoryId) {
-    const partnerIds = await db
-      .select({ id: partnerSkills.partnerId })
-      .from(partnerSkills)
-      .where(eq(partnerSkills.categoryId, categoryId));
-    conditions.push(eq(partnerProfiles.id, sql`ANY(${partnerIds.map((p) => p.id)})`));
-  }
+    const conditions: ReturnType<typeof eq>[] = [];
+    if (availability)
+      conditions.push(eq(partnerProfiles.availability, availability as PartnerAvailability));
+    if (verification)
+      conditions.push(
+        eq(partnerProfiles.verificationStatus, verification as PartnerVerificationStatus),
+      );
+    if (categoryId) {
+      const partnerIds = await db
+        .select({ id: partnerSkills.partnerId })
+        .from(partnerSkills)
+        .where(eq(partnerSkills.categoryId, categoryId));
+      conditions.push(eq(partnerProfiles.id, sql`ANY(${partnerIds.map((p) => p.id)})`));
+    }
 
-  const items = await db
-    .select({
-      id: partnerProfiles.id,
-      fullName: partnerProfiles.fullName,
-      avatar: partnerProfiles.avatar,
-      ratingAverage: partnerProfiles.ratingAverage,
-      completedJobs: partnerProfiles.completedJobs,
-      availability: partnerProfiles.availability,
-      verificationStatus: partnerProfiles.verificationStatus,
-      experienceYear: partnerProfiles.experienceYear,
-      bio: partnerProfiles.bio,
-      domicile: partnerProfiles.domicile,
-    })
-    .from(partnerProfiles)
-    .where(conditions.length > 0 ? and(...conditions) : undefined)
-    .orderBy(desc(partnerProfiles.ratingAverage))
-    .limit(query.limit)
-    .offset((query.page - 1) * query.limit);
+    const items = await db
+      .select({
+        id: partnerProfiles.id,
+        fullName: partnerProfiles.fullName,
+        avatar: partnerProfiles.avatar,
+        ratingAverage: partnerProfiles.ratingAverage,
+        completedJobs: partnerProfiles.completedJobs,
+        availability: partnerProfiles.availability,
+        verificationStatus: partnerProfiles.verificationStatus,
+        experienceYear: partnerProfiles.experienceYear,
+        bio: partnerProfiles.bio,
+        domicile: partnerProfiles.domicile,
+      })
+      .from(partnerProfiles)
+      .where(conditions.length > 0 ? and(...conditions) : undefined)
+      .orderBy(desc(partnerProfiles.ratingAverage))
+      .limit(query.limit)
+      .offset((query.page - 1) * query.limit);
 
-  const countResult = await db
-    .select({ count: sql<number>`count(*)` })
-    .from(partnerProfiles)
-    .where(conditions.length > 0 ? and(...conditions) : undefined);
-  const total = Number(countResult[0]?.count ?? 0);
-  const pagination = buildPaginationMeta(query.page, query.limit, total);
+    const countResult = await db
+      .select({ count: sql<number>`count(*)` })
+      .from(partnerProfiles)
+      .where(conditions.length > 0 ? and(...conditions) : undefined);
+    const total = Number(countResult[0]?.count ?? 0);
+    const pagination = buildPaginationMeta(query.page, query.limit, total);
 
-  return successPaginated(c, items, pagination);
-});
+    return successPaginated(c, items, pagination);
+  },
+);
 
 router.get('/me', authMiddleware, async (c) => {
   const userId = c.get('userId');
@@ -501,7 +507,7 @@ router.delete('/me/documents/:documentId', authMiddleware, async (c) => {
   return success(c, null, 'Dokumen berhasil dihapus');
 });
 
-router.get('/:id', async (c) => {
+router.get('/:id', authMiddleware, async (c) => {
   const partnerId = c.req.param('id')!;
 
   const [profile] = await db

@@ -1,4 +1,5 @@
 import { type ReactNode } from 'react';
+import { ErrorBoundary } from '../ErrorBoundary.tsx';
 
 interface StoredUser {
   id: string;
@@ -35,5 +36,5 @@ export function AuthGuard({ children, requiredRole, initialUser }: AuthGuardProp
     }
   }
 
-  return <>{children}</>;
+  return <ErrorBoundary>{children}</ErrorBoundary>;
 }

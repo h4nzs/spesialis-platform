@@ -27,6 +27,7 @@ import { buildPaginationMeta } from '../../lib/pagination.ts';
 import { omitUndefined } from '../../lib/update.ts';
 import { notifyArticlePublished } from '../../lib/indexnow.ts';
 import { invalidateCollectionCache } from '../../lib/cache.ts';
+import { sanitizeHtml } from '../../lib/sanitize.ts';
 import {
   extractLinks,
   resolveBlogSlug,
@@ -840,7 +841,7 @@ router.post(
         title: data.title,
         slug: data.slug,
         summary: data.summary ?? null,
-        content: data.content ?? null,
+        content: data.content ? sanitizeHtml(data.content) : null,
         coverImage: data.coverImage ?? null,
         authorName: data.authorName ?? null,
         status: data.status ?? 'Draft',
@@ -906,7 +907,7 @@ router.patch(
       title: data.title,
       slug: data.slug,
       summary: data.summary,
-      content: data.content,
+      content: data.content ? sanitizeHtml(data.content) : undefined,
       coverImage: data.coverImage,
       authorName: data.authorName,
       isFeatured: data.isFeatured,

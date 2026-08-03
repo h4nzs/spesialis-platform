@@ -50,9 +50,9 @@ jobs:
       - name: Lint
         run: pnpm lint
       - name: Analytics Contract Validation
-        run: pnpm --filter @spesialis/analytics analytics:validate
+        run: pnpm --filter @ahlipanggilan/analytics analytics:validate
       - name: Analytics Codebase Lint
-        run: pnpm --filter @spesialis/analytics analytics:lint
+        run: pnpm --filter @ahlipanggilan/analytics analytics:lint
       - name: Typecheck
         run: pnpm typecheck
       - name: Build
@@ -72,8 +72,52 @@ jobs:
           cache: pnpm
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
-      - name: Run tests
-        run: pnpm test
+      - name: Run tests with coverage
+        run: pnpm test -- --coverage
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: coverage-report
+          path: |
+            packages/*/coverage/
+            apps/*/coverage/
+          retention-days: 7
+
+  integration-test:
+    name: Integration Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    services:
+      postgres:
+        image: postgres:18
+        env:
+          POSTGRES_DB: specialist
+          POSTGRES_USER: specialist
+          POSTGRES_PASSWORD: specialist
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U specialist"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Create env file
+        run: printf 'DATABASE_URL=%s\nJWT_SECRET=%s\n' "$DATABASE_URL" "$JWT_SECRET" > .env
+      - name: Run migrations
+        run: pnpm --filter @ahlipanggilan/database db:migrate
+      - name: Run integration tests
+        run: pnpm --filter @ahlipanggilan/api test:integration
 
   e2e-test:
     name: E2E Tests
@@ -81,7 +125,7 @@ jobs:
     timeout-minutes: 15
     services:
       postgres:
-        image: postgres:17
+        image: postgres:18
         env:
           POSTGRES_DB: specialist
           POSTGRES_USER: specialist
@@ -119,8 +163,8 @@ jobs:
         run: pnpm --filter @ahlipanggilan/database db:migrate
       - name: Seed data
         run: pnpm --filter @ahlipanggilan/api db:seed
-      - name: Install Playwright
-        run: npx playwright install chromium
+      - name: Install Playwright (all browsers)
+        run: npx playwright install --with-deps chromium firefox webkit
         working-directory: apps/web
       - name: Run E2E tests
         run: pnpm --filter web test:e2e

@@ -39,7 +39,7 @@ const sidebarRole = initialUser?.role ?? (Array.isArray(role) ? role[0] : role);
 </BaseLayout>
 
 <script>
-  import { trackDashboardView } from '@spesialis/analytics'
+  import { trackDashboardView } from '@ahlipanggilan/analytics'
 
   var role = document.querySelector('[data-sidebar-role]')?.getAttribute('data-sidebar-role') || 'unknown'
   var section = window.location.pathname.replace('/dashboard/', '').split('/')[0] || 'home'

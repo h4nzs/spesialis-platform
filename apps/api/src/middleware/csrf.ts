@@ -46,21 +46,21 @@ export function csrfProtection() {
       return;
     }
 
-    // Skip CSRF for the refresh-token endpoint, which is called
-    // programmatically (may omit Origin/Referer in server-side code).
-    if (c.req.path.includes('/auth/refresh')) {
-      await next();
-      return;
-    }
+    // Skip CSRF for the refresh-token endpoint (handled via httpOnly cookie + SameSite=Strict)
+    // and routes that are explicitly exempted for server-to-server communication.
+    // NOTE: /auth/refresh is NO LONGER exempt — it mints new tokens and must be protected.
 
     const origin = c.req.header('Origin');
     const referer = c.req.header('Referer');
 
-    // If neither header is present, the request is likely from a server-side client
-    // (CLI, cron, internal service) or a same-origin navigation. Allow through.
+    // Require at least one of Origin or Referer for state-changing requests.
+    // Server-to-server clients must use Bearer token authentication instead.
     if (!origin && !referer) {
-      await next();
-      return;
+      if (process.env.APP_ENV !== 'production') {
+        await next();
+        return;
+      }
+      return error(c, 'CSRF_REJECTED', 'Missing Origin and Referer headers', 403);
     }
 
     const isValidOrigin = (value: string): boolean => {

@@ -1,24 +1,27 @@
-import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef, Suspense, lazy } from 'react';
 import { createBrowserClient, parseApiError } from '@ahlipanggilan/shared';
-import {
-  Button,
-  Input,
-  Select,
-  Card,
-  MediaBrowser,
-  TagsInput,
-  SEOEditor,
-  SeoAnalyzerPanel,
-  SchemaBuilder,
-} from '@ahlipanggilan/ui';
-import { RichTextEditor } from '@ahlipanggilan/ui/editor';
+import { Button, Input, Select, Card, SEOEditor } from '@ahlipanggilan/ui';
 import type { SeoData } from '@ahlipanggilan/ui';
 import { useContentLock } from '../../../lib/useContentLock.ts';
 import { LockBanner } from './LockBanner.tsx';
 import { renderMarkdown } from '../../../lib/markdown.ts';
-import { PillarLinkSuggestions } from './PillarLinkSuggestions.tsx';
-import { PillarSeoScore } from './PillarSeoScore.tsx';
 import { TableOfContents } from '../../../components/blog/TableOfContents.tsx';
+
+const RichTextEditor = lazy(() =>
+  import('@ahlipanggilan/ui/editor').then((m) => ({ default: m.RichTextEditor })),
+);
+const MediaBrowser = lazy(() =>
+  import('@ahlipanggilan/ui').then((m) => ({ default: m.MediaBrowser })),
+);
+const TagsInput = lazy(() => import('@ahlipanggilan/ui').then((m) => ({ default: m.TagsInput })));
+const SeoAnalyzerPanel = lazy(() =>
+  import('@ahlipanggilan/ui').then((m) => ({ default: m.SeoAnalyzerPanel })),
+);
+const SchemaBuilder = lazy(() =>
+  import('@ahlipanggilan/ui').then((m) => ({ default: m.SchemaBuilder })),
+);
+const PillarLinkSuggestions = lazy(() => import('./PillarLinkSuggestions.tsx'));
+const PillarSeoScore = lazy(() => import('./PillarSeoScore.tsx'));
 
 // ── Types ────────────────────────────────────────────────────────
 
@@ -452,14 +455,20 @@ export function ArticleEditor({ editingId }: ArticleEditorProps) {
             </Card>
 
             <Card>
-              <RichTextEditor
-                label="Konten"
-                value={form.content}
-                onChange={(html) => setForm((f) => ({ ...f, content: html }))}
-                placeholder="Tulis konten artikel di sini..."
-                onImageUpload={openMediaForContent}
-                error={undefined}
-              />
+              <Suspense
+                fallback={
+                  <div className="py-4 text-center text-sm text-text-muted">Memuat editor...</div>
+                }
+              >
+                <RichTextEditor
+                  label="Konten"
+                  value={form.content}
+                  onChange={(html) => setForm((f) => ({ ...f, content: html }))}
+                  placeholder="Tulis konten artikel di sini..."
+                  onImageUpload={openMediaForContent}
+                  error={undefined}
+                />
+              </Suspense>
 
               {/* ── Live Preview ─────────────────────────────── */}
               {form.content && (
