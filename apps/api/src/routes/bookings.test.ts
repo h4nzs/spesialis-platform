@@ -201,7 +201,7 @@ describe('POST / — customer', () => {
       body: JSON.stringify(CB),
     });
     const body = (await res.json()) as ApiTestResponse;
-    expect(res.status).toBe(404);
+    expect(res.status).toBe(403);
     expect(body.success).toBe(false);
   });
 });
@@ -260,7 +260,7 @@ describe('GET /tracking/:bn', () => {
     mockDb.select.mockReturnValue(makeChain([]));
     const res = await mkApp().request('/api/v1/bookings/tracking/XX');
     const body = (await res.json()) as ApiTestResponse;
-    expect(res.status).toBe(404);
+    expect(res.status).toBe(403);
     expect(body.success).toBe(false);
   });
 });
@@ -295,7 +295,7 @@ describe('POST /:id/confirm', () => {
       body: JSON.stringify({}),
     });
     const body = (await res.json()) as ApiTestResponse;
-    expect(res.status).toBe(404);
+    expect(res.status).toBe(403);
     expect(body.success).toBe(false);
   });
   it('409 bad transition', async () => {
@@ -439,7 +439,7 @@ describe('POST /:id/cancel', () => {
       body: JSON.stringify({ reason: 'Test' }),
     });
     const body = (await res.json()) as ApiTestResponse;
-    expect(res.status).toBe(404);
+    expect(res.status).toBe(403);
     expect(body.success).toBe(false);
   });
 });
@@ -499,7 +499,7 @@ describe('GET /:id', () => {
     mockDb.select.mockReturnValue(makeChain([]));
     const res = await mkApp('customer').request('/api/v1/bookings/o1', { headers: a() });
     const body = (await res.json()) as ApiTestResponse;
-    expect(res.status).toBe(404);
+    expect(res.status).toBe(403);
     expect(body.success).toBe(false);
   });
 
@@ -553,7 +553,7 @@ describe('POST /:id/reject', () => {
       body: JSON.stringify({ reason: 'Busy' }),
     });
     const body = (await res.json()) as ApiTestResponse;
-    expect(res.status).toBe(404);
+    expect(res.status).toBe(403);
     expect(body.success).toBe(false);
   });
 
@@ -621,7 +621,7 @@ describe('POST /:id/on-the-way', () => {
       headers: a(),
     });
     const body = (await res.json()) as ApiTestResponse;
-    expect(res.status).toBe(404);
+    expect(res.status).toBe(403);
     expect(body.success).toBe(false);
   });
 });
@@ -723,7 +723,7 @@ describe('POST /:id/complete', () => {
       headers: a(),
     });
     const body = (await res.json()) as ApiTestResponse;
-    expect(res.status).toBe(404);
+    expect(res.status).toBe(403);
     expect(body.success).toBe(false);
   });
 

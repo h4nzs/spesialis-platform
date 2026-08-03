@@ -204,7 +204,7 @@ describe('POST /login', () => {
       body: JSON.stringify({ email: 'a@b.com', password: 'S' }),
     });
     const body = (await res.json()) as ApiTestResponse;
-    expect(res.status).toBe(403);
+    expect(res.status).toBe(401);
     expect(body.success).toBe(false);
   });
   it('422 missing', async () => {
@@ -372,7 +372,7 @@ describe('PATCH /change-password', () => {
       body: JSON.stringify({ currentPassword: 'Bad', newPassword: 'NewStr0ng!1' }),
     });
     const body = (await res.json()) as ApiTestResponse;
-    expect(res.status).toBe(403);
+    expect(res.status).toBe(401);
     expect(body.success).toBe(false);
   });
 });
@@ -398,7 +398,7 @@ describe('DELETE /account', () => {
       body: JSON.stringify({ password: 'Bad' }),
     });
     const body = (await res.json()) as ApiTestResponse;
-    expect(res.status).toBe(403);
+    expect(res.status).toBe(401);
     expect(body.success).toBe(false);
   });
   it('422 missing password', async () => {

@@ -178,7 +178,14 @@ describe('GET /:id', () => {
   it('200 found', async () => {
     mockDb.select.mockReturnValueOnce(
       makeChain([
-        { id: UUID, filename: 'test.jpg', mimeType: 'image/jpeg', extension: 'jpg', size: 1024 },
+        {
+          id: UUID,
+          filename: 'test.jpg',
+          mimeType: 'image/jpeg',
+          extension: 'jpg',
+          size: 1024,
+          uploadedBy: 'uid',
+        },
       ]),
     );
     const res = await mkApp().request(`/api/v1/media/${UUID}`, { headers: a() });

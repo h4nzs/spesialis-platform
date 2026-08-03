@@ -18,7 +18,7 @@ if (process.env['ANALYZE'] === 'true') {
 
 export default defineConfig({
   site: 'https://ahlipanggilan.id',
-  output: 'hybrid',
+  output: 'static',
   adapter: node({ mode: 'standalone' }),
   compressHTML: true,
   scopedStyleStrategy: 'where',

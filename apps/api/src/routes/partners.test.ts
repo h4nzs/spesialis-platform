@@ -119,13 +119,17 @@ describe('POST /register', () => {
 describe('GET /', () => {
   it('200', async () => {
     mockDb.select.mockReturnValue(makeChain([]));
-    const res = await mkApp().request('/api/v1/partners');
+    const res = await mkApp('admin').request('/api/v1/partners', {
+      headers: { authorization: 'Bearer token' },
+    });
     expect(res.status).toBe(200);
     expect(((await res.json()) as ApiTestResponse).pagination).toBeDefined();
   });
   it('filter availability', async () => {
     mockDb.select.mockReturnValue(makeChain([]));
-    const res = await mkApp().request('/api/v1/partners?availability=Available');
+    const res = await mkApp('admin').request('/api/v1/partners?availability=Available', {
+      headers: { authorization: 'Bearer token' },
+    });
     expect(res.status).toBe(200);
   });
   it('422 bad pagination', async () => {

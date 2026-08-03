@@ -149,7 +149,7 @@ describe('POST /', () => {
     expect(res.status).toBe(422);
     expect(body.success).toBe(false);
   });
-  it('404 partner (route has no role restriction)', async () => {
+  it('403 partner (require customer role)', async () => {
     const res = await mkApp('partner').request('/api/v1/payments', {
       method: 'POST',
       headers: a(),
@@ -160,7 +160,7 @@ describe('POST /', () => {
       }),
     });
     const body = (await res.json()) as ApiTestResponse;
-    expect(res.status).toBe(404);
+    expect(res.status).toBe(403);
     expect(body.success).toBe(false);
   });
 });
@@ -172,7 +172,7 @@ describe('GET /:id', () => {
     );
     mockDb.select.mockReturnValueOnce(makeChain([{ customerId: 'cp1' }]));
     mockDb.select.mockReturnValue(makeChain([{ id: 'cp1' }]));
-    const res = await mkApp().request('/api/v1/payments/p1', { headers: a() });
+    const res = await mkApp('admin').request('/api/v1/payments/p1', { headers: a() });
     const body = (await res.json()) as ApiTestResponse;
     expect(res.status).toBe(200);
     expect(body.success).toBe(true);
@@ -180,7 +180,7 @@ describe('GET /:id', () => {
   });
   it('404', async () => {
     mockDb.select.mockReturnValue(makeChain([]));
-    const res = await mkApp().request('/api/v1/payments/p1', { headers: a() });
+    const res = await mkApp('admin').request('/api/v1/payments/p1', { headers: a() });
     const body = (await res.json()) as ApiTestResponse;
     expect(res.status).toBe(404);
     expect(body.success).toBe(false);

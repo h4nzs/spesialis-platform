@@ -137,6 +137,7 @@ describe('GET / (admin)', () => {
         },
       ]),
     );
+    mockDb.select.mockReturnValueOnce(makeChain([{ count: 1 }]));
     const res = await mkApp('admin').request('/api/v1/customers', { headers: a() });
     expect(res.status).toBe(200);
   });

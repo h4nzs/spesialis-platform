@@ -27,7 +27,7 @@ describe('getRedis', () => {
     const client = mod.getRedis();
 
     expect(Redis).toHaveBeenCalledWith(
-      expect.objectContaining({ host: 'localhost', lazyConnect: true }),
+      expect.objectContaining({ host: 'localhost', lazyConnect: false }),
     );
     expect(mockRedisInstance.on).toHaveBeenCalledWith('error', expect.any(Function));
     expect(client).toBe(mockRedisInstance);

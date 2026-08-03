@@ -15,6 +15,8 @@ vi.mock('sharp', () => {
       jpeg: () => ({ toBuffer: () => Promise.resolve(input) }),
       png: () => ({ toBuffer: () => Promise.resolve(input) }),
       webp: () => ({ toBuffer: () => Promise.resolve(input) }),
+      metadata: () => Promise.resolve({ format: 'jpeg' }),
+      toBuffer: () => Promise.resolve(input),
     }),
   };
 });
@@ -161,7 +163,8 @@ describe('saveFile', () => {
   });
 
   it('handles file with no extension', async () => {
-    const fileBuffer = new ArrayBuffer(4);
+    const enc = new TextEncoder();
+    const fileBuffer = enc.encode('%PDF-rest of file').buffer;
     const file = {
       name: 'noext',
       type: 'application/pdf',
@@ -179,6 +182,7 @@ describe('saveFile', () => {
 
 describe('deleteFile', () => {
   it('calls unlink with the given path', async () => {
+    process.env.UPLOAD_DIR = '/tmp/uploads';
     const mod = await import('./storage.ts');
     await mod.deleteFile('/tmp/uploads/test.pdf');
 
@@ -189,6 +193,6 @@ describe('deleteFile', () => {
     vi.mocked(unlink).mockRejectedValue(new Error('ENOENT'));
 
     const mod = await import('./storage.ts');
-    await expect(mod.deleteFile('/tmp/uploads/missing.pdf')).resolves.toBeUndefined();
+    await expect(mod.deleteFile('test.pdf')).resolves.toBeUndefined();
   });
 });
