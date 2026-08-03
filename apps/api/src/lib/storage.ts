@@ -24,10 +24,9 @@ export interface StoredFile {
 
 /* ── R2 / S3 Client (lazy — tidak blocking module loading) ──────── */
 
-// Dynamic import of @aws-sdk/client-s3 — not available in all environments
-type S3ClientType = InstanceType<typeof import('@aws-sdk/client-s3').S3Client>;
-
-let _s3Client: S3ClientType | null = null;
+// Dynamic import of @aws-sdk/client-s3 — not available in all environments.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+let _s3Client: any = null;
 
 function getR2Config() {
   const endpoint = process.env.R2_ENDPOINT;
@@ -40,7 +39,8 @@ function getR2Config() {
   return null;
 }
 
-async function getS3Client(): Promise<S3ClientType> {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+async function getS3Client(): Promise<any> {
   if (!_s3Client) {
     const cfg = getR2Config();
     if (!cfg)
@@ -123,7 +123,7 @@ async function validateMagicBytes(buffer: Buffer, claimedType: string): Promise<
         throw new Error(`MIME type mismatch: claimed ${claimedType}, detected ${detected}`);
       }
     } catch (err) {
-      throw new Error(`Invalid image file: ${(err as Error).message}`);
+      throw new Error(`Invalid image file: ${(err as Error).message}`, { cause: err });
     }
   } else if (claimedType === 'application/pdf') {
     const header = buffer.slice(0, 5).toString();

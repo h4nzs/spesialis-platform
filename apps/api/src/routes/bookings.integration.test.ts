@@ -216,7 +216,7 @@ describe('Full Booking Lifecycle', () => {
     const body = (await res.json()) as { success: boolean; data: { status: string } };
     expect(res.status).toBe(200);
     expect(body.success).toBe(true);
-    expect(body.data.status).toBe('Confirmed');
+    expect(body.data.status).toBe('Waiting Assignment');
 
     // Verify DB state
     const [order] = await db
@@ -224,7 +224,7 @@ describe('Full Booking Lifecycle', () => {
       .from(orders)
       .where(eq(orders.id, bookingId))
       .limit(1);
-    expect(order!.status).toBe('Confirmed');
+    expect(order!.status).toBe('Waiting Assignment');
     expect(Number(order!.finalPrice)).toBe(280000);
 
     // Verify status history
@@ -234,7 +234,7 @@ describe('Full Booking Lifecycle', () => {
       .where(eq(orderStatusHistory.orderId, bookingId))
       .orderBy(orderStatusHistory.createdAt);
     expect(history.length).toBe(2); // Created + Confirmed
-    expect(history[1]!.toStatus).toBe('Confirmed');
+    expect(history[1]!.toStatus).toBe('Waiting Assignment');
   });
 
   it('3. Assign partner as admin (POST /bookings/:id/assign) → 200', async () => {
@@ -405,7 +405,7 @@ describe('Full Booking Lifecycle', () => {
     const statuses = history.map((h) => h.toStatus);
     expect(statuses).toEqual([
       'Pending Confirmation',
-      'Confirmed',
+      'Waiting Assignment',
       'Partner Assigned',
       'Partner Accepted',
       'On The Way',
@@ -699,7 +699,7 @@ describe('Reject Assignment Flow', () => {
     const statuses = history.map((h) => h.toStatus);
     expect(statuses).toEqual([
       'Pending Confirmation',
-      'Confirmed',
+      'Waiting Assignment',
       'Partner Assigned',
       'Waiting Assignment',
     ]);

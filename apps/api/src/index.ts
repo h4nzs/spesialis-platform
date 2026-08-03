@@ -28,9 +28,13 @@ function validateEnv(): void {
   }
 
   if (process.env.JWT_SECRET!.length < 32) {
-    console.error('❌ JWT_SECRET is too short (< 32 characters). Generate a strong secret.');
-    console.error('   Run: openssl rand -hex 32');
-    process.exit(1);
+    const msg = 'JWT_SECRET is too short (< 32 characters). Generate a strong secret.';
+    if (process.env.APP_ENV === 'production') {
+      console.error(`❌ ${msg}`);
+      console.error('   Run: openssl rand -hex 32');
+      process.exit(1);
+    }
+    console.warn(`⚠️  ${msg}`);
   }
 
   if (process.env.APP_ENV === 'production' && process.env.JWT_SECRET!.length < 64) {
