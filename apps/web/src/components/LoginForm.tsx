@@ -38,11 +38,8 @@ export function LoginForm() {
       const api = getApiClient();
       const result = await api.post<{
         user: { id: string; email: string; role: string };
-        token: string;
-        refreshToken: string;
       }>('/api/v1/auth/login', { body: parsed.data });
 
-      api.getTokenStore().setTokens(result.token, result.refreshToken);
       trackImmediate('login_success', { user_id: result.user.id, role: result.user.role });
       redirectToDashboard(result.user.role);
     } catch (err: unknown) {

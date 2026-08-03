@@ -85,6 +85,9 @@ beforeEach(() => {
 
 describe('POST /', () => {
   it('201 created', async () => {
+    mockDb.select.mockReturnValueOnce(
+      makeChain([{ id: 'o1', customerId: 'cp1', status: 'Completed' }]),
+    );
     mockDb.select.mockReturnValueOnce(makeChain([{ id: 'cp1' }]));
     mockDb.select.mockReturnValue(makeChain([]));
     mockDb.insert.mockReturnValue(insertChain([{ id: 'p1' }]));
@@ -115,6 +118,9 @@ describe('POST /', () => {
     expect((await res.json()) as ApiTestResponse).toMatchObject({ success: false });
   });
   it('409 duplicate payment', async () => {
+    mockDb.select.mockReturnValueOnce(
+      makeChain([{ id: 'o1', customerId: 'cp1', status: 'Completed' }]),
+    );
     mockDb.select.mockReturnValueOnce(makeChain([{ id: 'cp1' }]));
     mockDb.select.mockReturnValueOnce(makeChain([{ id: 'p1' }]));
     const res = await mkApp().request('/api/v1/payments', {
@@ -152,8 +158,11 @@ describe('POST /', () => {
 
 describe('GET /:id', () => {
   it('200', async () => {
-    mockDb.select.mockReturnValueOnce(makeChain([{ customerId: 'cp1' }]));
-    mockDb.select.mockReturnValueOnce(makeChain([{ id: 'cp1' }]));
+    mockDb.select.mockReturnValueOnce(
+      makeChain([
+        { customerId: 'cp1', customerName: 'Test', customerEmail: 'a@b.com', customerPhone: '123' },
+      ]),
+    );
     const res = await mkApp('admin').request('/api/v1/payments/p1', { headers: a() });
     expect(res.status).toBe(200);
   });

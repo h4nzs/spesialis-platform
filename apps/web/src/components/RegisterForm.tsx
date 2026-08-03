@@ -39,11 +39,8 @@ export function RegisterForm() {
       const api = getApiClient();
       const result = await api.post<{
         user: { id: string; email: string; role: string };
-        token: string;
-        refreshToken: string;
       }>('/api/v1/auth/register', { body: parsed.data });
 
-      api.getTokenStore().setTokens(result.token, result.refreshToken);
       trackImmediate('register_complete', { user_id: result.user.id, role: result.user.role });
       redirectToDashboard(result.user.role);
     } catch (err: unknown) {
