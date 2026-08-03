@@ -763,27 +763,3 @@ body {
     font-weight: revert;
   }
 }
-
-/* ==========================================================================
-   Dark Mode — prefers-color-scheme: dark
-   Overrides semantic surface/text/border tokens for dark backgrounds.
-   ========================================================================== */
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --color-bg-page: #0f172a;
-    --color-bg-surface: #1e293b;
-    --color-bg-surface-raised: #334155;
-    --color-bg-overlay: rgba(0, 0, 0, 0.6);
-
-    --color-text-primary: #f1f5f9;
-    --color-text-secondary: #94a3b8;
-    --color-text-muted: #64748b;
-
-    --color-border-default: #334155;
-    --color-border-muted: #1e293b;
-    --color-border-strong: #475569;
-
-    color-scheme: dark;
-  }
-}
