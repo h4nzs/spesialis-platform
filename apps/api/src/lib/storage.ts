@@ -220,8 +220,9 @@ export async function deleteFile(path: string, disk?: StorageDisk): Promise<void
       const client = await getS3Client();
       const { DeleteObjectCommand } = await import('@aws-sdk/client-s3');
       await client.send(new DeleteObjectCommand({ Bucket: getR2Bucket(), Key: path }));
-    } catch {
-      // Ignore — file already deleted, not found, or package not installed
+    } catch (err) {
+      console.error(`[storage] Failed to delete R2 object: ${path}`, (err as Error).message);
+      throw err;
     }
     return;
   }

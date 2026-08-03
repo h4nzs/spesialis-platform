@@ -99,6 +99,16 @@ router.patch('/:id/refund', authMiddleware, requireRole('admin', 'super_admin'),
   if (!payment) return notFound(c, 'Pembayaran tidak ditemukan');
   if (payment.status !== 'Paid') return conflict(c, 'Hanya pembayaran lunas yang bisa di-refund');
 
+  const [order] = await db
+    .select({ id: orders.id, status: orders.status })
+    .from(orders)
+    .where(eq(orders.id, payment.orderId))
+    .limit(1);
+  if (!order) return notFound(c, 'Order tidak ditemukan');
+  if (!canTransition(order.status, 'Cancelled')) {
+    return conflict(c, `Tidak bisa refund dari status order ${order.status}`);
+  }
+
   await db.transaction(async (tx) => {
     await tx.update(payments).set({ status: 'Refunded' }).where(eq(payments.id, paymentId));
     await tx.update(orders).set({ status: 'Cancelled' }).where(eq(orders.id, payment.orderId));
@@ -321,6 +331,10 @@ router.post(
       .where(eq(orders.id, payment.orderId))
       .limit(1);
     if (!order) return notFound(c, 'Order tidak ditemukan');
+
+    if (data.status === 'Paid' && !canTransition(order.status, 'Paid')) {
+      return conflict(c, `Tidak bisa verifikasi dari status order ${order.status}`);
+    }
 
     await db.transaction(async (tx) => {
       if (data.status === 'Paid') {

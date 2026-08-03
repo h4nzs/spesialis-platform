@@ -26,7 +26,7 @@ import {
   rejectAssignmentSchema,
   cancelBookingSchema,
 } from '@ahlipanggilan/validation';
-import { canTransition } from '@ahlipanggilan/shared';
+import { canTransition, CANCELLABLE_BY_CUSTOMER } from '@ahlipanggilan/shared';
 import {
   success,
   successPaginated,
@@ -546,17 +546,6 @@ router.post(
     const userId = c.get('userId');
     const data = c.get('validated') as { partnerId: string; note?: string };
 
-    const [order] = await db
-      .select({ id: orders.id, status: orders.status })
-      .from(orders)
-      .where(eq(orders.id, orderId))
-      .limit(1);
-    if (!order) return notFound(c, 'Booking tidak ditemukan');
-
-    if (!canTransition(order.status, 'Partner Assigned')) {
-      return conflict(c, `Tidak bisa assignment dari status ${order.status}`);
-    }
-
     const [partner] = await db
       .select({
         id: partnerProfiles.id,
@@ -577,11 +566,29 @@ router.post(
       );
     }
 
+    let previousStatus: OrderStatus | null = null;
     await db.transaction(async (tx) => {
-      await tx
+      const [locked] = await tx
+        .select({ id: orders.id, status: orders.status })
+        .from(orders)
+        .where(eq(orders.id, orderId))
+        .for('update')
+        .limit(1);
+
+      if (!locked) throw new Error('Booking tidak ditemukan');
+      if (!canTransition(locked.status, 'Partner Assigned')) {
+        throw new Error(`Tidak bisa assignment dari status ${locked.status}`);
+      }
+
+      previousStatus = locked.status;
+
+      const [updated] = await tx
         .update(orders)
         .set({ status: 'Partner Assigned', partnerId: partner.id })
-        .where(eq(orders.id, orderId));
+        .where(and(eq(orders.id, orderId), eq(orders.status, locked.status)))
+        .returning({ id: orders.id });
+
+      if (!updated) throw new Error('Booking sudah berubah status');
 
       await tx.insert(assignments).values({
         orderId,
@@ -589,7 +596,7 @@ router.post(
         status: 'Assigned',
       });
 
-      await recordStatusHistory(orderId, order.status, 'Partner Assigned', userId, data.note, tx);
+      await recordStatusHistory(orderId, previousStatus, 'Partner Assigned', userId, data.note, tx);
     });
 
     await createAuditLog(c, {
@@ -598,7 +605,7 @@ router.post(
       entity: 'order',
       entityId: orderId,
       newValue: { status: 'Partner Assigned', partnerId: partner.id },
-      oldValue: { status: order.status },
+      oldValue: { status: previousStatus! },
     });
 
     const [partnerUser] = await db
@@ -946,6 +953,10 @@ router.post('/:id/cancel', authMiddleware, validateBody(cancelBookingSchema), as
       : [{ id: 'allowed' as const }];
 
   if (!profile) return forbidden(c);
+
+  if (userRole === 'customer' && !CANCELLABLE_BY_CUSTOMER.includes(order.status)) {
+    return conflict(c, `Customer tidak bisa membatalkan dari status ${order.status}`);
+  }
 
   if (!canTransition(order.status, 'Cancelled')) {
     return conflict(c, `Tidak bisa dibatalkan dari status ${order.status}`);

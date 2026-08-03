@@ -1,17 +1,27 @@
 import { Hono } from 'hono';
 import { sql } from 'drizzle-orm';
 import { db } from '../lib/db.ts';
+import { getRedis } from '../lib/redis.ts';
 import { success, error } from '../lib/response.ts';
 
 const router = new Hono();
 
 router.get('/', async (c) => {
-  // Verify database connectivity
   let dbStatus = 'ok';
+  let redisStatus = 'ok';
+
   try {
     await db.execute(sql`SELECT 1`);
   } catch {
     dbStatus = 'unreachable';
+  }
+
+  try {
+    const redis = getRedis();
+    if (redis) await redis.ping();
+    else redisStatus = 'unavailable';
+  } catch {
+    redisStatus = 'unreachable';
   }
 
   if (dbStatus !== 'ok') {
@@ -23,6 +33,7 @@ router.get('/', async (c) => {
     timestamp: new Date().toISOString(),
     uptime: process.uptime(),
     database: dbStatus,
+    redis: redisStatus,
   });
 });
 

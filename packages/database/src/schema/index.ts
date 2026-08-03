@@ -71,5 +71,7 @@ export {
   invoicesRelations,
   partnerPenaltiesRelations,
   cmsPagesRelations,
+  refreshTokensRelations,
+  passwordResetsRelations,
   articleLinksRelations,
 } from './relations.ts';

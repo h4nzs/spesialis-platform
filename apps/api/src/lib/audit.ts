@@ -33,7 +33,7 @@ export async function createAuditLog(
       ipAddress: ip,
       userAgent: c.req.header('user-agent') ?? null,
     });
-  } catch {
-    // Audit log is non-critical — never break the main operation
+  } catch (err) {
+    console.error('[audit] Failed to write audit log:', (err as Error).message);
   }
 }

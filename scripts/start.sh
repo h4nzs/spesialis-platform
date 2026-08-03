@@ -42,12 +42,12 @@ if [[ "$MODE" == "dev" ]]; then
 
   # ─── Migrate ──────────────────────────────────────────────────
   echo "📦 Running database migrations..."
-  pnpm --filter @specialist/database db:migrate
+  pnpm --filter @ahlipanggilan/database db:migrate
 
   # ─── Seed ──────────────────────────────────────────────────────
   if $SEED; then
     echo "🌱 Seeding database..."
-    pnpm --filter @specialist/api db:seed
+    pnpm --filter @ahlipanggilan/api db:seed
   fi
 
   # ─── Start dev servers ────────────────────────────────────────
@@ -86,17 +86,17 @@ elif [[ "$MODE" == "prod" ]]; then
 
   # ─── Migrate ──────────────────────────────────────────────────
   echo "📦 Running database migrations..."
-  pnpm --filter @specialist/database db:migrate
+  pnpm --filter @ahlipanggilan/database db:migrate
 
   # ─── Seed if --seed flag ──────────────────────────────────────
   if [[ "$*" == *"--seed"* ]]; then
     echo "🌱 Seeding database..."
-    pnpm --filter @specialist/api db:seed
+    pnpm --filter @ahlipanggilan/api db:seed
   fi
 
   # ─── Start API as daemon ──────────────────────────────────────
   echo "🚀 Starting API (port 3000)..."
-  pnpm --filter @specialist/api start &
+  pnpm --filter @ahlipanggilan/api start &
   API_PID=$!
   sleep 2
 

@@ -24,14 +24,11 @@ router.use('*', authMiddleware);
 
 async function getContractNumber(): Promise<string> {
   const year = new Date().getFullYear();
-  const prefix = `CT-${year}-`;
-  const result = await db.execute(sql`
-    SELECT COALESCE(MAX(CAST(SUBSTRING(contract_number, 9) AS INTEGER)), 0) + 1 AS next
-    FROM contracts WHERE contract_number LIKE ${prefix + '%'}
-  `);
-  const row = result[0] as { next: number } | undefined;
-  const next = Number(row?.next ?? 1);
-  return `${prefix}${String(next).padStart(4, '0')}`;
+  const rows = await db.execute<{ nextval: string }>(
+    sql`SELECT nextval('contract_number_seq') AS nextval`,
+  );
+  const next = Number(rows[0]?.nextval ?? 1);
+  return `CT-${year}-${String(next).padStart(4, '0')}`;
 }
 
 router.get('/', requireRole('admin', 'super_admin'), async (c) => {

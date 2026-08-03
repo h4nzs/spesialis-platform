@@ -1,5 +1,5 @@
 import { Hono, type Context } from 'hono';
-import { eq, desc } from 'drizzle-orm';
+import { eq, desc, isNull, and } from 'drizzle-orm';
 import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { db, media } from '../lib/db.ts';
@@ -52,6 +52,7 @@ async function handleListMedia(c: Context) {
   if (userRole !== 'admin' && userRole !== 'super_admin') {
     conditions.push(eq(media.uploadedBy, userId));
   }
+  conditions.push(sql`${media.deletedAt} IS NULL`);
 
   if (search) {
     conditions.push(sql`${media.filename} ILIKE ${'%' + search + '%'}`);
@@ -164,7 +165,11 @@ router.get('/:id', authMiddleware, async (c) => {
   const userId = c.get('userId');
   const userRole = c.get('userRole');
 
-  const [record] = await db.select().from(media).where(eq(media.id, mediaId)).limit(1);
+  const [record] = await db
+    .select()
+    .from(media)
+    .where(and(eq(media.id, mediaId), isNull(media.deletedAt)))
+    .limit(1);
 
   if (!record) return notFound(c, 'Media tidak ditemukan');
 
@@ -190,7 +195,11 @@ router.get('/:id/file', authMiddleware, async (c) => {
   const userId = c.get('userId');
   const userRole = c.get('userRole');
 
-  const [record] = await db.select().from(media).where(eq(media.id, mediaId)).limit(1);
+  const [record] = await db
+    .select()
+    .from(media)
+    .where(and(eq(media.id, mediaId), isNull(media.deletedAt)))
+    .limit(1);
 
   if (!record) return notFound(c, 'Media tidak ditemukan');
 
@@ -236,8 +245,14 @@ router.delete('/:id', authMiddleware, async (c) => {
     return forbidden(c, 'Tidak dapat menghapus media milik user lain');
   }
 
-  await deleteFile(record.path, record.disk as StorageDisk);
-  await db.delete(media).where(eq(media.id, mediaId));
+  try {
+    await deleteFile(record.path, record.disk as StorageDisk);
+  } catch (err) {
+    console.error(`[media] Failed to delete file from storage: ${record.path}`, err);
+    return serverError(c, 'Gagal menghapus file dari storage');
+  }
+
+  await db.update(media).set({ deletedAt: new Date() }).where(eq(media.id, mediaId));
 
   return success(c, null, 'Media berhasil dihapus');
 });
