@@ -204,6 +204,69 @@
       "when": 1785181498839,
       "tag": "0028_add_blog_ads",
       "breakpoints": true
+    },
+    {
+      "idx": 29,
+      "version": "7",
+      "when": 1785181498840,
+      "tag": "0029_audit_log_immutable",
+      "breakpoints": true
+    },
+    {
+      "idx": 30,
+      "version": "7",
+      "when": 1785181498841,
+      "tag": "0030_updated_at_triggers",
+      "breakpoints": true
+    },
+    {
+      "idx": 31,
+      "version": "7",
+      "when": 1785181498842,
+      "tag": "0031_add_check_constraints",
+      "breakpoints": true
+    },
+    {
+      "idx": 32,
+      "version": "7",
+      "when": 1785181498843,
+      "tag": "0032_add_soft_delete",
+      "breakpoints": true
+    },
+    {
+      "idx": 33,
+      "version": "7",
+      "when": 1785181498844,
+      "tag": "0033_unique_indexes_and_status_indexes",
+      "breakpoints": true
+    },
+    {
+      "idx": 34,
+      "version": "7",
+      "when": 1785181498845,
+      "tag": "0034_bump_booking_seq_cache",
+      "breakpoints": true
+    },
+    {
+      "idx": 35,
+      "version": "7",
+      "when": 1785181498846,
+      "tag": "0035_fix_is_active_varchar_to_bool",
+      "breakpoints": true
+    },
+    {
+      "idx": 36,
+      "version": "7",
+      "when": 1785181498847,
+      "tag": "0036_invoice_contract_sequences",
+      "breakpoints": true
+    },
+    {
+      "idx": 37,
+      "version": "7",
+      "when": 1785181498848,
+      "tag": "0037_adjust_sequences_to_existing_data",
+      "breakpoints": true
     }
   ]
 }

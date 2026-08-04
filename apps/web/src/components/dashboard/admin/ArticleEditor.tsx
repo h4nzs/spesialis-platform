@@ -14,21 +14,13 @@ import {
 } from 'react';
 import { createBrowserClient, parseApiError } from '@ahlipanggilan/shared';
 import { Button, Input, Select, Card, SEOEditor } from '@ahlipanggilan/ui';
+import { RichTextEditor } from '@ahlipanggilan/ui/editor';
 import type { SeoData } from '@ahlipanggilan/ui';
 import { useContentLock } from '../../../lib/useContentLock.ts';
 import { LockBanner } from './LockBanner.tsx';
 import { renderMarkdown } from '../../../lib/markdown.ts';
 import { TableOfContents } from '../../../components/blog/TableOfContents.tsx';
 
-// Mulai download chunk editor saat modul dievaluasi, bukan saat render pertama.
-// Mencegah race condition chunk loading di CI/CD saat hydration editor lambat.
-void import('@ahlipanggilan/ui/editor').catch(() => {
-  // Preload hanya — import untuk rendering ditangani React.lazy di bawah.
-});
-
-const RichTextEditor = lazy(() =>
-  import('@ahlipanggilan/ui/editor').then((m) => ({ default: m.RichTextEditor })),
-);
 const MediaBrowser = lazy(() =>
   import('@ahlipanggilan/ui').then((m) => ({ default: m.MediaBrowser })),
 );
@@ -526,20 +518,14 @@ export function ArticleEditor({ editingId }: ArticleEditorProps) {
 
             <Card>
               <EditorErrorBoundary>
-                <Suspense
-                  fallback={
-                    <div className="py-4 text-center text-sm text-text-muted">Memuat editor...</div>
-                  }
-                >
-                  <RichTextEditor
-                    label="Konten"
-                    value={form.content}
-                    onChange={(html) => setForm((f) => ({ ...f, content: html }))}
-                    placeholder="Tulis konten artikel di sini..."
-                    onImageUpload={openMediaForContent}
-                    error={undefined}
-                  />
-                </Suspense>
+                <RichTextEditor
+                  label="Konten"
+                  value={form.content}
+                  onChange={(html) => setForm((f) => ({ ...f, content: html }))}
+                  placeholder="Tulis konten artikel di sini..."
+                  onImageUpload={openMediaForContent}
+                  error={undefined}
+                />
               </EditorErrorBoundary>
 
               {/* ── Live Preview ─────────────────────────────── */}
