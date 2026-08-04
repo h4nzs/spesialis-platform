@@ -1,4 +1,17 @@
-import { useState, useEffect, useCallback, useMemo, useRef, Suspense, lazy } from 'react';
+import {
+  useState,
+  useEffect,
+  useCallback,
+  useMemo,
+  useRef,
+  Suspense,
+  lazy,
+  Component,
+  type ChangeEvent,
+  type DragEvent,
+  type ReactNode,
+  type SyntheticEvent,
+} from 'react';
 import { createBrowserClient, parseApiError } from '@ahlipanggilan/shared';
 import { Button, Input, Select, Card, SEOEditor } from '@ahlipanggilan/ui';
 import type { SeoData } from '@ahlipanggilan/ui';
@@ -32,6 +45,49 @@ const PillarLinkSuggestions = lazy(() =>
 const PillarSeoScore = lazy(() =>
   import('./PillarSeoScore.tsx').then((m) => ({ default: m.PillarSeoScore })),
 );
+
+// ── Error Boundary ────────────────────────────────────────────────
+
+interface EditorErrorBoundaryProps {
+  children: ReactNode;
+}
+
+interface EditorErrorBoundaryState {
+  hasError: boolean;
+}
+
+class EditorErrorBoundary extends Component<EditorErrorBoundaryProps, EditorErrorBoundaryState> {
+  constructor(props: EditorErrorBoundaryProps) {
+    super(props);
+    this.state = { hasError: false };
+  }
+
+  static getDerivedStateFromError(): EditorErrorBoundaryState {
+    return { hasError: true };
+  }
+
+  componentDidCatch(error: Error) {
+    console.error('RichTextEditor gagal dimuat:', error);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="flex min-h-[300px] flex-col items-center justify-center gap-3 rounded-md border border-border-default bg-bg-surface px-4 text-center text-sm text-text-muted">
+          <p>Gagal memuat editor. Silakan muat ulang halaman.</p>
+          <button
+            type="button"
+            onClick={() => window.location.reload()}
+            className="rounded-md bg-primary px-4 py-2 text-white transition-colors hover:bg-primary-700"
+          >
+            Muat Ulang
+          </button>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
 
 // ── Types ────────────────────────────────────────────────────────
 
@@ -139,7 +195,7 @@ export function ArticleEditor({ editingId }: ArticleEditorProps) {
 
   // Handle file drops for cover image
   const handleCoverDrop = useCallback(
-    async (e: React.DragEvent) => {
+    async (e: DragEvent) => {
       e.preventDefault();
       e.stopPropagation();
       setCoverDragOver(false);
@@ -163,13 +219,13 @@ export function ArticleEditor({ editingId }: ArticleEditorProps) {
     [uploadToMedia],
   );
 
-  const handleCoverDragOver = useCallback((e: React.DragEvent) => {
+  const handleCoverDragOver = useCallback((e: DragEvent) => {
     e.preventDefault();
     e.stopPropagation();
     setCoverDragOver(true);
   }, []);
 
-  const handleCoverDragLeave = useCallback((e: React.DragEvent) => {
+  const handleCoverDragLeave = useCallback((e: DragEvent) => {
     e.preventDefault();
     e.stopPropagation();
     setCoverDragOver(false);
@@ -177,7 +233,7 @@ export function ArticleEditor({ editingId }: ArticleEditorProps) {
 
   // Handle file select via input
   const handleCoverFileSelect = useCallback(
-    async (e: React.ChangeEvent<HTMLInputElement>) => {
+    async (e: ChangeEvent<HTMLInputElement>) => {
       const files = Array.from(e.target.files ?? []);
       if (files.length === 0) return;
       const file = files[0];
@@ -304,7 +360,7 @@ export function ArticleEditor({ editingId }: ArticleEditorProps) {
   const lock = useContentLock(editingId ? 'article' : undefined, editingId);
 
   // ── Submit handler ─────────────────────────────────────────────
-  async function handleSave(e: React.SyntheticEvent<HTMLFormElement>) {
+  async function handleSave(e: SyntheticEvent<HTMLFormElement>) {
     e.preventDefault();
     if (!form.title || !form.slug) {
       setError('Judul dan slug wajib diisi');
@@ -374,14 +430,18 @@ export function ArticleEditor({ editingId }: ArticleEditorProps) {
   return (
     <>
       {/* ── MediaBrowser ─────────────────────────────────────── */}
-      <MediaBrowser
-        open={showMediaBrowser}
-        onClose={() => {
-          setShowMediaBrowser(false);
-          insertImageRef.current = null;
-        }}
-        onSelect={handleMediaSelect}
-      />
+      {showMediaBrowser && (
+        <Suspense fallback={null}>
+          <MediaBrowser
+            open={showMediaBrowser}
+            onClose={() => {
+              setShowMediaBrowser(false);
+              insertImageRef.current = null;
+            }}
+            onSelect={handleMediaSelect}
+          />
+        </Suspense>
+      )}
 
       {/* ── Content Lock Banners ──────────────────────────────── */}
       {lock.locked && !lock.isLockedByMe && (
@@ -465,20 +525,22 @@ export function ArticleEditor({ editingId }: ArticleEditorProps) {
             </Card>
 
             <Card>
-              <Suspense
-                fallback={
-                  <div className="py-4 text-center text-sm text-text-muted">Memuat editor...</div>
-                }
-              >
-                <RichTextEditor
-                  label="Konten"
-                  value={form.content}
-                  onChange={(html) => setForm((f) => ({ ...f, content: html }))}
-                  placeholder="Tulis konten artikel di sini..."
-                  onImageUpload={openMediaForContent}
-                  error={undefined}
-                />
-              </Suspense>
+              <EditorErrorBoundary>
+                <Suspense
+                  fallback={
+                    <div className="py-4 text-center text-sm text-text-muted">Memuat editor...</div>
+                  }
+                >
+                  <RichTextEditor
+                    label="Konten"
+                    value={form.content}
+                    onChange={(html) => setForm((f) => ({ ...f, content: html }))}
+                    placeholder="Tulis konten artikel di sini..."
+                    onImageUpload={openMediaForContent}
+                    error={undefined}
+                  />
+                </Suspense>
+              </EditorErrorBoundary>
 
               {/* ── Live Preview ─────────────────────────────── */}
               {form.content && (
@@ -640,14 +702,20 @@ export function ArticleEditor({ editingId }: ArticleEditorProps) {
             </Card>
 
             <Card>
-              <TagsInput
-                label="Tags"
-                value={form.tags}
-                onChange={(tags) => setForm((f) => ({ ...f, tags }))}
-                placeholder="Ketik tag lalu tekan Enter..."
-                maxTags={10}
-                suggestions={[]}
-              />
+              <Suspense
+                fallback={
+                  <div className="py-4 text-center text-sm text-text-muted">Memuat tags…</div>
+                }
+              >
+                <TagsInput
+                  label="Tags"
+                  value={form.tags}
+                  onChange={(tags) => setForm((f) => ({ ...f, tags }))}
+                  placeholder="Ketik tag lalu tekan Enter..."
+                  maxTags={10}
+                  suggestions={[]}
+                />
+              </Suspense>
             </Card>
 
             {/* ── Table of Contents ────────────────────────────── */}
@@ -657,9 +725,13 @@ export function ArticleEditor({ editingId }: ArticleEditorProps) {
               </div>
             )}
 
-            <PillarLinkSuggestions editingId={editingId} isPillarContent={form.isPillarContent} />
+            <Suspense fallback={null}>
+              <PillarLinkSuggestions editingId={editingId} isPillarContent={form.isPillarContent} />
+            </Suspense>
 
-            <PillarSeoScore editingId={editingId} />
+            <Suspense fallback={null}>
+              <PillarSeoScore editingId={editingId} />
+            </Suspense>
 
             <Card>
               <SEOEditor
@@ -677,16 +749,32 @@ export function ArticleEditor({ editingId }: ArticleEditorProps) {
               />
             </Card>
 
-            <SchemaBuilder value={form.schemaJson} onChange={handleSchemaChange} />
+            <Suspense
+              fallback={
+                <div className="rounded-xl border border-border-default bg-bg-surface p-4 text-sm text-text-muted">
+                  Memuat schema builder…
+                </div>
+              }
+            >
+              <SchemaBuilder value={form.schemaJson} onChange={handleSchemaChange} />
+            </Suspense>
 
-            <SeoAnalyzerPanel
-              contentHtml={form.content}
-              title={form.title}
-              slug={form.slug}
-              metaTitle={form.metaTitle}
-              metaDescription={form.metaDescription}
-              url={`/blog/${form.slug}`}
-            />
+            <Suspense
+              fallback={
+                <div className="rounded-xl border border-border-default bg-bg-surface p-4 text-sm text-text-muted">
+                  Memuat analisis SEO…
+                </div>
+              }
+            >
+              <SeoAnalyzerPanel
+                contentHtml={form.content}
+                title={form.title}
+                slug={form.slug}
+                metaTitle={form.metaTitle}
+                metaDescription={form.metaDescription}
+                url={`/blog/${form.slug}`}
+              />
+            </Suspense>
           </div>
         </div>
 

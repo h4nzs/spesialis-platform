@@ -1,5 +1,5 @@
 import { Hono, type Context } from 'hono';
-import { eq, desc, sql, and } from 'drizzle-orm';
+import { eq, desc, sql, and, isNull } from 'drizzle-orm';
 import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { db, media } from '../lib/db.ts';
@@ -61,7 +61,7 @@ async function handleListMedia(c: Context) {
     conditions.push(sql`${media.mimeType} NOT LIKE 'image/%'`);
   }
 
-  conditions.push(sql`media.deleted_at IS NULL`);
+  conditions.push(isNull(media.deletedAt));
 
   const items = await db
     .select({
@@ -168,7 +168,7 @@ router.get('/:id', authMiddleware, async (c) => {
   const [record] = await db
     .select()
     .from(media)
-    .where(and(eq(media.id, mediaId), sql`media.deleted_at IS NULL`))
+    .where(and(eq(media.id, mediaId), isNull(media.deletedAt)))
     .limit(1);
 
   if (!record) return notFound(c, 'Media tidak ditemukan');
@@ -198,7 +198,7 @@ router.get('/:id/file', authMiddleware, async (c) => {
   const [record] = await db
     .select()
     .from(media)
-    .where(and(eq(media.id, mediaId), sql`media.deleted_at IS NULL`))
+    .where(and(eq(media.id, mediaId), isNull(media.deletedAt)))
     .limit(1);
 
   if (!record) return notFound(c, 'Media tidak ditemukan');
@@ -241,7 +241,7 @@ router.delete('/:id', authMiddleware, async (c) => {
 
   if (!record) return notFound(c, 'Media tidak ditemukan');
 
-  if ((record as Record<string, unknown>).deleted_at) {
+  if (record.deletedAt) {
     return notFound(c, 'Media tidak ditemukan');
   }
 
