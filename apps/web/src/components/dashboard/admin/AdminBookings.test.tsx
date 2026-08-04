@@ -520,10 +520,8 @@ describe('AdminBookings', () => {
 
       await waitFor(() => {
         expect(fetchMock).toHaveBeenCalledWith('/api/v1/admin/orders/export', {
-          headers: {
-            Authorization: 'Bearer mock-token',
-            Accept: 'text/csv,application/json',
-          },
+          headers: { Accept: 'text/csv,application/json' },
+          credentials: 'include',
         });
       });
     });

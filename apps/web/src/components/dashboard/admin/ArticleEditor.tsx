@@ -7,6 +7,12 @@ import { LockBanner } from './LockBanner.tsx';
 import { renderMarkdown } from '../../../lib/markdown.ts';
 import { TableOfContents } from '../../../components/blog/TableOfContents.tsx';
 
+// Mulai download chunk editor saat modul dievaluasi, bukan saat render pertama.
+// Mencegah race condition chunk loading di CI/CD saat hydration editor lambat.
+void import('@ahlipanggilan/ui/editor').catch(() => {
+  // Preload hanya — import untuk rendering ditangani React.lazy di bawah.
+});
+
 const RichTextEditor = lazy(() =>
   import('@ahlipanggilan/ui/editor').then((m) => ({ default: m.RichTextEditor })),
 );

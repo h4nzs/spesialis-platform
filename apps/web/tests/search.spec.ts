@@ -5,7 +5,7 @@ test.describe('Search Flow - E2E-022', () => {
     await page.goto('/services');
     await expect(page).toHaveURL(/\/services/);
     await expect(page.locator('h1').first()).toBeVisible({ timeout: 10000 });
-    await expect(page.locator('text=Layanan').first()).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Layanan' })).toBeVisible();
   });
 
   test('E2E-022: Service detail page loads by slug', async ({ page }) => {
