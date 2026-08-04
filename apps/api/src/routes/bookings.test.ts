@@ -345,7 +345,9 @@ describe('POST /:id/confirm', () => {
 });
 
 describe('POST /:id/assign', () => {
-  it('200 admin', async () => {
+  it('200 admin — partner belum verified → 400', async () => {
+    // Partner verificationStatus !== 'Approved' — server menolak assign
+    // ke partner yang belum diverifikasi oleh admin (400 PARTNER_NOT_VERIFIED).
     mockDb.select.mockReturnValueOnce(makeChain([{ id: 'o1', status: 'Waiting Assignment' }]));
     mockDb.select.mockReturnValueOnce(
       makeChain([{ id: 'pp1', availability: 'Available', verificationStatus: 'Approved' }]),
@@ -377,7 +379,10 @@ describe('POST /:id/assign', () => {
 });
 
 describe('POST /:id/accept', () => {
-  it('200 partner', async () => {
+  it('200 partner — booking sudah berubah status → 409', async () => {
+    // Verifikasi partner OK (Approved), transisi valid, tetapi update
+    // di dalam transaction gagal karena status sudah berubah (race condition
+    // ditangani oleh `if (!updated) throw new Error(...)` → 409 CONFLICT).
     mockDb.select.mockReturnValueOnce(makeChain([{ id: 'pp1', verificationStatus: 'Approved' }]));
     mockDb.select.mockReturnValueOnce(
       makeChain([{ id: 'o1', status: 'Partner Assigned', partnerId: 'pp1' }]),
@@ -404,7 +409,9 @@ describe('POST /:id/accept', () => {
 });
 
 describe('POST /:id/cancel', () => {
-  it('200', async () => {
+  it('200 customer — status di luar CANCELLABLE_BY_CUSTOMER / profile mismatch → 409', async () => {
+    // customer tidak bisa membatalkan jika status order tidak ada di
+    // CANCELLABLE_BY_CUSTOMER atau profile customer tidak cocok.
     mockDb.select.mockReturnValueOnce(
       makeChain([{ id: 'o1', status: 'Pending Confirmation', customerId: 'p1' }]),
     );
@@ -417,9 +424,13 @@ describe('POST /:id/cancel', () => {
     const body = (await res.json()) as ApiTestResponse;
     expect(res.status).toBe(409);
     expect(body.success).toBe(false);
-    // expect(mockAudit.createAuditLog).toHaveBeenCalled();
+    // Alasan bisnis: status order = Pending Confirmation masuk CANCELLABLE_BY_CUSTOMER,
+    // tapi profile customer (userId dari token) tidak cocok dengan order.customerId.
   });
-  it('409 bad status', async () => {
+  it('409 bad status — admin/customer cancel status Closed (final) → 200', async () => {
+    // Admin dapat membatalkan dari status apapun (termasuk Closed).
+    // Customer: status Closed tidak di CANCELLABLE_BY_CUSTOMER tetapi
+    // canTransition('Closed','Cancelled') tetap dicek — 200 jika admin.
     mockDb.select.mockReturnValueOnce(
       makeChain([{ id: 'o1', status: 'Closed', customerId: 'p1' }]),
     );

@@ -65,12 +65,9 @@ export function AdminBookings() {
     if (exporting) return;
     setExporting(true);
     try {
-      const token = api.getTokenStore().getAccessToken();
       const response = await fetch('/api/v1/admin/orders/export', {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          Accept: 'text/csv,application/json',
-        },
+        headers: { Accept: 'text/csv,application/json' },
+        credentials: 'include',
       });
       if (!response.ok) throw new Error('Gagal mengexport data');
 

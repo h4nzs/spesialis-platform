@@ -69,6 +69,13 @@ Corporate menggunakan alur Inquiry terlebih dahulu.
 
 Status booking mengikuti lifecycle berikut:
 
+> **Update (2026-08):** Status `Confirmed` bersifat opsional. Flow default hasil
+> `/confirm` langsung menuju `Waiting Assignment` tanpa melalui `Confirmed`.
+> Status `Confirmed` tetap valid sebagai intermediate jika diperlukan oleh
+> alur manual (misal admin ingin review sebelum assignment). Lihat
+> `ORDER_STATUS_TRANSITIONS` di `packages/shared/src/constants.ts` untuk
+> mapping transisi lengkap.
+
 ```text
 Draft
 │
