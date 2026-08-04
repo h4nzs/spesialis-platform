@@ -1,6 +1,11 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { trackPartnerJobAccept, trackPartnerJobReject } from '@ahlipanggilan/analytics';
-import { createBrowserClient, formatDate, getStatusLabel } from '@ahlipanggilan/shared';
+import {
+  createBrowserClient,
+  formatDate,
+  getStatusLabel,
+  ApiClientError,
+} from '@ahlipanggilan/shared';
 import {
   Badge,
   Card,
@@ -10,6 +15,7 @@ import {
   Pagination,
   EmptyState,
   Skeleton,
+  showToast,
 } from '@ahlipanggilan/ui';
 import type { OrderStatus } from '@ahlipanggilan/types';
 
@@ -59,8 +65,10 @@ export function PartnerJobs() {
       trackPartnerJobAccept(assignmentId, bookingId);
       setPage(1);
       await loadJobs();
-    } catch {
-      // silent
+    } catch (err) {
+      const message =
+        err instanceof ApiClientError ? err.message : 'Gagal menerima assignment. Coba lagi.';
+      showToast({ variant: 'danger', message });
     }
   }
 

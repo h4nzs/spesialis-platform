@@ -37,7 +37,7 @@ export { Pagination, type PaginationProps } from './components/Pagination.tsx';
 // ─── Feedback ────────────────────────────────────────────────────────────
 export { Modal, type ModalProps } from './components/Modal.tsx';
 export { Alert, type AlertProps } from './components/Alert.tsx';
-export { Toast, type ToastProps } from './components/Toast.tsx';
+export { Toast, type ToastProps, showToast } from './components/Toast.tsx';
 export { Spinner, type SpinnerProps } from './components/Spinner.tsx';
 export { EmptyState, type EmptyStateProps } from './components/EmptyState.tsx';
 export { ConfirmDialog, type ConfirmDialogProps } from './components/ConfirmDialog.tsx';

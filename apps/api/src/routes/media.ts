@@ -1,5 +1,5 @@
 import { Hono, type Context } from 'hono';
-import { eq, desc, sql } from 'drizzle-orm';
+import { eq, desc, sql, and } from 'drizzle-orm';
 import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { db, media } from '../lib/db.ts';
@@ -61,6 +61,8 @@ async function handleListMedia(c: Context) {
     conditions.push(sql`${media.mimeType} NOT LIKE 'image/%'`);
   }
 
+  conditions.push(sql`media.deleted_at IS NULL`);
+
   const items = await db
     .select({
       id: media.id,
@@ -75,7 +77,7 @@ async function handleListMedia(c: Context) {
       createdAt: media.createdAt,
     })
     .from(media)
-    .where(conditions.length > 0 ? conditions.reduce((a, b) => sql`${a} AND ${b}`) : undefined)
+    .where(conditions.reduce((a, b) => sql`${a} AND ${b}`))
     .orderBy(desc(media.createdAt))
     .limit(limit)
     .offset((page - 1) * limit);
@@ -83,7 +85,7 @@ async function handleListMedia(c: Context) {
   const countResult = await db
     .select({ count: sql<number>`count(*)` })
     .from(media)
-    .where(conditions.length > 0 ? conditions.reduce((a, b) => sql`${a} AND ${b}`) : undefined);
+    .where(conditions.reduce((a, b) => sql`${a} AND ${b}`));
   const total = Number(countResult[0]?.count ?? 0);
 
   return successPaginated(c, items, buildPaginationMeta(page, limit, total));
@@ -163,7 +165,11 @@ router.get('/:id', authMiddleware, async (c) => {
   const userId = c.get('userId');
   const userRole = c.get('userRole');
 
-  const [record] = await db.select().from(media).where(eq(media.id, mediaId)).limit(1);
+  const [record] = await db
+    .select()
+    .from(media)
+    .where(and(eq(media.id, mediaId), sql`media.deleted_at IS NULL`))
+    .limit(1);
 
   if (!record) return notFound(c, 'Media tidak ditemukan');
 
@@ -189,7 +195,11 @@ router.get('/:id/file', authMiddleware, async (c) => {
   const userId = c.get('userId');
   const userRole = c.get('userRole');
 
-  const [record] = await db.select().from(media).where(eq(media.id, mediaId)).limit(1);
+  const [record] = await db
+    .select()
+    .from(media)
+    .where(and(eq(media.id, mediaId), sql`media.deleted_at IS NULL`))
+    .limit(1);
 
   if (!record) return notFound(c, 'Media tidak ditemukan');
 
@@ -230,6 +240,10 @@ router.delete('/:id', authMiddleware, async (c) => {
   const [record] = await db.select().from(media).where(eq(media.id, mediaId)).limit(1);
 
   if (!record) return notFound(c, 'Media tidak ditemukan');
+
+  if ((record as Record<string, unknown>).deleted_at) {
+    return notFound(c, 'Media tidak ditemukan');
+  }
 
   if (record.uploadedBy !== userId && userRole !== 'admin' && userRole !== 'super_admin') {
     return forbidden(c, 'Tidak dapat menghapus media milik user lain');

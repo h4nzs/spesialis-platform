@@ -4,8 +4,9 @@ import {
   formatDate,
   getStatusLabel,
   formatCurrency,
+  ApiClientError,
 } from '@ahlipanggilan/shared';
-import { Card, Grid, Skeleton, Badge, Button, EmptyState } from '@ahlipanggilan/ui';
+import { Card, Grid, Skeleton, Badge, Button, EmptyState, showToast } from '@ahlipanggilan/ui';
 import type { OrderStatus } from '@ahlipanggilan/types';
 
 // ── Types ──────────────────────────────────────────────────────
@@ -156,8 +157,10 @@ export function PartnerOverview() {
     try {
       await api.post(`/api/v1/bookings/${orderId}/accept`);
       await loadData();
-    } catch {
-      // silent
+    } catch (err) {
+      const message =
+        err instanceof ApiClientError ? err.message : 'Gagal menerima assignment. Coba lagi.';
+      showToast({ variant: 'danger', message });
     }
   }
 
