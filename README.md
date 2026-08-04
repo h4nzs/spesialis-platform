@@ -30,15 +30,15 @@ Platform dirancang untuk scalable, SEO-first, dan production-ready.
 ```
 ahlipanggilan/
 ├── apps/
-│   ├── web/          # Astro Frontend — Website & Dashboards (62 pages)
-│   └── api/          # Hono API — Business Logic Layer (67 route files)
+│   ├── web/          # Astro Frontend — Website & Dashboards (89 pages, 64 dashboard)
+│   └── api/          # Hono API — Business Logic Layer (45 route files, ~208 endpoints)
 ├── packages/
 │   ├── cli/          # CLI tools (db, cms, generator)
 │   ├── config/       # Shared config (ESLint, Prettier, TS, Tailwind)
-│   ├── database/     # Schema (34 files), Migration (9 migrations), Seed
+│   ├── database/     # Schema (43 files), Migration (35+ migrations), Seed
 │   ├── shared/       # Shared utilities (API client, constants, formatters)
 │   ├── types/        # Shared TypeScript types
-│   ├── ui/           # Shared UI components (106+ React components)
+│   ├── ui/           # Shared UI components (45+ React components + 1 web component)
 │   └── validation/   # Zod validation schemas (50+ files)
 ├── docs/             # Dokumentasi lengkap (product, architecture, database, dll)
 ├── infrastructure/   # Docker, Nginx config

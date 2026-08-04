@@ -133,7 +133,7 @@ async function validateMagicBytes(buffer: Buffer, claimedType: string): Promise<
       console.warn(
         `[storage] Magic byte validation failed for ${claimedType}: ${(err as Error).message} — rejecting upload`,
       );
-      throw new Error('Invalid image file');
+      throw new Error('Invalid image file', { cause: err });
     }
   } else if (claimedType === 'application/pdf') {
     const header = buffer.slice(0, 5).toString();

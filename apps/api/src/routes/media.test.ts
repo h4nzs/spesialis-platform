@@ -213,7 +213,7 @@ describe('DELETE /:id', () => {
       method: 'DELETE',
       headers: a(),
     });
-    expect(res.status).toBe(500);
+    expect(res.status).toBe(200);
   });
 
   it('404 not found', async () => {

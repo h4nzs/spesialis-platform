@@ -8,10 +8,10 @@ Bahasa sumber: **Indonesia** — docs/, .ai/, dan konteks bisnis menggunakan Bah
 
 ## Monorepo
 
-- **pnpm** + **Turborepo** — dua apps, enam packages
+- **pnpm** + **Turborepo** — dua apps, delapan packages
   ```
   apps/{web (Astro 7), api (Hono)}
-  packages/{config, database, shared, types, ui, validation}
+  packages/{config, database, shared, types, ui, validation, analytics, cli}
   ```
 - Semua sub-package ESM (`"type": "module"`)
 - Node >=22.12, TypeScript 6 strict (ES2023, Bundler resolution)
@@ -41,8 +41,10 @@ Astro (apps/web) → Hono (apps/api) → PostgreSQL```
 - **Single PostgreSQL** — shared oleh API dan seluruh service.
 - Validation schemas di `packages/validation` — source of truth untuk FE & BE.
 - Database schema di `packages/database` — source of truth untuk struktur DB.
-- Static First → SSR when needed → React only for interactivity.
-- JWT + Argon2id, RBAC (8 roles).
+- Server‑side rendering (`output: 'server'`) — halaman publik dirender SSR dengan Nginx caching 10s untuk performa.
+- React only for interactivity (island architecture).
+- JWT + Argon2id, cookie‑only auth (httpOnly + SameSite=Strict), RBAC (8 roles).
+- Audit log immutable (DB‑level trigger), CHECK constraints di tabel kritis, soft delete via `deleted_at`.
 
 ## Source of Truth Priority
 
@@ -68,6 +70,7 @@ Jika dokumentasi vs code bertentangan, **dokumentasi dianggap benar**.
 
 - `docker compose up` — postgres, redis (profile: cache), mailpit (profile: mail), api, web, nginx
 - Nginx reverse-proxy: `/api/` routed ke API service
+- Redis fallback: in‑memory store saat Redis tidak tersedia (rate limiter, CMS cache, lock pub/sub)
 - Storage dev: filesystem; production: Cloudflare R2
 - `.env` template di `.env.example`
 
@@ -168,7 +171,9 @@ Repeat until it feels intentionally designed by humans.
 
 ## Status Proyek
 
-**Active development.** API (`apps/api/`) dan Web (`apps/web/`) sudah memiliki implementasi penuh — ~80+ endpoint, ~62 halaman dashboard, full booking lifecycle state machine. `packages/*/src/` sudah terisi (types, database 34 tabel/schema, validation 17+ skema, shared utilities, ui 106+ shared komponen React + Astro).
+**Active development.** API (`apps/api/`) dan Web (`apps/web/`) sudah memiliki implementasi penuh — ~208 endpoint, 89 halaman (64 dashboard), full booking lifecycle state machine. `packages/*/src/` sudah terisi (types, database 43 tabel/schema, validation 29+ skema, shared utilities, ui 45+ shared komponen React + Astro + 1 web component).
+
+**Homepage** menggunakan 12 komponen hardcoded (Hero, ServiceExplorer, WhyChooseUs, Statistics, Process, FeaturedServices, Testimonials, Coverage, LatestArticles, FAQSection, CorporateCTA, FinalCTA) dengan CMS fallback untuk konten teks. **Homepage Sections (CMS-managed sections) telah dihapus** — homepage dikelola sepenuhnya via komponen Astro.
 
 **Homepage** menggunakan 14+ komponen hardcoded (Hero, ServiceGrid, Statistics, Benefits, Process, FeaturedServices, Testimonials, Coverage, FAQSection, LatestArticles, PartnerCTA, CorporateCTA, FinalCTA, Footer) dengan CMS fallback untuk konten teks. **Homepage Sections (CMS-managed sections) telah dihapus** — homepage dikelola sepenuhnya via komponen Astro.
 
@@ -185,5 +190,5 @@ Repeat until it feels intentionally designed by humans.
 
 **Partner approve/decline:** Admin dapat menyetujui atau menolak partner. Saat ditolak, modal input alasan muncul — alasan dikirim via API sebagai `note`, partner mendapat notifikasi & email dengan alasan.
 
-**Testing:** Vitest terinstall di `api`, `shared`, `validation` + Playwright E2E (19 spec files, ~160+ tests, 100% P0 coverage, SEO-specific E2E tests).
+**Testing:** Vitest terinstall di `api`, `shared`, `validation`, `ui`, `database`, `analytics`, `web` + Playwright E2E (29 spec files, ~1200+ tests, multi-browser: Chromium + Firefox + WebKit + Mobile Safari, SEO-specific E2E tests).
 ````

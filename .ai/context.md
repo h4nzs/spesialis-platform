@@ -163,28 +163,22 @@ Invoice
 
 # Repository Stats
 
-- **62** Astro pages
-- **67** API route files
-- **34** database schema files
-- **106+** shared UI components
-- **16** Playwright E2E spec files (~140+ tests)
-- **100%** P0 E2E coverage
+- **89** Astro pages (64 dashboard)
+- **45** API route files (~208 endpoints)
+- **43** database schema files
+- **45** shared UI components + 1 web component
+- **29** Playwright E2E spec files (~1200+ tests, multi-browser)
+- `packages/analytics` dan `packages/cli` ditambahkan (total 8 packages)
 
 ---
 
 # Development Philosophy
 
-Static First
+Server‑Side Rendering (output: 'server')
 
-SSR when needed
+SSR with Nginx cache 10s for performance
 
 React only for Interaction
-
-Performance First
-
-SEO First
-
-Accessibility First
 
 Security First
 

@@ -57,19 +57,15 @@ id UUID PRIMARY KEY
 
 # 4. Audit Fields
 
-Semua tabel memiliki.
+Seluruh tabel utama memiliki `created_at` dan `updated_at`.
+`deleted_at` (soft delete) tersedia di sebagian besar tabel (migrasi 0032).
+`created_by`/`updated_by`/`deleted_by` sedang dalam proses penambahan.
 
-created_at
+Trigger `BEFORE UPDATE` otomatis memperbarui `updated_at` via fungsi `set_updated_at()` (migrasi 0030).
 
-updated_at
+CHECK constraints diterapkan pada kolom kritis: `users.role` (8 nilai), `orders.status` (15 nilai), `payments.status` (5 nilai), dll (migrasi 0031).
 
-deleted_at
-
-created_by
-
-updated_by
-
-deleted_by
+`audit_logs` dilindungi trigger `BEFORE UPDATE`/`BEFORE DELETE` untuk immutability (migrasi 0029).
 
 ---
 
@@ -114,6 +110,54 @@ seo_metadata
 audit_logs
 
 system_settings
+
+Tabel tambahan (total 43 tabel):
+
+article_categories
+
+article_links
+
+blog_ads
+
+branches
+
+cms_pages
+
+cms_testimonials
+
+company_users
+
+contracts
+
+corporate_inquiries
+
+coverage_areas
+
+indexnow_logs
+
+invoices
+
+order_media
+
+order_status_history
+
+page_errors
+
+partner_documents
+
+partner_penalties
+
+partner_skills
+
+password_resets
+
+redirects
+
+refresh_tokens
+
+resource_locks
+
+service_suggestions
 
 ---
 
