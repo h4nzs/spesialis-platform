@@ -10,12 +10,19 @@ vi.mock('@aws-sdk/client-s3', () => ({
   DeleteObjectCommand: vi.fn(),
 }));
 vi.mock('sharp', () => {
+  const webpOut = Buffer.from('webp-encoded');
   return {
     default: (input: Buffer) => ({
-      jpeg: () => ({ toBuffer: () => Promise.resolve(input) }),
-      png: () => ({ toBuffer: () => Promise.resolve(input) }),
-      webp: () => ({ toBuffer: () => Promise.resolve(input) }),
-      metadata: () => Promise.resolve({ format: 'jpeg' }),
+      resize: () => ({
+        jpeg: () => ({ toBuffer: () => Promise.resolve(input) }),
+        png: () => ({ toBuffer: () => Promise.resolve(input) }),
+        webp: () => ({ toBuffer: () => Promise.resolve(webpOut) }),
+        toBuffer: () => Promise.resolve(input),
+      }),
+      metadata: () =>
+        Promise.resolve({
+          format: input[0] === 0x89 && input[1] === 0x50 ? 'png' : 'jpeg',
+        }),
       toBuffer: () => Promise.resolve(input),
     }),
   };
@@ -177,6 +184,43 @@ describe('saveFile', () => {
 
     expect(result.extension).toBe('');
     expect(result.originalName).toBe('noext');
+  });
+
+  it('converts PNG upload to WebP (mime, extension, filename)', async () => {
+    const pngBuf = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 1, 2, 3]);
+    const file = {
+      name: 'diagram.png',
+      type: 'image/png',
+      size: pngBuf.length,
+      arrayBuffer: () =>
+        Promise.resolve(
+          pngBuf.buffer.slice(pngBuf.byteOffset, pngBuf.byteOffset + pngBuf.byteLength),
+        ),
+    } as File;
+
+    const mod = await import('./storage.ts');
+    const result = await mod.saveFile(file);
+
+    expect(result.mimeType).toBe('image/webp');
+    expect(result.extension).toBe('webp');
+    expect(result.filename).toMatch(/\.webp$/);
+    expect(result.size).toBe(Buffer.from('webp-encoded').length);
+  });
+
+  it('keeps JPEG mime/extension after compression', async () => {
+    const file = {
+      name: 'photo.jpg',
+      type: 'image/jpeg',
+      size: 4096,
+      arrayBuffer: () => Promise.resolve(new ArrayBuffer(8)),
+    } as File;
+
+    const mod = await import('./storage.ts');
+    const result = await mod.saveFile(file);
+
+    expect(result.mimeType).toBe('image/jpeg');
+    expect(result.extension).toBe('jpg');
+    expect(result.filename).toMatch(/\.jpg$/);
   });
 });
 

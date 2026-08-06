@@ -9,6 +9,7 @@ export const UPLOAD_DIR = resolve(process.env.UPLOAD_DIR ?? join(process.cwd(), 
 
 const ALLOWED_MIME_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'application/pdf'] as const;
 const MAX_FILE_SIZE = 10 * 1024 * 1024;
+const MAX_IMAGE_DIMENSION = 1600;
 
 export type StorageDisk = 'Local' | 'Cloudflare R2';
 
@@ -162,25 +163,43 @@ export async function saveFile(file: File): Promise<StoredFile> {
   }
 
   const ext = extname(file.name) || '';
-  const uniqueName = `${randomUUID()}${ext}`;
   let buffer = Buffer.from(await file.arrayBuffer());
   await validateMagicBytes(buffer, file.type);
+
+  // Metadata hasil akhir — bisa berubah jika konversi format terjadi
+  // (PNG → WebP), jadi tidak boleh diturunkan dari nama file asli.
+  let mimeType = file.type;
+  let extension = ext.replace('.', '');
 
   // ── Image compression (lazy sharp) ─────────────────────────
   if (file.type.startsWith('image/')) {
     try {
       const s = await getSharp();
-      if (file.type === 'image/jpeg') {
-        buffer = await s(buffer).jpeg({ quality: 60, mozjpeg: true }).toBuffer();
-      } else if (file.type === 'image/png') {
-        buffer = await s(buffer).png({ compressionLevel: 6 }).toBuffer();
+      // Batasi dimensi besar (foto kamera/dslr) sebelum re-encode.
+      const pipeline = s(buffer).resize({
+        width: MAX_IMAGE_DIMENSION,
+        height: MAX_IMAGE_DIMENSION,
+        fit: 'inside',
+        withoutEnlargement: true,
+      });
+      if (file.type === 'image/png') {
+        // PNG → WebP lossy: re-encode deflate (compressionLevel) hampir
+        // tidak mengecilkan PNG modern; WebP q80 memberi penurunan
+        // 60-85%. alphaQuality 100 mempertahankan transparansi.
+        buffer = await pipeline.webp({ quality: 80, alphaQuality: 100 }).toBuffer();
+        mimeType = 'image/webp';
+        extension = 'webp';
+      } else if (file.type === 'image/jpeg') {
+        buffer = await pipeline.jpeg({ quality: 60, mozjpeg: true }).toBuffer();
       } else if (file.type === 'image/webp') {
-        buffer = await s(buffer).webp({ quality: 60 }).toBuffer();
+        buffer = await pipeline.webp({ quality: 60 }).toBuffer();
       }
     } catch (err) {
-      console.warn('Image compression failed, saving original:', err);
+      console.error('[storage] Image compression failed, saving original:', err);
     }
   }
+
+  const uniqueName = `${randomUUID()}${extension ? `.${extension}` : ''}`;
 
   if (isR2Enabled()) {
     try {
@@ -191,15 +210,15 @@ export async function saveFile(file: File): Promise<StoredFile> {
           Bucket: getR2Bucket(),
           Key: uniqueName,
           Body: buffer,
-          ContentType: file.type,
+          ContentType: mimeType,
         }),
       );
 
       return {
         filename: uniqueName,
         originalName: file.name,
-        mimeType: file.type,
-        extension: ext.replace('.', ''),
+        mimeType,
+        extension,
         size: buffer.length,
         path: uniqueName, // R2 key = filename
         disk: 'Cloudflare R2',
@@ -217,8 +236,8 @@ export async function saveFile(file: File): Promise<StoredFile> {
   return {
     filename: uniqueName,
     originalName: file.name,
-    mimeType: file.type,
-    extension: ext.replace('.', ''),
+    mimeType,
+    extension,
     size: buffer.length,
     path: filePath,
     disk: 'Local',

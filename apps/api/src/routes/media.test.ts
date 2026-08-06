@@ -53,8 +53,10 @@ vi.mock('../lib/auth.ts', () => ({
 
 vi.mock('hono/cookie', () => ({ getCookie: vi.fn(() => undefined) }));
 
+import type * as FsPromises from 'node:fs/promises';
+
 vi.mock('node:fs/promises', async (importOriginal) => {
-  const orig = await importOriginal();
+  const orig = await importOriginal<typeof FsPromises>();
   return { ...orig, readFile: vi.fn().mockResolvedValue(Buffer.from('img-data')) };
 });
 
