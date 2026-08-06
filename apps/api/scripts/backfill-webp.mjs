@@ -96,7 +96,7 @@ try {
       );
       converted++;
     } catch (err) {
-      console.error(`✗ ${row.filename}: ${(err as Error).message}`);
+      console.error(`✗ ${row.filename}: ${err instanceof Error ? err.message : String(err)}`);
       failed++;
     }
   }
