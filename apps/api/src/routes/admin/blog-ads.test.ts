@@ -88,7 +88,7 @@ const sampleAd = {
   caption: 'Dapatkan diskon 20% untuk layanan AC',
   linkUrl: 'https://ahlipanggilan.id/services/ac-service',
   displayOrder: 1,
-  isActive: 'true',
+  isActive: true,
   createdAt: new Date().toISOString(),
   updatedAt: new Date().toISOString(),
   deletedAt: null,
@@ -212,7 +212,7 @@ describe('POST /api/v1/admin/blog-ads', () => {
           caption: 'Diskon besar-besaran',
           linkUrl: 'https://ahlipanggilan.id/promo',
           displayOrder: 5,
-          isActive: 'true',
+          isActive: true,
         },
       ]),
     );
@@ -225,7 +225,7 @@ describe('POST /api/v1/admin/blog-ads', () => {
         caption: 'Diskon besar-besaran',
         linkUrl: 'https://ahlipanggilan.id/promo',
         displayOrder: 5,
-        isActive: 'true',
+        isActive: true,
       }),
     });
     expect(res.status).toBe(201);
@@ -275,14 +275,12 @@ describe('PATCH /api/v1/admin/blog-ads/:id', () => {
   it('200 toggle isActive to false', async () => {
     mockDb.select.mockReturnValue(makeChain([{ id: adId }]));
     mockDb.update.mockReturnValue(
-      updateChain([
-        { id: adId, title: 'Same', imageUrl: 'https://x.com/x.jpg', isActive: 'false' },
-      ]),
+      updateChain([{ id: adId, title: 'Same', imageUrl: 'https://x.com/x.jpg', isActive: false }]),
     );
     const res = await mkApp().request(`/api/v1/admin/blog-ads/${adId}`, {
       method: 'PATCH',
       headers: a(),
-      body: JSON.stringify({ isActive: 'false' }),
+      body: JSON.stringify({ isActive: false }),
     });
     expect(res.status).toBe(200);
   });

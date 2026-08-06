@@ -217,7 +217,7 @@ describe('FaqFormModal', () => {
           body: expect.objectContaining({
             question: 'Test Q?',
             answer: 'Test A.',
-            isActive: 'true',
+            isActive: true,
           }),
         });
       });
@@ -266,7 +266,7 @@ describe('FaqFormModal', () => {
       answer: '<p>This is an answer</p>',
       category: 'General',
       displayOrder: 1,
-      isActive: 'true',
+      isActive: true,
     };
 
     beforeEach(() => {
@@ -327,7 +327,7 @@ describe('FaqFormModal', () => {
         expect(mockPatch).toHaveBeenCalledWith('/api/v1/admin/faq/f1', {
           body: expect.objectContaining({
             question: 'Updated Question',
-            isActive: 'true',
+            isActive: true,
           }),
         });
       });

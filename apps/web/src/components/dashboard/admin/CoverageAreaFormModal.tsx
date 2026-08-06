@@ -8,7 +8,7 @@ export interface CoverageAreaFormData {
   city: string;
   note: string;
   displayOrder: number;
-  isActive: string;
+  isActive: boolean;
 }
 
 export interface CoverageAreaFormModalProps {
@@ -24,14 +24,14 @@ const EMPTY_FORM: CoverageAreaFormData = {
   city: '',
   note: '',
   displayOrder: 0,
-  isActive: 'true',
+  isActive: true,
 };
 
 interface DetailResponse {
   city: string;
   note: string | null;
   displayOrder: number;
-  isActive: string;
+  isActive: boolean;
 }
 
 // ── Component ────────────────────────────────────────────────────
@@ -62,7 +62,7 @@ export default function CoverageAreaFormModal({
             city: d.city ?? '',
             note: d.note ?? '',
             displayOrder: d.displayOrder ?? 0,
-            isActive: d.isActive ?? 'true',
+            isActive: d.isActive ?? true,
           });
         })
         .catch(() => {
@@ -88,7 +88,7 @@ export default function CoverageAreaFormModal({
         city: form.city,
         note: form.note || undefined,
         displayOrder: form.displayOrder,
-        isActive: form.isActive as 'true' | 'false',
+        isActive: form.isActive,
       };
 
       if (editingId) {

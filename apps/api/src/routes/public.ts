@@ -46,7 +46,7 @@ router.get('/coverage-areas', async (c) => {
       displayOrder: coverageAreas.displayOrder,
     })
     .from(coverageAreas)
-    .where(eq(coverageAreas.isActive, 'true'))
+    .where(eq(coverageAreas.isActive, true))
     .orderBy(asc(coverageAreas.displayOrder), asc(coverageAreas.createdAt));
 
   return success(c, items);

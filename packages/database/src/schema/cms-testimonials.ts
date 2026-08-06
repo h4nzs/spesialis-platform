@@ -1,4 +1,13 @@
-import { pgTable, uuid, varchar, text, numeric, integer, timestamp } from 'drizzle-orm/pg-core';
+import {
+  pgTable,
+  uuid,
+  varchar,
+  text,
+  numeric,
+  integer,
+  timestamp,
+  boolean,
+} from 'drizzle-orm/pg-core';
 
 export const cmsTestimonials = pgTable('cms_testimonials', {
   id: uuid('id').defaultRandom().primaryKey(),
@@ -9,7 +18,7 @@ export const cmsTestimonials = pgTable('cms_testimonials', {
   rating: numeric('rating', { precision: 2, scale: 1 }).notNull().default('5'),
   avatar: text('avatar'),
   displayOrder: integer('display_order').notNull().default(0),
-  isActive: varchar('is_active', { length: 20 }).notNull().default('true'),
+  isActive: boolean('is_active').notNull().default(true),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
   deletedAt: timestamp('deleted_at'),

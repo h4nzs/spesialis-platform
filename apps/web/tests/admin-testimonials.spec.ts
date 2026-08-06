@@ -52,7 +52,7 @@ test.describe('Admin Testimonials CRUD', () => {
         quote: 'Testimonial created via E2E test. Sangat puas dengan layanannya!',
         rating: 5,
         displayOrder: 99,
-        isActive: 'true',
+        isActive: true,
       },
     });
 
@@ -205,7 +205,7 @@ test.describe('Admin Testimonials CRUD', () => {
         quote: 'Should appear in admin API.',
         rating: 5,
         displayOrder: 98,
-        isActive: 'true',
+        isActive: true,
       },
     });
     expect(createRes.ok()).toBeTruthy();
@@ -238,7 +238,7 @@ test.describe('Admin Testimonials CRUD', () => {
         location: 'Jakarta',
         quote: 'Should NOT appear in public CMS API.',
         rating: 3,
-        isActive: 'false',
+        isActive: false,
       },
     });
     expect(createRes.ok()).toBeTruthy();

@@ -76,7 +76,7 @@ router.post(
         rating: data.rating !== undefined ? String(data.rating) : '5',
         avatar: data.avatar ?? null,
         displayOrder: data.displayOrder ?? 0,
-        isActive: data.isActive ?? 'true',
+        isActive: data.isActive ?? true,
       })
       .returning();
 

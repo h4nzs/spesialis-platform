@@ -24,7 +24,7 @@ interface FaqItem {
   answer: string;
   category: string | null;
   displayOrder: number;
-  isActive: string;
+  isActive: boolean;
   updatedAt: string | null;
 }
 
@@ -148,8 +148,8 @@ export function AdminFaq() {
       key: 'isActive',
       header: 'Status',
       render: (item) => (
-        <Badge variant={item.isActive === 'true' ? 'success' : 'default'}>
-          {item.isActive === 'true' ? 'Aktif' : 'Nonaktif'}
+        <Badge variant={item.isActive ? 'success' : 'default'}>
+          {item.isActive ? 'Aktif' : 'Nonaktif'}
         </Badge>
       ),
     },

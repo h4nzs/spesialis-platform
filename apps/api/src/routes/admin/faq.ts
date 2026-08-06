@@ -77,7 +77,7 @@ router.post(
         answer: data.answer,
         category: data.category ?? null,
         displayOrder: data.displayOrder ?? 0,
-        isActive: data.isActive ?? 'true',
+        isActive: data.isActive ?? true,
       })
       .returning();
 

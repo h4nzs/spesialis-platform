@@ -236,7 +236,7 @@ test.describe('FAQ lock indicator', () => {
         answer: '<p>Test FAQ for lock list E2E.</p>',
         category: '',
         displayOrder: 0,
-        isActive: 'true',
+        isActive: true,
       },
     });
     expect(res.ok()).toBeTruthy();

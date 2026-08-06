@@ -5,7 +5,7 @@ export const createFaqSchema = z.object({
   answer: z.string().min(1),
   category: z.string().max(100).optional().nullable(),
   displayOrder: z.coerce.number().int().min(0).optional(),
-  isActive: z.enum(['true', 'false']).optional(),
+  isActive: z.boolean().optional(),
 });
 
 export const updateFaqSchema = z.object({
@@ -13,7 +13,7 @@ export const updateFaqSchema = z.object({
   answer: z.string().min(1).optional(),
   category: z.string().max(100).optional().nullable(),
   displayOrder: z.coerce.number().int().min(0).optional(),
-  isActive: z.enum(['true', 'false']).optional(),
+  isActive: z.boolean().optional(),
 });
 
 export type CreateFaqInput = z.infer<typeof createFaqSchema>;

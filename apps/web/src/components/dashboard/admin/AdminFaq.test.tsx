@@ -217,7 +217,7 @@ describe('AdminFaq', () => {
           answer: 'Platform layanan jasa.',
           category: 'Umum',
           displayOrder: 1,
-          isActive: 'true',
+          isActive: true,
           updatedAt: '2026-01-15T00:00:00Z',
         },
       ],
@@ -289,7 +289,7 @@ describe('AdminFaq', () => {
           answer: 'A.',
           category: null,
           displayOrder: 0,
-          isActive: 'true',
+          isActive: true,
         },
       ],
     });
@@ -319,7 +319,7 @@ describe('AdminFaq', () => {
           answer: 'A.',
           category: null,
           displayOrder: 0,
-          isActive: 'true',
+          isActive: true,
         },
       ],
     });

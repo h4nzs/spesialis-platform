@@ -13,7 +13,7 @@ interface TestimonialItem {
   rating: string;
   avatar: string | null;
   displayOrder: number;
-  isActive: string;
+  isActive: boolean;
   updatedAt: string;
 }
 
@@ -106,8 +106,8 @@ export function AdminTestimonials() {
       key: 'isActive',
       header: 'Status',
       render: (item) => (
-        <Badge variant={item.isActive === 'true' ? 'success' : 'default'}>
-          {item.isActive === 'true' ? 'Aktif' : 'Nonaktif'}
+        <Badge variant={item.isActive ? 'success' : 'default'}>
+          {item.isActive ? 'Aktif' : 'Nonaktif'}
         </Badge>
       ),
     },

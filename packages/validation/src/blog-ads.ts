@@ -6,7 +6,7 @@ export const createBlogAdSchema = z.object({
   caption: z.string().max(500).optional().nullable(),
   linkUrl: z.string().optional().nullable(),
   displayOrder: z.coerce.number().int().min(0).optional(),
-  isActive: z.enum(['true', 'false']).optional(),
+  isActive: z.boolean().optional(),
 });
 
 export const updateBlogAdSchema = z.object({
@@ -15,7 +15,7 @@ export const updateBlogAdSchema = z.object({
   caption: z.string().max(500).optional().nullable(),
   linkUrl: z.string().optional().nullable(),
   displayOrder: z.coerce.number().int().min(0).optional(),
-  isActive: z.enum(['true', 'false']).optional(),
+  isActive: z.boolean().optional(),
 });
 
 export type CreateBlogAdInput = z.infer<typeof createBlogAdSchema>;

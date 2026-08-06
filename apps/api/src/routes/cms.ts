@@ -30,7 +30,7 @@ cmsRouter.get('/faq', async (c) => {
   if (cached.hit) return success(c, cached.data);
 
   try {
-    const conditions: ReturnType<typeof eq>[] = [eq(faq.isActive, 'true')];
+    const conditions: ReturnType<typeof eq>[] = [eq(faq.isActive, true)];
     if (category) conditions.push(eq(faq.category, category));
 
     const items = await db
@@ -146,7 +146,7 @@ cmsRouter.get('/testimonials', async (c) => {
         avatar: cmsTestimonials.avatar,
       })
       .from(cmsTestimonials)
-      .where(eq(cmsTestimonials.isActive, 'true'))
+      .where(eq(cmsTestimonials.isActive, true))
       .orderBy(asc(cmsTestimonials.displayOrder));
 
     await cmsCache.set(cacheKey, items);
@@ -165,7 +165,7 @@ cmsRouter.get('/coverage-areas', async (c) => {
     const items = await db
       .select({ city: coverageAreas.city })
       .from(coverageAreas)
-      .where(eq(coverageAreas.isActive, 'true'))
+      .where(eq(coverageAreas.isActive, true))
       .orderBy(asc(coverageAreas.displayOrder));
 
     await cmsCache.set(cacheKey, items);
@@ -191,7 +191,7 @@ cmsRouter.get('/ads', async (c) => {
         displayOrder: blogAds.displayOrder,
       })
       .from(blogAds)
-      .where(and(eq(blogAds.isActive, 'true'), isNull(blogAds.deletedAt)))
+      .where(and(eq(blogAds.isActive, true), isNull(blogAds.deletedAt)))
       .orderBy(asc(blogAds.displayOrder));
 
     await cmsCache.set(cacheKey, items);

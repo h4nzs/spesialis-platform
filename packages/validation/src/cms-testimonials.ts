@@ -8,7 +8,7 @@ export const createTestimonialSchema = z.object({
   rating: z.coerce.number().min(1).max(5).optional(),
   avatar: z.string().optional().nullable(),
   displayOrder: z.coerce.number().int().min(0).optional(),
-  isActive: z.enum(['true', 'false']).optional(),
+  isActive: z.boolean().optional(),
 });
 
 export const updateTestimonialSchema = z.object({
@@ -19,7 +19,7 @@ export const updateTestimonialSchema = z.object({
   rating: z.coerce.number().min(1).max(5).optional(),
   avatar: z.string().optional().nullable(),
   displayOrder: z.coerce.number().int().min(0).optional(),
-  isActive: z.enum(['true', 'false']).optional(),
+  isActive: z.boolean().optional(),
 });
 
 export type CreateTestimonialInput = z.infer<typeof createTestimonialSchema>;

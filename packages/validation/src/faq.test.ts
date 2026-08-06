@@ -17,7 +17,7 @@ describe('createFaqSchema', () => {
       ...validFaq,
       category: 'Booking',
       displayOrder: 1,
-      isActive: 'true',
+      isActive: true,
     });
     expect(result.success).toBe(true);
   });
@@ -25,7 +25,7 @@ describe('createFaqSchema', () => {
   it('accepts isActive false', () => {
     const result = createFaqSchema.safeParse({
       ...validFaq,
-      isActive: 'false',
+      isActive: false,
     });
     expect(result.success).toBe(true);
   });
@@ -118,7 +118,7 @@ describe('updateFaqSchema', () => {
   });
 
   it('accepts isActive true and false', () => {
-    expect(updateFaqSchema.safeParse({ isActive: 'true' }).success).toBe(true);
-    expect(updateFaqSchema.safeParse({ isActive: 'false' }).success).toBe(true);
+    expect(updateFaqSchema.safeParse({ isActive: true }).success).toBe(true);
+    expect(updateFaqSchema.safeParse({ isActive: false }).success).toBe(true);
   });
 });

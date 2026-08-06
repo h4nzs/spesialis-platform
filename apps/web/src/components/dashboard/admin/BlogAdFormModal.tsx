@@ -8,7 +8,7 @@ export interface BlogAdFormData {
   caption: string;
   linkUrl: string;
   displayOrder: number;
-  isActive: string;
+  isActive: boolean;
 }
 
 export interface BlogAdFormModalProps {
@@ -24,7 +24,7 @@ const EMPTY_FORM: BlogAdFormData = {
   caption: '',
   linkUrl: '',
   displayOrder: 0,
-  isActive: 'true',
+  isActive: true,
 };
 
 const IS_ACTIVE_OPTIONS = [
@@ -38,7 +38,7 @@ interface DetailResponse {
   caption: string | null;
   linkUrl: string | null;
   displayOrder: number;
-  isActive: string;
+  isActive: boolean;
 }
 
 export default function BlogAdFormModal({
@@ -104,7 +104,7 @@ export default function BlogAdFormModal({
             caption: d.caption ?? '',
             linkUrl: d.linkUrl ?? '',
             displayOrder: d.displayOrder ?? 0,
-            isActive: d.isActive ?? 'true',
+            isActive: d.isActive ?? true,
           });
         })
         .catch(() => {
@@ -132,7 +132,7 @@ export default function BlogAdFormModal({
         caption: form.caption || undefined,
         linkUrl: form.linkUrl || undefined,
         displayOrder: form.displayOrder,
-        isActive: form.isActive as 'true' | 'false',
+        isActive: form.isActive,
       };
 
       if (editingId) {
@@ -239,8 +239,8 @@ export default function BlogAdFormModal({
           />
           <Select
             label="Status"
-            value={form.isActive}
-            onChange={(e) => setForm((f) => ({ ...f, isActive: e.target.value }))}
+            value={form.isActive ? 'true' : 'false'}
+            onChange={(e) => setForm((f) => ({ ...f, isActive: e.target.value === 'true' }))}
             options={IS_ACTIVE_OPTIONS}
           />
         </div>

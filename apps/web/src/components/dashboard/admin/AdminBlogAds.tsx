@@ -10,7 +10,7 @@ interface BlogAdItem {
   caption: string | null;
   linkUrl: string | null;
   displayOrder: number;
-  isActive: string;
+  isActive: boolean;
   createdAt: string;
   updatedAt: string;
 }
@@ -112,8 +112,8 @@ export function AdminBlogAds() {
                   <h3 className="text-sm font-semibold text-text-primary line-clamp-1">
                     {item.title}
                   </h3>
-                  <Badge variant={item.isActive === 'true' ? 'success' : 'default'}>
-                    {item.isActive === 'true' ? 'Aktif' : 'Nonaktif'}
+                  <Badge variant={item.isActive ? 'success' : 'default'}>
+                    {item.isActive ? 'Aktif' : 'Nonaktif'}
                   </Badge>
                 </div>
                 {item.caption && (

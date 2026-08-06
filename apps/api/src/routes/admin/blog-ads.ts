@@ -59,7 +59,7 @@ router.post(
         caption: data.caption ?? null,
         linkUrl: data.linkUrl ?? null,
         displayOrder: data.displayOrder ?? 0,
-        isActive: data.isActive ?? 'true',
+        isActive: data.isActive ?? true,
       })
       .returning();
 

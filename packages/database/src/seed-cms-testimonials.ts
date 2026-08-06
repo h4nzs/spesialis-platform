@@ -111,7 +111,7 @@ async function main() {
       quote: t.quote,
       rating: t.rating,
       displayOrder: t.displayOrder,
-      isActive: 'true',
+      isActive: true,
     });
 
     console.log(`  ✅ ${t.name} — berhasil di-seed`);

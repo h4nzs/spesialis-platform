@@ -9,7 +9,7 @@ export interface TestimonialFormData {
   quote: string;
   rating: number;
   displayOrder: number;
-  isActive: string;
+  isActive: boolean;
 }
 
 export interface TestimonialFormModalProps {
@@ -26,7 +26,7 @@ const EMPTY_FORM: TestimonialFormData = {
   quote: '',
   rating: 5,
   displayOrder: 0,
-  isActive: 'true',
+  isActive: true,
 };
 
 const IS_ACTIVE_OPTIONS = [
@@ -49,7 +49,7 @@ interface DetailResponse {
   quote: string;
   rating: string;
   displayOrder: number;
-  isActive: string;
+  isActive: boolean;
 }
 
 export default function TestimonialFormModal({
@@ -80,7 +80,7 @@ export default function TestimonialFormModal({
             quote: d.quote ?? '',
             rating: Number(d.rating) || 5,
             displayOrder: d.displayOrder ?? 0,
-            isActive: d.isActive ?? 'true',
+            isActive: d.isActive ?? true,
           });
         })
         .catch(() => {
@@ -109,7 +109,7 @@ export default function TestimonialFormModal({
         quote: form.quote,
         rating: form.rating,
         displayOrder: form.displayOrder,
-        isActive: form.isActive as 'true' | 'false',
+        isActive: form.isActive,
       };
 
       if (editingId) {
@@ -194,8 +194,8 @@ export default function TestimonialFormModal({
 
         <Select
           label="Status"
-          value={form.isActive}
-          onChange={(e) => setForm((f) => ({ ...f, isActive: e.target.value }))}
+          value={form.isActive ? 'true' : 'false'}
+          onChange={(e) => setForm((f) => ({ ...f, isActive: e.target.value === 'true' }))}
           options={IS_ACTIVE_OPTIONS}
         />
 

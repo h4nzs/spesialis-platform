@@ -42,7 +42,7 @@ router.post(
         city: data.city,
         note: data.note ?? null,
         displayOrder: data.displayOrder ?? 0,
-        isActive: data.isActive ?? 'true',
+        isActive: data.isActive ?? true,
       })
       .returning();
 

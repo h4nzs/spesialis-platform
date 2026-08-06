@@ -91,7 +91,7 @@ describe('GET /api/v1/admin/faq', () => {
           answer: 'Answer.',
           category: 'Umum',
           displayOrder: 1,
-          isActive: 'true',
+          isActive: true,
         },
       ]),
     );
@@ -123,7 +123,7 @@ describe('GET /api/v1/admin/faq/:id', () => {
           answer: 'Answer.',
           category: 'Umum',
           displayOrder: 1,
-          isActive: 'true',
+          isActive: true,
         },
       ]),
     );

@@ -90,7 +90,7 @@ const sampleTestimonial = {
   rating: '5',
   avatar: null,
   displayOrder: 0,
-  isActive: 'true',
+  isActive: true,
   createdAt: new Date().toISOString(),
   updatedAt: new Date().toISOString(),
   deletedAt: null,
@@ -203,7 +203,7 @@ describe('POST /api/v1/admin/testimonials', () => {
           quote: 'Mantap!',
           rating: '4',
           displayOrder: 1,
-          isActive: 'true',
+          isActive: true,
         },
       ]),
     );
@@ -217,7 +217,7 @@ describe('POST /api/v1/admin/testimonials', () => {
         quote: 'Mantap!',
         rating: 4,
         displayOrder: 1,
-        isActive: 'true',
+        isActive: true,
       }),
     });
     expect(res.status).toBe(201);

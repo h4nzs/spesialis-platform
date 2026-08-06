@@ -19,7 +19,7 @@ export interface FaqFormData {
   answer: string;
   category: string;
   displayOrder: number;
-  isActive: string;
+  isActive: boolean;
 }
 
 export interface FaqFormModalProps {
@@ -36,7 +36,7 @@ const EMPTY_FORM: FaqFormData = {
   answer: '',
   category: '',
   displayOrder: 0,
-  isActive: 'true',
+  isActive: true,
 };
 
 const IS_ACTIVE_OPTIONS = [
@@ -49,7 +49,7 @@ interface DetailResponse {
   answer: string;
   category: string | null;
   displayOrder: number;
-  isActive: string;
+  isActive: boolean;
 }
 
 // ── Component ────────────────────────────────────────────────────
@@ -95,7 +95,7 @@ export default function FaqFormModal({ open, onClose, editingId, onSaved }: FaqF
             answer: d.answer ?? '',
             category: d.category ?? '',
             displayOrder: d.displayOrder ?? 0,
-            isActive: d.isActive ?? 'true',
+            isActive: d.isActive ?? true,
           });
         })
         .catch(() => {
@@ -123,7 +123,7 @@ export default function FaqFormModal({ open, onClose, editingId, onSaved }: FaqF
         answer: form.answer,
         category: form.category || undefined,
         displayOrder: form.displayOrder,
-        isActive: form.isActive as 'true' | 'false',
+        isActive: form.isActive,
       };
 
       if (editingId) {
@@ -207,8 +207,8 @@ export default function FaqFormModal({ open, onClose, editingId, onSaved }: FaqF
         {/* ── Active Status ───────────────────────────────────── */}
         <Select
           label="Status"
-          value={form.isActive}
-          onChange={(e) => setForm((f) => ({ ...f, isActive: e.target.value }))}
+          value={form.isActive ? 'true' : 'false'}
+          onChange={(e) => setForm((f) => ({ ...f, isActive: e.target.value === 'true' }))}
           options={IS_ACTIVE_OPTIONS}
         />
         {/* ── Actions ─────────────────────────────────────────── */}

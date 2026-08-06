@@ -9,7 +9,7 @@ interface CoverageAreaItem {
   city: string;
   note: string | null;
   displayOrder: number;
-  isActive: string;
+  isActive: boolean;
   createdAt: string;
   updatedAt: string;
 }
@@ -86,8 +86,8 @@ export function AdminCoverageAreas() {
       key: 'isActive',
       header: 'Status',
       render: (item) => (
-        <Badge variant={item.isActive === 'true' ? 'success' : 'default'}>
-          {item.isActive === 'true' ? 'Aktif' : 'Nonaktif'}
+        <Badge variant={item.isActive ? 'success' : 'default'}>
+          {item.isActive ? 'Aktif' : 'Nonaktif'}
         </Badge>
       ),
     },
