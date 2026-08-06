@@ -178,6 +178,7 @@ export function ArticleEditor({ editingId }: ArticleEditorProps) {
     async (file: File): Promise<string> => {
       const formData = new FormData();
       formData.append('file', file);
+      formData.append('isPublic', 'true');
       const result = await api.post<{ url: string; id: string }>('/api/v1/media/upload', {
         formData,
       });

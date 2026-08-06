@@ -145,6 +145,7 @@ export function PageEditor({ editingId }: PageEditorProps) {
         try {
           const formData = new FormData();
           formData.append('file', file);
+          formData.append('isPublic', 'true');
           const result = await api.post<{ url: string }>('/api/v1/media/upload', { formData });
           const data = result as unknown as { url?: string; id?: string };
           const url = data?.url ?? `/api/v1/media/${data?.id}/file`;

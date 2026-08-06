@@ -4,6 +4,8 @@ import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { db, media } from '../lib/db.ts';
 import { authMiddleware } from '../middleware/auth.ts';
+import { verifyAccessToken } from '../lib/auth.ts';
+import { getCookie } from 'hono/cookie';
 import { buildPaginationMeta } from '../lib/pagination.ts';
 import {
   saveFile,
@@ -21,6 +23,7 @@ import {
   error,
   notFound,
   forbidden,
+  unauthorized,
   serverError,
 } from '../lib/response.ts';
 
@@ -94,17 +97,14 @@ async function handleListMedia(c: Context) {
 router.post('/upload', authMiddleware, async (c) => {
   const userId = c.get('userId');
 
-  let file: File | undefined;
-
-  try {
-    const parsed = await c.req.parseBody();
-    const candidate = parsed['file'];
-    if (candidate instanceof File) {
-      file = candidate;
-    }
-  } catch {
+  const parsed = await c.req.parseBody().catch(() => null);
+  if (!parsed) {
     return error(c, 'INVALID_UPLOAD', 'Gagal membaca file', 400);
   }
+
+  const candidate = parsed['file'];
+  const file = candidate instanceof File ? candidate : undefined;
+  const publicRequested = parsed['isPublic'] === 'true';
 
   if (!file) {
     return error(c, 'FILE_REQUIRED', 'File wajib diupload', 400);
@@ -136,6 +136,7 @@ router.post('/upload', authMiddleware, async (c) => {
         extension: stored.extension,
         size: stored.size,
         uploadedBy: userId,
+        isPublic: publicRequested,
       })
       .returning();
 
@@ -149,6 +150,7 @@ router.post('/upload', authMiddleware, async (c) => {
         mimeType: record.mimeType,
         extension: record.extension,
         size: record.size,
+        isPublic: record.isPublic,
         url: `/api/v1/media/${record.id}/file`,
         createdAt: record.createdAt,
       },
@@ -204,10 +206,8 @@ router.get('/:id', authMiddleware, async (c) => {
   });
 });
 
-router.get('/:id/file', authMiddleware, async (c) => {
+router.get('/:id/file', async (c) => {
   const mediaId = c.req.param('id')!;
-  const userId = c.get('userId');
-  const userRole = c.get('userRole');
 
   const [record] = await db
     .select({
@@ -216,6 +216,7 @@ router.get('/:id/file', authMiddleware, async (c) => {
       mimeType: media.mimeType,
       size: media.size,
       uploadedBy: media.uploadedBy,
+      isPublic: media.isPublic,
     })
     .from(media)
     .where(and(eq(media.id, mediaId), isNull(media.deletedAt)))
@@ -223,8 +224,31 @@ router.get('/:id/file', authMiddleware, async (c) => {
 
   if (!record) return notFound(c, 'Media tidak ditemukan');
 
-  if (record.uploadedBy !== userId && userRole !== 'admin' && userRole !== 'super_admin') {
-    return forbidden(c, 'Tidak dapat mengakses media milik user lain');
+  // Media publik (konten CMS) bisa diakses tanpa auth; media privat
+  // (mis. dokumen partner) wajib auth + kepemilikan.
+  if (!record.isPublic) {
+    const authHeader = c.req.header('Authorization');
+    const token = authHeader?.startsWith('Bearer ') ? authHeader.slice(7) : getCookie(c, 'token');
+    let userId: string | null = null;
+    let userRole: string | null = null;
+
+    if (token) {
+      try {
+        const payload = await verifyAccessToken(token);
+        userId = payload.sub;
+        userRole = payload.role;
+      } catch {
+        userId = null;
+      }
+    }
+
+    if (!userId) {
+      return unauthorized(c, 'Missing authentication token');
+    }
+
+    if (record.uploadedBy !== userId && userRole !== 'admin' && userRole !== 'super_admin') {
+      return forbidden(c, 'Tidak dapat mengakses media milik user lain');
+    }
   }
 
   // R2: redirect to public URL (auth already checked above)

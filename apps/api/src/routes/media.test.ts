@@ -47,6 +47,20 @@ vi.mock('../lib/storage.ts', () => ({
   UPLOAD_DIR: '/tmp/uploads',
 }));
 
+vi.mock('../lib/auth.ts', () => ({
+  verifyAccessToken: vi.fn(),
+}));
+
+vi.mock('hono/cookie', () => ({ getCookie: vi.fn(() => undefined) }));
+
+vi.mock('node:fs/promises', async (importOriginal) => {
+  const orig = await importOriginal();
+  return { ...orig, readFile: vi.fn().mockResolvedValue(Buffer.from('img-data')) };
+});
+
+import { verifyAccessToken } from '../lib/auth.ts';
+import { readFile } from 'node:fs/promises';
+
 const UUID = '550e8400-e29b-41d4-a716-446655440000';
 
 function a() {
@@ -201,6 +215,75 @@ describe('GET /:id', () => {
   it('401 no auth', async () => {
     const res = await mkApp().request(`/api/v1/media/${UUID}`);
     expect(res.status).toBe(401);
+  });
+});
+
+describe('GET /:id/file', () => {
+  beforeEach(() => {
+    vi.mocked(readFile).mockResolvedValue(Buffer.from('img-data'));
+  });
+
+  function mockFileRecord(overrides: Record<string, unknown> = {}) {
+    mockDb.select.mockReturnValueOnce(
+      makeChain([
+        {
+          disk: 'Local',
+          filename: 'test.jpg',
+          mimeType: 'image/jpeg',
+          size: 1024,
+          uploadedBy: 'uid',
+          isPublic: true,
+          ...overrides,
+        },
+      ]),
+    );
+  }
+
+  it('200 public media tanpa auth', async () => {
+    mockFileRecord();
+    const res = await mkApp().request(`/api/v1/media/${UUID}/file`);
+    expect(res.status).toBe(200);
+    expect(res.headers.get('Content-Type')).toBe('image/jpeg');
+    expect(res.headers.get('Cache-Control')).toBe('public, max-age=31536000');
+  });
+
+  it('200 public media dengan auth', async () => {
+    mockFileRecord();
+    const res = await mkApp().request(`/api/v1/media/${UUID}/file`, { headers: a() });
+    expect(res.status).toBe(200);
+  });
+
+  it('200 private media milik owner', async () => {
+    vi.mocked(verifyAccessToken).mockResolvedValue({ sub: 'uid', role: 'customer' } as never);
+    mockFileRecord({ isPublic: false, uploadedBy: 'uid' });
+    const res = await mkApp().request(`/api/v1/media/${UUID}/file`, { headers: a() });
+    expect(res.status).toBe(200);
+  });
+
+  it('401 private media tanpa token', async () => {
+    mockFileRecord({ isPublic: false, uploadedBy: 'uid' });
+    const res = await mkApp().request(`/api/v1/media/${UUID}/file`);
+    expect(res.status).toBe(401);
+  });
+
+  it('401 private media dengan token invalid', async () => {
+    vi.mocked(verifyAccessToken).mockRejectedValue(new Error('expired'));
+    mockFileRecord({ isPublic: false, uploadedBy: 'uid' });
+    const res = await mkApp().request(`/api/v1/media/${UUID}/file`, { headers: a() });
+    expect(res.status).toBe(401);
+  });
+
+  it('403 private media milik user lain', async () => {
+    vi.mocked(verifyAccessToken).mockResolvedValue({ sub: 'uid', role: 'customer' } as never);
+    mockFileRecord({ isPublic: false, uploadedBy: 'other-uid' });
+    const res = await mkApp().request(`/api/v1/media/${UUID}/file`, { headers: a() });
+    expect(res.status).toBe(403);
+  });
+
+  it('404 not found', async () => {
+    mockDb.select.mockReturnValueOnce(makeChain([]));
+    const res = await mkApp().request(`/api/v1/media/${UUID}/file`);
+    expect(res.status).toBe(404);
   });
 });
 

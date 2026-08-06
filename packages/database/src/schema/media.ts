@@ -1,4 +1,13 @@
-import { pgTable, uuid, varchar, timestamp, text, integer, index } from 'drizzle-orm/pg-core';
+import {
+  pgTable,
+  uuid,
+  varchar,
+  timestamp,
+  text,
+  integer,
+  index,
+  boolean,
+} from 'drizzle-orm/pg-core';
 import { type MediaDisk } from '@ahlipanggilan/types';
 import { users } from './users.ts';
 
@@ -17,6 +26,7 @@ export const media = pgTable(
     uploadedBy: uuid('uploaded_by')
       .references(() => users.id)
       .notNull(),
+    isPublic: boolean('is_public').notNull().default(false),
     createdAt: timestamp('created_at').defaultNow().notNull(),
     deletedAt: timestamp('deleted_at'),
   },
