@@ -147,6 +147,8 @@ export function AdminMedia() {
         for (const file of fileList) {
           const formData = new FormData();
           formData.append('file', file);
+          // Media library = konten CMS (publik), preview via <img> tanpa header auth
+          formData.append('isPublic', 'true');
           await api.post('/api/v1/media/upload', { formData });
         }
         setPage(1);
