@@ -46,7 +46,9 @@ const tags = entries.map((e) => e.tag);
 // ── 1. Every migration file must be journaled ─────────────────────
 for (const file of sqlFiles) {
   if (!tags.includes(file)) {
-    errors.push(`Migration file "packages/database/migrations/${file}.sql" is NOT in _journal.json — drizzle-kit migrate will never apply it.`);
+    errors.push(
+      `Migration file "packages/database/migrations/${file}.sql" is NOT in _journal.json — drizzle-kit migrate will never apply it.`,
+    );
   }
 }
 
@@ -60,7 +62,9 @@ for (const tag of tags) {
 // ── 3. idx must be sequential (0..n-1) ────────────────────────────
 entries.forEach((entry, i) => {
   if (entry.idx !== i) {
-    errors.push(`Journal idx mismatch at position ${i}: expected ${i}, got ${entry.idx} (tag "${entry.tag}").`);
+    errors.push(
+      `Journal idx mismatch at position ${i}: expected ${i}, got ${entry.idx} (tag "${entry.tag}").`,
+    );
   }
 });
 
@@ -74,4 +78,6 @@ if (errors.length > 0) {
   process.exit(1);
 }
 
-console.log(`✅ Migration journal OK — ${sqlFiles.length} migration files, ${tags.length} journal entries.`);
+console.log(
+  `✅ Migration journal OK — ${sqlFiles.length} migration files, ${tags.length} journal entries.`,
+);
