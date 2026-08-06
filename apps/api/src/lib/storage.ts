@@ -211,6 +211,9 @@ export async function saveFile(file: File): Promise<StoredFile> {
           Key: uniqueName,
           Body: buffer,
           ContentType: mimeType,
+          // Edge-cache di Cloudflare (tanpa ini cf-cache-status=DYNAMIC,
+          // setiap request fetch origin R2 — thumbnail 3MB muat 10+ detik)
+          CacheControl: 'public, max-age=31536000, immutable',
         }),
       );
 
