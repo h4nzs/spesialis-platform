@@ -47,6 +47,8 @@ jobs:
           cache: pnpm
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
+      - name: Check migration journal completeness
+        run: pnpm db:check-migrations
       - name: Lint
         run: pnpm lint
       - name: Analytics Contract Validation

@@ -155,10 +155,13 @@ export function ArticleEditor({ editingId }: ArticleEditorProps) {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
-  const [loading, setLoading] = useState(true);
   const [coverUploading, setCoverUploading] = useState(false);
   const [coverDragOver, setCoverDragOver] = useState(false);
   const coverInputRef = useRef<HTMLInputElement>(null);
+  // Form langsung dirender (tanpa loading-gate) — data (kategori, detail
+  // artikel saat edit) dimuat asinkron setelah render. Memastikan form tetap
+  // muncul walau request data lambat/gagal, sehingga editor selalu usable.
+  const [categoriesLoading, setCategoriesLoading] = useState(true);
 
   // MediaBrowser state
   const [showMediaBrowser, setShowMediaBrowser] = useState(false);
@@ -245,12 +248,15 @@ export function ArticleEditor({ editingId }: ArticleEditorProps) {
     [uploadToMedia],
   );
 
-  // Load categories & article detail
+  // Load categories & article detail — berjalan asinkron tanpa menggantung
+  // render form (dulu form digate oleh `loading`, sehingga fetch yang lambat
+  // membuat seluruh editor tampil spinner selamanya).
   useEffect(() => {
     async function init() {
       try {
         const cats = await api.get<{ data: CategoryItem[] }>('/api/v1/admin/articles/categories');
         setCategories(Array.isArray(cats) ? cats : (cats?.data ?? []));
+        setCategoriesLoading(false);
 
         if (editingId) {
           const detail = await api.get<Record<string, unknown>>(
@@ -289,7 +295,7 @@ export function ArticleEditor({ editingId }: ArticleEditorProps) {
       } catch {
         setError('Gagal memuat data');
       } finally {
-        setLoading(false);
+        setCategoriesLoading(false);
       }
     }
     init();
@@ -405,18 +411,6 @@ export function ArticleEditor({ editingId }: ArticleEditorProps) {
   function handleCancel() {
     lock.release();
     goBack();
-  }
-
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <div
-          className="h-8 w-8 animate-spin rounded-full border-2 border-primary-500 border-t-transparent"
-          role="status"
-          aria-label="Memuat…"
-        />
-      </div>
-    );
   }
 
   return (
@@ -556,7 +550,7 @@ export function ArticleEditor({ editingId }: ArticleEditorProps) {
                   value={form.categoryId}
                   onChange={(e) => setForm((f) => ({ ...f, categoryId: e.target.value }))}
                   options={categories.map((c) => ({ value: c.id, label: c.name }))}
-                  placeholder="Pilih kategori"
+                  placeholder={categoriesLoading ? 'Memuat kategori…' : 'Pilih kategori'}
                 />
                 <Select
                   label="Status"

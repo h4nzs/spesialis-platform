@@ -16,6 +16,7 @@
     "format:check": "prettier --check .",
     "prepare": "husky",
     "cli": "node packages/cli/bin/ahlipanggilan.mjs",
+    "db:check-migrations": "node scripts/check-migrations-journal.mjs",
     "start": "bash scripts/start.sh dev",
     "start:prod": "bash scripts/start.sh prod",
     "start:seed": "bash scripts/start.sh dev --seed",

@@ -267,6 +267,13 @@
       "when": 1785181498848,
       "tag": "0037_adjust_sequences_to_existing_data",
       "breakpoints": true
+    },
+    {
+      "idx": 38,
+      "version": "7",
+      "when": 1785860000000,
+      "tag": "0038_drop_media_updated_at_trigger",
+      "breakpoints": true
     }
   ]
 }

@@ -165,8 +165,22 @@ router.get('/:id', authMiddleware, async (c) => {
   const userId = c.get('userId');
   const userRole = c.get('userRole');
 
+  // Select kolom eksplisit (bukan `select()` semua kolom) agar query hanya
+  // bergantung pada kolom yang benar-benar dipakai — kebal terhadap drift
+  // schema (kolom yang ada di schema tapi belum ada di DB) yang bisa
+  // mengubah request ini menjadi 500 diam-diam.
   const [record] = await db
-    .select()
+    .select({
+      id: media.id,
+      filename: media.filename,
+      mimeType: media.mimeType,
+      extension: media.extension,
+      size: media.size,
+      width: media.width,
+      height: media.height,
+      uploadedBy: media.uploadedBy,
+      createdAt: media.createdAt,
+    })
     .from(media)
     .where(and(eq(media.id, mediaId), isNull(media.deletedAt)))
     .limit(1);
@@ -196,7 +210,13 @@ router.get('/:id/file', authMiddleware, async (c) => {
   const userRole = c.get('userRole');
 
   const [record] = await db
-    .select()
+    .select({
+      disk: media.disk,
+      filename: media.filename,
+      mimeType: media.mimeType,
+      size: media.size,
+      uploadedBy: media.uploadedBy,
+    })
     .from(media)
     .where(and(eq(media.id, mediaId), isNull(media.deletedAt)))
     .limit(1);
