@@ -60,6 +60,10 @@ export function setTokenCookies(response: Response, token: string, refreshToken:
  * Enrich a response with agent discovery features:
  * Link headers (RFC 8288) and Markdown for Agents content negotiation.
  * Always runs regardless of authentication status.
+ *
+ * Also forces no-cache on HTML so the browser always revalidates and
+ * never holds a stale page referencing hashed chunks from a previous
+ * deploy (old chunks are removed from disk after build → 404 + MIME error).
  */
 function addAgentDiscovery(
   response: Response,
@@ -67,8 +71,13 @@ function addAgentDiscovery(
   url: URL,
   skipMarkdown: boolean,
 ): Response {
-  // ── Link Headers (RFC 8288) ──
+  // ── HTML must never be cached (heuristic or otherwise) ──
   const contentType = response.headers?.get?.('Content-Type') ?? '';
+  if (contentType.includes('text/html')) {
+    response.headers.set('Cache-Control', 'no-cache, must-revalidate');
+  }
+
+  // ── Link Headers (RFC 8288) ──
   if (contentType.includes('text/html')) {
     const linkHeaders = [
       `</.well-known/api-catalog>; rel="api-catalog"`,

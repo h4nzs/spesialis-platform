@@ -193,6 +193,27 @@ describe('Agent Discovery — Markdown for Agents', () => {
     expect(cc).toContain('max-age=3600');
   });
 
+  it('HTML response tidak boleh di-cache (no-cache, must-revalidate)', async () => {
+    const res = await getResponse('/', 'text/html');
+    const cc = res.headers.get('Cache-Control');
+    expect(cc).toBe('no-cache, must-revalidate');
+  });
+
+  it('HTML 404 response juga tidak boleh di-cache', async () => {
+    const { onRequest } = await import('./middleware.ts');
+    const request = new Request('http://localhost:4321/unknown-404-page', {
+      headers: { Accept: 'text/html' },
+    });
+    const res = await callMiddleware(
+      onRequest,
+      request,
+      { auth: null },
+      { status: 404, contentType: 'text/html' },
+    );
+    expect(res.status).toBe(404);
+    expect(res.headers.get('Cache-Control')).toBe('no-cache, must-revalidate');
+  });
+
   it('mengembalikan HTML untuk path /api/v1/* yang tidak ada di route map', async () => {
     const res = await getResponse('/api/v1/health');
     const text = await res.text();
