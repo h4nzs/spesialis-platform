@@ -1,7 +1,11 @@
 import type { APIRoute } from 'astro';
 
 const SITE = 'https://ahlipanggilan.id';
-const API_BASE = process.env.PUBLIC_API_URL ?? process.env.API_URL ?? 'http://localhost:3000';
+const API_BASE = (
+  process.env.API_URL ??
+  process.env.PUBLIC_API_URL ??
+  'http://localhost:3000'
+).replace(/\/api\/?$/, '');
 
 interface SitemapConfig {
   staticPages: { priority: string; changefreq: string };
