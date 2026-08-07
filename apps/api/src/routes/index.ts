@@ -55,6 +55,17 @@ router.use('*', csrfProtection());
 // Override dengan rate limit lebih ketat di masing-masing route
 router.use('*', rateLimit(100, 60_000));
 
+// API base — resolvable endpoint so discovery documents (llms.txt, api-catalog)
+// can link to the API root instead of returning 404
+router.get('/', (c) => {
+  return c.json({
+    service: 'Ahli Panggilan API',
+    version: '1.0.0',
+    documentation: 'https://ahlipanggilan.id/auth.md',
+    health: '/api/v1/health',
+  });
+});
+
 router.route('/health', healthRouter);
 router.route('/auth', authRouter);
 router.route('/bookings', bookingsRouter);
