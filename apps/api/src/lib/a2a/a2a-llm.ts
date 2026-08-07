@@ -1,7 +1,7 @@
 import { A2A_TOOLS, executeA2ATool } from './a2a-tools.ts';
 
 const API_BASE = 'https://generativelanguage.googleapis.com/v1beta';
-const DEFAULT_MODEL = 'gemini-3.5-flash';
+const DEFAULT_MODEL = 'gemini-3.1-flash-lite';
 
 interface GeminiPart {
   text?: string;
