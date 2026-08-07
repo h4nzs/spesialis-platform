@@ -176,6 +176,9 @@ async function handleJsonRpc(c: Context, bodyText: string): Promise<Response> {
 
     let result: unknown;
     switch (method) {
+      case 'GetAgentCard':
+        result = AgentCard.toJSON(await a2a.handler.getAgentCard());
+        break;
       case 'SendMessage': {
         const messageOrTask = await a2a.handler.sendMessage(
           SendMessageRequest.fromJSON(params),
@@ -409,11 +412,7 @@ rest.delete('/v1/tasks/:taskId/pushNotificationConfigs/:configId', async (c) => 
 });
 
 rest.get('/v1/card', async (c) => {
-  const context = await buildContext(c.req.raw.headers, c.req.header('A2A-Version') ?? undefined);
-  const card = await a2a.handler.getAuthenticatedExtendedAgentCard(
-    GetExtendedAgentCardRequest.fromJSON({}),
-    context,
-  );
+  const card = await a2a.handler.getAgentCard();
   return c.json(AgentCard.toJSON(card), 200);
 });
 
