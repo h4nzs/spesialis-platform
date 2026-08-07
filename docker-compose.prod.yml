@@ -156,6 +156,7 @@ services:
       PLAUSIBLE_DOMAIN: ${PLAUSIBLE_DOMAIN:-stats.ahlipanggilan.id}
       PUBLIC_PLAUSIBLE_DOMAIN: ${PLAUSIBLE_DOMAIN:-stats.ahlipanggilan.id}
       PUBLIC_SITE_DOMAIN: ${PUBLIC_SITE_DOMAIN:-ahlipanggilan.id}
+      BOT_SIGNING_PRIVATE_KEY: ${BOT_SIGNING_PRIVATE_KEY:-}
     depends_on:
       api:
         condition: service_started
