@@ -19,8 +19,14 @@ describe('routeIntent', () => {
     expect(match?.tool).toBe('search_services');
   });
 
-  it('maps FAQ questions to search_faq', () => {
+  it('maps service cost questions to get_service_detail', () => {
     const match = routeIntent('berapa biaya jasa ac?');
+    expect(match?.tool).toBe('get_service_detail');
+    expect(match?.args.slug).toBe('service-ac');
+  });
+
+  it('maps general cost questions to search_faq', () => {
+    const match = routeIntent('berapa biaya refund?');
     expect(match?.tool).toBe('search_faq');
   });
 

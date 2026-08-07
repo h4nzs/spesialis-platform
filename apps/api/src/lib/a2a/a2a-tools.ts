@@ -44,6 +44,13 @@ async function internalGet(path: string, headers: Record<string, string> = {}): 
 
 export type A2AToolResult = { text: string; markdown?: boolean };
 
+function formatPrice(value: unknown): string {
+  const str = String(value ?? '');
+  if (/^\d+(\.\d+)?$/.test(str)) return `Rp${Number(str).toLocaleString('id-ID')}`;
+  if (str === 'call' || str === '' || str === '-') return 'Harga dapat dihubungi';
+  return str;
+}
+
 /**
  * Executes an A2A skill action. `authToken` is the caller's platform JWT —
  * forwarded only for state-changing skills (create_booking) so bookings are
@@ -68,7 +75,7 @@ export async function executeA2ATool(
           ? items
               .map(
                 (s, i) =>
-                  `${i + 1}. **${s.name}** — ${(s.shortDescription as string) ?? 'Tidak ada deskripsi'}\n   Mulai dari Rp${s.basePrice ?? '?'}\n   https://ahlipanggilan.id/services/${s.slug ?? ''}`,
+                  `${i + 1}. **${s.name}** — ${(s.shortDescription as string) ?? 'Tidak ada deskripsi'}\n   Mulai dari ${formatPrice(s.basePrice)}\n   https://ahlipanggilan.id/services/${s.slug ?? ''}`,
               )
               .join('\n\n')
           : `Tidak ada layanan ditemukan untuk "${query}". Coba: AC, listrik, plumbing, cleaning.`,
@@ -82,7 +89,7 @@ export async function executeA2ATool(
       return {
         text:
           `## ${s.name}\n\n${(s.shortDescription as string) ?? ''}\n\n` +
-          `**Harga Mulai:** Rp${s.basePrice ?? '?'}\n` +
+          `**Harga Mulai:** ${formatPrice(s.basePrice)}\n` +
           `**Durasi:** ${s.estimatedDuration ? `${s.estimatedDuration} menit` : '-'}\n` +
           `**Kategori:** ${(s.categoryName as string) ?? '-'}\n\n` +
           `Detail: https://ahlipanggilan.id/services/${slug}`,
@@ -158,7 +165,7 @@ export async function executeA2ATool(
           `**Layanan:** ${(b.serviceName as string) ?? '-'}\n` +
           `**Teknisi:** ${(b.partnerName as string) ?? 'Belum ditetapkan'}\n` +
           `**Jadwal:** ${(b.bookingDate as string) ?? '-'} ${(b.bookingTime as string) ?? ''}\n` +
-          `**Harga:** Rp${b.finalPrice ?? b.basePrice ?? '-'}\n` +
+          `**Harga:** ${formatPrice(b.finalPrice ?? b.basePrice)}\n` +
           (timeline.length
             ? `\n**Riwayat:**\n${(timeline as Array<Record<string, unknown>>)
                 .map(

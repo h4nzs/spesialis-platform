@@ -61,6 +61,60 @@ const ROUTES: Array<{
     }),
   },
   {
+    tool: 'get_service_detail',
+    keywords: [
+      'detail layanan',
+      'info layanan',
+      'spesifikasi',
+      'durasi',
+      'termasuk apa',
+      'biaya',
+      'harga',
+      'tarif',
+      'berapa',
+      'estimasi',
+    ],
+    buildArgs: (text) => {
+      const match = text.match(
+        /(?:layanan|jasa|service)\s+(ac|listrik|plumbing|cleaning|cctv|kunci|bangunan|sedot)\s*([a-z0-9-]*)/i,
+      );
+      const keyword = match?.[2] || match?.[1] || '';
+      return { slug: keyword ? `service-${keyword}` : '' };
+    },
+  },
+  {
+    tool: 'search_services',
+    keywords: [
+      'layanan',
+      'service',
+      'jasa',
+      'daftar',
+      'katalog',
+      'apa saja',
+      'tersedia',
+      'pilihan',
+      'berlangganan',
+      'perbaikan',
+      'perawatan',
+      'pasang',
+      'service ac',
+      'cuci ac',
+      'freon',
+      'pipa',
+      'mampet',
+      'sedot',
+      'instalasi listrik',
+      'cctv',
+      'kunci',
+    ],
+    buildArgs: (text) => {
+      const keyword = text.match(
+        /\b(ac|listrik|plumbing|cleaning|cctv|kunci|bangunan|sedot wc)\b/i,
+      )?.[0];
+      return { query: keyword ?? '', limit: keyword ? 5 : 10 };
+    },
+  },
+  {
     tool: 'search_faq',
     keywords: [
       'faq',
@@ -115,48 +169,6 @@ const ROUTES: Array<{
       return { topic: 'about' };
     },
   },
-  {
-    tool: 'get_service_detail',
-    keywords: ['detail layanan', 'info layanan', 'spesifikasi', 'durasi', 'termasuk apa'],
-    buildArgs: (text) => {
-      const match = text.match(
-        /(?:layanan|jasa|service)\s+(ac|listrik|plumbing|cleaning|cctv|kunci|bangunan|sedot)\s*([a-z0-9-]*)/i,
-      );
-      return { slug: match?.[2] || match?.[1] || '' };
-    },
-  },
-  {
-    tool: 'search_services',
-    keywords: [
-      'layanan',
-      'service',
-      'jasa',
-      'daftar',
-      'katalog',
-      'apa saja',
-      'tersedia',
-      'pilihan',
-      'berlangganan',
-      'perbaikan',
-      'perawatan',
-      'pasang',
-      'service ac',
-      'cuci ac',
-      'freon',
-      'pipa',
-      'mampet',
-      'sedot',
-      'instalasi listrik',
-      'cctv',
-      'kunci',
-    ],
-    buildArgs: (text) => {
-      const keyword = text.match(
-        /\b(ac|listrik|plumbing|cleaning|cctv|kunci|bangunan|sedot wc)\b/i,
-      )?.[0];
-      return { query: keyword ?? '', limit: keyword ? 5 : 10 };
-    },
-  },
 ];
 
 export function routeIntent(text: string): RouteMatch | null {
@@ -187,6 +199,15 @@ export async function answerWithRules(
       tool: null,
     };
   }
-  const result = await executeA2ATool(match.tool, match.args, undefined);
-  return { text: result.text, tool: match.tool };
+  let result = await executeA2ATool(match.tool, match.args, undefined);
+  let tool = match.tool;
+  if (match.tool === 'get_service_detail' && result.text.includes('tidak ditemukan')) {
+    const keyword = String(match.args.slug ?? '').replace(/^service-/, '');
+    const alt = await executeA2ATool('search_services', { query: keyword, limit: 5 }, undefined);
+    if (alt.text && !alt.text.includes('Tidak ada layanan')) {
+      result = alt;
+      tool = 'search_services';
+    }
+  }
+  return { text: result.text, tool };
 }
