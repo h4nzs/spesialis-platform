@@ -115,7 +115,8 @@ export class PlatformAgentExecutor implements AgentExecutor {
         answer = result.text;
         toolUsed = Boolean(result.tool);
       }
-    } catch {
+    } catch (err) {
+      console.error('[a2a] LLM gagal, fallback ke rule router:', err);
       if (llmAvailable()) {
         const result = await answerWithRules(userText).catch(() => null);
         answer =
