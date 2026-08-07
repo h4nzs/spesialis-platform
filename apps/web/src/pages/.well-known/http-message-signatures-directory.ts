@@ -75,7 +75,11 @@ function signDirectory(
 export const GET: APIRoute = async ({ request }) => {
   const body = JSON.stringify(DIRECTORY, null, 2);
   const url = new URL(request.url);
-  const signed = signDirectory(body, request.method, url.href, url.host);
+  // Request internally arrives as http via nginx proxy; canonicalize with the
+  // public https scheme so external verifiers (Cloudflare, clients) reproduce
+  // the exact @target-uri the signature was computed over.
+  const externalUrl = `https://${url.host}${url.pathname}${url.search}`;
+  const signed = signDirectory(body, request.method, externalUrl, url.host);
 
   const headers: Record<string, string> = {
     'Content-Type': 'application/http-message-signatures-directory+json',
