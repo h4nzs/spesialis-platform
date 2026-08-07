@@ -20,6 +20,7 @@
     "test:integration": "vitest run --config vitest.integration.config.ts"
   },
   "dependencies": {
+    "@a2a-js/sdk": "^1.0.1",
     "@ahlipanggilan/database": "workspace:*",
     "@ahlipanggilan/mcp-tools": "workspace:*",
     "@ahlipanggilan/shared": "workspace:*",
@@ -33,6 +34,7 @@
     "hash-wasm": "^4.12.0",
     "hono": "^4.12.27",
     "ioredis": "^5.11.1",
+    "jose": "^6.2.8",
     "nodemailer": "^7.0.2",
     "resend": "^6.17.1",
     "sanitize-html": "^2.17.6",

@@ -41,6 +41,8 @@ export { cmsTestimonials } from './cms-testimonials.ts';
 export { articleLinks } from './article-links.ts';
 export { resourceLocks } from './resource-locks.ts';
 export { blogAds } from './blog-ads.ts';
+export { a2aTasks } from './a2a-tasks.ts';
+export { a2aPushConfigs } from './a2a-tasks.ts';
 
 export { indexnowLogsRelations } from './relations.ts';
 
