@@ -128,7 +128,7 @@ export class PlatformAgentExecutor implements AgentExecutor {
     }
 
     void toolUsed;
-    const assistantMessage = buildMessage(answer, contextId, taskId, 'ROLE_ASSISTANT');
+    const assistantMessage = buildMessage(answer, contextId, taskId, 'ROLE_AGENT');
     task.history = [...(task.history ?? []), assistantMessage];
     const finalStatus = ensureStatus();
     finalStatus.state = TaskState.TASK_STATE_COMPLETED;
