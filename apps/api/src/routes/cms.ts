@@ -1,5 +1,5 @@
 import { Hono } from 'hono';
-import { eq, and, desc, asc, isNull } from 'drizzle-orm';
+import { eq, and, desc, asc, isNull, ilike } from 'drizzle-orm';
 import {
   db,
   articles,
@@ -25,13 +25,15 @@ cmsRouter.use('*', async (c, next) => {
 
 cmsRouter.get('/faq', async (c) => {
   const category = c.req.query('category');
-  const cacheKey = `cms:faq${category ? `:cat:${category}` : ''}`;
+  const q = c.req.query('q')?.trim();
+  const cacheKey = `cms:faq${category ? `:cat:${category}` : ''}${q ? `:q:${q}` : ''}`;
   const cached = await cmsCache.get(cacheKey);
   if (cached.hit) return success(c, cached.data);
 
   try {
     const conditions: ReturnType<typeof eq>[] = [eq(faq.isActive, true)];
     if (category) conditions.push(eq(faq.category, category));
+    if (q) conditions.push(ilike(faq.question, `%${q}%`));
 
     const items = await db
       .select({
@@ -54,11 +56,18 @@ cmsRouter.get('/faq', async (c) => {
 
 cmsRouter.get('/articles', async (c) => {
   const limit = Number(c.req.query('limit')) || 50;
-  const cacheKey = `cms:articles:limit:${limit}`;
+  const q = c.req.query('q')?.trim();
+  const cacheKey = `cms:articles:limit:${limit}${q ? `:q:${q}` : ''}`;
   const cached = await cmsCache.get(cacheKey);
   if (cached.hit) return success(c, cached.data);
 
   try {
+    const conditions: ReturnType<typeof eq>[] = [
+      eq(articles.status, 'Published'),
+      isNull(articles.deletedAt),
+    ];
+    if (q) conditions.push(ilike(articles.title, `%${q}%`));
+
     const items = await db
       .select({
         id: articles.id,
@@ -74,7 +83,7 @@ cmsRouter.get('/articles', async (c) => {
       })
       .from(articles)
       .leftJoin(articleCategories, eq(articles.categoryId, articleCategories.id))
-      .where(and(eq(articles.status, 'Published'), isNull(articles.deletedAt)))
+      .where(and(...conditions))
       .orderBy(desc(articles.publishedAt))
       .limit(limit);
 

@@ -104,6 +104,22 @@ Authorization: Bearer <token>
 
 For full API discovery, see the [API Catalog](/.well-known/api-catalog) which provides a machine-readable linkset of all available endpoints, their relations, and documentation references.
 
+## MCP Server (Model Context Protocol)
+
+This site exposes a native **Streamable HTTP MCP server** at:
+
+```
+POST https://ahlipanggilan.id/api/v1/mcp
+```
+
+Protocol: MCP 2025-06-18, stateless, JSON responses (no session ID required). Connect with any MCP client:
+
+```
+mcp = Client(transport=StreamableHttpTransport("https://ahlipanggilan.id/api/v1/mcp"))
+```
+
+Available tools (listed via `tools/list`): `search_services`, `get_service_detail`, `track_booking`, `check_coverage`, `search_faq`, `search_articles`, `navigate_to_page`, `get_platform_info`, `create_booking`, `search_partners`. All tools are anonymous — no bearer token needed. Discovery: [/.well-known/mcp.json](/.well-known/mcp.json).
+
 ## Rate Limiting
 
 - General: 30 requests/second per IP
@@ -115,5 +131,6 @@ For full API discovery, see the [API Catalog](/.well-known/api-catalog) which pr
 - [Site Overview](/llms.txt) — AI-readable platform overview
 - [Full Documentation](/llms-full.txt) — Complete platform documentation
 - [Sitemap](/sitemap.xml) — XML sitemap
-- [MCP Server Card](/.well-known/mcp/server-card.json) — MCP discovery metadata
+- [MCP Server](/.well-known/mcp.json) — MCP discovery metadata (Streamable HTTP)
+- [MCP Server Card](/.well-known/mcp/server-card.json) — MCP server card
 - [Agent Skills Index](/.well-known/agent-skills/index.json) — Available agent skills

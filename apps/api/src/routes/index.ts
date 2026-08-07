@@ -44,6 +44,7 @@ import { sitemapSettingsRouter } from './sitemap-settings.ts';
 import { indexnowRouter } from './indexnow.ts';
 import { adminBlogAdsRouter } from './admin/blog-ads.ts';
 import { adminLocksRouter } from './admin/locks.ts';
+import { mcpRouter } from './mcp.ts';
 
 const router = new Hono();
 
@@ -101,5 +102,6 @@ router.route('/indexnow', indexnowRouter);
 router.route('/analytics', analyticsRouter);
 router.route('/admin/blog-ads', adminBlogAdsRouter);
 router.route('/admin/locks', adminLocksRouter);
+router.route('/', mcpRouter);
 
 export { router as apiRouter };

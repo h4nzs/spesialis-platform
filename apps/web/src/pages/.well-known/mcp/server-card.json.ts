@@ -6,6 +6,7 @@ const SITE = 'https://ahlipanggilan.id';
  * MCP Server Card — SEP-1649
  *
  * Exposes server metadata and capabilities for Model Context Protocol discovery.
+ * Transport is the native Streamable HTTP endpoint /api/v1/mcp.
  * Schema: https://github.com/modelcontextprotocol/modelcontextprotocol/pull/2127
  */
 export const GET: APIRoute = async () => {
@@ -13,20 +14,21 @@ export const GET: APIRoute = async () => {
     serverInfo: {
       name: 'Ahli Panggilan API',
       description:
-        'On-demand professional service booking platform API. Services include AC maintenance, plumbing, electrical, cleaning, and more.',
+        'On-demand professional service booking platform API. MCP tools cover service search, booking, tracking, coverage check, FAQ, articles, and partner lookup.',
       version: '1.0.0',
       vendor: 'Ahli Panggilan',
       docsUrl: `${SITE}/auth.md`,
     },
     transport: {
-      type: 'http',
-      endpoint: `${SITE}/api/v1`,
+      type: 'streamable-http',
+      protocol: 'MCP',
+      endpoint: `${SITE}/api/v1/mcp`,
+      protocolVersion: '2025-06-18',
       headers: {
         'Content-Type': 'application/json',
       },
       authentication: {
-        type: 'bearer-token',
-        registrationUrl: `${SITE}/register`,
+        type: 'none',
         docsUrl: `${SITE}/auth.md`,
       },
     },
@@ -34,18 +36,7 @@ export const GET: APIRoute = async () => {
       tools: {
         enabled: true,
         description:
-          'REST API endpoints for service booking, customer management, partner operations, and admin functions.',
-        endpoints: [
-          {
-            path: '/api/v1/bookings',
-            methods: ['GET', 'POST'],
-            description: 'Manage service bookings',
-          },
-          { path: '/api/v1/services', methods: ['GET'], description: 'List available services' },
-          { path: '/api/v1/auth', methods: ['POST'], description: 'Authentication endpoints' },
-          { path: '/api/v1/partners', methods: ['GET', 'POST'], description: 'Partner management' },
-          { path: '/api/v1/customers', methods: ['GET'], description: 'Customer management' },
-        ],
+          'MCP tools: search_services, get_service_detail, track_booking, check_coverage, search_faq, search_articles, navigate_to_page, get_platform_info, create_booking, search_partners.',
       },
       resources: {
         enabled: true,

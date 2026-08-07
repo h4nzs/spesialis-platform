@@ -43,9 +43,9 @@ import { recordStatusHistory } from '../lib/order-status.ts';
 import { buildPaginationMeta } from '../lib/pagination.ts';
 import { createNotification, notifyAdmins } from '../lib/notification.ts';
 import { APP_URL, sendBookingConfirmationEmail, sendPartnerAssignedEmail } from '../lib/email.ts';
-import { sendWhatsApp } from '../lib/whatsapp.ts';
 import { generateBookingNumber } from '../lib/booking-number.ts';
 import { createOrderTransaction } from '../lib/create-order.ts';
+import { createGuestBooking as createGuestBookingService } from '../lib/booking-service.ts';
 import { parseBody } from '../lib/parse-body.ts';
 import { omitUndefined } from '../lib/update.ts';
 import { validateBody } from '../middleware/validation.ts';
@@ -67,95 +67,8 @@ async function createGuestBooking(c: Context) {
   const parsed = await parseBody(c, createGuestBookingSchema);
   if (!parsed.ok) return parsed.response;
 
-  const {
-    fullName,
-    phone,
-    address: addr,
-    bookingDate,
-    bookingTime,
-    notes,
-    items: orderItemsData,
-    mediaIds,
-  } = parsed.data;
-
   try {
-    const bookingNumber = await generateBookingNumber();
-
-    const result = await db.transaction(async (tx) => {
-      // ── 1. Create guest customer profile ────────────────
-      const [profile] = await tx
-        .insert(customerProfiles)
-        .values({
-          fullName,
-          guestPhone: phone,
-        })
-        .returning({ id: customerProfiles.id });
-
-      if (!profile) throw new Error('Gagal membuat profil');
-
-      // ── 2. Create address from inline data ──────────────
-      const [addressRecord] = await tx
-        .insert(addresses)
-        .values({
-          customerId: profile.id,
-          receiverName: addr.receiverName,
-          receiverPhone: addr.receiverPhone,
-          province: addr.province,
-          city: addr.city,
-          district: addr.district,
-          postalCode: addr.postalCode,
-          address: addr.address,
-        })
-        .returning({
-          id: addresses.id,
-          address: addresses.address,
-          district: addresses.district,
-          city: addresses.city,
-          province: addresses.province,
-        });
-
-      if (!addressRecord) throw new Error('Gagal membuat alamat');
-
-      // ── 3. Delegate order / items / media / history ────
-      const orderResult = await createOrderTransaction({
-        bookingNumber,
-        customerId: profile.id,
-        addressId: addressRecord.id,
-        bookingDate,
-        bookingTime,
-        notes,
-        items: orderItemsData,
-        mediaIds,
-        changedBy: null,
-        mediaOwnershipUserId: null,
-        tx, // reuse the outer transaction
-      });
-
-      return { ...orderResult, addressRecord };
-    });
-
-    // Notifications — outside transaction, non-critical
-    notifyAdmins(
-      'booking.new',
-      'Booking Baru',
-      `Booking baru #${result.bookingNumber} dari ${fullName}`,
-      {
-        bookingNumber: result.bookingNumber,
-        customerName: fullName,
-        customerPhone: phone,
-        address: `${result.addressRecord.address}, ${result.addressRecord.district}, ${result.addressRecord.city}, ${result.addressRecord.province}`,
-        bookingDate,
-        bookingTime,
-        notes: notes ?? null,
-        items: result.items,
-      },
-    );
-
-    // Send WhatsApp to guest with booking details (silent if API key not configured)
-    sendWhatsApp(
-      phone,
-      `Terima kasih ${fullName}! Booking Anda dengan nomor ${result.bookingNumber} telah dibuat. Lacak status: ${APP_URL}/tracking/${result.bookingNumber}`,
-    );
+    const result = await createGuestBookingService(parsed.data);
 
     return created(
       c,

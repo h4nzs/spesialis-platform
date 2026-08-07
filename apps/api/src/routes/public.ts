@@ -1,6 +1,12 @@
 import { Hono } from 'hono';
-import { eq, inArray, asc } from 'drizzle-orm';
-import { db, systemSettings, coverageAreas, serviceCategories } from '../lib/db.ts';
+import { eq, inArray, asc, ilike, and, desc, isNull } from 'drizzle-orm';
+import {
+  db,
+  systemSettings,
+  coverageAreas,
+  serviceCategories,
+  partnerProfiles,
+} from '../lib/db.ts';
 import { success } from '../lib/response.ts';
 
 const router = new Hono();
@@ -48,6 +54,35 @@ router.get('/coverage-areas', async (c) => {
     .from(coverageAreas)
     .where(eq(coverageAreas.isActive, true))
     .orderBy(asc(coverageAreas.displayOrder), asc(coverageAreas.createdAt));
+
+  return success(c, items);
+});
+
+router.get('/partners', async (c) => {
+  const city = c.req.query('city')?.trim();
+  const limit = Math.min(Number(c.req.query('limit')) || 20, 50);
+
+  const conditions: ReturnType<typeof eq>[] = [
+    eq(partnerProfiles.verificationStatus, 'Approved'),
+    isNull(partnerProfiles.deletedAt),
+  ];
+  if (city) conditions.push(ilike(partnerProfiles.domicile, `%${city}%`));
+
+  const items = await db
+    .select({
+      id: partnerProfiles.id,
+      fullName: partnerProfiles.fullName,
+      domicile: partnerProfiles.domicile,
+      bio: partnerProfiles.bio,
+      ratingAverage: partnerProfiles.ratingAverage,
+      completedJobs: partnerProfiles.completedJobs,
+      availability: partnerProfiles.availability,
+      experienceYear: partnerProfiles.experienceYear,
+    })
+    .from(partnerProfiles)
+    .where(and(...conditions))
+    .orderBy(desc(partnerProfiles.ratingAverage))
+    .limit(limit);
 
   return success(c, items);
 });

@@ -46,6 +46,14 @@ export function csrfProtection() {
       return;
     }
 
+    // Skip CSRF for the MCP endpoint — AI agent clients are server-to-server
+    // and do not send Origin/Referer headers (authentication is via Bearer
+    // token or anonymous read-only tools).
+    if (c.req.path.startsWith('/api/v1/mcp')) {
+      await next();
+      return;
+    }
+
     // Skip CSRF for the refresh-token endpoint (handled via httpOnly cookie + SameSite=Strict)
     // and routes that are explicitly exempted for server-to-server communication.
     // NOTE: /auth/refresh is NO LONGER exempt — it mints new tokens and must be protected.
