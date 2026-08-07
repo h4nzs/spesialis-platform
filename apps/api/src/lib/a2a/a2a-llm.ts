@@ -115,6 +115,11 @@ export async function runLlmConversation(
           call.functionCall.args ?? {},
           authToken,
         );
+        if (result.text.startsWith('AUTH_REQUIRED:')) {
+          return {
+            text: 'Untuk memesan layanan, kamu perlu login dulu di https://ahlipanggilan.id/login. Setelah login, beri tahu saya layanan yang ingin dipesan dan aku bantu selesaikan booking-nya.',
+          };
+        }
         toolResults.push({
           functionResponse: {
             name: call.functionCall.name,
