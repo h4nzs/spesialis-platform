@@ -1,11 +1,12 @@
 import { A2A_TOOLS, executeA2ATool } from './a2a-tools.ts';
 
 const API_BASE = 'https://generativelanguage.googleapis.com/v1beta';
-const DEFAULT_MODEL = 'gemini-2.5-flash';
+const DEFAULT_MODEL = 'gemini-3.5-flash';
 
 interface GeminiPart {
   text?: string;
-  functionCall?: { name: string; args: Record<string, unknown>; thought_signature?: string };
+  thought_signature?: string;
+  functionCall?: { name: string; args: Record<string, unknown> };
   functionResponse?: { name: string; response: Record<string, unknown> };
 }
 
@@ -102,12 +103,12 @@ export async function runLlmConversation(
     const json = (await res.json()) as GeminiResponse;
     const parts = json.candidates?.[0]?.content?.parts ?? [];
 
+    // Gemini 3 mengembalikan `thoughtSignature` (camelCase) pada functionCall
+    // part; wajib dikirim balik sebagai `thought_signature` pada part yang sama
+    // di request berikutnya, jika tidak API menolak dengan 400.
     const functionCalls = parts.filter(
-      (
-        p,
-      ): p is GeminiPart & {
-        functionCall: { name: string; args: Record<string, unknown>; thought_signature?: string };
-      } => Boolean(p.functionCall?.name),
+      (p): p is GeminiPart & { functionCall: { name: string; args: Record<string, unknown> } } =>
+        Boolean(p.functionCall?.name),
     );
 
     if (functionCalls.length > 0) {
@@ -132,15 +133,12 @@ export async function runLlmConversation(
       }
       contents.push({
         role: 'model',
-        parts: functionCalls.map((c) => ({
-          functionCall: {
-            name: c.functionCall.name,
-            args: c.functionCall.args,
-            ...(c.functionCall.thought_signature
-              ? { thought_signature: c.functionCall.thought_signature }
-              : {}),
-          },
-        })),
+        parts: functionCalls.map((c) => {
+          const part: GeminiPart = { functionCall: c.functionCall };
+          const sig = (c as GeminiPart & { thoughtSignature?: string }).thoughtSignature;
+          if (sig) part.thought_signature = sig;
+          return part;
+        }),
       });
       contents.push({ role: 'user', parts: toolResults });
       continue;
