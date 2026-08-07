@@ -60,6 +60,8 @@ const TABLE_NAMES = [
   'articleLinks',
   'resourceLocks',
   'blogAds',
+  'a2aTasks',
+  'a2aPushConfigs',
 ] as const;
 
 const RELATION_NAMES = [

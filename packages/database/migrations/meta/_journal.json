@@ -288,6 +288,13 @@
       "when": 1786116937816,
       "tag": "0040_greedy_the_call",
       "breakpoints": true
+    },
+    {
+      "idx": 41,
+      "version": "7",
+      "when": 1786300000000,
+      "tag": "0041_drop_resource_locks_updated_at_trigger",
+      "breakpoints": true
     }
   ]
 }
