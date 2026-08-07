@@ -5,7 +5,7 @@ const DEFAULT_MODEL = 'gemini-2.5-flash';
 
 interface GeminiPart {
   text?: string;
-  functionCall?: { name: string; args: Record<string, unknown> };
+  functionCall?: { name: string; args: Record<string, unknown>; thought_signature?: string };
   functionResponse?: { name: string; response: Record<string, unknown> };
 }
 
@@ -103,8 +103,11 @@ export async function runLlmConversation(
     const parts = json.candidates?.[0]?.content?.parts ?? [];
 
     const functionCalls = parts.filter(
-      (p): p is GeminiPart & { functionCall: { name: string; args: Record<string, unknown> } } =>
-        Boolean(p.functionCall?.name),
+      (
+        p,
+      ): p is GeminiPart & {
+        functionCall: { name: string; args: Record<string, unknown>; thought_signature?: string };
+      } => Boolean(p.functionCall?.name),
     );
 
     if (functionCalls.length > 0) {
@@ -129,7 +132,15 @@ export async function runLlmConversation(
       }
       contents.push({
         role: 'model',
-        parts: functionCalls.map((c) => ({ functionCall: c.functionCall })),
+        parts: functionCalls.map((c) => ({
+          functionCall: {
+            name: c.functionCall.name,
+            args: c.functionCall.args,
+            ...(c.functionCall.thought_signature
+              ? { thought_signature: c.functionCall.thought_signature }
+              : {}),
+          },
+        })),
       });
       contents.push({ role: 'user', parts: toolResults });
       continue;
