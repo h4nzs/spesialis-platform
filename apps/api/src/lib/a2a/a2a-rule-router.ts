@@ -117,14 +117,7 @@ const ROUTES: Array<{
   },
   {
     tool: 'get_service_detail',
-    keywords: [
-      'detail layanan',
-      'info layanan',
-      'spesifikasi',
-      'durasi',
-      'termasuk apa',
-      'apa saja',
-    ],
+    keywords: ['detail layanan', 'info layanan', 'spesifikasi', 'durasi', 'termasuk apa'],
     buildArgs: (text) => {
       const match = text.match(
         /(?:layanan|jasa|service)\s+(ac|listrik|plumbing|cleaning|cctv|kunci|bangunan|sedot)\s*([a-z0-9-]*)/i,
@@ -165,7 +158,9 @@ export function routeIntent(text: string): RouteMatch | null {
   const lower = text.toLowerCase().trim();
   for (const route of ROUTES) {
     if (route.keywords.some((k) => lower.includes(k))) {
-      return { tool: route.tool, args: route.buildArgs(lower) };
+      const args = route.buildArgs(lower);
+      if (route.tool === 'get_service_detail' && !args.slug) continue;
+      return { tool: route.tool, args };
     }
   }
   return null;

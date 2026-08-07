@@ -133,8 +133,9 @@ export class PlatformAgentExecutor implements AgentExecutor {
     const finalStatus = ensureStatus();
     finalStatus.state = TaskState.TASK_STATE_COMPLETED;
     finalStatus.timestamp = new Date().toISOString();
-    eventBus.publish(AgentEvent.message(assistantMessage));
-    eventBus.publish(AgentEvent.statusUpdate(statusUpdate(taskId, 'TASK_STATE_COMPLETED')));
+    eventBus.publish(
+      AgentEvent.statusUpdate(statusUpdate(taskId, 'TASK_STATE_COMPLETED', assistantMessage)),
+    );
     eventBus.publish(AgentEvent.task(task));
   }
 
