@@ -150,7 +150,13 @@ const ROUTES: Array<{
       'cctv',
       'kunci',
     ],
-    buildArgs: (text) => ({ query: text.slice(0, 40), limit: 5 }),
+    buildArgs: (text) => {
+      const keyword = text.match(
+        /\b(ac|listrik|plumbing|cleaning|cctv|kunci|bangunan|sedot wc)\b/i,
+      )?.[0];
+      const fallback = text.replace(/^(tolong|kak|min|om|hai|halo|hey)[,!.\s]*/i, '').trim();
+      return { query: keyword ?? fallback.slice(0, 40), limit: 5 };
+    },
   },
 ];
 
