@@ -149,8 +149,12 @@ test.describe('Admin Content Management - E2E-021 / E2E-019', () => {
     };
     expect(body.data).toBeDefined();
     expect(body.data.id).toBeDefined();
-    expect(body.data.filename).toMatch(/^[0-9a-f-]+\.png$/);
-    expect(body.data.mimeType).toBe('image/png');
+    // PNG dioptimasi ke WebP saat upload (lihat apps/api/src/lib/storage.ts),
+    // jadi ekstensi & mimeType hasil mengikuti format tersimpan, bukan asli.
+    expect(body.data.filename).toMatch(/^[0-9a-f-]+\.(png|webp)$/);
+    expect(body.data.mimeType).toBe(
+      body.data.filename.endsWith('.webp') ? 'image/webp' : 'image/png',
+    );
     expect(body.data.url).toContain('/api/v1/media/');
 
     // Verify uploaded file metadata can be retrieved
@@ -159,7 +163,7 @@ test.describe('Admin Content Management - E2E-021 / E2E-019', () => {
     });
     expect(getRes.status()).toBe(200);
     const getBody = (await getRes.json()) as { data: { id: string; filename: string } };
-    expect(getBody.data.filename).toMatch(/^[0-9a-f-]+\.png$/);
+    expect(getBody.data.filename).toMatch(/^[0-9a-f-]+\.(png|webp)$/);
   });
 
   test('E2E-021: Media upload rejects non-images', async ({ request }) => {

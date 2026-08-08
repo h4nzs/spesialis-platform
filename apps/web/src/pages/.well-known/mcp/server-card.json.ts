@@ -28,7 +28,7 @@ export const GET: APIRoute = async () => {
         'Content-Type': 'application/json',
       },
       authentication: {
-        type: 'none',
+        type: 'bearer-token',
         docsUrl: `${SITE}/auth.md`,
       },
     },
@@ -37,6 +37,58 @@ export const GET: APIRoute = async () => {
         enabled: true,
         description:
           'MCP tools: search_services, get_service_detail, track_booking, check_coverage, search_faq, search_articles, navigate_to_page, get_platform_info, create_booking, search_partners.',
+        endpoints: [
+          {
+            path: '/api/v1/mcp',
+            type: 'streamable-http',
+            description: 'search_services — cari layanan jasa profesional',
+          },
+          {
+            path: '/api/v1/mcp',
+            type: 'streamable-http',
+            description: 'get_service_detail — detail layanan berdasarkan slug',
+          },
+          {
+            path: '/api/v1/mcp',
+            type: 'streamable-http',
+            description: 'track_booking — lacak pesanan berdasarkan nomor SP-*',
+          },
+          {
+            path: '/api/v1/mcp',
+            type: 'streamable-http',
+            description: 'check_coverage — cek area layanan per kota',
+          },
+          {
+            path: '/api/v1/mcp',
+            type: 'streamable-http',
+            description: 'search_faq — cari pertanyaan umum',
+          },
+          {
+            path: '/api/v1/mcp',
+            type: 'streamable-http',
+            description: 'search_articles — cari artikel dan tips',
+          },
+          {
+            path: '/api/v1/mcp',
+            type: 'streamable-http',
+            description: 'navigate_to_page — arahan ke halaman web',
+          },
+          {
+            path: '/api/v1/mcp',
+            type: 'streamable-http',
+            description: 'get_platform_info — informasi platform',
+          },
+          {
+            path: '/api/v1/mcp',
+            type: 'streamable-http',
+            description: 'create_booking — buat pemesanan layanan',
+          },
+          {
+            path: '/api/v1/mcp',
+            type: 'streamable-http',
+            description: 'search_partners — cari teknisi terverifikasi',
+          },
+        ],
       },
       resources: {
         enabled: true,
