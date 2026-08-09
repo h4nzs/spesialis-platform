@@ -50,6 +50,18 @@ function getIp(c: Context): string {
 }
 
 /**
+ * Request internal (server-to-server) tidak melewati nginx sehingga tidak
+ * membawa x-forwarded-for/x-real-ip. Semua traffic eksternal di prod masuk
+ * lewat nginx yang selalu men-set header ini — tanpa keduanya berarti
+ * request berasal dari dalam jaringan (agent tool calls, MCP, SSR web).
+ * Rate limiter dilewati agar agent/internal tidak saling memakan kuota
+ * satu sama lain pada bucket IP 'unknown'.
+ */
+function isInternalRequest(c: Context): boolean {
+  return !c.req.header('x-forwarded-for') && !c.req.header('x-real-ip');
+}
+
+/**
  * Evict stale (expired) entries to make room.
  * Returns the number of entries remaining.
  */
@@ -152,7 +164,7 @@ async function memoryRateLimit(c: Context, maxRequests: number, windowMs: number
 
 export function rateLimit(maxRequests = DEFAULT_MAX_REQUESTS, windowMs = DEFAULT_WINDOW_MS) {
   return async (c: Context, next: Next) => {
-    if (process.env['RATE_LIMIT_DISABLED'] === 'true') {
+    if (process.env['RATE_LIMIT_DISABLED'] === 'true' || isInternalRequest(c)) {
       await next();
       return;
     }

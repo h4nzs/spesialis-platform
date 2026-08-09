@@ -14,10 +14,36 @@ import {
   type ServerCallContext,
   STATE_HEADERS_KEY,
 } from '@a2a-js/sdk/server';
-import { runLlmConversation, llmAvailable } from './a2a-llm.ts';
+import { runLlmConversation, llmAvailable, recordLlmFailure, getA2AMetrics } from './a2a-llm.ts';
 import { answerWithRules } from './a2a-rule-router.ts';
+import { eq } from 'drizzle-orm';
+import { db, systemSettings } from '../db.ts';
 
 const MAX_HISTORY = 20;
+
+/**
+ * Pesan degradasi saat LLM down dan rule router tidak bisa menjawab.
+ * Nomor WhatsApp diambil dari system settings agar selalu aktual; bila DB
+ * ikut bermasalah, jatuh ke teks statis tanpa nomor.
+ */
+async function degradedMessage(): Promise<string> {
+  const fallback =
+    'Asisten sedang mengalami gangguan sesaat. Layanan tetap berjalan — silakan hubungi ' +
+    'https://ahlipanggilan.id/kontak atau coba lagi beberapa saat.';
+  try {
+    const rows = await db
+      .select({ value: systemSettings.value })
+      .from(systemSettings)
+      .where(eq(systemSettings.key, 'whatsapp_phone_number'))
+      .limit(1);
+    const wa = rows[0]?.value;
+    return wa
+      ? `Asisten sedang mengalami gangguan sesaat. Layanan tetap berjalan — untuk pemesanan cepat, chat WhatsApp ${wa} atau kunjungi https://ahlipanggilan.id/kontak. Mohon coba lagi beberapa saat.`
+      : fallback;
+  } catch {
+    return fallback;
+  }
+}
 
 function extractText(message: Message): string {
   return message.parts
@@ -117,12 +143,20 @@ export class PlatformAgentExecutor implements AgentExecutor {
       }
     } catch (err) {
       console.error('[a2a] LLM gagal, fallback ke rule router:', err);
+      recordLlmFailure();
+      const cause = err instanceof Error ? err.message : String(err);
+      console.warn(
+        '[a2a] llm-fallback',
+        JSON.stringify({ cause, totalFailures: getA2AMetrics().llmFailures }),
+      );
       if (llmAvailable()) {
         const result = await answerWithRules(userText).catch(() => null);
-        answer =
-          result?.text ??
-          'Maaf, saya sedang bermasalah teknis. Silakan coba lagi atau hubungi https://ahlipanggilan.id/kontak.';
-        toolUsed = Boolean(result?.tool);
+        if (result && result.tool) {
+          answer = result.text;
+          toolUsed = true;
+        } else {
+          answer = await degradedMessage();
+        }
       } else {
         answer = 'Maaf, terjadi kesalahan internal. Silakan coba lagi nanti.';
       }

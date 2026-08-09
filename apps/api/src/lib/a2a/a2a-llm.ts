@@ -30,6 +30,23 @@ export function llmAvailable(): boolean {
   return Boolean(geminiApiKey());
 }
 
+export interface A2AMetrics {
+  llmFailures: number;
+  lastFailureAt: string | null;
+}
+
+const metrics: A2AMetrics = { llmFailures: 0, lastFailureAt: null };
+
+/** Records one LLM outage — exposed via /api/v1/health for monitoring. */
+export function recordLlmFailure(): void {
+  metrics.llmFailures += 1;
+  metrics.lastFailureAt = new Date().toISOString();
+}
+
+export function getA2AMetrics(): A2AMetrics {
+  return { ...metrics };
+}
+
 function systemPrompt(): string {
   return (
     'Kamu adalah "Ahli Panggilan Booking Agent", asisten layanan jasa profesional on-demand di Indonesia ' +

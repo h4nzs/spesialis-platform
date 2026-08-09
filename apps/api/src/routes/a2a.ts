@@ -110,6 +110,9 @@ function sseStream(c: Context, events: AsyncGenerator<unknown, void, undefined>)
 }
 
 async function handleJsonRpc(c: Context, bodyText: string): Promise<Response> {
+  // Agent responses are session-dependent — never cache them at any layer
+  // (SSE paths below override this with the weaker no-cache they need).
+  c.header('Cache-Control', 'no-store');
   const headers = c.req.raw.headers;
   let parsed: Record<string, unknown>;
   try {
@@ -338,6 +341,7 @@ rest.post('/v1/tasks/:taskId:subscribe', resubscribe);
 
 rest.get('/v1/tasks/:taskId', async (c) => {
   const context = await buildContext(c.req.raw.headers, c.req.header('A2A-Version') ?? undefined);
+  c.header('Cache-Control', 'no-store');
   try {
     const historyLength = c.req.query('historyLength') ?? c.req.query('history_length');
     const task = await a2a.handler.getTask(
@@ -368,6 +372,7 @@ rest.post('/v1/tasks/:taskId/pushNotificationConfigs', async (c) => {
 
 rest.get('/v1/tasks/:taskId/pushNotificationConfigs', async (c) => {
   const context = await buildContext(c.req.raw.headers, c.req.header('A2A-Version') ?? undefined);
+  c.header('Cache-Control', 'no-store');
   try {
     const result = await a2a.handler.listTaskPushNotificationConfigs(
       ListTaskPushNotificationConfigsRequest.fromJSON({ taskId: c.req.param('taskId') }),
@@ -381,6 +386,7 @@ rest.get('/v1/tasks/:taskId/pushNotificationConfigs', async (c) => {
 
 rest.get('/v1/tasks/:taskId/pushNotificationConfigs/:configId', async (c) => {
   const context = await buildContext(c.req.raw.headers, c.req.header('A2A-Version') ?? undefined);
+  c.header('Cache-Control', 'no-store');
   try {
     const config = await a2a.handler.getTaskPushNotificationConfig(
       GetTaskPushNotificationConfigRequest.fromJSON({
@@ -413,6 +419,7 @@ rest.delete('/v1/tasks/:taskId/pushNotificationConfigs/:configId', async (c) => 
 
 rest.get('/v1/card', async (c) => {
   const card = await a2a.handler.getAgentCard();
+  c.header('Cache-Control', 'no-store');
   return c.json(AgentCard.toJSON(card), 200);
 });
 

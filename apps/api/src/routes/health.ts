@@ -3,6 +3,7 @@ import { sql } from 'drizzle-orm';
 import { db } from '../lib/db.ts';
 import { getRedis } from '../lib/redis.ts';
 import { success, error } from '../lib/response.ts';
+import { getA2AMetrics } from '../lib/a2a/a2a-llm.ts';
 
 const router = new Hono();
 
@@ -34,6 +35,7 @@ router.get('/', async (c) => {
     uptime: process.uptime(),
     database: dbStatus,
     redis: redisStatus,
+    a2a: getA2AMetrics(),
   });
 });
 
