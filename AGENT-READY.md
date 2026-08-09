@@ -54,16 +54,19 @@ pnpm test
 curl -s http://localhost:4321/.well-known/agent-card.json | node -e "
 let d='';process.stdin.on('data',c=>d+=c).on('end',()=>{
   const c=JSON.parse(d);
-  console.log('protocolVersion:', c.protocolVersion);
-  console.log('agentName:', c.agentName);
+  console.log('version:', c.version);
+  console.log('name:', c.name);
+  console.log('interfaces:', c.supportedInterfaces.map(i=>i.protocolBinding+' '+i.protocolVersion).join(', '));
   console.log('capabilities:', JSON.stringify(c.capabilities));
   console.log('skills:', c.skills.map(s=>s.id).join(', '));
 })"
 ```
 
-Harapan: `protocolVersion` = `1.0`, capabilities berisi `streaming` dan
-`pushNotifications: true`, skills mencakup `search_services`,
-`get_service_detail`, `create_booking`, dst.
+Harapan: `version` = `1.0.0`, `name` = `Ahli Panggilan Booking Agent`,
+`supportedInterfaces` memuat JSONRPC dan HTTP+JSON dengan `protocolVersion`
+`1.0`, capabilities berisi `streaming` dan `pushNotifications: true`, skills
+mencakup `service-catalog`, `booking`, `tracking`, `partner-verification`,
+`corporate-services`.
 
 ### 2b. Verifikasi tanda tangan JWS (validasi kriptografi, bukan format)
 
@@ -72,12 +75,16 @@ Jalankan dari `apps/web` (SDK tersedia di sana):
 ```bash
 cd apps/web && pnpm exec tsx -e "
 import { verifyAgentCardSignature } from '@a2a-js/sdk';
-const card = await fetch('http://localhost:4321/.well-known/agent-card.json').then(r=>r.json());
-const dir = await fetch('http://localhost:4321/.well-known/http-message-signatures-directory').then(r=>r.json());
-for (const s of card.signatures ?? []) {
-  const ok = await verifyAgentCardSignature(card, s, dir);
-  console.log(s.header.kid, '->', ok ? 'VALID' : 'INVALID');
-}" 2>&1 | grep -v WARN
+(async () => {
+  const card = await fetch('http://localhost:4321/.well-known/agent-card.json').then(r=>r.json());
+  const dir = await fetch('http://localhost:4321/.well-known/http-message-signatures-directory').then(r=>r.json());
+  for (const s of card.signatures ?? []) {
+    const ok = await verifyAgentCardSignature(card, s, dir);
+    // Signature bentuk { protected, signature } — KID ada di header JWS (base64url).
+    const kid = s.header?.kid ?? JSON.parse(Buffer.from(s.protected, 'base64url').toString()).kid;
+    console.log(kid, '->', ok ? 'VALID' : 'INVALID');
+  }
+})();" 2>&1 | grep -v WARN
 ```
 
 Harapan: setiap signature tercetak `VALID`. Jika `BOT_SIGNING_PRIVATE_KEY`
@@ -89,14 +96,15 @@ tidak diset, card tanpa signature — itu juga sah (REST/JSONRPC tetap wajib).
 curl -s -m 15 "$B/rest/v1/card" | node -e "
 let d='';process.stdin.on('data',c=>d+=c).on('end',()=>{
   const c=JSON.parse(d);
-  console.log('status:', c.agentCard?.['@context'] ? 'ok' : 'MALFORMED');
-  console.log('capabilities:', JSON.stringify(c.agentCard?.capabilities));
-  console.log('signatures:', (c.agentCard?.signatures ?? []).map(s=>s.header?.kid).join(', '));
+  console.log('status:', c.name && c.version ? 'ok' : 'MALFORMED');
+  console.log('capabilities:', JSON.stringify(c.capabilities));
+  console.log('signatures:', (c.signatures ?? []).length);
 })"
 ```
 
-Harapan: `status: ok`, signature muncul dengan KID sesuai public key.
-Struktur bungkus: `{ agentCard: {...} }` — salah satu perbedaan vs card web.
+Harapan: `status: ok`, capabilities `streaming`/`pushNotifications` `true`,
+`signatures: 1` di prod (jika `BOT_SIGNING_PRIVATE_KEY` diset).
+Card dikembalikan **langsung di root** (bukan bungkus `{ agentCard: ... }`).
 
 ---
 
@@ -108,16 +116,21 @@ curl -s -m 15 -X POST "$B" \
   -d '{"jsonrpc":"2.0","id":1,"method":"GetAgentCard","params":{}}' | node -e "
 let d='';process.stdin.on('data',c=>d+=c).on('end',()=>{
   const r=JSON.parse(d);
+  const card = r.result?.card ?? r.result ?? {};
   console.log('error:', r.error ?? 'tidak ada');
-  console.log('card sig:', r.result?.card?.signatures?.length ?? 0);
-  console.log('streaming:', r.result?.card?.capabilities?.streaming);
-  console.log('pushNotifications:', r.result?.card?.capabilities?.pushNotifications);
+  console.log('version:', card.version);
+  console.log('card sig:', (card.signatures ?? []).length);
+  console.log('streaming:', card.capabilities?.streaming);
+  console.log('pushNotifications:', card.capabilities?.pushNotifications);
 })"
 ```
 
-Harapan: tidak ada `error`; `card.signatures.length >= 1` (di prod), capabilities
-`streaming` dan `pushNotifications` `true`. Ini membuktikan endpoint JSONRPC,
-routing nginx (`/api/v1/a2a` tanpa trailing slash → 200), dan card ter-sign.
+Harapan: tidak ada `error`; `version` = `1.0.0`; `card.signatures.length >= 1`
+di prod; capabilities `streaming` dan `pushNotifications` `true`. Card
+dikembalikan langsung di `result` (sebagian SDK membungkusnya di
+`result.card`, kode di atas menangani keduanya). Ini membuktikan endpoint
+JSONRPC, routing nginx (`/api/v1/a2a` tanpa trailing slash → 200), dan card
+ter-sign.
 
 ---
 
