@@ -32,11 +32,13 @@ services:
     volumes:
       - ./config:/etc/crowdsec/acquis.d:ro
       - ./scenarios:/etc/crowdsec/scenarios/custom:ro
-      - ./notifications:/etc/crowdsec/notifications/custom:ro
       - crowdsec-db:/var/lib/crowdsec/data
       - crowdsec-config:/etc/crowdsec
       # Log nginx dibaca langsung dari named volume milik stack utama
       - spesialis-platform_nginx-logs:/var/log/nginx:ro
+      # NOTIFIKASI: jangan di-mount — file disalin manual ke
+      # /etc/crowdsec/notifications/ (volume crowdsec-config) + sed secret,
+      # lalu di-attach via /etc/crowdsec/profiles.yaml (lihat RUNBOOK)
 
 volumes:
   crowdsec-db:
