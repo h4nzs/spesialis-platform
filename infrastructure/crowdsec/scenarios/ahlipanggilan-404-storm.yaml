@@ -1,4 +1,4 @@
-type: counter
+type: trigger
 name: ahlipanggilan/api-404-storm
 description: 'Enumerasi endpoint API (404 storm pada /api/*)'
 filter: |
