@@ -1,4 +1,4 @@
-type: leaky
+type: trigger
 name: ahlipanggilan/otp-abuse
 description: 'Percobaan verifikasi token berulang (400 pada /api/auth/verify-*)'
 filter: |
