@@ -1,10 +1,10 @@
 # CrowdSec + firewall bouncer — Phase 2 (dijalankan manual di host saat deploy)
 #
 # Prasyarat:
-#   1. Named volume log nginx harus ada (dibuat oleh docker-compose.prod.yml):
+#   1. Named volume log nginx harus ada — dibuat otomatis oleh docker-compose.prod.yml
+#      saat deploy berikutnya (prefix project = nama direktori repo, mis. spesialis-platform):
 #        docker volume ls | grep nginx-logs
-#      Jika belum: docker volume create ahlipanggilan_nginx-logs
-#      (project name default = nama direktori repo, sesuaikan bila berbeda)
+#      Sesuaikan name: pada volumes di bawah dengan hasil grep bila berbeda.
 #   2. Generate API key bouncer:
 #        docker compose -f docker-compose.crowdsec.yml exec crowdsec cscli bouncers add ap-bouncer
 #   3. Isi BOUNCER_API_KEY dari output langkah 2 lalu:
@@ -32,8 +32,7 @@ services:
       - crowdsec-db:/var/lib/crowdsec/data
       - crowdsec-config:/etc/crowdsec
       # Log nginx dibaca langsung dari named volume milik stack utama
-      - ahlipanggilan_nginx-logs:/var/log/nginx:ro
-
+      - spesialis-platform_nginx-logs:/var/log/nginx:ro
   firewall-bouncer:
     image: crowdsec/firewall-bouncer:latest
     container_name: crowdsec-firewall-bouncer
@@ -49,5 +48,5 @@ services:
 volumes:
   crowdsec-db:
   crowdsec-config:
-  ahlipanggilan_nginx-logs:
+  spesialis-platform_nginx-logs:
     external: true

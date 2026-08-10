@@ -155,7 +155,7 @@ alpine tanpa modul Lua; firewall bouncer menutupi kebutuhan blok.
 ### Alur
 
 ```
-Attacker ──100 login attempts──▶ Nginx logs (volume ahlipanggilan_nginx-logs)
+Attacker ──100 login attempts──▶ Nginx logs (volume spesialis-platform_nginx-logs)
                                         │
                                         ▼
                                    CrowdSec
@@ -175,7 +175,7 @@ Attacker ──100 login attempts──▶ Nginx logs (volume ahlipanggilan_ngin
 
 ### Setup (manual di host, saat deploy)
 
-1. Jalankan `docker compose up -d` stack utama (membuat volume `ahlipanggilan_nginx-logs`).
+1. Jalankan `docker compose up -d` stack utama (membuat volume `spesialis-platform_nginx-logs` — prefix = nama direktori repo di VPS).
 2. `docker compose -f infrastructure/crowdsec/docker-compose.crowdsec.yml up -d crowdsec`
 3. Generate bouncer key: `docker compose -f ... exec crowdsec cscli bouncers add ap-bouncer`
 4. Isi `BOUNCER_API_KEY` lalu `up -d` firewall-bouncer.
@@ -221,8 +221,8 @@ Wazuh manager + indexer + dashboard butuh ±4GB RAM tambahan — tidak feasible 
 File yang dimonitor FIM (daftar awal):
 
 ```
-/var/www/app/.env.prod
-/var/www/app/docker-compose.prod.yml
+/home/deploy/spesialis-platform/.env.prod
+/home/deploy/spesialis-platform/docker-compose.prod.yml
 /etc/nginx/nginx.conf
 /etc/nginx/sites-enabled/*
 /etc/ssh/sshd_config

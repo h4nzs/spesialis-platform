@@ -26,7 +26,7 @@ watch_dirs=(
   /etc/ssh
   /etc/systemd/system
   /root/.ssh
-  /var/www/app
+  /home/deploy/spesialis-platform
 )
 
 if [ ! -f "$BASELINE" ]; then

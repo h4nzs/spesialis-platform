@@ -12,8 +12,8 @@ mkdir -p "$STATE_DIR"
 log() { echo "$(date -Is) [fim-baseline] $*"; }
 
 files=(
-  /var/www/app/.env.prod
-  /var/www/app/docker-compose.prod.yml
+  /home/deploy/spesialis-platform/.env.prod
+  /home/deploy/spesialis-platform/docker-compose.prod.yml
   /etc/nginx/nginx.conf
   /etc/nginx/sites-enabled/*
   /etc/ssh/sshd_config

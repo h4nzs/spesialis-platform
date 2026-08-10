@@ -10,8 +10,8 @@
 -w /root/.ssh/ -p wa -k ap-ssh-keys
 
 # Aplikasi (secret & compose)
--w /var/www/app/.env.prod -p wa -k ap-app-secrets
--w /var/www/app/docker-compose.prod.yml -p wa -k ap-app-compose
+-w /home/deploy/spesialis-platform/.env.prod -p wa -k ap-app-secrets
+-w /home/deploy/spesialis-platform/docker-compose.prod.yml -p wa -k ap-app-compose
 
 # Systemd units
 -w /etc/systemd/system/ -p wa -k ap-systemd-units
