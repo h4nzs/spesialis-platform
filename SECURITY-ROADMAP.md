@@ -200,6 +200,11 @@ ke email + Discord — satu jalur alert untuk seluruh stack.
 
 ## 6. Phase 3 — Monitoring Host (Pengganti Wazuh untuk VPS ≤4GB)
 
+**Status: persiapan repo selesai** — `infrastructure/security/` berisi script
+trivy (scan harian → webhook), FIM (baseline + inotify daemon + systemd unit),
+rules auditd, dan config unattended-upgrades. Pemasangan manual di host saat
+deploy (lihat `infrastructure/security/README.md`).
+
 ### Mengapa bukan Wazuh
 
 Wazuh manager + indexer + dashboard butuh ±4GB RAM tambahan — tidak feasible di VPS ≤4GB yang sudah menjalankan postgres, redis, API, web, nginx, dan plausible (clickhouse).

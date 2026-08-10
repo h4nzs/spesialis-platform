@@ -1,0 +1,20 @@
+# auditd rules untuk file sensitif — drop ke /etc/audit/rules.d/40-security.rules lalu
+# `augenrules --load && systemctl restart auditd` (atau `service auditd restart`).
+
+# Nginx configuration
+-w /etc/nginx/nginx.conf -p wa -k ap-nginx-conf
+-w /etc/nginx/sites-enabled/ -p wa -k ap-nginx-sites
+
+# SSH
+-w /etc/ssh/sshd_config -p wa -k ap-sshd-conf
+-w /root/.ssh/ -p wa -k ap-ssh-keys
+
+# Aplikasi (secret & compose)
+-w /var/www/app/.env.prod -p wa -k ap-app-secrets
+-w /var/www/app/docker-compose.prod.yml -p wa -k ap-app-compose
+
+# Systemd units
+-w /etc/systemd/system/ -p wa -k ap-systemd-units
+
+# FIM baseline (perubahan di baseline itu sendiri adalah sinyal mencurigakan)
+-w /var/lib/fim/ -p wa -k ap-fim-state

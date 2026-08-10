@@ -1,0 +1,17 @@
+[Unit]
+Description=File integrity monitoring (inotify + sha256 baseline)
+Documentation=SECURITY-ROADMAP.md
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+ExecStart=/usr/local/bin/fim-watch.sh
+ExecStartPre=/usr/local/bin/fim-baseline.sh
+Restart=always
+RestartSec=10
+User=root
+Environment=WEBHOOK_ENV=/etc/security/webhook.env
+
+[Install]
+WantedBy=multi-user.target
