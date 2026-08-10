@@ -244,8 +244,8 @@ ssh -i /home/ken/.ssh/deploy-key deploy@202.155.18.245 \
   "docker exec crowdsec cscli decisions list"
 
 # 6.3 FIM: touch file sensitif → alert (tanpa mengubah isi)
-#     (di VPS, root): touch /etc/nginx/nginx.conf && sleep 5 && ls /var/log/security/
-#     → di log ada "fim/file-modified"; email/Discord terima alert
+#     (di VPS, root): touch /home/deploy/spesialis-platform/infrastructure/docker/nginx/prod.conf && sleep 5
+#     → di /var/log/security/ ada alert "fim/file-modified"; email/Discord terima alert
 
 # 6.4 404 monitor + security events tersimpan
 psql -h localhost -U specialist specialist -c "select event_type, severity, count(*) from security_events group by 1,2 order by 3 desc limit 10;"

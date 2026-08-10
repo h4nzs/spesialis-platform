@@ -11,7 +11,7 @@ format: json
 url: https://ahlipanggilan.id/api/v1/security/webhook
 method: POST
 headers:
-  - "X-Security-Key: SECRET_PLACEHOLDER"
+  - 'X-Security-Key: SECRET_PLACEHOLDER'
 payload:
   severity: '{{.Alert.Severity}}'
   event: '{{.Alert.Scenario}}'

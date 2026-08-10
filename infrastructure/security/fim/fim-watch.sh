@@ -21,8 +21,8 @@ LOG_TAG="[fim-watch]"
 log() { echo "$(date -Is) $LOG_TAG $*"; }
 
 # Direktori yang di-watch (semua file di dalamnya)
+# Catatan: nginx berjalan di container — di host hanya template di repo
 watch_dirs=(
-  /etc/nginx
   /etc/ssh
   /etc/systemd/system
   /root/.ssh

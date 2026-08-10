@@ -215,7 +215,7 @@ Wazuh manager + indexer + dashboard butuh ±4GB RAM tambahan — tidak feasible 
 | -------------------- | ----------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | CVE scan             | **trivy** (CLI)                     | `trivy image ghcr.io/h4nzs/api:latest` via cron harian; laporan diformat → alert gateway                                                                             |
 | FIM (file integrity) | **Script checksum** + `inotifywait` | Baseline `sha256sum` file sensitif: `.env`, `.env.prod`, `nginx.conf`, `docker-compose.prod.yml`, `sshd_config`, systemd units. Deteksi create/modify/delete → alert |
-| File access OS       | **auditd**                          | Watch file sensitif (`/etc/nginx`, `/root/.ssh`, `.env`) — siapa akses/mengubah                                                                                      |
+| File access OS       | **auditd**                          | Watch file sensitif (nginx template, `/root/.ssh`, `.env`) — siapa akses/mengubah                                                                                    |
 | Package update       | `apt` unattended-upgrades           | Auto-update security patches + notifikasi                                                                                                                            |
 
 File yang dimonitor FIM (daftar awal):
@@ -223,8 +223,7 @@ File yang dimonitor FIM (daftar awal):
 ```
 /home/deploy/spesialis-platform/.env.prod
 /home/deploy/spesialis-platform/docker-compose.prod.yml
-/etc/nginx/nginx.conf
-/etc/nginx/sites-enabled/*
+/home/deploy/spesialis-platform/infrastructure/docker/nginx/prod.conf
 /etc/ssh/sshd_config
 /etc/systemd/system/*.service
 /root/.ssh/authorized_keys
@@ -234,7 +233,7 @@ Contoh alert FIM:
 
 ```
 🚨 SECURITY ALERT  — Severity: HIGH  — Host: prod-api-01
-File: /etc/nginx/nginx.conf
+File: /home/deploy/spesialis-platform/infrastructure/docker/nginx/prod.conf
 Action: MODIFIED  — 08:31:02 WIB
 ```
 

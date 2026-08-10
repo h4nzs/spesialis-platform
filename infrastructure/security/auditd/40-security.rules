@@ -1,9 +1,8 @@
 # auditd rules untuk file sensitif — drop ke /etc/audit/rules.d/40-security.rules lalu
 # `augenrules --load && systemctl restart auditd` (atau `service auditd restart`).
 
-# Nginx configuration
--w /etc/nginx/nginx.conf -p wa -k ap-nginx-conf
--w /etc/nginx/sites-enabled/ -p wa -k ap-nginx-sites
+# Nginx configuration (host hanya menyimpan template — nginx jalan di container)
+-w /home/deploy/spesialis-platform/infrastructure/docker/nginx/ -p wa -k ap-nginx-conf
 
 # SSH
 -w /etc/ssh/sshd_config -p wa -k ap-sshd-conf

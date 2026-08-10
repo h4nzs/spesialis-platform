@@ -14,8 +14,7 @@ log() { echo "$(date -Is) [fim-baseline] $*"; }
 files=(
   /home/deploy/spesialis-platform/.env.prod
   /home/deploy/spesialis-platform/docker-compose.prod.yml
-  /etc/nginx/nginx.conf
-  /etc/nginx/sites-enabled/*
+  /home/deploy/spesialis-platform/infrastructure/docker/nginx/prod.conf
   /etc/ssh/sshd_config
   /etc/systemd/system/*.service
   /root/.ssh/authorized_keys
