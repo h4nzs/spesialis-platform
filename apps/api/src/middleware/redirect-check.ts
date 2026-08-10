@@ -1,6 +1,7 @@
 import type { Context, NotFoundHandler } from 'hono';
 import { eq, and, sql } from 'drizzle-orm';
 import { db, redirects, pageErrors } from '../lib/db.ts';
+import { emitSecurityEvent } from '../lib/security/security-event.ts';
 
 /**
  * 404 handler that:
@@ -15,6 +16,8 @@ export const redirectCheck: NotFoundHandler = async (c: Context) => {
 
   // Skip API routes — let them handle their own 404s
   if (path.startsWith('/api/')) {
+    // 404 storm pada API = enumerasi endpoint (rules: endpoint-enumeration)
+    void emitSecurityEvent({ eventType: 'ENDPOINT_ENUMERATION', ctx: c });
     return c.json({ success: false, code: 'NOT_FOUND', message: 'Endpoint tidak ditemukan' }, 404);
   }
 

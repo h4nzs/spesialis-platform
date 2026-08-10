@@ -43,6 +43,7 @@ export { resourceLocks } from './resource-locks.ts';
 export { blogAds } from './blog-ads.ts';
 export { a2aTasks } from './a2a-tasks.ts';
 export { a2aPushConfigs } from './a2a-tasks.ts';
+export { securityEvents } from './security-events.ts';
 
 export { indexnowLogsRelations } from './relations.ts';
 

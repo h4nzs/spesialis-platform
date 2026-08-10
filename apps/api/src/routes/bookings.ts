@@ -50,12 +50,15 @@ import { parseBody } from '../lib/parse-body.ts';
 import { omitUndefined } from '../lib/update.ts';
 import { validateBody } from '../middleware/validation.ts';
 import { rateLimit } from '../middleware/rate-limiter.ts';
+import { emitSecurityEvent } from '../lib/security/security-event.ts';
 
 const router = new Hono();
 
 router.post('/', rateLimit(5, 60_000), async (c) => {
   const authHeader = c.req.header('Authorization');
   const isAuthenticated = authHeader?.startsWith('Bearer ');
+
+  void emitSecurityEvent({ eventType: 'BOOKING_CREATED', ctx: c });
 
   if (isAuthenticated) {
     return await createCustomerBooking(c);

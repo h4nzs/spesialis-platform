@@ -260,3 +260,26 @@ export async function sendNotificationEmail(
     title,
   );
 }
+
+function escapeHtml(value: string): string {
+  return value.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+/**
+ * Email alert keamanan — dipakai security alert gateway (lib/security/alert.ts).
+ * Format plain-text yang sama dikirim apa adanya, tanpa sapaan pengguna.
+ */
+export async function sendSecurityAlertEmail(
+  to: string,
+  subject: string,
+  text: string,
+): Promise<void> {
+  const html = [
+    '<div style="font-family:monospace;max-width:640px;margin:0 auto">',
+    `<h2 style="color:#c0392b">${escapeHtml(subject)}</h2>`,
+    `<pre style="white-space:pre-wrap;background:#f8f9fa;padding:16px;border-radius:8px">${escapeHtml(text)}</pre>`,
+    '<p style="color:#7f8c8d;font-size:12px">Dikirim otomatis oleh sistem keamanan Ahli Panggilan</p>',
+    '</div>',
+  ].join('\n');
+  await sendEmail(to, subject, text, html, 'Security Alert', subject);
+}

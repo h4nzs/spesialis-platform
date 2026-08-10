@@ -13,6 +13,7 @@ import { db, users, customerProfiles, refreshTokens, passwordResets } from '../l
 import { authMiddleware } from '../middleware/auth.ts';
 import { validateBody } from '../middleware/validation.ts';
 import { rateLimit } from '../middleware/rate-limiter.ts';
+import { emitSecurityEvent } from '../lib/security/security-event.ts';
 import { sendPasswordResetEmail, sendVerificationEmail } from '../lib/email.ts';
 import {
   registerSchema,
@@ -184,12 +185,23 @@ router.post('/login', rateLimit(10, 60_000), validateBody(loginSchema), async (c
     .limit(1);
 
   if (!user) {
+    void emitSecurityEvent({
+      eventType: 'AUTH_LOGIN_FAILED',
+      ctx: c,
+      metadata: { reason: 'user_not_found' },
+    });
     return unauthorized(c, 'Email atau password salah');
   }
 
   const valid = await verifyPassword(user.passwordHash, password);
 
   if (!valid || user.status !== 'active') {
+    void emitSecurityEvent({
+      eventType: 'AUTH_LOGIN_FAILED',
+      ctx: c,
+      userId: user.id,
+      metadata: { reason: valid ? 'account_inactive' : 'invalid_credentials' },
+    });
     return unauthorized(c, 'Email atau password salah');
   }
 
@@ -203,6 +215,8 @@ router.post('/login', rateLimit(10, 60_000), validateBody(loginSchema), async (c
   });
 
   const token = await signAccessToken(user.id, user.email, user.role, displayName);
+
+  void emitSecurityEvent({ eventType: 'AUTH_LOGIN_SUCCESS', ctx: c, userId: user.id });
 
   setAuthCookies(c, token, refreshToken);
   return success(c, {
@@ -293,6 +307,8 @@ router.post('/forgot-password', rateLimit(5, 60_000), async (c) => {
     return success(c, null, 'Jika email terdaftar, link reset password akan dikirim');
   }
 
+  void emitSecurityEvent({ eventType: 'AUTH_FORGOT_PASSWORD', ctx: c });
+
   const [user] = await db
     .select({ id: users.id, email: users.email })
     .from(users)
@@ -354,6 +370,12 @@ router.post(
         .where(and(eq(refreshTokens.userId, stored.userId), eq(refreshTokens.revoked, false)));
     });
 
+    void emitSecurityEvent({
+      eventType: 'AUTH_PASSWORD_RESET',
+      ctx: c,
+      userId: stored.userId,
+    });
+
     return success(c, null, 'Password berhasil direset');
   },
 );
@@ -373,6 +395,11 @@ router.post('/verify-email', rateLimit(10, 60_000), validateBody(verifyEmailSche
     .limit(1);
 
   if (!stored || stored.expiresAt < new Date()) {
+    void emitSecurityEvent({
+      eventType: 'AUTH_OTP_FAILED',
+      ctx: c,
+      metadata: { reason: 'invalid_verification_token' },
+    });
     return error(
       c,
       'INVALID_VERIFICATION_TOKEN',

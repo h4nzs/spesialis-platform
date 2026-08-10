@@ -75,6 +75,7 @@ import { traceMiddleware } from './middleware/trace.ts';
 import { redirectCheck } from './middleware/redirect-check.ts';
 import { indexnowKeyHandler } from './routes/indexnow-key.ts';
 import { apiRouter } from './routes/index.ts';
+import { startSecurityEventsCleanup } from './lib/security/cleanup.ts';
 
 const app = new Hono();
 
@@ -154,6 +155,9 @@ const server = serve(
     console.log(`🚀 API listening on http://localhost:${info.port}`);
   },
 );
+
+// Retensi security_events (30 hari) — sekali saat startup, lalu harian
+startSecurityEventsCleanup();
 
 // Graceful shutdown — drain in-flight requests before exiting
 function shutdown() {

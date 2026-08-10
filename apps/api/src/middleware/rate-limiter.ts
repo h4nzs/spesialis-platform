@@ -1,6 +1,7 @@
 import type { Context, Next } from 'hono';
 import { error } from '../lib/response.ts';
 import { getRedis } from '../lib/redis.ts';
+import { emitSecurityEvent } from '../lib/security/security-event.ts';
 
 // ── Configuration ──────────────────────────────────────────────────
 
@@ -174,6 +175,11 @@ export function rateLimit(maxRequests = DEFAULT_MAX_REQUESTS, windowMs = DEFAULT
       (await memoryRateLimit(c, maxRequests, windowMs));
 
     if (limited) {
+      // 429 pada endpoint auth adalah sinyal serangan kredensial —
+      // rekam sebagai event keamanan (rules: auth-rate-limited)
+      if (c.req.path.startsWith('/api/auth/')) {
+        void emitSecurityEvent({ eventType: 'AUTH_RATE_LIMITED', ctx: c });
+      }
       return error(
         c,
         'RATE_LIMIT_EXCEEDED',
