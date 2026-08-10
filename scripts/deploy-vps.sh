@@ -121,6 +121,63 @@ else
   echo "================"
 fi
 
+# ── Sync komponen security (CrowdSec volume + nginx) ─────────────────
+# Idempotent: jalankan setiap deploy. Notifikasi & hub-patches disalin
+# dari repo ke volume CrowdSec (dengan secret dari .env.prod), lalu
+# crowdsec di-restart agar memuat scenario/acquis/notifikasi terbaru.
+# Nginx di-restart agar template prod.conf dirender ulang (envsubst).
+# Catatan: pakai `docker cp` (bukan path volume langsung) karena file
+# volume milik root sedangkan deploy berjalan sebagai user non-root yang
+# hanya punya akses docker daemon.
+echo "▶ Sync komponen security (CrowdSec volume + nginx)"
+if docker ps -a --format '{{.Names}}' | grep -q '^crowdsec$'; then
+  SECRET=$(grep -E '^SECURITY_WEBHOOK_SECRET=' "$VPS_PATH/.env.prod" | head -1 | cut -d= -f2-)
+
+  if [ -n "$SECRET" ]; then
+    sed "s/SECRET_PLACEHOLDER/$SECRET/g" \
+      "$VPS_PATH/infrastructure/crowdsec/notifications/alert-gateway.yaml" \
+      > /tmp/ahlipanggilan-alert-gateway.yaml
+    docker cp /tmp/ahlipanggilan-alert-gateway.yaml \
+      crowdsec:/etc/crowdsec/notifications/ahlipanggilan-alert-gateway.yaml
+    rm -f /tmp/ahlipanggilan-alert-gateway.yaml
+    echo "   ✓ notifikasi CrowdSec disinkronkan"
+  else
+    echo "   ⚠ SECURITY_WEBHOOK_SECRET kosong di .env.prod — notifikasi tidak di-sync"
+  fi
+
+  if [ -d "$VPS_PATH/infrastructure/crowdsec/hub-patches" ]; then
+    # http-generic-bf: file asli di hub/ (scenarios/ hanya symlink)
+    docker cp "$VPS_PATH/infrastructure/crowdsec/hub-patches/http-generic-bf.yaml" \
+      crowdsec:/etc/crowdsec/hub/scenarios/crowdsecurity/http-generic-bf.yaml
+    # http-crawl: file reguler di scenarios/ (bisa jadi symlink —
+    #   docker cp tetap menghasilkan file valid yang di-load)
+    docker cp "$VPS_PATH/infrastructure/crowdsec/hub-patches/http-crawl-non_statics.yaml" \
+      crowdsec:/etc/crowdsec/scenarios/http-crawl-non_statics.yaml
+    echo "   ✓ hub-patches CrowdSec disinkronkan"
+  fi
+
+  docker compose -f "$VPS_PATH/infrastructure/crowdsec/docker-compose.crowdsec.yml" \
+    up -d crowdsec || echo "   ⚠ compose crowdsec gagal"
+  # catatan: registrasi notifikasi otomatis dari file yaml saat restart
+  # (cscli v1.7.8 tidak punya perintah `notifications add`)
+  docker restart crowdsec && echo "   ✓ crowdsec di-restart" || echo "   ⚠ restart crowdsec gagal"
+else
+  echo "   ⚠ crowdsec belum terinstall — langkah security dilewati (RUNBOOK Part 5)"
+fi
+
+echo "▶ Restart nginx (apply prod.conf)"
+docker compose -f "$VPS_PATH/docker-compose.prod.yml" $COMPOSE_ENV_FILE restart nginx \
+  || echo "   ⚠ restart nginx gagal"
+
+echo "▶ Final health check"
+for i in $(seq 1 6); do
+  if curl -sf http://localhost:3000/api/v1/health >/dev/null 2>&1; then
+    echo "   ✅ API healthy"
+    break
+  fi
+  sleep 3
+done
+
 # ── Auto-rollback ─────────────────────────────────────────────────────
 if [ "$DEPLOY_SUCCESS" = false ] && [ -n "$PREVIOUS_TAG" ] && [ "$PREVIOUS_TAG" != "$IMAGE_TAG" ]; then
   echo "↩ Rollback ke deploy sebelumnya: $PREVIOUS_TAG"

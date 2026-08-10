@@ -211,19 +211,23 @@ docker compose -f docker-compose.crowdsec.yml up -d
 docker ps | grep crowdsec           # crowdsec + crowdsec-firewall-bouncer UP
 
 # 5.5 Aktifkan notifikasi webhook → alert gateway (email + Discord)
+#     (HANYA instalasi pertama — deploy.yml/deploy-vps.sh otomatis menyalin
+#      template ini ke volume + substitusi secret + restart crowdsec setiap deploy)
+#     Catatan: registrasi notifikasi dilakukan OTOMATIS oleh crowdsec saat
+#     restart (membaca semua file /etc/crowdsec/notifications/*.yaml).
+#     cscli v1.7.8 TIDAK punya perintah `notifications add` — jangan dipakai.
 docker cp notifications/alert-gateway.yaml \
   crowdsec:/etc/crowdsec/notifications/ahlipanggilan-alert-gateway.yaml
 docker exec crowdsec sed -i "s/SECRET_PLACEHOLDER/<SECURITY_WEBHOOK_SECRET-dari-.env.prod>/g" \
   /etc/crowdsec/notifications/ahlipanggilan-alert-gateway.yaml
 docker restart crowdsec
-docker exec crowdsec cscli notifications add ahlipanggilan-alert-gateway
 
-# 5.6 Patch scenario hub (WAJIB — lihat "Temuan live" di bawah)
-#    Bouncer/profil tidak bisa menambah decision tanpa `remediation: true`
-#    di labels scenario. Race konsumsi event antar scenario dicegah dengan
-#    `reprocess: true` pada scenario hub yang filter-nya tumpang tindih.
-#    File patched tersimpan di infrastructure/crowdsec/hub-patches/ — salin
-#    ke lokasi asli di dalam volume (GANTI DENGAN cscli hub update berikutnya):
+# 5.6 Patch scenario hub (HANYA instalasi pertama — deploy.yml otomatis
+#     menyalin infrastructure/crowdsec/hub-patches/ ke volume setiap deploy;
+#     wajib karena bouncer/profil tidak bisa menambah decision tanpa
+#     `remediation: true` di labels scenario, dan race konsumsi event antar
+#     scenario dicegah dengan `reprocess: true` pada scenario hub yang
+#     filter-nya tumpang tindih):
 VOL=/var/lib/docker/volumes/crowdsec_crowdsec-config/_data
 cp infrastructure/crowdsec/hub-patches/http-generic-bf.yaml \
   $VOL/hub/scenarios/crowdsecurity/http-generic-bf.yaml
