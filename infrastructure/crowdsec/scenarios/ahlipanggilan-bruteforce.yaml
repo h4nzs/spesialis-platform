@@ -6,7 +6,7 @@ filter: |
   && evt.Parsed.http_path startsWith '/api/v1/auth/'
   && evt.Parsed.http_status == '401'
 leakspeed: 60s
-capacity: 5
+capacity: 4
 groupby: evt.Parsed.source_ip
 reprocess: true
 labels:

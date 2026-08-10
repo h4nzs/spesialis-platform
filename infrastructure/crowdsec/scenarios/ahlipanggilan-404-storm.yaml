@@ -6,7 +6,7 @@ filter: |
   && evt.Parsed.http_path startsWith '/api/'
   && evt.Parsed.http_status == '404'
 leakspeed: 60s
-capacity: 30
+capacity: 29
 groupby: evt.Parsed.source_ip
 labels:
   type: scan

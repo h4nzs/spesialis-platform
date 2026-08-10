@@ -7,7 +7,7 @@ filter: |
   && evt.Parsed.http_path contains 'verify'
   && evt.Parsed.http_status == '400'
 leakspeed: 60s
-capacity: 10
+capacity: 9
 groupby: evt.Parsed.source_ip
 reprocess: true
 labels:
