@@ -18,7 +18,7 @@
 
 services:
   crowdsec:
-    image: crowdsec/crowdsec:latest
+    image: crowdsecurity/crowdsec:latest
     container_name: crowdsec
     restart: unless-stopped
     environment:
@@ -37,7 +37,7 @@ services:
       # Log nginx dibaca langsung dari named volume milik stack utama
       - spesialis-platform_nginx-logs:/var/log/nginx:ro
   firewall-bouncer:
-    image: crowdsec/firewall-bouncer:latest
+    image: crowdsecurity/firewall-bouncer:latest
     container_name: crowdsec-firewall-bouncer
     restart: unless-stopped
     environment:
