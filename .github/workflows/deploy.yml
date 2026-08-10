@@ -330,21 +330,51 @@ jobs:
             fi
 
             if [ -d "${{ secrets.VPS_PATH }}/infrastructure/crowdsec/hub-patches" ]; then
-              # http-generic-bf: file asli di hub/ (scenarios/ hanya symlink)
-              docker cp "${{ secrets.VPS_PATH }}/infrastructure/crowdsec/hub-patches/http-generic-bf.yaml" \
-                crowdsec:/etc/crowdsec/hub/scenarios/crowdsecurity/http-generic-bf.yaml
-              # http-crawl: file reguler di scenarios/ (bisa jadi symlink —
-              #   docker cp tetap menghasilkan file valid yang di-load)
-              docker cp "${{ secrets.VPS_PATH }}/infrastructure/crowdsec/hub-patches/http-crawl-non_statics.yaml" \
-                crowdsec:/etc/crowdsec/scenarios/http-crawl-non_statics.yaml
+              # Semua patch scenario (reprocess:true — cegah race konsumsi
+              # event antar scenario) + pattern SQLi/XSS disalin ke volume
+              # setiap deploy; rm dulu agar symlink hub tidak mengganggu.
+              for PATCH in "${{ secrets.VPS_PATH }}/infrastructure/crowdsec/hub-patches/"*; do
+                BASE=$(basename "$PATCH")
+                case "$BASE" in
+                  *.txt)
+                    docker exec crowdsec rm -f "/etc/crowdsec/patterns/$BASE" 2>/dev/null || true
+                    for i in 1 2 3; do
+                      docker cp "$PATCH" "crowdsec:/etc/crowdsec/patterns/$BASE" 2>/dev/null && break
+                      sleep 1
+                    done
+                    ;;
+                  *.yaml)
+                    docker exec crowdsec rm -f "/etc/crowdsec/scenarios/$BASE" 2>/dev/null || true
+                    for i in 1 2 3; do
+                      docker cp "$PATCH" "crowdsec:/etc/crowdsec/scenarios/$BASE" 2>/dev/null && break
+                      sleep 1
+                    done
+                    ;;
+                esac
+              done
+              docker exec crowdsec sh -c "ls /etc/crowdsec/scenarios/ | grep -c http" \
+                || echo "   ⚠ verifikasi scenario gagal"
               echo "   ✓ hub-patches CrowdSec disinkronkan"
             fi
 
             docker compose -f "${{ secrets.VPS_PATH }}/infrastructure/crowdsec/docker-compose.crowdsec.yml" \
               up -d crowdsec || echo "   ⚠ compose crowdsec gagal"
-            # catatan: registrasi notifikasi otomatis dari file yaml saat
-            # restart (cscli v1.7.8 tidak punya perintah `notifications add`)
+            # catatan: registrasi notifikasi otomatis dari file yaml saat restart
+            # (cscli v1.7.8 tidak punya perintah `notifications add`)
             docker restart crowdsec && echo "   ✓ crowdsec di-restart" || echo "   ⚠ restart crowdsec gagal"
+            # pattern SQLi/XSS: entrypoint container kadang gagal men-download
+            # data file scenario (file jadi kosong) — selalu restore dari repo
+            # SETELAH restart (restart berikutnya bisa menimpa lagi).
+            for PAT in sqli_probe_patterns.txt xss_probe_patterns.txt; do
+              for i in 1 2 3; do
+                docker cp "${{ secrets.VPS_PATH }}/infrastructure/crowdsec/hub-patches/$PAT" \
+                  "crowdsec:/etc/crowdsec/patterns/$PAT" 2>/dev/null && break
+                sleep 1
+              done
+            done
+            docker exec crowdsec sh -c "wc -l /etc/crowdsec/patterns/sqli_probe_patterns.txt /etc/crowdsec/patterns/xss_probe_patterns.txt" \
+              || echo "   ⚠ verifikasi pattern gagal"
+            echo "   ✓ pattern SQLi/XSS disinkronkan"
           else
             echo "   ⚠ crowdsec belum terinstall — langkah security dilewati (RUNBOOK Part 5)"
           fi
