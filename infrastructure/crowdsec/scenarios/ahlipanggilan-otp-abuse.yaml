@@ -3,7 +3,7 @@ name: ahlipanggilan/otp-abuse
 description: 'Percobaan verifikasi token berulang (400 pada /api/auth/verify-*)'
 filter: |
   evt.Parsed.verb == 'POST'
-  && evt.Parsed.http_path.startsWith('/api/v1/auth/')
+  && evt.Parsed.http_path matches '^/api/v1/auth/'
   && evt.Parsed.http_path contains 'verify'
   && evt.Parsed.http_status == '400'
 leakspeed: 60s
