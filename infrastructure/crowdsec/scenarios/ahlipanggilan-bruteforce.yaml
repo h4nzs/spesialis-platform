@@ -14,3 +14,7 @@ labels:
   service: ahlipanggilan
   behavior: 'http:bruteforce'
   severity: critical
+
+decisions:
+  - type: ban
+    duration: 10m

@@ -12,4 +12,8 @@ labels:
   type: scan
   service: ahlipanggilan
   behavior: 'http:scan'
-  severity: medium
+  severity: critical
+
+decisions:
+  - type: ban
+    duration: 10m

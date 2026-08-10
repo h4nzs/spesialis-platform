@@ -14,4 +14,8 @@ labels:
   type: bruteforce
   service: ahlipanggilan
   behavior: 'http:bruteforce'
-  severity: high
+  severity: critical
+
+decisions:
+  - type: ban
+    duration: 10m
