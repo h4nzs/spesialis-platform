@@ -6,7 +6,7 @@
 #   docker restart crowdsec
 #   docker exec crowdsec cscli notifications add ahlipanggilan-alert-gateway
 name: ahlipanggilan-alert-gateway
-type: webhook
+type: http
 format: json
 url: https://ahlipanggilan.id/api/v1/security/webhook
 method: POST
