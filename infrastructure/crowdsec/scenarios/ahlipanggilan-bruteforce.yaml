@@ -5,7 +5,7 @@ filter: |
   evt.Meta.log_type == 'http_access-log'
   && evt.Meta.http_status == '401'
   && evt.Parsed.verb == 'POST'
-  && evt.Parsed.http_path matches '^/api/v1/auth/'
+  && evt.Meta.http_path matches '^/api/v1/auth/'
 leakspeed: 60s
 capacity: 4
 groupby: evt.Meta.source_ip
