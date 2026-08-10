@@ -15,3 +15,4 @@ labels:
   service: ahlipanggilan
   behavior: 'http:bruteforce'
   severity: critical
+  remediation: true

@@ -13,3 +13,4 @@ labels:
   service: ahlipanggilan
   behavior: 'http:scan'
   severity: critical
+  remediation: true
