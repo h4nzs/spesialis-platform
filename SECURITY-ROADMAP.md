@@ -353,12 +353,12 @@ SECURITY_ALERT_MAX_PER_MIN=5    # throttle global
 
 ## 9. Roadmap & Status
 
-| Phase | Isi                                                            | Status                                      |
-| ----- | -------------------------------------------------------------- | ------------------------------------------- |
-| **4** | App-level security (events + detector + rules + alert gateway) | **Rancangan disetujui — menunggu eksekusi** |
-| 1     | Cloudflare WAF/bot/rate-limit + hardening nginx + UFW          | Belum                                       |
-| 2     | CrowdSec + bouncer (host, manual SSH)                          | Belum                                       |
-| 3     | trivy + FIM script + auditd (pengganti Wazuh)                  | Belum                                       |
+| Phase | Isi                                                            | Status                                                                                                                        |
+| ----- | -------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| **4** | App-level security (events + detector + rules + alert gateway) | **Selesai** (security_events + detector + webhook CrowdSec + email/Discord)                                                   |
+| 1     | Cloudflare WAF/bot/rate-limit + hardening nginx + UFW          | **Selesai** (Bot Fight Mode, OWASP Paranoia 2, auth rate-limit, UFW aktif)                                                    |
+| 2     | CrowdSec + bouncer (host, manual SSH)                          | **Selesai** (nginx/linux/sshd/http-cve/whitelist + **http-dos** + 3 custom scenario + firewall bouncer nftables + notifikasi) |
+| 3     | trivy + FIM script + auditd (pengganti Wazuh)                  | **Selesai** (trivy cron 03:15 harian, fim.service aktif, auditd aktif, unattended-upgrades aktif)                             |
 
 Urutan eksekusi: **Phase 4 → 1 → 2 → 3** (Phase 4 memberi value paling cepat dan menjadi dasar detection behavior aplikasi).
 

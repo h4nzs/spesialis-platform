@@ -236,12 +236,26 @@ cp infrastructure/crowdsec/hub-patches/http-crawl-non_statics.yaml \
 docker restart crowdsec
 
 # 5.7 Verifikasi
-docker compose -f docker-compose.crowdsec.yml exec crowdsec cscli scenarios list   # 3 custom ada
+docker compose -f docker-compose.crowdsec.yml exec crowdsec cscli scenarios list   # 3 custom + http-dos* ada
 docker compose -f docker-compose.crowdsec.yml exec crowdsec cscli collections list
 docker compose -f docker-compose.crowdsec.yml exec crowdsec cscli notifications list
 ```
 
-> Community Blocklist diaktifkan otomatis lewat env `COLLECTIONS` (`crowdsecurity/nginx crowdsecurity/linux`).
+> Koleksi diaktifkan otomatis lewat env `COLLECTIONS`
+> (`crowdsecurity/nginx crowdsecurity/linux crowdsecurity/http-dos`).
+>
+> **DDoS (layer-7 origin):** koleksi `crowdsecurity/http-dos` berisi 4 scenario
+> dari hub (SEMUA sudah `remediation: true` — tanpa patch):
+> `http-dos-random-uri` (flood URI acak 6 char, 30 @ 1s), `http-dos-bypass-cache`
+> (query numerik berubah tiap request), `http-dos-switching-ua` (ganti
+> user-agent, 10 @ 8s), `http-dos-invalid-http-versions` (versi HTTP invalid,
+> trigger). Alert mengalir ke profil → notifikasi → email HIGH seperti jalur
+> bruteforce. Threshold default pola-spesifik (FP rendah); pantau 1 minggu.
+>
+> ⚠ **Jangan simpan `.env` di `infrastructure/crowdsec/`** — compose v2 membaca
+> `.env` dari direktori compose file; file root-owned 600 membuat `up -d`
+> gagal saat dijalankan user deploy (deploy.yml sync block). File tersebut
+> untracked sehingga `git clean -fd` menghapusnya di deploy berikutnya.
 
 > **Temuan live (produksi, CrowdSec 1.7.8):**
 >

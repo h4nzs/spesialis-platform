@@ -23,7 +23,7 @@ services:
     container_name: crowdsec
     restart: unless-stopped
     environment:
-      COLLECTIONS: 'crowdsecurity/nginx crowdsecurity/linux'
+      COLLECTIONS: 'crowdsecurity/nginx crowdsecurity/linux crowdsecurity/http-dos'
       LOG_LEVEL: info
       GID: '0'
       UID: '0'
