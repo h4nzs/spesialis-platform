@@ -1,14 +1,17 @@
 # Teruskan decision CrowdSec ke alert gateway API (email + Discord).
-# Aktifkan dengan menyalin ke /etc/crowdsec/notifications/ lalu:
-#   cscli notifications add ahlipanggilan-alert-gateway
-# Secret sama dengan SECURITY_WEBHOOK_SECRET di .env.prod.
+# Aktivasi di VPS (lihat RUNBOOK — CrowdSec tidak mensubstitusi env,
+# jadi ganti SECRET_PLACEHOLDER dengan nilai SECURITY_WEBHOOK_SECRET):
+#   docker cp notifications/alert-gateway.yaml crowdsec:/etc/crowdsec/notifications/ahlipanggilan-alert-gateway.yaml
+#   docker exec crowdsec sed -i "s/SECRET_PLACEHOLDER/<secret>/g" /etc/crowdsec/notifications/ahlipanggilan-alert-gateway.yaml
+#   docker restart crowdsec
+#   docker exec crowdsec cscli notifications add ahlipanggilan-alert-gateway
 name: ahlipanggilan-alert-gateway
 type: webhook
 format: json
 url: https://ahlipanggilan.id/api/v1/security/webhook
 method: POST
 headers:
-  - "X-Security-Key: ${ALERT_GATEWAY_SECRET}"
+  - "X-Security-Key: SECRET_PLACEHOLDER"
 payload:
   severity: '{{.Alert.Severity}}'
   event: '{{.Alert.Scenario}}'
