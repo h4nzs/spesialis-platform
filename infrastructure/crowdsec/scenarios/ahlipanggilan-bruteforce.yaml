@@ -2,11 +2,13 @@ type: leaky
 name: ahlipanggilan/bruteforce-login
 description: 'Brute force pada endpoint auth Ahli Panggilan (401 pada /api/v1/auth/*)'
 filter: |
-  evt.Parsed.http_status == '401'
+  evt.Meta.log_type == 'http_access-log'
+  && evt.Meta.http_status == '401'
+  && evt.Parsed.verb == 'POST'
   && evt.Parsed.http_path matches '^/api/v1/auth/'
 leakspeed: 60s
 capacity: 4
-groupby: evt.Parsed.source_ip
+groupby: evt.Meta.source_ip
 reprocess: true
 labels:
   type: bruteforce
