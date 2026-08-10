@@ -24,6 +24,7 @@ services:
     restart: unless-stopped
     environment:
       COLLECTIONS: 'crowdsecurity/nginx crowdsecurity/linux'
+      LOG_LEVEL: info
       GID: '0'
       UID: '0'
     ports:
