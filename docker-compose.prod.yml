@@ -205,6 +205,8 @@ services:
       - /etc/letsencrypt:/etc/letsencrypt:ro
       - /var/www/letsencrypt:/var/www/letsencrypt:ro
       - nginx_cache:/var/cache/nginx
+      # Access log di named volume — dibaca CrowdSec (infrastructure/crowdsec)
+      - nginx-logs:/var/log/nginx
     depends_on:
       - web
       - api
@@ -355,6 +357,7 @@ volumes:
   postgres_data:
   redis_data:
   nginx_cache:
+  nginx-logs:
   plausible_db_data:
   plausible_clickhouse_data:
 

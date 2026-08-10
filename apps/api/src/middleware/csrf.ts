@@ -49,7 +49,11 @@ export function csrfProtection() {
     // Skip CSRF for the MCP endpoint — AI agent clients are server-to-server
     // and do not send Origin/Referer headers (authentication is via Bearer
     // token or anonymous read-only tools).
-    if (c.req.path.startsWith('/api/v1/mcp') || c.req.path.startsWith('/api/v1/a2a')) {
+    if (
+      c.req.path.startsWith('/api/v1/mcp') ||
+      c.req.path.startsWith('/api/v1/a2a') ||
+      c.req.path.startsWith('/api/v1/security/webhook')
+    ) {
       await next();
       return;
     }

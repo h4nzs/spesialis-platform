@@ -1,0 +1,17 @@
+type: leaky
+name: ahlipanggilan/otp-abuse
+description: 'Percobaan verifikasi token berulang (400 pada /api/auth/verify-*)'
+filter: |
+  evt.Parsed.verb == 'POST'
+  && evt.Parsed.http_path startsWith '/api/auth/'
+  && evt.Parsed.http_path contains 'verify'
+  && evt.Parsed.http_status == '400'
+leakspeed: 60s
+capacity: 10
+groupby: evt.Parsed.source_ip
+reprocess: true
+labels:
+  type: bruteforce
+  service: ahlipanggilan
+  behavior: 'http:bruteforce'
+  severity: high

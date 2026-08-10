@@ -1,0 +1,7 @@
+# Acquisition — baca access log nginx (named volume ahlipanggilan_nginx-logs)
+# Log berformat JSON (lihat log_format json_combined di prod.conf) — parser
+# nginx bawaan CrowdSec menangani keduanya (common/combined/json).
+filenames:
+  - /var/log/nginx/access.log
+labels:
+  type: nginx

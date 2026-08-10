@@ -31,12 +31,37 @@ const DISCORD_COLORS: Record<number, number> = {
   5: 0x8e44ad,
 };
 
+function colorFor(severity: number): number {
+  return DISCORD_COLORS[severity] ?? 0x95a5a6;
+}
+
+function severityLabel(severity: number): string {
+  return SEVERITY_LABEL[severity] ?? 'LOW';
+}
+
 export interface SecurityAlert {
   rule: SecurityRule;
   count: number;
   ip: string | null;
   path?: string;
   metadata?: Record<string, unknown>;
+}
+
+export interface ExternalSecurityAlertInput {
+  severity: number;
+  event: string;
+  message: string;
+  source: string;
+  ip?: string | null;
+  metadata?: Record<string, unknown>;
+}
+
+interface DiscordEmbed {
+  title: string;
+  color: number;
+  fields: Array<{ name: string; value: string; inline: boolean }>;
+  footer?: { text: string };
+  timestamp: string;
 }
 
 /**
@@ -52,27 +77,86 @@ export function securityAlertEnabled(): boolean {
 }
 
 export async function sendSecurityAlert(alert: SecurityAlert): Promise<void> {
+  const { rule, ip } = alert;
+  await dispatch({
+    cooldownKey: `security:alert:${rule.id}:${ip ?? 'unknown'}`,
+    ip,
+    subject: `🚨 Security Alert (${severityLabel(rule.severity)}): ${rule.eventType}`,
+    text: buildAlertText(alert),
+    embed: {
+      title: `🚨 Security Alert — ${rule.eventType}`,
+      color: colorFor(rule.severity),
+      fields: [
+        { name: 'Severity', value: severityLabel(rule.severity), inline: true },
+        { name: 'Host', value: HOST, inline: true },
+        { name: 'Source IP', value: ip ?? '-', inline: true },
+        { name: 'Path', value: alert.path ?? '-', inline: true },
+        { name: 'Count', value: `${alert.count}/${rule.threshold}`, inline: true },
+        { name: 'Action', value: rule.action.toUpperCase(), inline: true },
+      ],
+      footer: { text: `Rule: ${rule.id} · window ${Math.round(rule.windowMs / 1000)}s` },
+      timestamp: new Date().toISOString(),
+    },
+  });
+}
+
+/**
+ * Alert dari sumber eksternal (CrowdSec decisions, trivy findings, FIM
+ * changes) yang masuk via webhook /api/v1/security/webhook. Cooldown per
+ * source+event agar deteksi massal tidak membanjiri notifikasi.
+ */
+export async function sendExternalSecurityAlert(input: ExternalSecurityAlertInput): Promise<void> {
+  const { severity, event, message, source, ip } = input;
+  await dispatch({
+    cooldownKey: `security:alert:ext:${source}:${event}:${ip ?? 'global'}`,
+    ip: ip ?? null,
+    subject: `🚨 Security Alert (${severityLabel(severity)}): ${event} [${source}]`,
+    text: buildExternalAlertText(input),
+    embed: {
+      title: `🚨 Security Alert — ${event}`,
+      color: colorFor(severity),
+      fields: [
+        { name: 'Severity', value: severityLabel(severity), inline: true },
+        { name: 'Host', value: HOST, inline: true },
+        { name: 'Source', value: source, inline: true },
+        { name: 'Source IP', value: ip ?? '-', inline: true },
+        { name: 'Message', value: truncate(message, 1024), inline: false },
+      ],
+      footer: { text: `Source: ${source}` },
+      timestamp: new Date().toISOString(),
+    },
+  });
+}
+
+function truncate(value: string, max: number): string {
+  return value.length > max ? `${value.slice(0, max - 3)}...` : value;
+}
+
+async function dispatch(params: {
+  cooldownKey: string;
+  ip: string | null;
+  subject: string;
+  text: string;
+  embed: DiscordEmbed;
+}): Promise<void> {
   if (!securityAlertEnabled()) return;
 
   const emails = alertEmails();
   const webhook = discordWebhook();
   const maxAlerts = maxPerMin();
 
-  const { rule, ip } = alert;
-  const cooldownKey = `security:alert:${rule.id}:${ip ?? 'unknown'}`;
-  const passed = await reserveOnce(cooldownKey, ALERT_COOLDOWN_MS);
+  const passed = await reserveOnce(params.cooldownKey, ALERT_COOLDOWN_MS);
   if (!passed) return;
 
   const minuteKey = `security:alert:minute:${Math.floor(Date.now() / 60_000)}`;
   const minuteCount = await incrWithWindow(minuteKey, 60_000);
   if (minuteCount > maxAlerts) return;
 
-  const subject = `🚨 Security Alert (${SEVERITY_LABEL[rule.severity]}): ${rule.eventType}`;
-  const text = buildAlertText(alert);
-
   const deliveries: Promise<void>[] = [];
-  if (webhook) deliveries.push(sendDiscord(alert));
-  for (const email of emails) deliveries.push(sendSecurityAlertEmail(email, subject, text));
+  if (webhook) deliveries.push(sendDiscordEmbed(webhook, params.embed));
+  for (const email of emails) {
+    deliveries.push(sendSecurityAlertEmail(email, params.subject, params.text));
+  }
 
   const results = await Promise.allSettled(deliveries);
   for (const result of results) {
@@ -101,24 +185,24 @@ function buildAlertText(alert: SecurityAlert): string {
   return lines.join('\n');
 }
 
-async function sendDiscord(alert: SecurityAlert): Promise<void> {
-  const webhook = discordWebhook();
-  const { rule, count, ip, path } = alert;
-  const embed = {
-    title: `🚨 Security Alert — ${rule.eventType}`,
-    color: DISCORD_COLORS[rule.severity] ?? DISCORD_COLORS[1],
-    fields: [
-      { name: 'Severity', value: SEVERITY_LABEL[rule.severity], inline: true },
-      { name: 'Host', value: HOST, inline: true },
-      { name: 'Source IP', value: ip ?? '-', inline: true },
-      { name: 'Path', value: path ?? '-', inline: true },
-      { name: 'Count', value: `${count}/${rule.threshold}`, inline: true },
-      { name: 'Action', value: rule.action.toUpperCase(), inline: true },
-    ],
-    footer: { text: `Rule: ${rule.id} · window ${Math.round(rule.windowMs / 1000)}s` },
-    timestamp: new Date().toISOString(),
-  };
+function buildExternalAlertText(input: ExternalSecurityAlertInput): string {
+  const { severity, event, message, source, ip, metadata } = input;
+  const lines = [
+    `Severity: ${SEVERITY_LABEL[severity] ?? 'LOW'}`,
+    `Host: ${HOST}`,
+    `Event: ${event}`,
+    `Source: ${source}`,
+    `Source IP: ${ip ?? '-'}`,
+    `Message: ${message}`,
+    `Time: ${new Date().toLocaleString('id-ID', { timeZone: 'Asia/Jakarta' })} WIB`,
+  ];
+  if (metadata && Object.keys(metadata).length > 0) {
+    lines.push(`Metadata: ${JSON.stringify(metadata)}`);
+  }
+  return lines.join('\n');
+}
 
+async function sendDiscordEmbed(webhook: string, embed: DiscordEmbed): Promise<void> {
   const res = await fetch(webhook, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },

@@ -1,0 +1,53 @@
+# CrowdSec + firewall bouncer — Phase 2 (dijalankan manual di host saat deploy)
+#
+# Prasyarat:
+#   1. Named volume log nginx harus ada (dibuat oleh docker-compose.prod.yml):
+#        docker volume ls | grep nginx-logs
+#      Jika belum: docker volume create ahlipanggilan_nginx-logs
+#      (project name default = nama direktori repo, sesuaikan bila berbeda)
+#   2. Generate API key bouncer:
+#        docker compose -f docker-compose.crowdsec.yml exec crowdsec cscli bouncers add ap-bouncer
+#   3. Isi BOUNCER_API_KEY dari output langkah 2 lalu:
+#        docker compose -f docker-compose.crowdsec.yml up -d
+#   4. Verifikasi:
+#        docker compose -f docker-compose.crowdsec.yml exec crowdsec cscli decisions list
+#        docker compose -f docker-compose.crowdsec.yml logs -f crowdsec
+#
+# Alert diteruskan ke alert gateway API (email + Discord) via webhook —
+# lihat notifications/alert-gateway.yaml.
+
+services:
+  crowdsec:
+    image: crowdsec/crowdsec:latest
+    container_name: crowdsec
+    restart: unless-stopped
+    environment:
+      COLLECTIONS: 'crowdsecurity/nginx crowdsecurity/linux'
+      GID: '0'
+      UID: '0'
+    volumes:
+      - ./config:/etc/crowdsec/acquis.d:ro
+      - ./scenarios:/etc/crowdsec/scenarios/custom:ro
+      - ./notifications:/etc/crowdsec/notifications/custom:ro
+      - crowdsec-db:/var/lib/crowdsec/data
+      - crowdsec-config:/etc/crowdsec
+      # Log nginx dibaca langsung dari named volume milik stack utama
+      - ahlipanggilan_nginx-logs:/var/log/nginx:ro
+
+  firewall-bouncer:
+    image: crowdsec/firewall-bouncer:latest
+    container_name: crowdsec-firewall-bouncer
+    restart: unless-stopped
+    environment:
+      API_URL: 'http://crowdsec:8080'
+      API_KEY: ${BOUNCER_API_KEY:?BOUNCER_API_KEY wajib diisi (cscli bouncers add)}
+    network_mode: host
+    cap_add:
+      - NET_ADMIN
+      - NET_RAW
+
+volumes:
+  crowdsec-db:
+  crowdsec-config:
+  ahlipanggilan_nginx-logs:
+    external: true

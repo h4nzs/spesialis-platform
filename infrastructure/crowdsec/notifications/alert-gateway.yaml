@@ -1,0 +1,17 @@
+# Teruskan decision CrowdSec ke alert gateway API (email + Discord).
+# Aktifkan dengan menyalin ke /etc/crowdsec/notifications/ lalu:
+#   cscli notifications add ahlipanggilan-alert-gateway
+# Secret sama dengan SECURITY_WEBHOOK_SECRET di .env.prod.
+name: ahlipanggilan-alert-gateway
+type: webhook
+format: json
+url: https://ahlipanggilan.id/api/v1/security/webhook
+method: POST
+headers:
+  - "X-Security-Key: ${ALERT_GATEWAY_SECRET}"
+payload:
+  severity: '{{.Alert.Severity}}'
+  event: '{{.Alert.Scenario}}'
+  message: '{{range .Decisions}}{{.Value}} diblokir selama {{.Duration}}{{end}}'
+  source: crowdsec
+  ip: '{{.Source.IP}}'

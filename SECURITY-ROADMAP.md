@@ -135,45 +135,66 @@ Opsi lebih ketat: hanya izinkan 80/443 dari CIDR Cloudflare (ranges resmi), sehi
 
 ## 5. Phase 2 — CrowdSec (IDS/IPS ringan)
 
-Feasible di VPS ≤4GB (±150MB RAM). Dipasang via **manual SSH** (host level, bukan di repo).
+Feasible di VPS ≤4GB (±150MB RAM). Dipasang via **manual SSH** (host level).
+
+**Status: persiapan repo selesai** — `infrastructure/crowdsec/` berisi compose,
+acquisition, 3 custom scenarios, dan notifikasi webhook ke alert gateway.
+Tinggal jalankan manual di host saat deploy (lihat README di direktori
+tersebut).
 
 ### Komponen
 
-| Komponen                    | Fungsi                                                               |
-| --------------------------- | -------------------------------------------------------------------- |
-| `crowdsec`                  | Engine — baca log, evaluasi scenario, hasilkan decisions             |
-| `crowdsec-firewall-bouncer` | Terapkan block di level firewall (nftables/iptables)                 |
-| `crowdsec-nginx-bouncer`    | Terapkan 403 langsung dari nginx (lazy block, tanpa sentuh firewall) |
+| Komponen                    | Fungsi                                                   |
+| --------------------------- | -------------------------------------------------------- |
+| `crowdsec`                  | Engine — baca log, evaluasi scenario, hasilkan decisions |
+| `crowdsec-firewall-bouncer` | Terapkan block di level firewall (nftables/iptables)     |
+
+Catatan: `crowdsec-nginx-bouncer` TIDAK dipakai — nginx berjalan di container
+alpine tanpa modul Lua; firewall bouncer menutupi kebutuhan blok.
 
 ### Alur
 
 ```
-Attacker ──100 login attempts──▶ Nginx logs (/var/log/nginx/access.log)
+Attacker ──100 login attempts──▶ Nginx logs (volume ahlipanggilan_nginx-logs)
                                         │
                                         ▼
                                    CrowdSec
-                                   ├── detect brute force (scenario http-bruteforce)
+                                   ├── detect brute force (scenario ahlipanggilan/bruteforce-login)
                                    ├── identify IP
                                    └── decision: BAN
                                              │
                                              ▼
                                    Firewall bouncer → IP diblok (nftables)
-                                   atau Nginx bouncer → 403 untuk IP itu
+                                             │
+                                             ▼
+                                   Webhook → /api/v1/security/webhook
+                                             │
+                                             ▼
+                                   Alert gateway → email + Discord
 ```
 
-### Setup
+### Setup (manual di host, saat deploy)
 
-1. Install CrowdSec di host (bukan container) atau container dengan bind mount log nginx.
-2. Nginx access log harus tersedia di host (volume host) — penyesuaian `docker-compose.prod.yml`.
-3. Aktifkan scenarios bawaan: `ssh-bruteforce`, `http-bruteforce`, `http-scan`, `http-crawl-non-statics`.
-4. Hubungkan ke CrowdSec Community Blocklist (IP intel global).
-5. Notifikasi: webhook CrowdSec → alert gateway Phase 4 (`alert.ts`) untuk satu jalur notifikasi.
+1. Jalankan `docker compose up -d` stack utama (membuat volume `ahlipanggilan_nginx-logs`).
+2. `docker compose -f infrastructure/crowdsec/docker-compose.crowdsec.yml up -d crowdsec`
+3. Generate bouncer key: `docker compose -f ... exec crowdsec cscli bouncers add ap-bouncer`
+4. Isi `BOUNCER_API_KEY` lalu `up -d` firewall-bouncer.
+5. Daftarkan notifikasi webhook (secret = `SECURITY_WEBHOOK_SECRET`):
+   `cscli notifications add ahlipanggilan-alert-gateway`
+6. Aktifkan Community Blocklist: `cscli hub update && cscli collections install crowdsecurity/linux`
+7. Verifikasi: `cscli decisions list`, `cscli alerts list`.
 
-### Custom scenarios (contoh, dibuat setelah stabil)
+### Custom scenarios (repo: `infrastructure/crowdsec/scenarios/`)
 
-- Failed login pattern pada `/api/auth/login` dari satu IP (window 1 menit)
-- 404 storm pada `/api/` (API enumeration)
-- Banyak `POST /api/auth/verify-otp` (OTP abuse)
+| Scenario                        | Deteksi                            | Threshold       |
+| ------------------------------- | ---------------------------------- | --------------- |
+| `ahlipanggilan-bruteforce.yaml` | 401 pada `POST /api/auth/*`        | 5 / 60s per IP  |
+| `ahlipanggilan-otp-abuse.yaml`  | 400 pada `POST /api/auth/verify-*` | 10 / 60s per IP |
+| `ahlipanggilan-404-storm.yaml`  | 404 pada `GET /api/*`              | 30 / 60s per IP |
+
+Semua decision mengirim notifikasi webhook ke alert gateway API
+(`POST /api/v1/security/webhook`, header `X-Security-Key`) yang meneruskan
+ke email + Discord — satu jalur alert untuk seluruh stack.
 
 ---
 

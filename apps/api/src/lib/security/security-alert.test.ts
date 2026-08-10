@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { sendSecurityAlert } from './alert.ts';
+import { sendSecurityAlert, sendExternalSecurityAlert } from './alert.ts';
 import { SECURITY_RULES } from './rules.ts';
 import { resetSecurityStore } from './store.ts';
 import { resetSecurityRedis } from './test-utils.ts';
@@ -81,5 +81,45 @@ describe('sendSecurityAlert', () => {
         expect.objectContaining({ name: 'Count', value: `${rule.threshold}/${rule.threshold}` }),
       ]),
     );
+  });
+});
+
+describe('sendExternalSecurityAlert', () => {
+  it('kirim alert eksternal dengan cooldown per source+event', async () => {
+    const input = {
+      severity: 5,
+      event: 'ahlipanggilan/bruteforce-login',
+      message: '185.1.1.1 diblokir selama 4h',
+      source: 'crowdsec',
+      ip: '185.1.1.1',
+    };
+
+    await sendExternalSecurityAlert(input);
+    await sendExternalSecurityAlert(input);
+
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(mockedEmail).toHaveBeenCalledTimes(1);
+    expect(mockedEmail).toHaveBeenCalledWith(
+      'ops@example.com',
+      expect.stringContaining('crowdsec'),
+      expect.stringContaining('diblokir'),
+    );
+  });
+
+  it('event berbeda dalam source sama → alert terkirim keduanya', async () => {
+    await sendExternalSecurityAlert({
+      severity: 3,
+      event: 'fim-modified',
+      message: '/etc/nginx/nginx.conf berubah',
+      source: 'fim',
+    });
+    await sendExternalSecurityAlert({
+      severity: 2,
+      event: 'cve-medium',
+      message: 'nginx 1.26.0 terkena CVE-2026-XXXX',
+      source: 'trivy',
+    });
+
+    expect(fetchMock).toHaveBeenCalledTimes(2);
   });
 });

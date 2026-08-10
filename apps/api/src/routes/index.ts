@@ -47,6 +47,7 @@ import { adminBlogAdsRouter } from './admin/blog-ads.ts';
 import { adminLocksRouter } from './admin/locks.ts';
 import { mcpRouter } from './mcp.ts';
 import { a2aRouter } from './a2a.ts';
+import { securityWebhookRouter } from './security-webhook.ts';
 
 const router = new Hono();
 
@@ -120,5 +121,6 @@ router.route('/admin/blog-ads', adminBlogAdsRouter);
 router.route('/admin/locks', adminLocksRouter);
 router.route('/a2a', a2aRouter);
 router.route('/', mcpRouter);
+router.route('/security/webhook', securityWebhookRouter);
 
 export { router as apiRouter };
