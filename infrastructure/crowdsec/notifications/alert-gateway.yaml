@@ -5,16 +5,17 @@
 #   docker exec crowdsec sed -i "s/SECRET_PLACEHOLDER/<secret>/g" /etc/crowdsec/notifications/ahlipanggilan-alert-gateway.yaml
 #   docker restart crowdsec
 #   docker exec crowdsec cscli notifications add ahlipanggilan-alert-gateway
+#
+# Catatan: plugin http CrowdSec mengirim literal `format:` sebagai body
+# request (bukan key `payload:`). Template menerima LIST alert —
+# rangkaikan ke JSON valid yang dipahami /api/v1/security/webhook.
 name: ahlipanggilan-alert-gateway
 type: http
-format: json
+format: |
+  {{range . -}}
+  {"severity": 4, "event": "{{.Scenario}}", "message": "{{range .Decisions}}{{.Value}} diblokir selama {{.Duration}}{{end}}", "source": "crowdsec", "ip": "{{.Source.IP}}"}
+  {{end -}}
 url: https://ahlipanggilan.id/api/v1/security/webhook
 method: POST
 headers:
   X-Security-Key: SECRET_PLACEHOLDER
-payload:
-  severity: '{{.Alert.Severity}}'
-  event: '{{.Alert.Scenario}}'
-  message: '{{range .Decisions}}{{.Value}} diblokir selama {{.Duration}}{{end}}'
-  source: crowdsec
-  ip: '{{.Source.IP}}'

@@ -218,13 +218,47 @@ docker exec crowdsec sed -i "s/SECRET_PLACEHOLDER/<SECURITY_WEBHOOK_SECRET-dari-
 docker restart crowdsec
 docker exec crowdsec cscli notifications add ahlipanggilan-alert-gateway
 
-# 5.6 Verifikasi
+# 5.6 Patch scenario hub (WAJIB — lihat "Temuan live" di bawah)
+#    Bouncer/profil tidak bisa menambah decision tanpa `remediation: true`
+#    di labels scenario. Race konsumsi event antar scenario dicegah dengan
+#    `reprocess: true` pada scenario hub yang filter-nya tumpang tindih.
+#    File patched tersimpan di infrastructure/crowdsec/hub-patches/ — salin
+#    ke lokasi asli di dalam volume (GANTI DENGAN cscli hub update berikutnya):
+VOL=/var/lib/docker/volumes/crowdsec_crowdsec-config/_data
+cp infrastructure/crowdsec/hub-patches/http-generic-bf.yaml \
+  $VOL/hub/scenarios/crowdsecurity/http-generic-bf.yaml
+cp infrastructure/crowdsec/hub-patches/http-crawl-non_statics.yaml \
+  $VOL/scenarios/http-crawl-non_statics.yaml
+docker restart crowdsec
+
+# 5.7 Verifikasi
 docker compose -f docker-compose.crowdsec.yml exec crowdsec cscli scenarios list   # 3 custom ada
 docker compose -f docker-compose.crowdsec.yml exec crowdsec cscli collections list
 docker compose -f docker-compose.crowdsec.yml exec crowdsec cscli notifications list
 ```
 
 > Community Blocklist diaktifkan otomatis lewat env `COLLECTIONS` (`crowdsecurity/nginx crowdsecurity/linux`).
+
+> **Temuan live (produksi, CrowdSec 1.7.8):**
+>
+> - **Filter scenario** harus pakai `evt.Meta.http_path` — `evt.Parsed.http_path`
+>   TIDAK ADA di parser nginx bawaan (grok menangkap `request`, meta http_path
+>   di-set dari `evt.Parsed.request`). Filter yang salah = bucket tak pernah pour.
+> - **`remediation: true` wajib di labels scenario**, kalau tidak profil tidak
+>   menghasilkan decision (alert tanpa decision, `cscli decisions list` kosong).
+> - **`capacity` leaky = jumlah event trigger** — pakai `capacity: threshold-1`
+>   (mis. threshold 5 → capacity 4), karena overflow terjadi saat count = capacity.
+> - **Race konsumsi event antar scenario**: bucket di-load dengan urutan acak per
+>   restart; scenario `reprocess: false` (default) MEMAKAN event sehingga scenario
+>   lain (urut belakangan) tidak pernah melihatnya. Solusi: `reprocess: true` di
+>   SEMUA scenario yang filter-nya tumpang tindih (401-bf, crawl-non_statics).
+> - **Notifikasi http**: plugin mengirim literal `format:` sebagai body — key
+>   `payload:` DIABAIKAN. Template menerima LIST `models.Alert` (pakai
+>   `{{range .}}`), dan `models.Alert` TIDAK punya field `.Severity` (hardcode).
+> - **Test IP** yang kena ban ter-blokir di level firewall — uji dari IP berbeda
+>   atau tunggu 10 menit (ban sementara).
+> - Alert lama bisa tampil "tanpa decision" — cek `cscli alerts inspect <id>`
+>   field `Remediation` (false = label remediation belum ada saat alert dibuat).
 
 ---
 
