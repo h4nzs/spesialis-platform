@@ -1,8 +1,8 @@
 type: leaky
 name: crowdsecurity/http-crawl-non_statics
-description: "Detect aggressive crawl on non static resources"
+description: 'Detect aggressive crawl on non static resources'
 filter: "evt.Meta.log_type in ['http_access-log', 'http_error-log'] && evt.Parsed.static_ressource == 'false' && evt.Parsed.verb in ['GET', 'HEAD']"
-distinct: "evt.Parsed.file_name"
+distinct: 'evt.Parsed.file_name'
 leakspeed: 0.5s
 capacity: 40
 #debug: true
@@ -16,7 +16,7 @@ labels:
   spoofable: 0
   classification:
     - attack.T1595
-  behavior: "http:crawl"
+  behavior: 'http:crawl'
   service: http
-  label: "Aggressive Crawl"
+  label: 'Aggressive Crawl'
   remediation: true
