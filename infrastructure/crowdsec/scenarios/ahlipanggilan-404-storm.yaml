@@ -3,7 +3,7 @@ name: ahlipanggilan/api-404-storm
 description: 'Enumerasi endpoint API (404 storm pada /api/*)'
 filter: |
   evt.Parsed.verb == 'GET'
-  && evt.Parsed.http_path startsWith '/api/'
+  && evt.Parsed.http_path startsWith(evt.Parsed.http_path, '/api/')
   && evt.Parsed.http_status == '404'
 leakspeed: 60s
 capacity: 29
