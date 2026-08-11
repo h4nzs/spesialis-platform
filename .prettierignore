@@ -5,3 +5,4 @@ coverage
 .astro
 .turbo
 .env
+infrastructure/crowdsec/hub-patches
