@@ -43,7 +43,7 @@ describe('security webhook', () => {
     expect(mockedSend).not.toHaveBeenCalled();
   });
 
-  it('payload valid → 200, queued, severity di-normalisasi', async () => {
+  it('payload valid → 200, queued, severity crowdsec dari mapping scenario', async () => {
     const res = await app.request('/', {
       method: 'POST',
       headers: { 'x-security-key': 'test-secret', 'content-type': 'application/json' },
@@ -62,11 +62,29 @@ describe('security webhook', () => {
     expect(body.data.queued).toBe(true);
     expect(mockedSend).toHaveBeenCalledWith(
       expect.objectContaining({
-        severity: 5,
+        severity: 3,
         event: 'ahlipanggilan/bruteforce-login',
         source: 'crowdsec',
         ip: '185.1.1.1',
       }),
+    );
+  });
+
+  it('source bukan crowdsec → severity diambil dari payload', async () => {
+    const res = await app.request('/', {
+      method: 'POST',
+      headers: { 'x-security-key': 'test-secret', 'content-type': 'application/json' },
+      body: JSON.stringify({
+        severity: 'high',
+        event: 'cve-ditemukan',
+        message: 'nginx 1.26.0 terkena CVE-2026-XXXX',
+        source: 'trivy',
+      }),
+    });
+
+    expect(res.status).toBe(200);
+    expect(mockedSend).toHaveBeenCalledWith(
+      expect.objectContaining({ severity: 4, event: 'cve-ditemukan', source: 'trivy' }),
     );
   });
 

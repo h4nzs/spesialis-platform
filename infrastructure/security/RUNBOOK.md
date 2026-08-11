@@ -216,6 +216,10 @@ docker ps | grep crowdsec           # crowdsec + crowdsec-firewall-bouncer UP
 #     Catatan: registrasi notifikasi dilakukan OTOMATIS oleh crowdsec saat
 #     restart (membaca semua file /etc/crowdsec/notifications/*.yaml).
 #     cscli v1.7.8 TIDAK punya perintah `notifications add` — jangan dipakai.
+#     Filter channel ada di sisi API (lihat §7.4 ROADMAP):
+#     SECURITY_ALERT_EMAIL_MIN_SEVERITY=3 → email hanya severity ≥ MEDIUM;
+#     Discord selalu menerima semua alert. Severity CrowdSec dipetakan dari
+#     nama scenario (lib/security/crowdsec-severity.ts).
 docker cp notifications/alert-gateway.yaml \
   crowdsec:/etc/crowdsec/notifications/ahlipanggilan-alert-gateway.yaml
 docker exec crowdsec sed -i "s/SECRET_PLACEHOLDER/<SECURITY_WEBHOOK_SECRET-dari-.env.prod>/g" \
@@ -223,16 +227,17 @@ docker exec crowdsec sed -i "s/SECRET_PLACEHOLDER/<SECURITY_WEBHOOK_SECRET-dari-
 docker restart crowdsec
 
 # 5.6 Patch scenario hub (HANYA instalasi pertama — deploy.yml otomatis
-#     menyalin infrastructure/crowdsec/hub-patches/ ke volume setiap deploy;
-#     wajib karena bouncer/profil tidak bisa menambah decision tanpa
-#     `remediation: true` di labels scenario, dan race konsumsi event antar
-#     scenario dicegah dengan `reprocess: true` pada scenario hub yang
-#     filter-nya tumpang tindih):
-VOL=/var/lib/docker/volumes/crowdsec_crowdsec-config/_data
-cp infrastructure/crowdsec/hub-patches/http-generic-bf.yaml \
-  $VOL/hub/scenarios/crowdsecurity/http-generic-bf.yaml
-cp infrastructure/crowdsec/hub-patches/http-crawl-non_statics.yaml \
-  $VOL/scenarios/http-crawl-non_statics.yaml
+#     menyalin SEMUA infrastructure/crowdsec/hub-patches/ ke volume setiap
+#     deploy: 22 scenario hub diberi `reprocess: true` (cegah race konsumsi
+#     event antar scenario — urutan load acak per restart membuat deteksi
+#     tidak deterministik) + 2 file pattern SQLi/XSS ke /etc/crowdsec/patterns/):
+for PATCH in infrastructure/crowdsec/hub-patches/*; do
+  BASE=$(basename "$PATCH")
+  case "$BASE" in
+    *.txt) docker cp "$PATCH" "crowdsec:/etc/crowdsec/patterns/$BASE" ;;
+    *.yaml) docker cp "$PATCH" "crowdsec:/etc/crowdsec/scenarios/$BASE" ;;
+  esac
+done
 docker restart crowdsec
 
 # 5.7 Verifikasi

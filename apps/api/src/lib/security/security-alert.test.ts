@@ -33,6 +33,7 @@ afterEach(() => {
     'SECURITY_ALERT_EMAILS',
     'SECURITY_ALERT_DISCORD_WEBHOOK_URL',
     'SECURITY_ALERT_MAX_PER_MIN',
+    'SECURITY_ALERT_EMAIL_MIN_SEVERITY',
   ]) {
     delete process.env[key];
   }
@@ -121,5 +122,60 @@ describe('sendExternalSecurityAlert', () => {
     });
 
     expect(fetchMock).toHaveBeenCalledTimes(2);
+  });
+
+  it('severity di bawah ambang (LOW) → Discord tetap, surel tidak', async () => {
+    await sendExternalSecurityAlert({
+      severity: 2,
+      event: 'ahlipanggilan/404-storm',
+      message: 'path tak dikenal diblokir',
+      source: 'crowdsec',
+      ip: '185.1.1.1',
+    });
+
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(mockedEmail).not.toHaveBeenCalled();
+  });
+
+  it('severity MEDIUM (3) → surel terkirim', async () => {
+    await sendExternalSecurityAlert({
+      severity: 3,
+      event: 'ahlipanggilan/bruteforce-login',
+      message: '185.1.1.1 diblokir selama 4h',
+      source: 'crowdsec',
+      ip: '185.1.1.1',
+    });
+
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(mockedEmail).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('ambang email internal (SECURITY_ALERT_EMAIL_MIN_SEVERITY)', () => {
+  it('rule aplikasi LOW → Discord tetap, surel tidak', async () => {
+    const lowRule = SECURITY_RULES.find((r) => r.eventType === 'ENDPOINT_ENUMERATION')!;
+    await sendSecurityAlert({
+      rule: lowRule,
+      count: lowRule.threshold,
+      ip: '185.1.1.1',
+      path: '/api/admin',
+    });
+
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(mockedEmail).not.toHaveBeenCalled();
+  });
+
+  it('ambang rendah (2) → alert LOW ikut ke surel', async () => {
+    process.env.SECURITY_ALERT_EMAIL_MIN_SEVERITY = '2';
+    await sendExternalSecurityAlert({
+      severity: 2,
+      event: 'crowdsecurity/http-crawl-non_statics',
+      message: 'crawl terdeteksi',
+      source: 'crowdsec',
+      ip: '185.1.1.1',
+    });
+
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(mockedEmail).toHaveBeenCalledTimes(1);
   });
 });

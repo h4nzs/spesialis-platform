@@ -1,6 +1,7 @@
 import { Hono } from 'hono';
 import { success, unauthorized, error } from '../lib/response.ts';
 import { sendExternalSecurityAlert } from '../lib/security/alert.ts';
+import { crowdsecSeverity } from '../lib/security/crowdsec-severity.ts';
 
 const router = new Hono();
 
@@ -69,8 +70,11 @@ router.post('/', async (c) => {
 
   // Jangan blokir sender — alert dikirim fire-and-forget (sendExternalSecurityAlert
   // sudah punya throttle + cooldown internal dan tidak pernah throw).
+  // Alert CrowdSec: severity diturunkan dari scenario (CrowdSec tidak mengirimnya).
+  const severity =
+    body.source === 'crowdsec' ? crowdsecSeverity(body.event) : normalizeSeverity(body.severity);
   void sendExternalSecurityAlert({
-    severity: normalizeSeverity(body.severity),
+    severity,
     event: body.event,
     message: body.message,
     source: body.source,

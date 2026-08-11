@@ -23,6 +23,11 @@ function maxPerMin(): number {
   return Number(process.env.SECURITY_ALERT_MAX_PER_MIN ?? 5);
 }
 
+/** Ambang severity minimum untuk surel; Discord selalu menerima semua. */
+function emailMinSeverity(): number {
+  return Number(process.env.SECURITY_ALERT_EMAIL_MIN_SEVERITY ?? 3);
+}
+
 const DISCORD_COLORS: Record<number, number> = {
   1: 0x95a5a6,
   2: 0xf1c40f,
@@ -81,6 +86,7 @@ export async function sendSecurityAlert(alert: SecurityAlert): Promise<void> {
   await dispatch({
     cooldownKey: `security:alert:${rule.id}:${ip ?? 'unknown'}`,
     ip,
+    severity: rule.severity,
     subject: `🚨 Security Alert (${severityLabel(rule.severity)}): ${rule.eventType}`,
     text: buildAlertText(alert),
     embed: {
@@ -110,6 +116,7 @@ export async function sendExternalSecurityAlert(input: ExternalSecurityAlertInpu
   await dispatch({
     cooldownKey: `security:alert:ext:${source}:${event}:${ip ?? 'global'}`,
     ip: ip ?? null,
+    severity,
     subject: `🚨 Security Alert (${severityLabel(severity)}): ${event} [${source}]`,
     text: buildExternalAlertText(input),
     embed: {
@@ -135,6 +142,7 @@ function truncate(value: string, max: number): string {
 async function dispatch(params: {
   cooldownKey: string;
   ip: string | null;
+  severity: number;
   subject: string;
   text: string;
   embed: DiscordEmbed;
@@ -154,8 +162,10 @@ async function dispatch(params: {
 
   const deliveries: Promise<void>[] = [];
   if (webhook) deliveries.push(sendDiscordEmbed(webhook, params.embed));
-  for (const email of emails) {
-    deliveries.push(sendSecurityAlertEmail(email, params.subject, params.text));
+  if (params.severity >= emailMinSeverity()) {
+    for (const email of emails) {
+      deliveries.push(sendSecurityAlertEmail(email, params.subject, params.text));
+    }
   }
 
   const results = await Promise.allSettled(deliveries);

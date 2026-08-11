@@ -301,6 +301,7 @@ SECURITY_ALERT_EMAILS=spesialis.onovoda@gmail.com
 SECURITY_ALERT_DISCORD_WEBHOOK_URL=https://discord.com/api/webhooks/...
 SECURITY_ALERT_FROM=            # fallback ke RESEND_FROM
 SECURITY_ALERT_MAX_PER_MIN=5    # throttle global
+SECURITY_ALERT_EMAIL_MIN_SEVERITY=3  # email hanya severity ≥ MEDIUM (3); Discord selalu semua
 ```
 
 - Email: reuse `sendNotificationEmail` / Resend — SMTP fallback bila Resend tidak diset.
@@ -318,6 +319,7 @@ SECURITY_ALERT_MAX_PER_MIN=5    # throttle global
   ```
 - Throttle: dedup per `ruleId + IP`, cooldown default 1 menit/rule, global cap `SECURITY_ALERT_MAX_PER_MIN`.
 - **Semua jalur alert** (app detection, CrowdSec webhook, trivy, FIM) masuk lewat `alert.ts`.
+- **Severity CrowdSec**: alert CrowdSec tidak membawa severity (v1.7.x) — dipetakan dari nama scenario di `lib/security/crowdsec-severity.ts` (sqli/xss/backdoor/cve/open-proxy/otp-abuse=HIGH; bruteforce/dos/probing/path-traversal/wordpress/404-storm=MEDIUM; selainnya LOW).
 
 ### 7.5 Wiring
 
