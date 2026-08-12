@@ -5,9 +5,16 @@ import { success, successPaginated, notFound } from '../lib/response.ts';
 import { validateQuery } from '../middleware/validation.ts';
 import { buildPaginationMeta } from '../lib/pagination.ts';
 import { paginationQuerySchema } from '@ahlipanggilan/validation';
+import { cmsCache } from '../lib/cache.ts';
+import type { PaginationMeta } from '@ahlipanggilan/types';
 
 const router = new Hono();
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
+// Dirender SSR (homepage & daftar layanan) oleh Nginx cache 10s —
+// 15s TTL menjaga TTFB tetap cepat tanpa data basi.
+const PUBLIC_TTL_MS = 15_000;
+const PUBLIC_CACHE_CONTROL = 'public, max-age=15, stale-while-revalidate=30';
 
 router.get('/', validateQuery(paginationQuerySchema), async (c) => {
   const query = c.get('validated') as { page: number; limit: number };
@@ -16,6 +23,13 @@ router.get('/', validateQuery(paginationQuerySchema), async (c) => {
   const featured = c.req.query('featured');
   const hero = c.req.query('hero');
   const q = c.req.query('q');
+
+  const cacheKey = `cms:services:${query.page}:${query.limit}:${categoryId ?? ''}:${featured ?? ''}:${hero ?? ''}:${q ?? ''}`;
+  const cached = await cmsCache.get<{ items: unknown[]; pagination: PaginationMeta }>(cacheKey);
+  if (cached.hit) {
+    c.header('Cache-Control', PUBLIC_CACHE_CONTROL);
+    return successPaginated(c, cached.data.items, cached.data.pagination);
+  }
 
   const conditions: SQL[] = [eq(services.isActive, true)];
   if (categoryId) conditions.push(eq(services.categoryId, categoryId));
@@ -55,6 +69,8 @@ router.get('/', validateQuery(paginationQuerySchema), async (c) => {
   const total = Number(countResult[0]?.count ?? 0);
   const pagination = buildPaginationMeta(query.page, query.limit, total);
 
+  await cmsCache.set(cacheKey, { items, pagination }, PUBLIC_TTL_MS);
+  c.header('Cache-Control', PUBLIC_CACHE_CONTROL);
   return successPaginated(c, items, pagination);
 });
 

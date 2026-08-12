@@ -5,6 +5,7 @@ import { AuthNav } from '../components/AuthNav.tsx'
 import WhatsAppFloating from '../components/WhatsAppFloating.astro'
 import Footer from '../components/homepage/Footer.astro'
 import { createServerClient } from '@ahlipanggilan/shared'
+import interLatinFont from '@fontsource-variable/inter/files/inter-latin-wght-normal.woff2?url'
 
 // ── Critical CSS (inlined for zero render-blocking delay) ─────────
 // Uses ?raw import — bundled at build time, no filesystem access at runtime
@@ -81,6 +82,13 @@ const plausibleSrc = plausibleDomain ? `https://${plausibleDomain}/js/script.js`
     <style is:inline>{criticalCSS}</style>
 
     <!-- ── Performance resource hints ──────────────────────── -->
+    <link
+      rel="preload"
+      href={interLatinFont}
+      as="font"
+      type="font/woff2"
+      crossorigin="anonymous"
+    />
     {Astro.url.pathname === '/' && (
       <link
         rel="preload"

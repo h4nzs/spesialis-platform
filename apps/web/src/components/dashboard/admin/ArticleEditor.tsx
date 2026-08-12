@@ -14,7 +14,6 @@ import {
 } from 'react';
 import { createBrowserClient, parseApiError } from '@ahlipanggilan/shared';
 import { Button, Input, Select, Card, SEOEditor } from '@ahlipanggilan/ui';
-import { RichTextEditor } from '@ahlipanggilan/ui/editor';
 import type { SeoData } from '@ahlipanggilan/ui';
 import { useContentLock } from '../../../lib/useContentLock.ts';
 import { LockBanner } from './LockBanner.tsx';
@@ -23,6 +22,9 @@ import { TableOfContents } from '../../../components/blog/TableOfContents.tsx';
 
 const MediaBrowser = lazy(() =>
   import('@ahlipanggilan/ui').then((m) => ({ default: m.MediaBrowser })),
+);
+const RichTextEditor = lazy(() =>
+  import('@ahlipanggilan/ui/editor').then((m) => ({ default: m.RichTextEditor })),
 );
 const TagsInput = lazy(() => import('@ahlipanggilan/ui').then((m) => ({ default: m.TagsInput })));
 const SeoAnalyzerPanel = lazy(() =>
@@ -513,14 +515,20 @@ export function ArticleEditor({ editingId }: ArticleEditorProps) {
 
             <Card>
               <EditorErrorBoundary>
-                <RichTextEditor
-                  label="Konten"
-                  value={form.content}
-                  onChange={(html) => setForm((f) => ({ ...f, content: html }))}
-                  placeholder="Tulis konten artikel di sini..."
-                  onImageUpload={openMediaForContent}
-                  error={undefined}
-                />
+                <Suspense
+                  fallback={
+                    <div className="min-h-[300px] animate-pulse rounded-md border border-border-default bg-bg-surface/50" />
+                  }
+                >
+                  <RichTextEditor
+                    label="Konten"
+                    value={form.content}
+                    onChange={(html) => setForm((f) => ({ ...f, content: html }))}
+                    placeholder="Tulis konten artikel di sini..."
+                    onImageUpload={openMediaForContent}
+                    error={undefined}
+                  />
+                </Suspense>
               </EditorErrorBoundary>
 
               {/* ── Live Preview ─────────────────────────────── */}

@@ -26,6 +26,9 @@ const COLLECTION_CACHE_PREFIXES: Record<string, string> = {
   cms_testimonials: 'cms:testimonials',
   cms_coverage_areas: 'cms:coverage-areas',
   cms_blog_ads: 'cms:blog-ads',
+  cms_service_categories: 'cms:service-categories',
+  system_settings: 'cms:settings',
+  services: 'cms:services:',
 };
 
 // ── In-Memory Cache (fallback) ───────────────────────────────────

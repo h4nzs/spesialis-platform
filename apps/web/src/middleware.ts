@@ -117,6 +117,22 @@ function addAgentDiscovery(
   return response;
 }
 
+/**
+ * Signal cookie readable by client JS (AuthNav) — menandai status login
+ * TANPA membuka token ke JS. Tanpanya, setiap halaman publik memicu
+ * 2x fetch /auth/me (2x 401 untuk tamu) hanya untuk tahu "login apa
+ * belum". Nilai '1' = ada token valid, '0'/'hapus' = tamu.
+ */
+function tagAuthSignal(response: Response, signedIn: boolean): void {
+  const isSecure = process.env.APP_ENV === 'production';
+  response.headers.append(
+    'Set-Cookie',
+    signedIn
+      ? `ap_signed_in=1; ${isSecure ? 'Secure; ' : ''}SameSite=Strict; Path=/; Max-Age=${120 * 60}`
+      : `ap_signed_in=0; ${isSecure ? 'Secure; ' : ''}SameSite=Strict; Path=/; Max-Age=0`,
+  );
+}
+
 export const onRequest = defineMiddleware(async ({ locals, request }, next) => {
   const url = new URL(request.url);
 
@@ -135,6 +151,7 @@ export const onRequest = defineMiddleware(async ({ locals, request }, next) => {
       return Response.redirect(new URL('/login', url), 302);
     }
     const response = await next();
+    tagAuthSignal(response, false);
     return addAgentDiscovery(response, request, url, false);
   }
 
@@ -149,6 +166,7 @@ export const onRequest = defineMiddleware(async ({ locals, request }, next) => {
       return Response.redirect(new URL('/login', url), 302);
     }
     const response = await next();
+    tagAuthSignal(response, false);
     return addAgentDiscovery(response, request, url, false);
   }
 
@@ -173,6 +191,7 @@ export const onRequest = defineMiddleware(async ({ locals, request }, next) => {
       return Response.redirect(new URL('/login', url), 302);
     }
     const response = await next();
+    tagAuthSignal(response, false);
     return addAgentDiscovery(response, request, url, false);
   }
 
@@ -228,6 +247,7 @@ export const onRequest = defineMiddleware(async ({ locals, request }, next) => {
   if (newTokens) {
     setTokenCookies(response, newTokens.token, newTokens.refreshToken);
   }
+  tagAuthSignal(response, true);
 
   // Skip markdown during token refresh — let the original response through
   return addAgentDiscovery(response, request, url, !!newTokens);

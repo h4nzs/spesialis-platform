@@ -22,6 +22,32 @@ const DASHBOARD_MAP: Record<string, string> = {
   content_manager: '/dashboard/admin',
 };
 
+// ── Shared client state (module-level) ─────────────────────────────
+// AuthNav dirender 2x per halaman (desktop + mobile). Tanpa dedupe,
+// keduanya fetch /auth/me terpisah → 2x request (2x 401 untuk tamu).
+const CHECK_TTL_MS = 30_000;
+let inFlightCheck: Promise<{ role: string } | 'guest'> | null = null;
+let cachedCheck: { role: string } | 'guest' | null = null;
+let cachedCheckAt = 0;
+
+// Middleware menandai status login via cookie non-HttpOnly — tamu
+// (mayoritas trafik) tidak perlu fetch /auth/me sama sekali.
+function hasSessionCookie(): boolean {
+  return /(?:^|;)\s*ap_signed_in=1(?:;|$)/.test(document.cookie);
+}
+
+function runCheck(): Promise<{ role: string } | 'guest'> {
+  return (async () => {
+    try {
+      const api = createBrowserClient();
+      const result = await api.get<{ user: { role: string } }>('/api/v1/auth/me');
+      return { role: result.user.role };
+    } catch {
+      return 'guest';
+    }
+  })();
+}
+
 function getDashboardUrl(role: string): string {
   return DASHBOARD_MAP[role] ?? '/dashboard';
 }
@@ -62,23 +88,30 @@ export function AuthNav({ initialAuth }: AuthNavProps) {
   const [clientAuth, setClientAuth] = useState<{ role: string } | 'guest' | null>(null);
 
   useEffect(() => {
-    let cancelled = false;
-
-    async function checkAuth() {
-      try {
-        const api = createBrowserClient();
-        const result = await api.get<{ user: { role: string } }>('/api/v1/auth/me');
-        if (!cancelled) {
-          setClientAuth({ role: result.user.role });
-        }
-      } catch {
-        if (!cancelled) {
-          setClientAuth('guest');
-        }
-      }
+    // Tamu: cookie sinyal tidak ada → jangan fetch, langsung guest.
+    if (!hasSessionCookie()) {
+      setClientAuth('guest');
+      return;
     }
 
-    checkAuth();
+    const now = Date.now();
+    if (cachedCheck && now - cachedCheckAt < CHECK_TTL_MS) {
+      setClientAuth(cachedCheck);
+      return;
+    }
+
+    inFlightCheck ??= runCheck().finally(() => {
+      inFlightCheck = null;
+    });
+
+    let cancelled = false;
+    inFlightCheck.then((result) => {
+      cachedCheck = result;
+      cachedCheckAt = Date.now();
+      if (!cancelled) {
+        setClientAuth(result);
+      }
+    });
     return () => {
       cancelled = true;
     };

@@ -14,6 +14,7 @@ import {
   successPaginated,
 } from '../../lib/response.ts';
 import { buildPaginationMeta } from '../../lib/pagination.ts';
+import { invalidateCollectionCache } from '../../lib/cache.ts';
 import { omitUndefined } from '../../lib/update.ts';
 
 const router = new Hono();
@@ -103,6 +104,7 @@ router.post(
       .returning();
 
     if (!created_service) return serverError(c, 'Gagal membuat layanan');
+    await invalidateCollectionCache('services');
     return created(c, created_service, 'Layanan berhasil dibuat');
   },
 );
@@ -143,6 +145,7 @@ router.patch(
       .where(eq(services.id, id))
       .returning();
 
+    await invalidateCollectionCache('services');
     return success(c, updated, 'Layanan berhasil diperbarui');
   },
 );
@@ -158,6 +161,7 @@ router.delete('/:id', authMiddleware, requireRole('admin', 'super_admin'), async
   if (!service) return notFound(c, 'Layanan tidak ditemukan');
 
   await db.update(services).set({ isActive: false }).where(eq(services.id, id));
+  await invalidateCollectionCache('services');
   return success(c, null, 'Layanan berhasil dinonaktifkan');
 });
 

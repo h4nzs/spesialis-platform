@@ -3,6 +3,7 @@ import { Hono } from 'hono';
 import { servicesRouter } from './services.ts';
 import { errorHandler } from '../middleware/error-handler.ts';
 import { setTestEnv, makeChain } from '../test-utils.ts';
+import { cmsCache } from '../lib/cache.ts';
 import type { ApiTestResponse } from '../test-utils.ts';
 
 const { mockDb, em } = vi.hoisted(() => {
@@ -30,6 +31,7 @@ function mkApp() {
 beforeEach(() => {
   setTestEnv();
   vi.clearAllMocks();
+  void cmsCache.clear();
 });
 
 describe('GET /api/v1/services', () => {

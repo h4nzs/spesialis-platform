@@ -47,11 +47,13 @@ export default defineConfig({
       rollupOptions: {
         output: {
           manualChunks(id) {
+            // JANGAN split @tiptap/prosemirror ke chunk manual — rolldown
+            // menyerap React (dipakai semua island) ke chunk manual itu,
+            // sehingga halaman publik ikut memuat editor (437KB). Editor
+            // sengaja lazy-load (RichTextEditor.4ulr7JTe.js) dan hanya
+            // dimuat halaman dashboard yang memakainya.
             // UI library — biggest contributor (>200KB with TipTap)
             if (id.includes('@ahlipanggilan/ui')) return 'vendor-ui';
-            // React is already auto-split by Astro at ~19KB — no need
-            // TipTap editor (part of @ahlipanggilan/ui but also standalone)
-            if (id.includes('node_modules/@tiptap')) return 'vendor-editor';
             // Lucide icons — can be 100KB+
             if (id.includes('node_modules/lucide-react')) return 'vendor-icons';
             // Zod validation — shared across dashboard

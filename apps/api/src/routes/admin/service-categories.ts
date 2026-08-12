@@ -3,6 +3,7 @@ import { eq, asc } from 'drizzle-orm';
 import { db, serviceCategories } from '../../lib/db.ts';
 import { authMiddleware, requireRole } from '../../middleware/auth.ts';
 import { validateBody } from '../../middleware/validation.ts';
+import { invalidateCollectionCache } from '../../lib/cache.ts';
 import {
   createServiceCategorySchema,
   updateServiceCategorySchema,
@@ -71,6 +72,7 @@ router.post(
       })
       .returning();
 
+    await invalidateCollectionCache('cms_service_categories');
     return created(c, category, 'Kategori berhasil dibuat');
   },
 );
@@ -107,6 +109,7 @@ router.patch(
       .where(eq(serviceCategories.id, id))
       .returning();
 
+    await invalidateCollectionCache('cms_service_categories');
     return success(c, updated, 'Kategori berhasil diperbarui');
   },
 );
@@ -122,6 +125,7 @@ router.delete('/:id', authMiddleware, requireRole('admin', 'super_admin'), async
   if (!category) return notFound(c, 'Kategori tidak ditemukan');
 
   await db.update(serviceCategories).set({ isActive: false }).where(eq(serviceCategories.id, id));
+  await invalidateCollectionCache('cms_service_categories');
   return success(c, null, 'Kategori berhasil dinonaktifkan');
 });
 

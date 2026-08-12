@@ -1,8 +1,11 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, lazy, Suspense } from 'react';
 import { createBrowserClient, parseApiError } from '@ahlipanggilan/shared';
 import { Button, Input, Select, Modal, type SelectOption } from '@ahlipanggilan/ui';
-import { RichTextEditor } from '@ahlipanggilan/ui/editor';
 import { useContentLock } from '../../../lib/useContentLock.ts';
+
+const RichTextEditor = lazy(() =>
+  import('@ahlipanggilan/ui/editor').then((m) => ({ default: m.RichTextEditor })),
+);
 import { LockBanner } from './LockBanner.tsx';
 
 // ── Types ────────────────────────────────────────────────────────
@@ -178,12 +181,18 @@ export default function FaqFormModal({ open, onClose, editingId, onSaved }: FaqF
           error={fieldErrors['question']}
         />
         {/* ── Answer (RichTextEditor) ─────────────────────────── */}
-        <RichTextEditor
-          label="Jawaban"
-          value={form.answer}
-          onChange={(html) => setForm((f) => ({ ...f, answer: html }))}
-          placeholder="Tulis jawaban di sini..."
-        />
+        <Suspense
+          fallback={
+            <div className="min-h-[300px] animate-pulse rounded-md border border-border-default bg-bg-surface/50" />
+          }
+        >
+          <RichTextEditor
+            label="Jawaban"
+            value={form.answer}
+            onChange={(html) => setForm((f) => ({ ...f, answer: html }))}
+            placeholder="Tulis jawaban di sini..."
+          />
+        </Suspense>
         {/* ── Category & Display Order ────────────────────────── */}
         <div className="grid grid-cols-2 gap-3">
           <Select

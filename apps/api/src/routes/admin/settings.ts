@@ -6,6 +6,7 @@ import { authMiddleware, requireRole } from '../../middleware/auth.ts';
 import { validateBody } from '../../middleware/validation.ts';
 import { success } from '../../lib/response.ts';
 import { createAuditLog } from '../../lib/audit.ts';
+import { invalidateCollectionCache } from '../../lib/cache.ts';
 
 const router = new Hono();
 
@@ -101,6 +102,7 @@ router.patch(
       newValue: { updated: results.length },
     });
 
+    await invalidateCollectionCache('system_settings');
     return success(c, { updated: results.length });
   },
 );
