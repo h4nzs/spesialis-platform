@@ -201,10 +201,16 @@ const DESCRIPTION_PLACEHOLDER =
 
 /* ── Main Component ─────────────────────────────────────────────────── */
 
-export function ServiceExplorer() {
+export function ServiceExplorer({
+  initialServices = [],
+  initialCategories = [],
+}: {
+  initialServices?: ServiceItem[];
+  initialCategories?: Category[];
+}) {
   const api = useMemo(() => createBrowserClient(), []);
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [heroServices, setHeroServices] = useState<ServiceItem[]>([]);
+  const [categories, setCategories] = useState<Category[]>(initialCategories);
+  const [heroServices, setHeroServices] = useState<ServiceItem[]>(initialServices);
   const [activeCatSlug, setActiveCatSlug] = useState<string | null>(null);
   const [catServices, setCatServices] = useState<Record<string, ServiceItem[]>>({});
   const [loadingCat, setLoadingCat] = useState(false);

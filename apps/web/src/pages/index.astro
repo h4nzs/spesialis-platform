@@ -26,6 +26,17 @@ interface ServiceItem {
   basePrice: string;
   estimatedDuration: number | null;
   isFeatured: boolean | null;
+  thumbnail: string | null;
+}
+
+interface Category {
+  id: string;
+  name: string;
+  slug: string;
+  description: string | null;
+  icon: string | null;
+  image: string | null;
+  displayOrder: number;
 }
 
 interface CoverageArea {
@@ -44,15 +55,22 @@ interface ArticleItem {
 
 // SSR: fetch services, articles, and coverage areas from Hono API + CMS API
 let services: ServiceItem[] = []
+let heroServices: ServiceItem[] = []
+let serviceCategories: Category[] = []
 let articles: ArticleItem[] = []
 let totalCities = 0
 try {
-  const [servicesResult, articlesResult, coverageResult] = await Promise.all([
-    api.get<ServiceItem[]>('/api/v1/services?limit=12').catch(() => null),
-    api.get<Array<{ title: string; slug: string; summary: string | null; cover_image: string | null; category: string | null; published_at: string | null }>>('/api/v1/cms/articles?limit=3').catch(() => null),
-    api.get<CoverageArea[]>('/api/v1/public/coverage-areas').catch(() => null),
-  ])
+  const [servicesResult, heroServicesResult, categoriesResult, articlesResult, coverageResult] =
+    await Promise.all([
+      api.get<ServiceItem[]>('/api/v1/services?limit=12').catch(() => null),
+      api.get<ServiceItem[]>('/api/v1/services?hero=true&limit=20').catch(() => null),
+      api.get<Category[]>('/api/v1/service-categories').catch(() => null),
+      api.get<Array<{ title: string; slug: string; summary: string | null; cover_image: string | null; category: string | null; published_at: string | null }>>('/api/v1/cms/articles?limit=3').catch(() => null),
+      api.get<CoverageArea[]>('/api/v1/public/coverage-areas').catch(() => null),
+    ])
   services = servicesResult ?? []
+  heroServices = heroServicesResult ?? []
+  serviceCategories = categoriesResult ?? []
   if (articlesResult) {
     articles = articlesResult.map((a) => ({
       title: a.title,
@@ -122,7 +140,11 @@ if (totalCities === 0) {
   <!-- ── Landing: Hero + Service Categories + Why Choose + Coverage ── -->
   <!-- Visible pada initial page load — desain compact seperti referensi -->
   <Hero totalServices={services.length} />
-  <ServiceExplorer client:load />
+  <ServiceExplorer
+    client:load
+    initialServices={heroServices}
+    initialCategories={serviceCategories}
+  />
   <WhyChooseUs totalServices={services.length} totalCities={totalCities} />
   <Coverage />
 
